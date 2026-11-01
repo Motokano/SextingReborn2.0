@@ -10,6 +10,8 @@ projects.cooking.groups[0].note='修补灶体与台基';projects.cooking.groups[
 add('pharmacy','修复制药台',{stone:10,wood:8},'npc_station_pharmacy_base_repaired',[14,15]);
 add('forging','修复铸造台',{stone:10,wood:8},'forging_station_unlocked',[5,11]);
 add('compost','修复制肥桶',{wood:8,stone:4,fiber:4},'npc_station_compost_base_repaired',[13,15]);
+add('bathroom','修复卫生间',{stone:8,metal:6,parts:2},'bathroom_station_unlocked',[14,14]);
+projects.bathroom.groups[0].note='修补洗浴地面和排水槽';projects.bathroom.groups[1].note='接好饮水与洗浴管线';projects.bathroom.groups[2].note='更换阀门与接头';
 add('water','修复灶台供水',{stone:6,metal:8,parts:4},'cooking_base_station_water_unlimited',[12,15],'cooking_base_station_unlocked');
 add('calendar','装配日历',{wood:4,fiber:2},'observation_calendar_unlocked',[7,11]);
 add('temperature','装配温度计',{wood:4,metal:4,parts:2},'observation_temperature_unlocked',[7,11]);

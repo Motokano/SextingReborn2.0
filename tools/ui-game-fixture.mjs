@@ -13,6 +13,7 @@ export async function boot(full, { storage = {} } = {}) {
   vc.on('error', (...args) => errors.push(args.map(String).join(' ')));
   const dom = new JSDOM(html, { url: 'https://ui-test.invalid/?no_reload' + (full ? '&ui=svelte-hud' : ''), runScripts: 'outside-only', pretendToBeVisual: true, virtualConsole: vc });
   const g = dom.window;
+  g.structuredClone = structuredClone;
   for (const [key, value] of Object.entries(storage)) g.localStorage.setItem(key, value);
   g.ResizeObserver = class { observe() {} disconnect() {} };
   g.matchMedia = () => ({ matches: false, addEventListener() {}, removeEventListener() {} });

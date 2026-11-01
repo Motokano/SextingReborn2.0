@@ -2148,7 +2148,78 @@
           "count": 1,
           "consume": false
         }
-      ]
+      ],
+      "water_flask_output": {
+        "model": "iron",
+        "capacity": 200,
+        "water": 0,
+        "affix": "none",
+        "insert": "none"
+      }
+    },
+    {
+      "recipe_id": "manufacturing.tool_flask_bamboo_water",
+      "item_id": "tool_flask_bamboo_water",
+      "name": "青竹水壶",
+      "unlock_rule": "L",
+      "station": "bench",
+      "methods": [
+        "wood",
+        "seal"
+      ],
+      "work_profile": "standard",
+      "ticks": 6,
+      "stamina": 6,
+      "output_count": 1,
+      "inputs": [
+        {
+          "item_id": "wood_bamboo_green",
+          "count": 1
+        },
+        {
+          "item_id": "wood_cork",
+          "count": 1
+        }
+      ],
+      "discovery_source": "basic_tools",
+      "status": "已接入制作台独立试玩；配方数值试调，正式执行器待接入",
+      "balance_snapshot": {
+        "input_weight_kg": 1.01,
+        "output_weight_kg": 0.7,
+        "mass_difference_kg": 0.31
+      },
+      "unlock": {
+        "kind": "skill_level",
+        "skill_id": "life_manufacturing",
+        "level": 5,
+        "grants": {
+          "recipe": true,
+          "structure": true,
+          "listed_material_relations": true,
+          "recipe_scoped_processes": true,
+          "other_recipes": false,
+          "upstream_industrial_production": false,
+          "hidden_item_properties": false,
+          "use_recipes_or_tactics": false
+        },
+        "experience_on_unlock": 0,
+        "persistent": true,
+        "linked_processing_grants": []
+      },
+      "material_roots": [
+        "wood_bamboo_green",
+        "wood_cork"
+      ],
+      "external_special_roots": [],
+      "workbench_level_min": 1,
+      "required_tools": [],
+      "water_flask_output": {
+        "model": "bamboo",
+        "capacity": 200,
+        "water": 0,
+        "affix": "none",
+        "insert": "none"
+      }
     },
     {
       "recipe_id": "manufacturing.tool_sewing_kit_cloth",
@@ -4437,8 +4508,8 @@
     "workbench": "手竿修理一级台；路亚竿与轮的换件维修二级台加精密工位和维修钳即可，不要求达到完整新件制造的三级"
   },
   "audit": {
-    "existing_items": 72,
-    "new_product_recipes": 56,
+    "existing_items": 73,
+    "new_product_recipes": 57,
     "preserved_hunting_recipes": 6,
     "processing_recipes": 2,
     "non_manufacturing_entries": 10,
@@ -4447,7 +4518,7 @@
     "acyclic_material_dependencies": true,
     "price_balance": "未通过经济定稿；原表大量价格为0、空值或占位，不能宣称无套利",
     "unlock_distribution": {
-      "new_skill_level": 33,
+      "new_skill_level": 34,
       "new_exploration": 16,
       "new_soil_skill_and_evidence": 7,
       "existing_hunting_skill_routes": 6,
@@ -4455,8 +4526,8 @@
     },
     "advanced_points_cover_all_16_targets": true,
     "material_supply": {
-      "new_products": 56,
-      "existing_root_materials_only": 49,
+      "new_products": 57,
+      "existing_root_materials_only": 50,
       "with_external_special_materials": 7,
       "derived_intermediates": 2,
       "external_special_material_types": 4,
@@ -4465,7 +4536,7 @@
     "registered_new_materials": 8,
     "workbench_level_distribution": {
       "0": 4,
-      "1": 31,
+      "1": 32,
       "2": 15,
       "3": 6
     },
@@ -4477,7 +4548,7 @@
     "retired_registered_materials": 2,
     "mass_snapshot_semantics": "份数为配方计量，模板重量保留；有符号重量差仅作数据参考，允许负值，不用于约束批量或反推材料份数"
   },
-  "review_revision": 8,
+  "review_revision": 9,
   "unlock_policy": {
     "confirmed_direction": "基础随对应生活技能等级，高级通过地牢探索研究仿制，兴趣点可提供配方",
     "scope": "本次制造范围；不自动改写武器、防具、菜谱和药方",

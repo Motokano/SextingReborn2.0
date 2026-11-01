@@ -47,6 +47,8 @@
 
 点击顶部 **「新建 NPC」**。
 
+「交互限制」中可分别勾选 **缺水时禁止互动** 和 **过于肮脏时禁止互动**。新建或导入未配置开关的普通 NPC 默认开启；设施可取消勾选其中一项或两项。导出保存为 `interactionChecks.thirst` / `interactionChecks.dirtyness`，关闭只影响这两项交互限制，其他使用条件照常检查。
+
 ### 新建 NPC 文件夹
 
 点击 **「新建 NPC 文件夹」**，按当前 NPC 的 **ID** 创建（如 `npc.supervisor.linShuyao` → `npc_supervisor_linShuyao`；会把 `.` 替换成 `_`）：

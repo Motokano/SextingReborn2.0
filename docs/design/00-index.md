@@ -97,7 +97,7 @@
 | 敌人设计 | [10-enemies.md](10-enemies.md) | 敌人与主角差异、配置、掉落池（默认可击杀，D17）；接线状态见文末「实现记录」 |
 | 技能系统 | [11-skills.md](11-skills.md) | 生存/生活/战斗/特殊、熟练度（每肢固定槽 1 出招，无招式循环）、战斗技能规则；后遗症装配见 34 |
 | 制造物品分类与解锁 | [78-manufacturing-classification-and-unlocks.md](78-manufacturing-classification-and-unlocks.md) | 72项成品状态设施、69项原料；8项材料已注册，6项在用（2加工中间料＋4外部专材），小份铅料与精密机件停用；正式配方与供应待接入，解锁细化见79号 |
-| 制造系统完整流程 | [79-manufacturing-system.md](79-manufacturing-system.md) | 技能与探索解锁；56条新产物中49条追溯到已有原料，7条依赖少量特材；2条材料加工、6条旧狩猎；铅料×1直制6个铅坠，产量按玩法试调；三级制作台与逐配方工具、台级要求已配表，独立原型可试玩，正式流程待接入 |
+| 制造系统完整流程 | [79-manufacturing-system.md](79-manufacturing-system.md) | 技能与探索解锁；57条新产物中50条追溯到已有原料，7条依赖少量特材；2条材料加工、6条旧狩猎；铅料×1直制6个铅坠，产量按玩法试调；三级制作台与逐配方工具、台级要求已配表，独立原型可试玩，正式流程待接入 |
 | 狩猎活动 | [hunting-system.md](hunting-system.md) | 独立活动入口、结束后冷却并到期可用、准备消耗体力、活动内禁食与正常休息；事件和数值待定，未实装 |
 | 狩猎与畜牧产出链 v1 | [hunting-output-chain-v1.md](hunting-output-chain-v1.md) | 14种狩猎材料覆盖、四种幼崽衔接、双方特色与共用材料、加工出口及61种现有畜牧产物核对；具体分配为草案 |
 | 玩家间交易 | [13-p2p-trading.md](13-p2p-trading.md) | 交易码、接头暗号、兑换与时效 |
@@ -119,6 +119,7 @@
 | UI 自由窗口系统 | [36-ui-windows.md](36-ui-windows.md) | 仿 RO 浮动窗口：拖拽/缩放/显隐/锁定/重置、设备级持久化、认知门控合并、8 层 UI 演出 API |
 | 模块化躯干防具与新底气护体 | [37-equipment-modular-armor.md](37-equipment-modular-armor.md) | 躯干防具模块化（底材 + 6 板位模块 + 激活制）；激活盾层减伤链；头部 3 槽常驻 + 眩晕累积；数值待定见看板 k154 |
 | 装备数据契约（模块化 schema） | [38-equipment-data-contract.md](38-equipment-data-contract.md) | 模块表/防具模板/实例格式、槽点命名空间、effect_type 目录（单向伤害转换方向）、校验规则 |
+| 水壶装备与构筑 | [80-water-flask-equipment.md](80-water-flask-equipment.md) | 第15节已接正式卫生间装水、青竹／铁皮存水、重量与保存；第14节三基底属性草案保留。第16节已接单壶槽与饮用；正式制作与地牢取水待接入，快饮／缓补仍为候选 |
 | 手套与出招装备改造体系 | [39-glove-and-outfitting.md](39-glove-and-outfitting.md) | 手套=徒手武器（形态系数）、鞋六类（踹/扫/踏 + 步法）、左右分装取低、改造件/通货做装骨架 |
 | 战斗场景与可互动元素 | [40-combat-scene.md](40-combat-scene.md) | 可互动元素（一次性动作范式）+ 酒瓶实例（眩晕灌入累积系统）；场地伤害/掩体预留 |
 | 地牢材料分配 | [42-dungeon-material-allocation.md](42-dungeon-material-allocation.md) | 地表+七座主题地牢材料池、15 道终局菜稀料覆盖、电池/电箱（非采集）；实现记录见文末 §八 |

@@ -975,6 +975,7 @@
                 appearanceSchedule: { start: '09:00', end: '17:30' },
                 location: { sceneId: 'base_main', x: 0, y: 0 },
                 mainMenu: { showChat: true, showWorkWhen: 'hasAvailableOrTurnIn', showLeave: true },
+                interactionChecks: { thirst: true, dirtyness: true },
                 behavior: { type: 'supervisor', origin: 'mysterious_system', description: '' },
                 fallbackDialoguePoolId: '',
                 fallbackPoolRules: [],
@@ -1085,6 +1086,9 @@
                 { group: '主菜单', id: 'npc-showChat', label: '显示「闲聊」', path: 'mainMenu.showChat', type: 'checkbox', required: false },
                 { group: '主菜单', id: 'npc-showWorkWhen', label: '工作/任务 显示条件', path: 'mainMenu.showWorkWhen', type: 'select', required: false, options: [{ value: 'hasAvailableOrTurnIn', label: '有可接或可交付任务时显示' }] },
                 { group: '主菜单', id: 'npc-showLeave', label: '显示「离开」', path: 'mainMenu.showLeave', type: 'checkbox', required: false },
+
+                { group: '交互限制', id: 'npc-check-thirst', label: '缺水时禁止互动', path: 'interactionChecks.thirst', type: 'checkbox', required: false, help: '默认开启。关闭后，饮水度为 0 仍可使用这个 NPC 或设施。' },
+                { group: '交互限制', id: 'npc-check-dirtyness', label: '过于肮脏时禁止互动', path: 'interactionChecks.dirtyness', type: 'checkbox', required: false, help: '默认开启。关闭后，邋里邋遢状态仍可使用这个 NPC 或设施。两项可以分别设置。' },
 
                 { group: '行为描述', id: 'npc-behavior-type', label: '类型', path: 'behavior.type', type: 'select', required: false, options: [
                     { value: 'supervisor', label: '监督者 (supervisor)' },
@@ -4322,6 +4326,7 @@
                 out.appearanceSchedule = (data.appearanceSchedule && typeof data.appearanceSchedule === 'object') ? data.appearanceSchedule : out.appearanceSchedule;
                 out.location = (data.location && typeof data.location === 'object') ? data.location : out.location;
                 out.mainMenu = (data.mainMenu && typeof data.mainMenu === 'object') ? data.mainMenu : out.mainMenu;
+                out.interactionChecks = (data.interactionChecks && typeof data.interactionChecks === 'object' && !Array.isArray(data.interactionChecks)) ? data.interactionChecks : out.interactionChecks;
                 out.behavior = (data.behavior && typeof data.behavior === 'object') ? data.behavior : out.behavior;
                 out.fallbackDialoguePoolId = (data.fallbackDialoguePoolId != null) ? data.fallbackDialoguePoolId : out.fallbackDialoguePoolId;
                 out.fallbackPoolRules = Array.isArray(data.fallbackPoolRules) ? JSON.parse(JSON.stringify(data.fallbackPoolRules)) : out.fallbackPoolRules;
@@ -4330,7 +4335,7 @@
                 // unknown passthrough
                 var knownTop = {
                     schemaVersion: 1, id: 1, name: 1, displayTitle: 1, npcLabel: 1, sprite: 1,
-                    appearanceSchedule: 1, location: 1, mainMenu: 1, behavior: 1,
+                    appearanceSchedule: 1, location: 1, mainMenu: 1, interactionChecks: 1, behavior: 1,
                     fallbackDialoguePoolId: 1, fallbackPoolRules: 1, tags: 1, _comment: 1
                 };
                 out._extra = {};

@@ -4,7 +4,7 @@
   "status": "8种材料模板已注册；已补可升级制作台与逐配方台级、工具条件；三级划分及具体数值为待接入试玩方案",
   "scope": "制造系统全量工具、钓具、耗材及其原料；含固定设施与外部供应的明确归属",
   "statistics": {
-    "existing_items": 72,
+    "existing_items": 73,
     "existing_materials": 69,
     "new_material_concepts": 6,
     "unregistered_product_families": 8,
@@ -14,26 +14,26 @@
       "钓具／漂坠钩饵": 10,
       "采集与维修工具": 6,
       "狩猎用品": 6,
-      "日用与通用耗材": 8,
+      "日用与通用耗材": 9,
       "烹饪器具": 7,
       "制药器具与耗材": 11,
       "农业客土": 7,
       "设施配件与固定装置": 5,
       "能源成品": 3
     },
-    "core_templates_checked": 72,
+    "core_templates_checked": 73,
     "unclassified_core_items": 0,
     "unclassified_inputs": 0,
     "unlock_distribution": {
-      "new_skill_level": 33,
+      "new_skill_level": 34,
       "new_exploration": 16,
       "new_soil_skill_and_evidence": 7,
       "existing_hunting_skill_routes": 6,
       "external_state_or_facilities": 10
     },
     "material_supply": {
-      "new_products": 56,
-      "existing_root_materials_only": 49,
+      "new_products": 57,
+      "existing_root_materials_only": 50,
       "with_external_special_materials": 7,
       "derived_intermediates": 2,
       "external_special_material_types": 4,
@@ -42,7 +42,7 @@
     "registered_new_materials": 8,
     "workbench_level_distribution": {
       "0": 4,
-      "1": 31,
+      "1": 32,
       "2": 15,
       "3": 6
     },
@@ -1532,6 +1532,42 @@
       ]
     },
     {
+      "item_id": "tool_flask_bamboo_water",
+      "name": "青竹水壶",
+      "category": "daily",
+      "unlock_rule": "L",
+      "conditions": "制造台本体；木竹整形与绑扎、容器密封",
+      "input_ids": [
+        "wood_bamboo_green",
+        "wood_cork"
+      ],
+      "discovery": "制造达到5级直接掌握；等级为试值，无样本或资料前置",
+      "current": "成品为空壶，青竹基底从水源装水入壶量+60%；已接制作台独立试玩，正式装备与水源消费者待接入",
+      "decision_status": "用户确定基础技能解锁、高级地牢探索与兴趣点解锁；逐项分配和等级为试调提案",
+      "source_file": "data/items.json",
+      "recipe_candidate": "manufacturing.tool_flask_bamboo_water",
+      "unlock": {
+        "kind": "skill_level",
+        "skill_id": "life_manufacturing",
+        "level": 5,
+        "grants": {
+          "recipe": true,
+          "structure": true,
+          "listed_material_relations": true,
+          "recipe_scoped_processes": true,
+          "other_recipes": false,
+          "upstream_industrial_production": false,
+          "hidden_item_properties": false,
+          "use_recipes_or_tactics": false
+        },
+        "experience_on_unlock": 0,
+        "persistent": true,
+        "linked_processing_grants": []
+      },
+      "workbench_level_min": 1,
+      "required_tools": []
+    },
+    {
       "item_id": "tool_sewing_kit_cloth",
       "name": "缝纫工具包",
       "category": "daily",
@@ -2736,7 +2772,8 @@
         "fishing_rod_lure_basic",
         "supply_torch_bamboo",
         "tool_steamer_bamboo_cooking",
-        "consumable_javelin_stone"
+        "consumable_javelin_stone",
+        "tool_flask_bamboo_water"
       ],
       "source_file": "data/items.json",
       "status": "已有模板；本轮制造用途为提案，既有外部规则保留"
@@ -2760,7 +2797,8 @@
       "usage": [
         "fishing_float_small",
         "fishing_float_large",
-        "tool_flask_iron_water"
+        "tool_flask_iron_water",
+        "tool_flask_bamboo_water"
       ],
       "source_file": "data/items.json",
       "status": "已有模板；本轮制造用途为提案，既有外部规则保留"
@@ -3723,7 +3761,7 @@
     "data/items/manufacturing_materials_base.csv",
     "data/item-catalog-v2.json"
   ],
-  "review_revision": 8,
+  "review_revision": 9,
   "detailed_design": "79-manufacturing-system.md",
   "detailed_data": "examples/manufacturing-system-v1.json",
   "unlock_policy": {

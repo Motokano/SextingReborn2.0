@@ -86,7 +86,9 @@
     "test:ui-facilities": "npm run build:ui && node --test tools/test-svelte-facilities.mjs",
     "build:forging": "node tools/build-forging-runtime.mjs",
     "test:forging": "node tools/build-forging-runtime.mjs --check && node tools/test-forging-runtime.mjs && node tools/test-forging-integration.mjs",
-    "prototype:manufacturing": "node tools/serve-live.mjs 8023"
+    "prototype:manufacturing": "node tools/serve-live.mjs 8023",
+    "prototype:water-flask": "node tools/serve-live.mjs 8024",
+    "prototype:water-flask:logic": "node tools/water-flask-prototype-cli.mjs"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "6.2.4",

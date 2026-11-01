@@ -11,6 +11,7 @@ tool_pickaxe_iron_simple,简易矿镐,旧矿镐,用短铁镐头与粗木柄临�
 tool_hatchet_woodcutter,伐木小斧,木小斧,斧刃偏小但够锋利，适合砍伐较细的树木和枝条。,tool,logging,1.9,1,white,tool;logging;weapon_alt,forge;logging,forge;craft,0,material,mid,0,820,,,,,
 tool_sewing_kit_cloth,缝纫工具包,线包,装有几枚粗针与少量线轴的小包，用来简单修补衣物和布制装备。,tool,sewing,0.3,5,white,tool;sewing;repair,craft,weave;craft,0,life_good,low,0,160,,,,,
 tool_flask_iron_water,铁皮水壶,铁水壶,包铁外壳的水壶，比陶罐更耐摔但略有金属异味。,tool,container,0.7,1,white,tool;container;water,craft;buy,craft,0,life_good,mid,0,420,,,,,
+tool_flask_bamboo_water,青竹水壶,竹水壶,带软木塞的青竹水壶，可装水携带。,tool,container,0.7,1,white,tool;container;water;water_flask,craft,craft,0,life_good,mid,0,420,,,,,
 tool_pot_clay_cooking,粗陶饭锅,陶饭锅,用粗陶烧成的饭锅，受热不算均匀但足以应付常见炊煮。,tool,cookware,1.5,1,white,tool;cookware;cooking,craft;buy,cook,0,life_good,mid,0,360,,,,,
 tool_steamer_bamboo_cooking,竹蒸笼,竹蒸屉,竹编蒸屉扣在锅上即可蒸食，与煮/炖锅分用。,tool,cookware,0.8,1,white,tool;cookware;cooking,craft;buy,cook,0,life_good,mid,0,320,,,,,
 tool_wok_iron_cooking,铸铁炒锅,铁炒锅,厚底圆底锅，爆炒煸香离不开它。,tool,cookware,2.2,1,white,tool;cookware;cooking,craft;buy,cook,0,life_good,mid,0,520,,,,,

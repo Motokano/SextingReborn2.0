@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import assert from 'node:assert/strict';
 import { CATEGORY_GROUP_FIELDS, buildModularCatalog, buildModuleDefinitionsDocument, hydrateModularCatalog } from './item-attribute-catalog.mjs';
+import { applyWaterFlaskStorage } from './water-flask-storage-fields.mjs';
 
 const legacy = JSON.parse(fs.readFileSync(new URL('../data/items.json', import.meta.url), 'utf8'));
 const written = JSON.parse(fs.readFileSync(new URL('../data/item-catalog-v2.json', import.meta.url), 'utf8'));
@@ -84,6 +85,33 @@ const zeroChargeHtml = infoModules.renderTooltipModulesHtml({
   character: {}
 });
 assert.match(zeroChargeHtml, /charge 0/, 'information module displayed template charge instead of instance zero');
+
+const flaskTemplate = runtimeItems.tool_flask_bamboo_water;
+const flask = IAM.normalizeInstance({ item_id: 'tool_flask_bamboo_water', future_state: { retained: true } }, flaskTemplate);
+assert.equal(IAM.getInstanceValue(flask, flaskTemplate, 'flask_water'), 0);
+assert.equal(IAM.setInstanceValue(flask, flaskTemplate, 'flask_water', 64), true);
+assert.equal(IAM.getInstanceValue(flask, flaskTemplate, 'flask_water'), 64);
+assert.equal(IAM.getInstanceValue(IAM.normalizeInstance({ item_id: flask.item_id }, flaskTemplate), flaskTemplate, 'flask_water'), 0, 'same-model instances share water');
+assert.equal(IAM.setInstanceValue(flask, flaskTemplate, 'flask_water', Infinity), false);
+assert.equal(IAM.setInstanceValue(flask, flaskTemplate, 'flask_water', 201), false);
+assert.equal(flask.future_state.retained, true);
+flask.attribute_state.structure.liquid_storage.version = 99;
+assert.equal(IAM.setInstanceValue(flask, flaskTemplate, 'flask_water', 0), false);
+assert.equal(IAM.normalizeInstance(flask, flaskTemplate).attribute_state.structure.liquid_storage.version, 99, 'unknown state version was overwritten');
+infoModules.setTable(JSON.parse(fs.readFileSync(new URL('../data/item-info-modules.json', import.meta.url), 'utf8')));
+const texts = JSON.parse(fs.readFileSync(new URL('../data/ui_text_zhCN.json', import.meta.url), 'utf8'));
+context.globalThis.UIText.t = (key, vars) => (texts[key] || key).replace('{v}', String(vars?.v));
+const emptyFlaskHtml = infoModules.renderTooltipModulesHtml({ tpl: flaskTemplate, inst: IAM.normalizeInstance({ item_id: flask.item_id }, flaskTemplate), character: {} });
+assert.match(emptyFlaskHtml, /当前存水：0/);
+assert.match(emptyFlaskHtml, /储水容量：200/);
+assert.doesNotMatch(emptyFlaskHtml, /60%|1\.6/, 'storage information exposed unrecognized special performance');
+const storageSource = JSON.parse(fs.readFileSync(new URL('../data/water-flask-storage.json', import.meta.url), 'utf8'));
+assert.throws(() => applyWaterFlaskStorage({}, storageSource), /Unknown water flask/);
+for (const patch of [{ flask_capacity: '200' }, { flask_initial_water: 20 }, { flask_source_multiplier: 0 }, { accidental_field: 1 }]) {
+  const broken = structuredClone(storageSource);
+  Object.assign(broken.items.tool_flask_bamboo_water, patch);
+  assert.throws(() => applyWaterFlaskStorage(structuredClone(legacy), broken), /tool_flask_bamboo_water/);
+}
 
 const counts = {};
 for (const item of Object.values(written.items)) for (const category of Object.keys(item.attribute_modules)) counts[category] = (counts[category] || 0) + 1;

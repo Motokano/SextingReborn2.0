@@ -182,6 +182,14 @@
             "req_innate_jingu"
           ]
         },
+        "water_flask": {
+          "fields": [
+            "flask_source_multiplier",
+            "flask_drink_cost",
+            "flask_drink_ticks",
+            "flask_effects"
+          ]
+        },
         "combat": {
           "fields": [
             "weapon_attack_power",
@@ -237,6 +245,13 @@
             "backpack_weight_factor"
           ]
         },
+        "liquid_storage": {
+          "fields": [
+            "flask_capacity",
+            "flask_initial_water",
+            "flask_water_weight_kg"
+          ]
+        },
         "host": {
           "fields": [
             "module_slots"
@@ -276,6 +291,21 @@
     }
   },
   "instance_state": {
+    "structure": {
+      "liquid_storage": {
+        "version": {
+          "type": "integer",
+          "value": 1
+        },
+        "water": {
+          "type": "number",
+          "min": 0,
+          "template_capacity_field": "flask_capacity",
+          "template_initial_field": "flask_initial_water",
+          "instance_field": "flask_water"
+        }
+      }
+    },
     "energy": {
       "storage": {
         "charge": {

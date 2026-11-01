@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "items": {
+    "tool_flask_iron_water": {
+      "flask_capacity": 200,
+      "flask_initial_water": 0,
+      "flask_water_weight_kg": 0.005,
+      "flask_source_multiplier": 1
+    },
+    "tool_flask_bamboo_water": {
+      "flask_capacity": 200,
+      "flask_initial_water": 0,
+      "flask_water_weight_kg": 0.005,
+      "flask_source_multiplier": 1.6
+    }
+  }
+}

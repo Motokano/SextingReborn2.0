@@ -14,6 +14,7 @@
     function ingestFood(itemId, profile) {
         if (!foodConfig() || !global.FoodMetabolism.eat(foodState, itemId, profile)) return false;
         state.thirst = round1(clamp(state.thirst + (Number(profile.thirst_instant) || 0), 0, get('thirst_max', 100)));
+        syncThirstStateBuff();
         return true;
     }
     var state = {
@@ -1694,6 +1695,7 @@
         var maxVal = get('thirst_max', 100);
         state.thirst = round1(clamp(state.thirst + amount, 0, maxVal));
         if (state.thirst > 0) state.thirstDeathTicks = 0;
+        syncThirstStateBuff();
     }
 
     function roundStamina(value) { return Math.round(value * 100) / 100; }
@@ -2300,6 +2302,7 @@
         getComposure: getComposure,
         getNutrition: getNutrition,
         getDirtyness: getDirtyness,
+        getThirstMax: function () { return get('thirst_max', 100); },
         getFatigue: getFatigue,
         getWeightKg: getWeightKg,
         getHeightCm: getHeightCmValue,

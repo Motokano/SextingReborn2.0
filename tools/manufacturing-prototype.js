@@ -1,5 +1,6 @@
 // Disposable UI prototype. Three forge-style layouts share only in-memory state.
 // Data is read from the design draft and existing item catalog; no game globals or storage.
+import { MODELS, createFlask } from './water-flask-prototype-model.mjs';
 const $ = (s) => document.querySelector(s);
 const esc = (v) => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmt = (n) => Number(Number(n).toFixed(1)).toLocaleString('zh-CN');
@@ -36,7 +37,7 @@ function syncKnowledge() {
   return added;
 }
 function reset(preset='start') {
-  state={level:1,facilities:new Set(['simple','bench','soil','metal']),inventory:{},known:new Set(),inspected:new Set(),skills:Object.fromEntries(Object.keys(skillNames).map(k=>[k,k==='life_manufacturing'?5:1])),stamina:300,focus:100,xp:0,ticks:0,job:null,message:'',evidence:structuredClone(defaultEvidence),broken:true,preset};
+  state={level:1,facilities:new Set(['simple','bench','soil','metal']),inventory:{},craftedFlasks:[],flaskSerial:0,known:new Set(),inspected:new Set(),skills:Object.fromEntries(Object.keys(skillNames).map(k=>[k,k==='life_manufacturing'?5:1])),stamina:300,focus:100,xp:0,ticks:0,job:null,message:'',evidence:structuredClone(defaultEvidence),broken:true,preset};
   const productIds=new Set(recipes.map(r=>r.item_id));
   for(const r of recipes) for(const i of r.inputs||[]) if(!productIds.has(i.item_id)) state.inventory[i.item_id]=24;
   for(const f of Object.values(data.facilities)) for(const [id] of f.inputs||[]) if(!productIds.has(id)) state.inventory[id]=24;
@@ -95,6 +96,7 @@ function glyph(id,large=false) {
   if(id?.includes('rod')) path='M9 46 36 8m-4 6 5 2m-11 7 6 2m-12 7 6 2M36 8c8 7 9 20 8 29v7c0 5-7 5-7 0';
   else if(id?.includes('reel')) path='M29 15a13 13 0 1 0 0 26 13 13 0 1 0 0-26m0 7a6 6 0 1 0 0 12 6 6 0 1 0 0-12M17 19l-6-7m18 16 15 2v9h6M28 15V8H15';
   else if(id?.includes('pliers')) path='m17 7 4 13 9 9-8 19m16-41-4 13-9 9 12 19m-12-23h5';
+  else if(id?.includes('flask')) path='M22 6h12v8l9 5v26H13V19l9-5zM20 6h16M15 33h26M22 14h12';
   else if(id?.includes('line')||id?.includes('rope')||id?.includes('wire')||cat==='hunting') path='M17 15c-12 5-8 25 5 26 13 1 27-15 19-26-8-12-25 0-24 11 2 14 19 4 18-5-2-9-12-3-12 3m0 17 17 8';
   else if(id?.includes('hook')) path='M34 10a4 4 0 1 0 0 8 4 4 0 1 0 0-8m0 8v20c0 16-23 16-23 0v-8l7 9';
   else if(['pharmacy','cooking'].includes(cat)) path='M12 25h32l-4 20H16zM21 25V12h14v13M19 12h18M10 30H5v9h9m28-9h7v9h-9';
@@ -131,7 +133,9 @@ function quoteView(r,count=1,button='开始制作',allowQuantity=true) {
 function recipeDetail(r,ledger=false) {
   const tools=r.required_tools?.length?`<div><div class="section-title">工具 <span>不消耗</span></div>${toolRows(r)}</div>`:'';
   const materials=`<div>${materialRows(r,quantity)}</div>`;
-  return `<article class="detail"><div class="detail-scroll"><div class="recipe-title">${glyph(r.item_id,true)}<div><h2>${esc(r.name)}</h2><span class="muted">${r.output_count||1} 件／批 · 持有 ${owned(r.item_id)}</span></div></div>${requirementTags(r)}${ledger?`<div class="ledger-columns">${materials}${tools}</div>`:materials+tools}</div>${quoteView(r,quantity,tab==='process'?'开始加工':'开始制作')}</article>`;
+  const output=r.water_flask_output;
+  const flaskInfo=output?`<div class="tool-row"><span>空壶 ${output.water}／${output.capacity} · 无词条 · 无改造</span></div><div class="tool-row"><span>${esc(MODELS[output.model].detail)}</span></div>${state.craftedFlasks.some(f=>f.item_id===r.item_id)?`<div class="tool-row"><span>已制成空壶 ${state.craftedFlasks.filter(f=>f.item_id===r.item_id).length} 只</span></div>`:''}`:'';
+  return `<article class="detail"><div class="detail-scroll"><div class="recipe-title">${glyph(r.item_id,true)}<div><h2>${esc(r.name)}</h2><span class="muted">${r.output_count||1} 件／批 · 持有 ${owned(r.item_id)}</span></div></div>${flaskInfo}${requirementTags(r)}${ledger?`<div class="ledger-columns">${materials}${tools}</div>`:materials+tools}</div>${quoteView(r,quantity,tab==='process'?'开始加工':'开始制作')}</article>`;
 }
 function visibleRecipes() {
   const source=tab==='process'?data.processing_recipes:data.recipes;
@@ -239,7 +243,11 @@ function settleJob(cancelled=false) {
     else if(r.kind==='facility') {state.facilities.add(r.facility);moduleView=null;message=`${data.facilities[r.facility].name}已安装。`;}
     else if(r.kind==='research') {grant(recipe(r.target_recipe));syncKnowledge();message=`掌握了${name(r.item_id)}的制作方法。`;}
     else if(r.kind==='repair') {state.broken=false;message='基础手竿已修复';}
-    else {add(r.item_id,j.produced);message=`收到${r.name} × ${j.produced}${j.failures?`，另有 ${j.failures} 批未成功`:''}。`;}
+    else {
+      add(r.item_id,j.produced);
+      if(r.water_flask_output) for(let i=0;i<j.produced;i++) state.craftedFlasks.push(createFlask(++state.flaskSerial,r.water_flask_output.model));
+      message=`收到${r.name} × ${j.produced}${r.water_flask_output?'（空壶，无词条、无改造）':''}${j.failures?`，另有 ${j.failures} 批未成功`:''}。`;
+    }
   } else if(j.complete) message='本次加工未成功，已经投入的材料无法收回。';
   awardXP(j.xp);state.job=null;cancelPrompt=false;state.message=message;
   if(tab==='bench') inspectBench();

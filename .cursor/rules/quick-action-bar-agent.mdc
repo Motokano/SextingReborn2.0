@@ -19,6 +19,7 @@ alwaysApply: false
 2. **常态动作（`#action-bar-pinned`）**  
    **不会**因站在采集点等自动出现；须由玩家在 **「动作」子菜单** 对某条 hub 动作点 **📌**，写入**首个空槽**（最多 4 槽）。  
    - Token：`hub|skillId|actionId`（例 `hub|combat_basic_breath|tu_na`、`hub|combat_basic_footwork|nie_bu`）。  
+   - 普通常态动作使用 `action|actionId`：`rest_toggle`为休息，`drink_flask`为从壶饮用。水壶登记跟随当前装备槽，不绑定实例；允许未装备或暂不可饮用时先登记，实际点击沿饮用校验提示，不扣无效动作的水量／时间。
    - **右键**槽位清除；执行与失败提示与菜单内一致。  
    - 槽位 **`textContent`** 使用 **`combat-skills.json`** 中对应 hub 动作的**展示名**（`name`），勿在渲染里截断到不可读。  
    - 存档：`player.sceneUi.action_bar_slots`（见 **`js/save-system.js`**）；运行时 **`SceneCtx.getActionBarSlots` / `setActionBarSlots`**。
@@ -27,6 +28,7 @@ alwaysApply: false
 
 - **新的情境动作**：在 `scene-renderer` 与（若需要）`player-action-bubble` 同步增加按钮，并严格用条件控制显示。  
 - **新的可固定常态动作**：在 `scene-app.js` 的 **`executeQuickBarPinnedSlot`** 中增加对 `hub|…` 的分派，或约定新 token 前缀并在同一函数表驱动。  
+  同步检查 `SceneCtx.setActionBarSlots` 的接收范围，以及 `scene-renderer.js` 和 `ui/src/runtime/quick-actions.js` 两套标签；否则可能出现登记后丢失、读档被过滤或显示内部ID。
 - **勿**把仅情境可用的动作放进固定槽的默认配置（固定槽只能来自玩家 📌）。
 
 ## 相关文件

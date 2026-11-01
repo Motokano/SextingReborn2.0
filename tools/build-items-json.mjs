@@ -11,6 +11,7 @@ import { fileURLToPath } from 'url';
 import { applyFoodCatalog } from './food-catalog-fields.mjs';
 import { buildModularCatalog, buildModuleDefinitionsDocument } from './item-attribute-catalog.mjs';
 import { sewingTemplates } from './build-sewing-catalog.mjs';
+import { applyWaterFlaskStorage, applyWaterFlaskUse } from './water-flask-storage-fields.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -362,6 +363,8 @@ function main() {
   Object.assign(merged, sewingTemplates(JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'sewing-item-texts.json'), 'utf8'))));
   const foodCatalogPath = path.join(ROOT, 'data', 'food-balance.json');
   if (fs.existsSync(foodCatalogPath)) applyFoodCatalog(merged, JSON.parse(fs.readFileSync(foodCatalogPath, 'utf8')));
+  applyWaterFlaskStorage(merged, JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'water-flask-storage.json'), 'utf8')));
+  applyWaterFlaskUse(merged, JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'water-flask-use.json'), 'utf8')));
   const ordered = {};
   Object.keys(merged)
     .sort()

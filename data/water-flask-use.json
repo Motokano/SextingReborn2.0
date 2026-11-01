@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "items": {
+    "tool_flask_iron_water": {
+      "flask_drink_cost": 25,
+      "flask_drink_ticks": 1,
+      "flask_effects": [{ "target": "thirst", "total": 25, "timing": "instant", "duration_ticks": 0 }]
+    },
+    "tool_flask_bamboo_water": {
+      "flask_drink_cost": 25,
+      "flask_drink_ticks": 1,
+      "flask_effects": [{ "target": "thirst", "total": 25, "timing": "instant", "duration_ticks": 0 }]
+    }
+  }
+}

@@ -23311,7 +23311,8 @@
             "desc_0": "包铁外壳的水壶，比陶罐更耐摔但略有金属异味。"
           },
           "stacking": {
-            "stack_limit": 1
+            "stack_limit": 1,
+            "pocketable": true
           },
           "trade": {
             "base_value": 420,
@@ -23319,9 +23320,37 @@
             "volatility": "mid",
             "region_restrict": 0
           },
+          "presentation": {
+            "info_module_set_id": "module.water_flask_storage"
+          },
           "provenance": {
             "source": "craft;buy",
             "production_lines": "craft"
+          }
+        },
+        "equipment": {
+          "wearable": {
+            "equip_slot": "water_flask"
+          },
+          "water_flask": {
+            "flask_source_multiplier": 1,
+            "flask_drink_cost": 25,
+            "flask_drink_ticks": 1,
+            "flask_effects": [
+              {
+                "target": "thirst",
+                "total": 25,
+                "timing": "instant",
+                "duration_ticks": 0
+              }
+            ]
+          }
+        },
+        "structure": {
+          "liquid_storage": {
+            "flask_capacity": 200,
+            "flask_initial_water": 0,
+            "flask_water_weight_kg": 0.005
           }
         }
       },
@@ -26939,6 +26968,68 @@
       "category": "material",
       "sub_category": "metal_sheet",
       "tags": "material;metal;craft"
+    },
+    "tool_flask_bamboo_water": {
+      "item_id": "tool_flask_bamboo_water",
+      "editor_name": "青竹水壶",
+      "weight_kg": 0.7,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "青竹水壶",
+            "name_0": "青竹水壶",
+            "sn": "青竹水壶",
+            "placeholder_name": "竹水壶",
+            "fn": "带软木塞的青竹水壶，可装水携带。",
+            "desc_0": "带软木塞的青竹水壶，可装水携带。"
+          },
+          "stacking": {
+            "stack_limit": 1,
+            "pocketable": true
+          },
+          "trade": {
+            "base_value": 420,
+            "price_class": "life_good",
+            "volatility": "mid",
+            "region_restrict": 0
+          },
+          "presentation": {
+            "info_module_set_id": "module.water_flask_storage"
+          },
+          "provenance": {
+            "source": "craft",
+            "production_lines": "craft"
+          }
+        },
+        "equipment": {
+          "wearable": {
+            "equip_slot": "water_flask"
+          },
+          "water_flask": {
+            "flask_source_multiplier": 1.6,
+            "flask_drink_cost": 25,
+            "flask_drink_ticks": 1,
+            "flask_effects": [
+              {
+                "target": "thirst",
+                "total": 25,
+                "timing": "instant",
+                "duration_ticks": 0
+              }
+            ]
+          }
+        },
+        "structure": {
+          "liquid_storage": {
+            "flask_capacity": 200,
+            "flask_initial_water": 0,
+            "flask_water_weight_kg": 0.005
+          }
+        }
+      },
+      "category": "tool",
+      "sub_category": "container",
+      "tags": "tool;container;water;water_flask"
     }
   }
 }

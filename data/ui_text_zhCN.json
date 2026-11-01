@@ -1,4 +1,10 @@
 {
+  "flask.info.water": "当前存水：{v}",
+  "flask.action.drink": "从壶饮用",
+  "flask.action.equip": "装备水壶",
+  "flask.action.unequip": "卸下水壶",
+  "equip.slot.water_flask": "水壶",
+  "flask.info.capacity": "储水容量：{v}",
   "livestock.retired.notice": "旧联动、废热回收和气候装置已退役，原位已释放。建材与成品可领取；未完成进度已封存，不再运行。",
   "livestock.retired.empty": "暂无待领取物品。",
   "livestock.retired.claim": "领取退役物资",
@@ -576,6 +582,7 @@
   "map.btn.ground_items": "📦 脚下物品",
   "npc.menu.close_hint": "提示：需要靠近 NPC 才能对话",
   "npc.msg.dirty_rejected": "你现在邋里邋遢，NPC 不愿与你互动。",
+  "npc.msg.thirst_rejected": "你渴得说不出话，先喝点水再来。",
   "npc.menu.chat": "闲聊",
   "npc.menu.leave": "离开",
   "save.prompt.account": "输入账号(account)：",

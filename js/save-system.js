@@ -335,7 +335,9 @@
         var engineSt = typeof mods.GameEngine.getState === 'function' ? mods.GameEngine.getState() : null;
         var charSt = typeof mods.CharacterAttributes.getState === 'function' ? mods.CharacterAttributes.getState() : null;
         var survSt = typeof mods.Survival.getState === 'function' ? mods.Survival.getState() : null;
-        var invSt = typeof mods.InventoryEquipment.getState === 'function' ? mods.InventoryEquipment.getState() : null;
+        // Inventory accessors expose live item objects. Freeze their nested state at the
+        // snapshot boundary so later water/charge changes cannot rewrite rollback data.
+        var invSt = typeof mods.InventoryEquipment.getState === 'function' ? cloneJsonDeep(mods.InventoryEquipment.getState()) : null;
 
         if (!timeSt || typeof timeSt.totalTicks !== 'number') return null;
         if (!engineSt || !engineSt.mapId) return null;
@@ -1205,6 +1207,26 @@
         } finally {
             inSave = false;
         }
+    };
+
+    // Dungeon actions save time, inventory and expedition state in one snapshot.
+    // Suppress intermediate autosaves; restore the complete snapshot if storage fails.
+    var atomicDepth = 0;
+    SaveSystem.isAtomic = function () { return atomicDepth > 0; };
+    SaveSystem.runAtomic = function (operation) {
+        if (atomicDepth) return { saved: true, value: operation() };
+        var before = buildSnapshot(), held = persistSuspended, value;
+        atomicDepth++; persistSuspended = true;
+        try { value = operation(); }
+        catch (error) {
+            atomicDepth--; persistSuspended = held;
+            if (before) applySnapshot(before);
+            throw error;
+        }
+        atomicDepth--; persistSuspended = held;
+        var saved = SaveSystem.saveNow();
+        if (!saved && before) applySnapshot(before);
+        return { saved: saved, value: value };
     };
 
     SaveSystem.buildSnapshotForDebug = function () {

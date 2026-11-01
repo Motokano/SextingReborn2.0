@@ -1,0 +1,22 @@
+/* Checkpoint layout with the same surface, header and controls as the game's panels. */
+#npc-menu.npc-menu-checkpoint{background:transparent!important;color:var(--ui-text);font:13px/1.6 "Microsoft YaHei","PingFang SC",sans-serif;scrollbar-color:#7d8268 #1b201e}
+#npc-menu.npc-menu-checkpoint *{box-sizing:border-box}
+#npc-menu.npc-menu-checkpoint>.npc-menu-window{width:min(340px,calc(100vw - 24px))!important;max-height:calc(100dvh - 32px);overflow:auto;padding:0!important;background:var(--ui-grain),var(--ui-weave),var(--ui-paper)!important;border:1px solid var(--ui-border)!important;border-radius:9px!important;box-shadow:0 20px 60px #0008,inset 0 1px #e9d7a522!important;color:var(--ui-text)!important}
+#npc-menu.npc-menu-checkpoint .npc-menu-head{display:flex;align-items:center;gap:12px;min-height:68px;padding:12px 16px;background:var(--ui-grain),var(--ui-metal);color:var(--ui-accent);border-bottom:1px solid var(--ui-border);box-shadow:inset 0 1px #f4e6b815}
+#npc-menu.npc-menu-checkpoint #npc-menu-title{flex:1;min-width:0;margin:0!important;font:600 19px/1.4 "Noto Serif SC","SimSun",serif;letter-spacing:.06em;font-weight:600!important;color:#e6d5af!important;overflow-wrap:anywhere}
+#npc-menu.npc-menu-checkpoint button{font:inherit;font-weight:500;color:var(--ui-text);border:1px solid var(--ui-border);border-radius:5px;line-height:1.2;display:inline-flex;align-items:center;gap:8px;background:linear-gradient(#41473b,#2c342c);box-shadow:inset 0 1px #f0dda911;transition:background .15s,border-color .15s;cursor:pointer}
+#npc-menu.npc-menu-checkpoint .npc-menu-head button{width:28px;height:28px;min-height:28px;flex:0 0 28px;justify-content:center;padding:0}
+#npc-menu.npc-menu-checkpoint svg{width:16px;height:16px;display:block;flex:none}
+#npc-menu.npc-menu-checkpoint .npc-menu-head svg{width:18px;height:18px}
+#npc-menu.npc-menu-checkpoint #npc-menu-buttons{display:flex!important;flex-direction:column;flex-wrap:nowrap!important;gap:10px!important;padding:16px}
+#npc-menu.npc-menu-checkpoint #npc-menu-buttons:empty{display:none!important}
+#npc-menu.npc-menu-checkpoint #npc-menu-buttons button{width:100%;min-height:42px;justify-content:flex-start;padding:6px 12px!important;text-align:left}
+#npc-menu.npc-menu-checkpoint #npc-menu-buttons button span{flex:1}
+#npc-menu.npc-menu-checkpoint button:hover:not(:disabled){background:linear-gradient(#50523e,#394237)!important;border-color:var(--ui-accent)!important;color:#f3ead4!important}
+#npc-menu.npc-menu-checkpoint button:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+#npc-menu.npc-menu-checkpoint :focus-visible{outline:2px solid var(--ui-accent);outline-offset:3px}
+#npc-menu.npc-menu-checkpoint #npc-menu-detail{margin:0;padding:16px;line-height:1.8;white-space:pre-line}
+#npc-menu.npc-menu-checkpoint #npc-menu-hint{margin:0!important;padding:0 16px 16px;color:var(--ui-muted)!important}
+#npc-menu.npc-menu-checkpoint [hidden]{display:none!important}
+@media(max-width:650px){#npc-menu.npc-menu-checkpoint .npc-menu-head{padding:10px 12px}#npc-menu.npc-menu-checkpoint #npc-menu-buttons,#npc-menu.npc-menu-checkpoint #npc-menu-detail{padding:12px}}
+@media(prefers-reduced-motion:reduce){#npc-menu.npc-menu-checkpoint button{transition:none}}

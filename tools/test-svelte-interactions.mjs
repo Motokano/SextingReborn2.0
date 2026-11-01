@@ -97,7 +97,7 @@ test('navigation, action menu and pins preserve business routes and no duplicate
     key(g,' ');key(g,'1');assert.equal(g.GameTime.getState().totalTicks,before+1);
     key(g,'Escape');await h.drain();assert.ok(!d.querySelector('#modal-backpack').classList.contains('show'));assert.equal(g.GameTime.getState().totalTicks,before+2);
     d.querySelector('#btn-player-actions').click();await h.drain();assert.equal(d.querySelector('#btn-player-actions').getAttribute('aria-expanded'),'true');
-    d.querySelector('.player-action-pin').click();await h.drain();assert.equal(g.SceneCtx.getActionBarSlots()[0],'action|rest_toggle');
+    [...d.querySelectorAll('.player-action-item-row')].find(row=>row.querySelector('.player-action-item')?.textContent===g.UIText.t('player.action.rest.start')).querySelector('.player-action-pin').click();await h.drain();assert.equal(g.SceneCtx.getActionBarSlots()[0],'action|rest_toggle');
     key(g,'Escape',d.querySelector('#btn-player-actions'));await h.drain();
     d.querySelector('#action-bar-pin-0').click();await h.drain();assert.equal(g.Survival.getState().isResting,true);
     d.querySelector('#action-bar-pin-0').click();await h.drain();assert.equal(g.Survival.getState().isResting,false);

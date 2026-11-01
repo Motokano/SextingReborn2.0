@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><base href="../"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>水壶 · 装水与饮用验收</title>
+<style>body{margin:0;background:#20281f;color:#e8e1cd;font:14px 'Microsoft YaHei',sans-serif}header{padding:12px 20px}h1{font-size:20px;margin:0 0 6px}p{margin:5px 0;color:#c0c6af}button{padding:6px 12px;cursor:pointer}iframe{width:100%;height:calc(100vh - 125px);min-height:660px;border:0}</style>
+</head><body><header><h1>水壶 · 装水与饮用</h1>
+<p>卫生间装水 → 物品栏装备水壶 → 选中水壶槽「从壶饮用」。隔离存档，刷新重置，不读写你的游戏进度。</p>
+<button id="open" disabled>打开卫生间</button> <button id="bag" disabled>打开物品栏</button> <button id="reset">重置验收</button> <span id="status">加载中…</span></header><iframe id="game" title="正式游戏验收"></iframe>
+<script>
+(async () => {
+  const frame = document.getElementById('game'), status = document.getElementById('status');
+  const isolated = `<script>const memory=new Map();Object.defineProperty(window,'localStorage',{value:{getItem:k=>memory.get(k)??null,setItem:(k,v)=>memory.set(k,String(v)),removeItem:k=>memory.delete(k),clear:()=>memory.clear(),key:n=>Array.from(memory.keys())[n]??null,get length(){return memory.size}}});<\/script>`;
+  const loaded = new Promise(resolve => frame.onload = resolve);
+  frame.srcdoc = (await fetch('index.html?no_reload').then(r => r.text())).replace('<head>', '<head><base href="' + new URL('.', document.baseURI).href + '">' + isolated);
+  await loaded;
+  const g = frame.contentWindow;
+  await g.AppBoot.ready;
+  g.DialogueUI.close();
+  g.SceneApp.openCharacterCreationAfterIntro();
+  const input = g.document.getElementById('creation-name');
+  input.value = '补水验收'; input.dispatchEvent(new g.Event('input', { bubbles: true }));
+  g.document.getElementById('btn-confirm-creation').click();
+  g.DialogueUI.close();
+  g.GameEngine.setState('M0_Base_Inside_lv_1', 13, 14);
+  g.SceneCtx.setFacingDir(2);
+  g.NPCSystem.setDemoFlag('bathroom_station_unlocked', true);
+  g.Survival.setState({ thirst: 50, dirtyness: 75, isDead: false, isComa: false });
+  const IE = g.InventoryEquipment;
+  IE.setState({ ...IE.getState(), inventory_pocket: [
+    { item_id: 'tool_flask_bamboo_water', count: 1, attribute_state: { structure: { liquid_storage: { version: 1, water: 190 } } } },
+    { item_id: 'tool_flask_iron_water', count: 1 }, null, null
+  ] });
+  async function open() {
+    await g.NPCSystem.openMenu('npc.station.bathroom_base');
+    g.SceneRenderer.render(); g.SceneHud.refresh('status');
+  }
+  document.getElementById('open').onclick = open;
+  document.getElementById('open').disabled = false;
+  document.getElementById('bag').disabled = false;
+  document.getElementById('bag').onclick = () => { g.NPCSystem.menu.close(); g.SceneApp.openBackpackPanel(); };
+  document.getElementById('reset').onclick = () => location.reload();
+  status.textContent = '初始配置：青竹190／200，铁皮0／200；每次装满一只。';
+  await open();
+})().catch(error => { document.getElementById('status').textContent = '验收加载失败：' + error.message; console.error(error); });
+</script></body></html>

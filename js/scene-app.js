@@ -264,7 +264,7 @@
                     if (s.indexOf('action|') === 0) {
                         var partsAction = s.split('|');
                         if (partsAction.length < 2 || !partsAction[1]) continue;
-                        if (partsAction[1] !== 'rest_toggle') continue;
+                        if (partsAction[1] !== 'rest_toggle' && partsAction[1] !== 'drink_flask') continue;
                         out[j] = s;
                     }
                 }
@@ -571,12 +571,12 @@
     var defaultLootTables = { loot_bush: [ { item_id: 'wild_fruit_red', weight: 72 }, { item_id: 'wild_fruit_purple', weight: 35 }, { item_id: 'wild_fruit_yellow', weight: 20 } ], loot_grass: [ { item_id: 'herb_green', weight: 72 }, { item_id: 'herb_bitter', weight: 35 }, { item_id: 'herb_sweet', weight: 20 } ] };
     var defaultItems = { wild_fruit_red: { item_id: 'wild_fruit_red', name: 'wild_fruit_red', weight_kg: 0.1 }, wild_fruit_purple: { item_id: 'wild_fruit_purple', name: 'wild_fruit_purple', weight_kg: 0.1 }, wild_fruit_yellow: { item_id: 'wild_fruit_yellow', name: 'wild_fruit_yellow', weight_kg: 0.1 }, herb_green: { item_id: 'herb_green', name: 'herb_green', weight_kg: 0.1 }, herb_bitter: { item_id: 'herb_bitter', name: 'herb_bitter', weight_kg: 0.1 }, herb_sweet: { item_id: 'herb_sweet', name: 'herb_sweet', weight_kg: 0.1 } };
 
-    var EQUIP_SLOT_LABELS = { head: 'equip.slot.head', clothing: 'equip.slot.clothing', vest: 'equip.slot.vest', backpack: 'equip.slot.backpack', weapon_left: 'equip.slot.weapon_left', weapon_right: 'equip.slot.weapon_right', glove_left: 'equip.slot.glove_left', glove_right: 'equip.slot.glove_right', shoe_left: 'equip.slot.shoe_left', shoe_right: 'equip.slot.shoe_right' };
+    var EQUIP_SLOT_LABELS = { head: 'equip.slot.head', clothing: 'equip.slot.clothing', vest: 'equip.slot.vest', backpack: 'equip.slot.backpack', water_flask: 'equip.slot.water_flask', weapon_left: 'equip.slot.weapon_left', weapon_right: 'equip.slot.weapon_right', glove_left: 'equip.slot.glove_left', glove_right: 'equip.slot.glove_right', shoe_left: 'equip.slot.shoe_left', shoe_right: 'equip.slot.shoe_right' };
     // 装备栏分三组：出招装备（肢体出招读取）、防具（减伤链）、载物（容器，非护甲）
     var EQUIP_SLOT_GROUPS = [
         { label: 'equip.group.strike', slots: ['weapon_left', 'weapon_right', 'glove_left', 'glove_right', 'shoe_left', 'shoe_right'] },
         { label: 'equip.group.armor', slots: ['head', 'clothing'] },
-        { label: 'equip.group.carry', slots: ['vest', 'backpack'] }
+        { label: 'equip.group.carry', slots: ['vest', 'backpack', 'water_flask'] }
     ];
     var BODY_PART_IDS = ['head', 'chest', 'belly', 'lhand', 'rhand', 'lfoot', 'rfoot'];
     var BODY_PART_LABELS = { head: 'body.part.head', chest: 'body.part.chest', belly: 'body.part.belly', lhand: 'body.part.lhand', rhand: 'body.part.rhand', lfoot: 'body.part.lfoot', rfoot: 'body.part.rfoot' };
@@ -1447,6 +1447,7 @@
         var token = slots[idx];
         var parsedAction = parseActionQuickBarToken(token);
         if (parsedAction) {
+            if (parsedAction.actionId === 'drink_flask') return tryDrinkWaterFlask();
             if (parsedAction.actionId === 'rest_toggle') {
                 setRestingActionActive(!(window.Survival && window.Survival.getState && window.Survival.getState().isResting), { showMsg: true });
                 if (window.SceneRenderer) window.SceneRenderer.render();
@@ -1606,6 +1607,21 @@
         var breathId = 'combat_basic_breath';
         var footworkId = 'combat_basic_footwork';
         var hubs = IE.getCombatState && IE.getCombatState().hubs ? IE.getCombatState().hubs : {};
+        if (window.WaterFlaskUse) {
+            var flask = window.WaterFlaskUse.equipped();
+            var flaskProfile = flask && window.WaterFlaskUse.profile(flask);
+            var flaskBlocked = window.WaterFlaskUse.reason(flask && flask.instance_id);
+            var flaskLabel = ui('flask.action.drink');
+            if (flaskProfile && !flaskProfile.error) flaskLabel += ' · ' + window.WaterFlaskStorage.format(flaskProfile.water) + '／' + window.WaterFlaskStorage.format(flaskProfile.capacity);
+            var flaskRow = { kind: 'div', children: [], attrs: {}, className: 'player-action-item-row' };
+            flaskRow.children.push({ kind: 'button', children: [], attrs: { role: 'menuitem' }, type: 'button', className: 'player-action-item',
+                textContent: flaskLabel, title: flaskBlocked || flaskLabel, disabled: !!flaskBlocked,
+                onclick: function (ev) { ev.stopPropagation(); closePlayerActionsSubmenu(); tryDrinkWaterFlask(flask && flask.instance_id); } });
+            flaskRow.children.push({ kind: 'button', children: [], attrs: { 'aria-label': ui('action.bar.pin.hint') }, type: 'button',
+                className: 'player-action-pin', textContent: '📌', title: ui('action.bar.pin.hint'),
+                onclick: function (ev) { ev.stopPropagation(); pinActionToQuickBar('drink_flask'); } });
+            sub.children.push(flaskRow);
+        }
         if (Surv && typeof Surv.getState === 'function' && typeof Surv.setResting === 'function') {
             var survState = Surv.getState() || {};
             var isResting = !!survState.isResting;
@@ -3844,7 +3860,8 @@
                 actions.appendChild(btn);
             }
             if (picked.source === 'equipment') {
-                addActionBtn(ui('inv.unequip'), function () {
+                if (picked.index === 'water_flask') addActionBtn(ui('flask.action.drink'), function () { tryDrinkWaterFlask(picked.item.instance_id); });
+                addActionBtn(ui(picked.index === 'water_flask' ? 'flask.action.unequip' : 'inv.unequip'), function () {
                     var old = IE.unequip(picked.index, groundPos);
                     if (old) {
                         var placed = IE.putItemIntoDefaultContainer(old);
@@ -3882,7 +3899,7 @@
                     if (window.ModularWeaponCombat && window.ModularWeaponCombat.isWeapon(picked.item)) {
                         addActionBtn('右手持用', function () { doEquipFromContainer(picked.source, picked.index, disp.tpl, 'weapon_right'); });
                         addActionBtn('左手持用', function () { doEquipFromContainer(picked.source, picked.index, disp.tpl, 'weapon_left'); });
-                    } else addActionBtn(ui('inv.equip'), function () { doEquipFromContainer(picked.source, picked.index, disp.tpl); });
+                    } else addActionBtn(ui(disp.tpl.equip_slot === 'water_flask' ? 'flask.action.equip' : 'inv.equip'), function () { doEquipFromContainer(picked.source, picked.index, disp.tpl); });
                 }
                 addActionBtn(ui('inv.drop'), function () {
                     var pos = E.getState();
@@ -3904,7 +3921,7 @@
                 });
                 if (disp.tpl && disp.tpl.equip_slot) {
                     var handChoices = window.ModularWeaponCombat && window.ModularWeaponCombat.isWeapon(picked.item)
-                        ? [['右手持用', 'weapon_right'], ['左手持用', 'weapon_left']] : [[ui('inv.equip'), disp.tpl.equip_slot]];
+                        ? [['右手持用', 'weapon_right'], ['左手持用', 'weapon_left']] : [[ui(disp.tpl.equip_slot === 'water_flask' ? 'flask.action.equip' : 'inv.equip'), disp.tpl.equip_slot]];
                     handChoices.forEach(function (choice) {
                         addActionBtn(choice[0], function () {
                             var r1 = IE.equipFromGround(st.mapId, st.x, st.y, picked.index, choice[1]);
@@ -3963,7 +3980,7 @@
                     var unequipBtn = document.createElement('button');
                     unequipBtn.type = 'button';
                     unequipBtn.className = 'btn-unequip';
-                    unequipBtn.textContent = ui('inv.unequip');
+                    unequipBtn.textContent = ui(slotId === 'water_flask' ? 'flask.action.unequip' : 'inv.unequip');
                     unequipBtn.disabled = !eq || !eq.item_id;
                     unequipBtn.onclick = (function (sid) {
                         return function (ev) {
@@ -8802,12 +8819,23 @@
         else if (id === 'save') { if (savePanelOpen) closeSavePanel(); else openSavePanel(); }
         else if (id === 'reset-demo-save') requestResetProgress(button);
     };
+    function tryDrinkWaterFlask(instanceId) {
+        if (!window.WaterFlaskUse) return;
+        var result = window.WaterFlaskUse.drink(instanceId);
+        showMsg(result.message, result.ok ? 'success' : 'warn');
+        updateBackpackPanel();
+        refreshPlayerActionsMenuUi();
+        render();
+        return result;
+    }
+    window.SceneApp.tryDrinkWaterFlask = tryDrinkWaterFlask;
     window.SceneApp.runContextAction = function (id) {
         if (isStoryMovementLocked() || isPreCreationGameplayRestricted()) return;
         if (id === 'gather') return onGatherClick();
         if (id === 'gather-stop') return window.SceneCtx.actions.stopGatheringIdle(true);
         if (id === 'take-water') return onTakeWaterClick();
         if (id === 'pour-water') return onPourWaterClick();
+        if (id === 'drink-flask') return tryDrinkWaterFlask();
         if (id === 'add-fuel') return onAddFuelClick();
         if (id === 'ground') { if (!backpackPanelOpen) openBackpackPanel(); return; }
         if (id === 'warehouse') { if (baseWarehousePanelOpen) closeBaseWarehousePanel(); else openBaseWarehousePanel(); return; }
@@ -8862,6 +8890,11 @@
         stopCookingCraftIdle(); stopPharmacyCraftIdle(); stopAgricultureAutoTick(); stopLivestockAutoTick();
         if (window.Survival) {window.Survival.setStaminaRegenActionActive(false);window.Survival.setSitMeditationActive(false);}
         return true;
+    };
+    window.SceneApp.prepareFacilityAction = function () {
+        stopGatheringIdle(); stopTiaoXiIdle(false); setRestingActionActive(false, {showMsg:false});
+        stopCookingCraftIdle(); stopPharmacyCraftIdle(); stopAgricultureAutoTick(); stopLivestockAutoTick();
+        if (window.Survival) {window.Survival.setStaminaRegenActionActive(false);window.Survival.setSitMeditationActive(false);}
     };
     window.SceneApp.openAgriculturePanel = openAgriculturePanel;
     window.SceneApp.closeAgriculturePanel = closeAgriculturePanel;

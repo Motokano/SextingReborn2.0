@@ -6,6 +6,8 @@
 
 正式素材、源图裁切、底座锚点、显示尺寸、生成记录和检查结果见 [素材说明](../../assets/map/isometric/interactive-devices-v1/README.md)。统一沿用已认可的手绘卡通、深色轮廓与深灰底座。
 
+2026-10-26按同一标准增加[卫生间棋子](../../reference/bathroom-v1/README.md)，以淋浴架、浴帘、饮水龙头和杯子表达两个用途。已接入基地（14,14）并完成原图及实际尺寸检查，外观待用户确认。修复后开放饮水和洗澡，规则见[卫生间设施](bathroom-facility.md)。
+
 地图渲染按设施类型显示装置，交互仍使用原有设施NPC。床补入可见性元数据；隐藏/未识别/背后遮挡时不泄露棋子或阴影。人物棋子、骨架、伤态、移动、设施业务规则不在此次变更范围。
 
 代码与素材已同步桌面项目及8000端口使用的6254工作目录。实际尺寸页：[runtime-review.html](../../reference/interactive-devices-v1/runtime-review.html?view=isometric)，使用同一运行时绘制和实际基地地图设施入口数据。

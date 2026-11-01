@@ -1902,6 +1902,7 @@
                 if (lblPin === '—') lblPin = acPin;
             } else if (partsp.length >= 2 && partsp[0] === 'action') {
                 if (partsp[1] === 'rest_toggle') lblPin = tNie('action.bar.pin.rest');
+                else if (partsp[1] === 'drink_flask') lblPin = tNie('flask.action.drink');
                 else lblPin = partsp[1];
             }
             pBtn.textContent = lblPin;

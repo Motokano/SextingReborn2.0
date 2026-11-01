@@ -786,6 +786,11 @@
       "x": 5,
       "y": 11,
       "npc_id": "npc.station.forging_base"
+    },
+    {
+      "x": 14,
+      "y": 14,
+      "npc_id": "npc.station.bathroom_base"
     }
   ],
   "cooking_station_interact_npc_by_cell": {
@@ -833,6 +838,7 @@
     "12,9": "训练木桩",
     "6,11": "缝纫台",
     "5,11": "铸造台",
-    "4,11": "制作台"
+    "4,11": "制作台",
+    "14,14": "卫生间"
   }
 }

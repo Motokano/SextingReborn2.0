@@ -32,6 +32,7 @@ export const CATEGORY_GROUP_FIELDS = {
   },
   equipment: {
     wearable: ['equip_slot', 'req_innate_jingu'],
+    water_flask: ['flask_source_multiplier', 'flask_drink_cost', 'flask_drink_ticks', 'flask_effects'],
     combat: ['weapon_attack_power', 'attack_power', 'skill_coef', 'form_coefs', 'limb_tags', 'parry_coef', 'speed_coef', 'move_cost_mod', 'damage_type_effects'],
     fishing_tackle: ['fishing_load_rating','fishing_length_dm','fishing_cast_range_dm'],
     armor: ['damage_reduce_blunt_pct', 'damage_reduce_pierce_pct', 'damage_reduce_slash_pct', 'base_shield'],
@@ -40,6 +41,7 @@ export const CATEGORY_GROUP_FIELDS = {
   },
   structure: {
     storage: ['pocket_slots', 'vest_slots', 'backpack_slots', 'backpack_weight_factor'],
+    liquid_storage: ['flask_capacity', 'flask_initial_water', 'flask_water_weight_kg'],
     host: ['module_slots'],
     attachment: ['install_slots', 'occupies', 'max_per_armor'],
     assembly_host: ['assembly_slots'],
@@ -152,6 +154,10 @@ export function buildModuleDefinitionsDocument() {
       groups: Object.fromEntries(Object.entries(groups).map(([group, fields]) => [group, { fields }]))
     }])),
     instance_state: {
+      structure: { liquid_storage: {
+        version: { type: 'integer', value: 1 },
+        water: { type: 'number', min: 0, template_capacity_field: 'flask_capacity', template_initial_field: 'flask_initial_water', instance_field: 'flask_water' }
+      } },
       energy: { storage: { charge: { type: 'integer', min: 0, template_capacity_field: 'battery_capacity', template_initial_field: 'battery_charge' } } },
       base: { spoilage: { elapsed_ticks: { type: 'integer', min: 0, template_duration_field: 'spoilage_ticks' } } },
       equipment: { fishing_tackle: {

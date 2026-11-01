@@ -13,6 +13,10 @@
     "x": 5,
     "y": 11
   },
+  "interactionChecks": {
+    "thirst": false,
+    "dirtyness": false
+  },
   "mainMenu": {
     "showChat": true,
     "showWorkWhen": "never",

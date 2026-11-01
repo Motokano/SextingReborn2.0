@@ -17,6 +17,8 @@
         structure: { storage: ['pocket_slots','vest_slots','backpack_slots','backpack_weight_factor'], host: ['module_slots'], attachment: ['install_slots','occupies','max_per_armor'], assembly_host: ['assembly_slots'], assembly_part: ['assembly_types'] },
         energy: { storage: ['battery_capacity','battery_charge'] }, organism: {}
     };
+    definitions.equipment.water_flask = ['flask_source_multiplier','flask_drink_cost','flask_drink_ticks','flask_effects'];
+    definitions.structure.liquid_storage = ['flask_capacity','flask_initial_water','flask_water_weight_kg'];
     Object.keys(definitions).forEach(function (category) {
         Object.keys(definitions[category]).forEach(function (group) {
             definitions[category][group].forEach(function (field) {
@@ -59,6 +61,10 @@
         return own(template, field) ? template[field] : undefined;
     }
     function getInstanceValue(instance, template, field) {
+        if (field === 'flask_water' && hasGroup(template, 'structure', 'liquid_storage')) {
+            var liquid = getNested(instance, ['attribute_state','structure','liquid_storage']);
+            return liquid === undefined ? getTemplateValue(template, 'flask_initial_water') : liquid && liquid.water;
+        }
         if (field === 'battery_charge') {
             var charge = getNested(instance, ['attribute_state','energy','storage','charge']);
             if (charge !== undefined) return charge;
@@ -110,6 +116,12 @@
     function normalizeInstance(instance, template) {
         if (!instance || typeof instance !== 'object') return instance;
         var out = deepClone(instance);
+        if (template && hasGroup(template, 'structure', 'liquid_storage')
+            && getNested(out, ['attribute_state','structure','liquid_storage']) === undefined) {
+            var liquid = ensureStatePath(out, 'structure', 'liquid_storage');
+            liquid.version = 1;
+            liquid.water = getTemplateValue(template, 'flask_initial_water');
+        }
         if (template && hasGroup(template, 'energy', 'storage')) {
             var energy = ensureStatePath(out, 'energy', 'storage');
             if (!own(energy, 'charge')) {
@@ -130,6 +142,17 @@
     }
     function setInstanceValue(instance, template, field, value) {
         if (!instance || typeof instance !== 'object') return false;
+        if (field === 'flask_water') {
+            if (!hasGroup(template, 'structure', 'liquid_storage')) return false;
+            var capacity = getTemplateValue(template, 'flask_capacity');
+            var existing = getNested(instance, ['attribute_state','structure','liquid_storage']);
+            if (existing !== undefined && (!existing || existing.version !== 1)) return false;
+            if (typeof value !== 'number' || !Number.isFinite(value) || value < 0 || value > capacity) return false;
+            var liquid = ensureStatePath(instance, 'structure', 'liquid_storage');
+            liquid.version = 1;
+            liquid.water = value;
+            return true;
+        }
         if (field === 'battery_charge' && template && hasGroup(template, 'energy', 'storage')) {
             var energy = ensureStatePath(instance, 'energy', 'storage');
             var capacity = Math.max(0, Math.floor(Number(getTemplateValue(template, 'battery_capacity')) || 0));

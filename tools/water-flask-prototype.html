@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>水壶基底 · 装备试玩</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="water-flask-prototype.css">
+</head>
+<body>
+  <!-- Disposable logic prototype with a browser control panel, not alternative UI designs. -->
+  <div class="page-meta"><span>水壶装备 · 首版试玩</span><button id="settings-toggle" aria-expanded="false" aria-controls="settings">试玩设置</button></div>
+  <aside id="settings" hidden aria-label="试玩设置"></aside>
+  <main id="app" aria-label="水壶装备"><p>正在准备水壶…</p></main>
+  <p class="page-foot"><span id="save-status">本页进度自动保存，刷新后继续</span> · 独立试玩，数值待试调</p>
+  <div id="announcer" class="sr-only" role="status" aria-live="polite"></div>
+  <script type="module" src="water-flask-prototype.mjs"></script>
+</body>
+</html>

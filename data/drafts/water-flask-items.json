@@ -1,0 +1,551 @@
+{
+  "draft_version": 1,
+  "target_schema_version": 2,
+  "date": "2026-11-01",
+  "status": "design_only_with_confirmed_and_trial_values",
+  "runtime_registered": false,
+  "partial_runtime_integration": {
+    "date": "2026-11-01",
+    "source": "data/water-flask-storage.json",
+    "items": [
+      "tool_flask_bamboo_water",
+      "tool_flask_iron_water"
+    ],
+    "fields": [
+      "flask_capacity",
+      "flask_initial_water",
+      "flask_water_weight_kg",
+      "flask_source_multiplier"
+    ],
+    "note": "仅卫生间补水、存水、水重及保存已接正式；整份草案不作为运行目录，其他字段及粗陶仍待接入",
+    "drinking_source": "data/water-flask-use.json",
+    "drinking_note": "独立水壶槽和从壶饮用已接入；青竹、铁皮均沿原型试调25耗水／25即时饮水／1tick，未启用此草案的铁皮快饮、粗陶缓补及新重量。"
+  },
+  "design_source": "docs/design/80-water-flask-equipment.md#14",
+  "scope": "三种基底完整属性候选；不替换现有正式目录、配方或试玩行为",
+  "confirmed": {
+    "normal_capacity": 200,
+    "equip_slot": "water_flask",
+    "simultaneously_equipped": 1,
+    "bamboo_source_multiplier": 1.6,
+    "bamboo_multiplier_scope": "source_to_flask_only",
+    "build_sources": [
+      "model",
+      "affixes",
+      "modification"
+    ],
+    "modification_consumes_materials": true,
+    "death_loses_carried_flask_and_its_state": true,
+    "death_preserves_home_storage_and_learned_methods": true,
+    "automatic_replacement_on_death": false
+  },
+  "trial_fields": [
+    "weight_kg",
+    "base.trade",
+    "structure.liquid_storage.flask_water_weight_kg",
+    "equipment.water_flask.flask_drink_cost",
+    "equipment.water_flask.flask_drink_ticks",
+    "equipment.water_flask.flask_refill_ticks",
+    "equipment.water_flask.flask_cooldown_ticks",
+    "equipment.water_flask.flask_effects",
+    "equipment.water_flask.flask_repeat_policy"
+  ],
+  "unresolved": [
+    "正式词条条数与获取方式",
+    "正式改造槽数与兼容限制",
+    "非装备水壶能否单纯饮用与战斗换装条件",
+    "性能认识入口与技能门槛",
+    "专用外观素材",
+    "最终经济平衡"
+  ],
+  "proposed_field_groups": {
+    "structure.liquid_storage": {
+      "flask_capacity": {
+        "type": "number",
+        "unit": "water_point",
+        "exclusive_min": 0,
+        "required": true,
+        "role": "template",
+        "information_id": "flask.water"
+      },
+      "flask_initial_water": {
+        "type": "number",
+        "unit": "water_point",
+        "min": 0,
+        "max_field": "flask_capacity",
+        "required": true,
+        "role": "template_initial_only",
+        "display": "hidden"
+      },
+      "flask_water_weight_kg": {
+        "type": "number",
+        "unit": "kg_per_water_point",
+        "min": 0,
+        "required": true,
+        "role": "template",
+        "information_id": "base.weight"
+      }
+    },
+    "equipment.water_flask": {
+      "flask_source_multiplier": {
+        "type": "number",
+        "exclusive_min": 0,
+        "required": true,
+        "role": "template",
+        "information_id": "flask.intake"
+      },
+      "flask_drink_cost": {
+        "type": "number",
+        "unit": "water_point",
+        "exclusive_min": 0,
+        "max_field": "flask_capacity",
+        "required": true,
+        "role": "template",
+        "information_id": "flask.use_cost"
+      },
+      "flask_drink_ticks": {
+        "type": "integer",
+        "unit": "world_tick",
+        "min": 0,
+        "required": true,
+        "role": "template",
+        "information_id": "flask.use_cost"
+      },
+      "flask_refill_ticks": {
+        "type": "integer",
+        "unit": "world_tick",
+        "min": 0,
+        "required": true,
+        "role": "template",
+        "information_id": "flask.use_cost"
+      },
+      "flask_cooldown_ticks": {
+        "type": "integer",
+        "unit": "world_tick",
+        "min": 0,
+        "required": true,
+        "role": "template",
+        "information_id": "flask.cooldown"
+      },
+      "flask_effects": {
+        "type": "array",
+        "min_items": 1,
+        "item_definition": "effect",
+        "required": true,
+        "role": "template",
+        "information_id": "flask.recovery"
+      },
+      "flask_repeat_policy": {
+        "type": "enum",
+        "values": [
+          "cooldown_only",
+          "reject_while_source_active"
+        ],
+        "required": true,
+        "role": "template",
+        "information_id": "flask.use_cost"
+      }
+    }
+  },
+  "effect_definition": {
+    "target": {
+      "type": "enum",
+      "values": [
+        "thirst"
+      ],
+      "extension": "新增目标须另定义校验与消费者"
+    },
+    "total": {
+      "type": "number",
+      "exclusive_min": 0
+    },
+    "timing": {
+      "type": "enum",
+      "values": [
+        "instant",
+        "over_time"
+      ]
+    },
+    "duration_ticks": {
+      "type": "integer",
+      "min": 0
+    },
+    "constraints": [
+      "所有数值必须有限",
+      "instant的duration_ticks必须为0",
+      "over_time的duration_ticks必须大于0",
+      "total是整次总量，均摊到duration_ticks，不是每tick数值"
+    ]
+  },
+  "templates": {
+    "tool_flask_bamboo_water": {
+      "item_id": "tool_flask_bamboo_water",
+      "editor_name": "青竹水壶",
+      "category": "tool",
+      "sub_category": "container",
+      "tags": [
+        "tool",
+        "container",
+        "water",
+        "water_flask"
+      ],
+      "material": "wood_bamboo_green",
+      "weight_kg": 0.4,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "青竹水壶",
+            "name_0": "青竹水壶",
+            "sn": "青竹水壶",
+            "placeholder_name": "带塞竹筒",
+            "fn_before": "一截削平了口沿的青竹，塞着软木，外侧缠有细绳。",
+            "fn": "以青竹制成的随身水壶，竹节封住底部，软木塞用于封口。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "trade": {
+            "base_value": 420,
+            "price_class": "life_good",
+            "volatility": "mid",
+            "region_restrict": 0
+          },
+          "provenance": {
+            "source": "craft",
+            "production_lines": "craft"
+          }
+        },
+        "equipment": {
+          "wearable": {
+            "equip_slot": "water_flask"
+          },
+          "water_flask": {
+            "flask_source_multiplier": 1.6,
+            "flask_drink_cost": 25,
+            "flask_drink_ticks": 1,
+            "flask_refill_ticks": 1,
+            "flask_cooldown_ticks": 0,
+            "flask_effects": [
+              {
+                "target": "thirst",
+                "total": 25,
+                "timing": "instant",
+                "duration_ticks": 0
+              }
+            ],
+            "flask_repeat_policy": "cooldown_only"
+          }
+        },
+        "structure": {
+          "liquid_storage": {
+            "flask_capacity": 200,
+            "flask_initial_water": 0,
+            "flask_water_weight_kg": 0.005
+          }
+        }
+      }
+    },
+    "tool_flask_iron_water": {
+      "item_id": "tool_flask_iron_water",
+      "editor_name": "铁皮水壶",
+      "category": "tool",
+      "sub_category": "container",
+      "tags": [
+        "tool",
+        "container",
+        "water",
+        "water_flask"
+      ],
+      "material": "material_iron_blank_common",
+      "weight_kg": 0.7,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "铁皮水壶",
+            "name_0": "铁皮水壶",
+            "sn": "铁皮水壶",
+            "placeholder_name": "带塞铁罐",
+            "fn_before": "扁平铁罐的边沿压着接缝，短嘴里塞着软木，侧面留着挂环。",
+            "fn": "以铁皮成形的随身水壶，扁平壶身方便携带，短嘴便于饮用。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "trade": {
+            "base_value": 420,
+            "price_class": "life_good",
+            "volatility": "mid",
+            "region_restrict": 0
+          },
+          "provenance": {
+            "source": "craft;buy",
+            "production_lines": "craft"
+          }
+        },
+        "equipment": {
+          "wearable": {
+            "equip_slot": "water_flask"
+          },
+          "water_flask": {
+            "flask_source_multiplier": 1,
+            "flask_drink_cost": 40,
+            "flask_drink_ticks": 0,
+            "flask_refill_ticks": 1,
+            "flask_cooldown_ticks": 6,
+            "flask_effects": [
+              {
+                "target": "thirst",
+                "total": 25,
+                "timing": "instant",
+                "duration_ticks": 0
+              }
+            ],
+            "flask_repeat_policy": "cooldown_only"
+          }
+        },
+        "structure": {
+          "liquid_storage": {
+            "flask_capacity": 200,
+            "flask_initial_water": 0,
+            "flask_water_weight_kg": 0.005
+          }
+        }
+      }
+    },
+    "tool_flask_clay_water": {
+      "item_id": "tool_flask_clay_water",
+      "editor_name": "粗陶水壶",
+      "category": "tool",
+      "sub_category": "container",
+      "tags": [
+        "tool",
+        "container",
+        "water",
+        "water_flask"
+      ],
+      "material": "ore_clay_raw",
+      "weight_kg": 1,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "粗陶水壶",
+            "name_0": "粗陶水壶",
+            "sn": "粗陶水壶",
+            "placeholder_name": "带塞陶瓶",
+            "fn_before": "一只圆腹小陶瓶，表面有细小颗粒，瓶口塞着软木。",
+            "fn": "以陶土烧成的随身水壶，圆腹收口，外壁保留粗陶质感。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "trade": {
+            "base_value": 420,
+            "price_class": "life_good",
+            "volatility": "mid",
+            "region_restrict": 0
+          },
+          "provenance": {
+            "source": "craft",
+            "production_lines": "craft"
+          }
+        },
+        "equipment": {
+          "wearable": {
+            "equip_slot": "water_flask"
+          },
+          "water_flask": {
+            "flask_source_multiplier": 1,
+            "flask_drink_cost": 25,
+            "flask_drink_ticks": 1,
+            "flask_refill_ticks": 1,
+            "flask_cooldown_ticks": 0,
+            "flask_effects": [
+              {
+                "target": "thirst",
+                "total": 30,
+                "timing": "over_time",
+                "duration_ticks": 5
+              }
+            ],
+            "flask_repeat_policy": "reject_while_source_active"
+          }
+        },
+        "structure": {
+          "liquid_storage": {
+            "flask_capacity": 200,
+            "flask_initial_water": 0,
+            "flask_water_weight_kg": 0.005
+          }
+        }
+      }
+    }
+  },
+  "instance_contract_proposal": {
+    "identity": "复用64号正式instance_id分配器；新制新身份，转移不换身份",
+    "count": 1,
+    "enchants": "复用实例enchants；新制空数组，保存已确定结果；不从模板重复生成",
+    "new_attribute_state": {
+      "structure": {
+        "liquid_storage": {
+          "version": 1,
+          "water": 0
+        }
+      },
+      "equipment": {
+        "water_flask": {
+          "version": 1,
+          "modification": null,
+          "cooldown_until_tick": 0
+        }
+      }
+    },
+    "modification_when_present": {
+      "id": "已登记的耗材改造方案ID",
+      "version": "正整数方案版本",
+      "resolved_parameters": "该次加工已确定的参数；读档不重抽、不按当前方案覆盖"
+    },
+    "validation": [
+      "存水为有限数，0≤water≤最终容量；零值不得按缺省回填",
+      "cooldown_until_tick为非负整数世界tick",
+      "只在新建或明确旧档迁移时初始化；已存在状态保持原值",
+      "未知版本或未知状态字段保留兼容信息或明确拒绝，不静默删除",
+      "modification缺省null不等于给一个免费普通内胆",
+      "实际词条只存一份，不复制进attribute_state",
+      "缺失整只实例与空壶不同，不因读取而发放物品"
+    ],
+    "player_state": {
+      "flask_use_lock_until_tick": "与使用事件的冷却截止tick相同，跨换壶保留；与壶上截止tick取max",
+      "active_effects": "保存来源instance_id、效果快照、未结算总量和剩余tick；不从当前壶参数重新生成"
+    }
+  },
+  "behavior_proposal": {
+    "equipped_only": true,
+    "partial_drink": false,
+    "reject_when_no_effect_can_benefit": true,
+    "refund_water_on_effect_overflow": false,
+    "refill": {
+      "source_debit": "min(available_source_water, (effective_capacity - current_water) / effective_source_multiplier)",
+      "stored_gain": "source_debit * effective_source_multiplier",
+      "decimal_places": 4,
+      "overflow": "不超过容量，余水留源；扣源与入壶共同提交",
+      "resets_cooldown": false,
+      "heals_player": false,
+      "direct_source_drink_uses_flask_multiplier": false
+    },
+    "over_time": {
+      "first_delivery": "先付水并创建效果，再推进饮用动作tick；该tick结算第一笔",
+      "repeat_scope": "同一来源instance_id的任一持续效果仍存在时拒绝重复饮用",
+      "persists_after_unequip": true,
+      "snapshot_preserved_after_modification": true
+    },
+    "quick_drink": {
+      "advances_world_tick": false,
+      "consumes_attack_opportunity": false,
+      "refreshes_attack_opportunity": false
+    },
+    "physical_weight": "empty_weight_kg + current_water * flask_water_weight_kg + consumed_material_modification_weight + actual_attached_parts_weight_once",
+    "affix_and_modification_slots": "待设计；不由试玩选择栏推导正式槽数",
+    "modification_location": "家中制作台→装备改造→水壶，候选；当前实际入口仍为水壶独立试玩材料改造栏"
+  },
+  "recipe_links": {
+    "source": "docs/design/examples/manufacturing-system-v1.json",
+    "existing": {
+      "tool_flask_bamboo_water": "manufacturing.tool_flask_bamboo_water",
+      "tool_flask_iron_water": "manufacturing.tool_flask_iron_water"
+    },
+    "proposed": [
+      {
+        "recipe_id": "manufacturing.tool_flask_clay_water",
+        "item_id": "tool_flask_clay_water",
+        "name": "粗陶水壶",
+        "status": "候选，未注册制作配表",
+        "unlock": {
+          "kind": "skill_level",
+          "skill_id": "life_manufacturing",
+          "level": 5,
+          "persistent": true,
+          "hidden_item_properties": false
+        },
+        "station": "kiln",
+        "methods": [
+          "pottery",
+          "seal"
+        ],
+        "workbench_level_min": 1,
+        "required_tools": [],
+        "work_profile": "standard",
+        "ticks": 8,
+        "stamina": 8,
+        "output_count": 1,
+        "inputs": [
+          {
+            "item_id": "ore_clay_raw",
+            "count": 3
+          },
+          {
+            "item_id": "wood_cork",
+            "count": 1
+          }
+        ],
+        "output_state": "新身份、空壶、无词条、无改造；采用实例初始化契约"
+      }
+    ]
+  },
+  "information_rules_proposal": {
+    "status": "认知条件和显示ID候选；尚未注册正式信息显示表",
+    "base.identity": {
+      "primary_block": "regular",
+      "knowledge": "existing_language_rules",
+      "unknown": "placeholder_name_and_fn_before"
+    },
+    "base.weight": {
+      "primary_block": "regular",
+      "knowledge": "existing_weight_rules",
+      "value": "derived_current_weight_and_empty_weight"
+    },
+    "equipment.slot": {
+      "primary_block": "equipment",
+      "knowledge": "known_flask_use",
+      "unknown": "hide"
+    },
+    "flask.water": {
+      "primary_block": "flask_storage",
+      "knowledge": "inspected_water",
+      "unknown": "hide",
+      "value": "instance_water_and_effective_capacity"
+    },
+    "flask.intake": {
+      "primary_block": "flask_performance",
+      "knowledge": "known_intake_property",
+      "unknown": "hide"
+    },
+    "flask.use_cost": {
+      "primary_block": "flask_performance",
+      "knowledge": "known_use_property",
+      "unknown": "hide"
+    },
+    "flask.recovery": {
+      "primary_block": "flask_performance",
+      "knowledge": "known_effect_per_entry",
+      "unknown": "hide"
+    },
+    "flask.cooldown": {
+      "primary_block": "use_state",
+      "knowledge": "known_use_event",
+      "unknown": "hide",
+      "value": "max(0, max(flask_until_tick, player_until_tick) - world_tick)"
+    },
+    "flask.affixes": {
+      "primary_block": "equipment_effects",
+      "knowledge": "known_affix_per_entry",
+      "unknown": "hide_including_count_and_heading"
+    },
+    "flask.modification": {
+      "primary_block": "equipment_effects",
+      "knowledge": "known_modification_per_entry",
+      "unknown": "hide_including_heading"
+    },
+    "deduplication": "同一稳定信息ID只显示一次；模板初值不得代替实例状态",
+    "recipe_knowledge": "引用79号；学会制作不自动认识隐藏词条、改造或全部使用战术"
+  }
+}

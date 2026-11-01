@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "id": "npc.station.bathroom_base",
+  "name": "卫生间",
+  "displayTitle": "卫生间",
+  "npcLabel": "卫生间",
+  "appearanceSchedule": { "start": "00:00", "end": "00:00" },
+  "location": { "sceneId": "M0_Base_Inside_lv_1", "x": 14, "y": 14 },
+  "interactionChecks": { "thirst": false, "dirtyness": false },
+  "mainMenu": { "showChat": false, "showWorkWhen": "never", "showLeave": true },
+  "bathroom": { "drink_ticks": 1, "shower_ticks": 3, "refill_ticks": 1 },
+  "behavior": { "type": "workbench", "origin": "base_hideout", "description": "提供干净的饮用水和洗浴用水。" },
+  "tags": ["workbench", "bathroom_station", "non_combat", "base_facility"]
+}

@@ -1,14 +1,14 @@
 /**
  * 物品栏与装备栏系统 - 按设计文档 02-regions、05、14-implementation
- * 四类容器：口袋、背心、背包、载具；10 个装备槽；快捷腰带 = 口袋 + 背心（先口袋后背心）
+ * 四类容器：口袋、背心、背包、载具；11 个装备槽；快捷腰带 = 口袋 + 背心（先口袋后背心）
  * getItemTemplate 先 equipment 再 items；装备穿戴校验；死亡清空、新游戏仅 default_equipment
  */
 (function (global) {
     'use strict';
 
-    /** 装备槽位 ID（呼吸法、步法、招架为技能而非装备，不占装备槽；招架在肢体技能栏配置）。分三组：出招装备（武器/手套/鞋）、防具（头/衣服）、载物（背心/背包） */
+    /** 装备槽位 ID（呼吸法、步法、招架为技能而非装备，不占装备槽；招架在肢体技能栏配置）。分三组：出招装备（武器/手套/鞋）、防具（头/衣服）、载物（背心/背包/水壶） */
     var EQUIP_SLOT_IDS = [
-        'head', 'clothing', 'vest', 'backpack',
+        'head', 'clothing', 'vest', 'backpack', 'water_flask',
         'weapon_left', 'weapon_right',
         'glove_left', 'glove_right',
         'shoe_left', 'shoe_right'
@@ -1339,6 +1339,11 @@
         if (!isFinite(ownWeight) || ownWeight < 0) ownWeight = 0;
         var quantity = itemInstance.count != null ? Math.max(1, Math.floor(Number(itemInstance.count) || 1)) : 1;
         var total = ownWeight * quantity;
+        var storedWater = getItemInstanceValue(itemInstance, 'flask_water');
+        var waterWeight = getItemTemplateValue(tpl, 'flask_water_weight_kg');
+        if (Number.isFinite(storedWater) && storedWater >= 0 && Number.isFinite(waterWeight) && waterWeight >= 0) {
+            total += storedWater * waterWeight;
+        }
         forEachItemInstanceChild(itemInstance, function (child) {
             total += getItemCombinedWeight(child, visited);
         });

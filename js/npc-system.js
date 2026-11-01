@@ -875,19 +875,29 @@
     // --- 菜单 UI（最小实现） ---
     var menuEl = null, menuView = null, menuEpoch = 0;
     var menuState = { open: false, title: '', hint: '', buttons: [] };
+    function menuIcon(name) { return name && global.RuinsUIIcons ? global.RuinsUIIcons.svg(name) : ''; }
+    function backMenu() { if (menuState.open && typeof menuState.back === 'function') menuState.back(); }
     function publishMenu() {
-        var snapshot = { open: menuState.open, title: menuState.title, hint: menuState.hint, buttons: menuState.buttons.map(function (b, index) { return { id: index, text: b.text, disabled: !!b.disabled, title: b.title || '', muted: !!b.muted }; }) };
+        var snapshot = { open: menuState.open, title: menuState.title, hint: menuState.hint, compact: !!menuState.compact, detail: menuState.detail || '', canBack: !!menuState.back, buttons: menuState.buttons.map(function (b, index) { return { id: index, text: b.text, icon: b.icon || '', disabled: !!b.disabled, title: b.title || '', muted: !!b.muted }; }) };
         if (menuView) { menuView(snapshot); return; }
-        ensureMenuEl(); menuEl.style.display = snapshot.open ? 'block' : 'none';
+        ensureMenuEl(); var opening = snapshot.open && menuEl.style.display === 'none'; menuEl.style.display = snapshot.open ? 'block' : 'none';
+        menuEl.className = snapshot.compact ? 'npc-menu-checkpoint' : '';
         document.getElementById('npc-menu-title').textContent = snapshot.title;
         document.getElementById('npc-menu-hint').textContent = snapshot.hint;
+        document.getElementById('npc-menu-hint').hidden = snapshot.compact && !snapshot.hint;
+        var close = document.getElementById('npc-menu-close'), back = document.getElementById('npc-menu-back'), detail = document.getElementById('npc-menu-detail');
+        if (close) { close.hidden = !snapshot.compact; close.innerHTML = menuIcon('close'); close.onclick = closeMenu; }
+        if (back) { back.hidden = !snapshot.canBack; back.innerHTML = menuIcon('back'); back.onclick = backMenu; }
+        if (detail) { detail.hidden = !snapshot.detail; detail.textContent = snapshot.detail; }
         var wrap = document.getElementById('npc-menu-buttons'); wrap.replaceChildren();
         snapshot.buttons.forEach(function (b) {
             var el = document.createElement('button'); el.type = 'button'; el.textContent = b.text; el.disabled = b.disabled; el.title = b.title;
+            if (snapshot.compact && b.icon) { el.innerHTML = menuIcon(b.icon); var label = document.createElement('span'); label.textContent = b.text; el.appendChild(label); }
             el.style.cssText = 'padding:8px 12px;background:#404040;border:1px solid #555;color:#fff;border-radius:6px;cursor:pointer';
             if (b.muted) { el.style.opacity = '0.55'; el.style.cursor = 'not-allowed'; }
             el.onclick = function () { chooseMenu(b.id); }; wrap.appendChild(el);
         });
+        if (snapshot.open && snapshot.compact && (opening || !menuEl.contains(document.activeElement))) menuEl.focus();
     }
     function chooseMenu(index) {
         var b = menuState.open && menuState.buttons[index];
@@ -905,14 +915,30 @@
         menuEl.style.background = 'rgba(0,0,0,0.55)';
         menuEl.style.display = 'none';
         menuEl.style.zIndex = '9999';
+        menuEl.tabIndex = -1;
+        menuEl.setAttribute('role', 'dialog');
+        menuEl.setAttribute('aria-modal', 'true');
+        menuEl.setAttribute('aria-labelledby', 'npc-menu-title');
         menuEl.innerHTML = '' +
-            '<div style="position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:320px; background:#252525; border:1px solid #444; border-radius:8px; padding:14px;">' +
-            '  <div id="npc-menu-title" style="color:#ddd; font-weight:bold; margin-bottom:10px;">NPC</div>' +
+            '<div class="npc-menu-window" style="position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:320px; background:#252525; border:1px solid #444; border-radius:8px; padding:14px;">' +
+            '  <header class="npc-menu-head"><button id="npc-menu-back" type="button" aria-label="返回" hidden></button><div id="npc-menu-title" style="color:#ddd; font-weight:bold; margin-bottom:10px;">NPC</div><button id="npc-menu-close" type="button" aria-label="关闭" hidden></button></header>' +
+            '  <p id="npc-menu-detail" hidden></p>' +
             '  <div id="npc-menu-buttons" style="display:flex; gap:8px; flex-wrap:wrap;"></div>' +
             '  <div id="npc-menu-hint" role="status" style="margin-top:10px; color:#aaa; font-size:12px; line-height:1.6;">' + tUi('npc.menu.close_hint') + '</div>' +
             '</div>';
         document.body.appendChild(menuEl);
         menuEl.addEventListener('click', function (e) { if (e.target === menuEl) closeMenu(); });
+        menuEl.addEventListener('keydown', function (e) {
+            if (!menuState.compact) return;
+            e.stopPropagation();
+            if (e.key === 'Escape') { e.preventDefault(); closeMenu(); }
+            if (e.key === 'Tab') {
+                var buttons = Array.from(menuEl.querySelectorAll('button:not(:disabled):not([hidden])')), first = buttons[0], last = buttons[buttons.length - 1];
+                if (!first) return;
+                if (e.shiftKey && (document.activeElement === first || document.activeElement === menuEl)) { e.preventDefault(); last.focus(); }
+                else if (!e.shiftKey && (document.activeElement === last || document.activeElement === menuEl)) { e.preventDefault(); first.focus(); }
+            }
+        });
         return menuEl;
     }
     function closeMenu() { menuEpoch++; menuState.open = false; publishMenu(); }
@@ -933,24 +959,96 @@
                 var npcActionType = (act && act.NPC_INTERACT) ? act.NPC_INTERACT : 'npc_interact';
                 if (global.SceneApp.guardPlayerActionBlocked(npcActionType)) return;
             }
-            if (global.BuffSystem && typeof global.BuffSystem.hasBuffByBuffId === 'function'
-                && global.BuffSystem.hasBuffByBuffId('player', 'survival_dirty_messy')) {
-                log(tUi('npc.msg.dirty_rejected'), 'warn');
-                return;
-            }
             if (!def) {
                 log('NPC 数据未加载：' + npcId + '（检查 npc_registry.json 路径）', 'warn');
                 return;
+            }
+            // Missing fields keep the ordinary NPC checks enabled; only false opts out.
+            var checks = def.interactionChecks || {};
+            var buffs = global.BuffSystem;
+            if (buffs && typeof buffs.hasBuffByBuffId === 'function') {
+                if (checks.thirst !== false && buffs.hasBuffByBuffId('player', 'survival_thirst_dehydrated_zero')) {
+                    log(tUi('npc.msg.thirst_rejected', '你渴得说不出话，先喝点水再来。'), 'warn');
+                    return;
+                }
+                if (checks.dirtyness !== false && buffs.hasBuffByBuffId('player', 'survival_dirty_messy')) {
+                    log(tUi('npc.msg.dirty_rejected', '你现在邋里邋遢，NPC 不愿与你互动。'), 'warn');
+                    return;
+                }
             }
             if (!isNpcOnDuty(def)) {
                 var t = (global.GameTime && global.GameTime.getDisplayString) ? (global.GameTime.getDisplayString() || '') : '';
                 log('NPC 当前不在场（' + t + '）：' + npcId, 'warn');
                 return;
             }
-            menuState = { open: true, title: def.displayTitle || def.name || 'NPC', hint: tUi('npc.menu.close_hint', '需要靠近才能操作。'), buttons: [] };
+            var isFacility = !!def.bathroom;
+            menuState = { open: true, title: def.displayTitle || def.name || 'NPC', compact: isFacility, hint: isFacility ? '' : tUi('npc.menu.close_hint', '需要靠近才能操作。'), buttons: [] };
             function addButton(button) { menuState.buttons.push(button); publishMenu(); }
-            function mkBtn(text, onClick) { return { text: text, run: onClick, disabled: false }; }
+            function mkBtn(text, onClick, icon) { return { text: text, run: onClick, disabled: false, icon: isFacility ? (icon || 'point') : '' }; }
             function hint(text) { if (epoch !== menuEpoch) return; menuState.hint = text; publishMenu(); }
+
+            if (def.bathroom && global.BathroomFacility) {
+                var bathroom = global.BathroomFacility;
+                if (!bathroom.isUnlocked()) {
+                    hint('管线和排水槽已经损坏。先修复卫生间，之后就能喝水、洗澡和给水壶装水。');
+                    var repairBathroom = mkBtn('修复卫生间', function () {
+                        if (epoch !== menuEpoch || !sameLocation()) return;
+                        global.FacilityUnlockPanel.open('bathroom', function () { if (sameLocation()) openMenu(npcId); });
+                        if (global.FacilityUnlockPanel.isOpen()) closeMenu();
+                    });
+                    repairBathroom.disabled = !global.FacilityUnlock || !global.FacilityUnlock.get('bathroom').accessible();
+                    addButton(repairBathroom);
+                    if (!isFacility) addButton(mkBtn(tUi('npc.menu.leave', '离开'), closeMenu));
+                    return;
+                }
+                function refreshBathroom(message) {
+                    if (epoch !== menuEpoch || !sameLocation()) return;
+                    menuState.buttons = [];
+                    menuState.back = null;
+                    var refillReason = bathroom.reason(def, 'refill');
+                    menuState.hint = message || ('这里可以喝水、洗澡，也能给随身水壶装水。' + (refillReason ? '\n' + refillReason : ''));
+                    ['drink', 'shower'].forEach(function (action) {
+                        var minutes = bathroom.ticks(def, action) * global.GameTime.MINUTES_PER_TICK;
+                        var button = mkBtn((action === 'drink' ? '饮水' : '洗澡') + ' · ' + minutes + '分钟', function () {
+                            if (epoch !== menuEpoch || !sameLocation()) return;
+                            var result = bathroom.use(def, action);
+                            refreshBathroom(result.message);
+                        }, action === 'drink' ? 'water' : 'spark');
+                        button.title = bathroom.reason(def, action);
+                        button.disabled = !!button.title;
+                        menuState.buttons.push(button);
+                    });
+                    var refillButton = mkBtn('给水壶装水', function () { chooseBathroomFlask(); }, 'water');
+                    refillButton.title = refillReason;
+                    refillButton.disabled = !!refillReason;
+                    menuState.buttons.push(refillButton);
+                    if (!isFacility) menuState.buttons.push(mkBtn(tUi('npc.menu.leave', '离开'), closeMenu));
+                    publishMenu();
+                }
+                function chooseBathroomFlask(message) {
+                    if (epoch !== menuEpoch || !sameLocation()) return;
+                    var flasks = global.WaterFlaskStorage, entries = flasks ? flasks.carried() : [];
+                    menuState.buttons = [];
+                    menuState.back = function () { refreshBathroom(); };
+                    menuState.hint = message || '选择一只随身水壶装满。每只耗时' + (bathroom.ticks(def, 'refill') * global.GameTime.MINUTES_PER_TICK) + '分钟。';
+                    if (!entries.length) menuState.hint = message || '随身没有可装水的水壶。';
+                    entries.forEach(function (entry) {
+                        var p = entry.profile;
+                        var label = entry.name + ' · ' + entry.location + ' · ' + (p.error ? '存水未知' : flasks.format(p.water) + '／' + flasks.format(p.capacity));
+                        var button = mkBtn(label, function () {
+                            if (epoch !== menuEpoch || !sameLocation()) return;
+                            var result = bathroom.use(def, 'refill', entry.instance_id);
+                            chooseBathroomFlask(result.message);
+                        }, 'water');
+                        button.title = bathroom.reason(def, 'refill', entry.instance_id);
+                        button.disabled = !!button.title;
+                        menuState.buttons.push(button);
+                    });
+                    publishMenu();
+                }
+                refreshBathroom();
+                return;
+            }
 
             // Sewing follows its construction stage instead of listing every locked tool.
             if (def.id === 'npc.station.sewing_base') {
@@ -1283,7 +1381,7 @@
     }
 
     global.NPCSystem = {
-        menu: { attachView: function (render) { menuView = render; if (menuEl) { menuEl.remove(); menuEl = null; } publishMenu(); return function () { menuEpoch++; menuState.open = false; menuView = null; }; }, choose: chooseMenu, close: closeMenu },
+        menu: { attachView: function (render) { menuView = render; if (menuEl) { menuEl.remove(); menuEl = null; } publishMenu(); return function () { menuEpoch++; menuState.open = false; menuView = null; }; }, choose: chooseMenu, close: closeMenu, back: backMenu, icon: menuIcon },
         configure: function (opts) {
             opts = opts || {};
             logFn = (typeof opts.log === 'function') ? opts.log : function () {};

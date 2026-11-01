@@ -49,6 +49,8 @@
 
 新增玩法优先扩展既有大类：钓竿性能先考虑装备内的钓具分组，连接复用收纳与装配。只有现有大类无法合理容纳、又具有独立规则与复用需求时才新增大类。不能为了压低数量把一切塞进基础。
 
+2026-11-01卫生间补水按此口径接入两款已注册水壶。`data/water-flask-storage.json` 在CSV合并后经专用构建校验补入容量、新壶初值、水重和型号倍率；不加载80号完整候选草案。容量／倍率为正有限数，初值固定0，水重为非负有限数；未知字段或物品拒绝。当前存水通过 `flask_water` 实例读写接口取得，保存和转移保持版本、水量及其他兼容状态。`module.water_flask_storage` 是当前水量／容量的唯一信息模块，不为同字段再输出第二块。卫生间入口与测试见[卫生间设施](bathroom-facility.md)；正式水壶槽与饮用已按80号第16节接入，地牢水源仍待接入。饮用源表为 `data/water-flask-use.json`，耗水、动作耗时与恢复效果集合分别登记，禁止走一次性消耗品分支。
+
 信息系统按“大类→有效字段组→已知字段”组织，可按界面合并呈现。没有可见内容就不显示空标题；组内认知条件独立，认识燃料用途不会自动认识制药用途。
 
 ### 类内字段归属明细（不独立加载）
@@ -78,6 +80,8 @@
 | power 供电 | battery_capacity、初始电量 | battery_charge | 检查后的容量/电量；模板初始量不能覆盖剩余量 |
 | equippable 装备 | equip_slot、req_innate_jingu | 当前装备位置归归属系统 | 可知的装备位置、使用条件 |
 | storage 穿戴收纳 | pocket_slots、vest_slots、backpack_slots、backpack_weight_factor | 内容物由容器归属记录持有 | 容量、负重规则；不可将其中物品当连接部件 |
+| liquid_storage 液体收纳（2026-11-01） | structure内flask_capacity、flask_initial_water、flask_water_weight_kg | attribute_state.structure.liquid_storage的version／water | 当前存水与容量；0值不回填，存水重量走组合重量入口 |
+| water_flask 水壶性能（2026-11-01） | equipment内flask_source_multiplier、flask_drink_cost、flask_drink_ticks、flask_effects | 取水计划派生入壶量，不重复存型号倍率 | 特殊性能仍遵循认识规则，当前存水信息不公开倍率 |
 | combat_carrier 攻击载体 | 底伤、skill_coef、form_coefs、limb_tags、招架/速度/移动修正 | 有效值按实例、附魔、组合计算 | 战斗性能，沿现有知识条件显示 |
 | armor 防护 | 各伤害减伤、base_shield | 激活盾剩余池归战斗状态 | 防护与激活消耗；不新造整件装备耐久 |
 | attachment_host 装配宿主 | module_slots | 已安装真实部件关系 | 已知安装位置与部件；不泄露隐藏部件性能 |

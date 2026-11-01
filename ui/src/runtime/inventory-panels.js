@@ -64,13 +64,15 @@ export function inventoryPanel(g, publish, t) {
             const r = selected.ref, tpl = selected.tpl, tooltip = selected.tooltip;
             detail = { ...selected, attrs: g.SceneUi.formatItemAttributes(tpl, item(r)), modules: tooltip.filter(n => n.className === 'tooltip-modules'), fields: tooltip.filter(n => n.className?.includes('tooltip-field')), assembly: assembly(item(r), r.source !== 'ground'), actions: [] };
             const add = (label, command, part) => detail.actions.push({ label, command, part });
-            if (r.source === 'equipment')
-                add(t('inv.unequip'), 'unequip');
+            if (r.source === 'equipment') {
+                if (r.index === 'water_flask') add(t('flask.action.drink'), 'drink-flask');
+                add(t(r.index === 'water_flask' ? 'flask.action.unequip' : 'inv.unequip'), 'unequip');
+            }
             else if (r.source === 'ground') {
                 add(t('inv.pickup'), 'pickup');
                 if (g.ModularWeaponCombat?.isWeapon(item(r))) {
                     add('右手持用', 'equip', 'weapon_right'); add('左手持用', 'equip', 'weapon_left');
-                } else if (tpl?.equip_slot) add(t('inv.equip'), 'equip');
+                } else if (tpl?.equip_slot) add(t(tpl.equip_slot === 'water_flask' ? 'flask.action.equip' : 'inv.equip'), 'equip');
             }
             else {
                 if (g.ItemUse.itemTemplateIsConsumable(tpl)) {
@@ -84,7 +86,7 @@ export function inventoryPanel(g, publish, t) {
                 }
                 if (g.ModularWeaponCombat?.isWeapon(item(r))) {
                     add('右手持用', 'equip', 'weapon_right'); add('左手持用', 'equip', 'weapon_left');
-                } else if (tpl?.equip_slot) add(t('inv.equip'), 'equip');
+                } else if (tpl?.equip_slot) add(t(tpl.equip_slot === 'water_flask' ? 'flask.action.equip' : 'inv.equip'), 'equip');
                 add(t('inv.drop'), 'drop');
             }
         }
@@ -110,6 +112,11 @@ export function inventoryPanel(g, publish, t) {
         }
         const p = api.position(), tpl = IE.getItemTemplate(r.itemId);
         let result;
+        if (command === 'drink-flask' && r.source === 'equipment' && r.index === 'water_flask') {
+            g.SceneApp.tryDrinkWaterFlask(r.id);
+            refresh();
+            return;
+        }
         if (command === 'use') {
             api.use(r.source, r.index, part ? { part_id: part } : undefined);
             refresh();

@@ -68,7 +68,8 @@
         if (tpl.weight_kg != null) {
             var shownWeight = tpl.weight_kg;
             var hasConnectedParts = !!(inst && inst.connections && Object.keys(inst.connections).length);
-            if (hasConnectedParts && IE && typeof IE.getItemCombinedWeight === 'function') shownWeight = IE.getItemCombinedWeight(inst);
+            var hasStoredLiquid = !!(inst && global.ItemAttributeModules && global.ItemAttributeModules.hasGroup(tpl, 'structure', 'liquid_storage'));
+            if ((hasConnectedParts || hasStoredLiquid) && IE && typeof IE.getItemCombinedWeight === 'function') shownWeight = IE.getItemCombinedWeight(inst);
             var weightText = (global.ItemAssemblyDisplay && typeof global.ItemAssemblyDisplay.formatWeight === 'function')
                 ? global.ItemAssemblyDisplay.formatWeight(shownWeight) : shownWeight;
             lines.push(ui(hasConnectedParts ? 'item.attr.combined_weight' : 'item.attr.weight', { v: weightText }));
