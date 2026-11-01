@@ -1,0 +1,302 @@
+[
+  {
+    "key": "stove",
+    "state": "ready",
+    "prompt": "Use case: stylized-concept. Production transparent isometric game furniture sprite, completely REDRAW in the newly approved hand-painted scene standard. Reference 1 is OLD subject identity only, DO NOT copy its round display pedestal, its oversized accessories or toy icon proportions. Reference 2 is approved line/shading quality only (do not draw a person or pawn base). Reference 3 is the approved furniture style: thick dark silhouette, varied interior outlines, broad painted planes, upper-left illumination, selective meaningful wear. Reference 4 is exact GEOMETRY only: orthographic ground axes slopes +0.7071 and -0.7071, vertical edges upright, no perspective convergence. Fit the furniture to this footprint and surface height. Paint as convincing full-size furniture beside a human 88 display pixels tall. Modern salvaged industrial hideout in a functioning but disordered society: concentrated wear where used, repaired fittings, practical materials. NO photo/PBR, no plastic glossy 3D, no simplistic flat icon, no uniform tiny scratches. Truly transparent background. No floor slab, terrain patch, pedestal, circular plinth, cast ground shadow, grid, labels or people. Entire object with ample transparent margin, source canvas 1254 square if possible. Do not shear, rotate or stretch a preexisting sprite; draw its correct native camera.  Subject: Working cast iron wood-burning cooking stove, box shape with four low feet, soot darkened door with a small warm fire, modest silver lidded cooking pot and short chimney at rear. One replaced door hinge and localized worn edges; gray charcoal metal, not a shiny new appliance. Worktop height 39px, chimney top77px; footprint .80x.72 tile. Front door faces lower-left.",
+    "references": [
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\assets/map/isometric/interactive-devices-v1/stove.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\reference/street-thugs-v1/tier-1.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\assets/dungeon/street-thug-boss-room-v6/factory-desk.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\reference/hideout-facilities-v2/stove-geometry.png"
+    ],
+    "output_hint": "Generated images are saved to C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab as C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab\\exec-0076de56-2ea7-496d-b0ef-1bdbe22bd01e.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link.",
+    "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab\\exec-0076de56-2ea7-496d-b0ef-1bdbe22bd01e.png",
+    "file": "assets/map/isometric/hideout-facilities-v2/stove-ready.png",
+    "mode": "built-in image_gen"
+  },
+  {
+    "key": "pharmacy",
+    "state": "ready",
+    "prompt": "Use case: stylized-concept. Production transparent isometric game furniture sprite, completely REDRAW in the newly approved hand-painted scene standard. Reference 1 is OLD subject identity only, DO NOT copy its round display pedestal, its oversized accessories or toy icon proportions. Reference 2 is approved line/shading quality only (do not draw a person or pawn base). Reference 3 is the approved furniture style: thick dark silhouette, varied interior outlines, broad painted planes, upper-left illumination, selective meaningful wear. Reference 4 is exact GEOMETRY only: orthographic ground axes slopes +0.7071 and -0.7071, vertical edges upright, no perspective convergence. Fit the furniture to this footprint and surface height. Paint as convincing full-size furniture beside a human 88 display pixels tall. Modern salvaged industrial hideout in a functioning but disordered society: concentrated wear where used, repaired fittings, practical materials. NO photo/PBR, no plastic glossy 3D, no simplistic flat icon, no uniform tiny scratches. Truly transparent background. No floor slab, terrain patch, pedestal, circular plinth, cast ground shadow, grid, labels or people. Entire object with ample transparent margin, source canvas 1254 square if possible. Do not shear, rotate or stretch a preexisting sprite; draw its correct native camera.  Subject: Working herbal medicine preparation bench: salvaged warm wood worktop on muted teal metal legs and low drawers, small stone mortar/pestle, two realistically SMALL green/amber bottles, bundled herbs, towel and shallow upper rear shelf. Scuffed work edge, one metal patch on drawer, herb marks concentrated near mortar. Work surface39px, total65px, footprint .90x.70; broad work face toward lower-left.",
+    "references": [
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\assets/map/isometric/interactive-devices-v1/pharmacy.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\reference/street-thugs-v1/tier-1.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\assets/dungeon/street-thug-boss-room-v6/factory-desk.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\reference/hideout-facilities-v2/pharmacy-geometry.png"
+    ],
+    "output_hint": "Generated images are saved to C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab as C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab\\exec-a60c32a4-fd5a-4f17-95f0-8845a8a8352e.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link.",
+    "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab\\exec-a60c32a4-fd5a-4f17-95f0-8845a8a8352e.png",
+    "file": "assets/map/isometric/hideout-facilities-v2/pharmacy-ready.png",
+    "mode": "built-in image_gen"
+  },
+  {
+    "key": "forging",
+    "state": "ready",
+    "prompt": "Use case: stylized-concept. Production transparent isometric game furniture sprite, completely REDRAW in the newly approved hand-painted scene standard. Reference 1 is OLD subject identity only, DO NOT copy its round display pedestal, its oversized accessories or toy icon proportions. Reference 2 is approved line/shading quality only (do not draw a person or pawn base). Reference 3 is the approved furniture style: thick dark silhouette, varied interior outlines, broad painted planes, upper-left illumination, selective meaningful wear. Reference 4 is exact GEOMETRY only: orthographic ground axes slopes +0.7071 and -0.7071, vertical edges upright, no perspective convergence. Fit the furniture to this footprint and surface height. Paint as convincing full-size furniture beside a human 88 display pixels tall. Modern salvaged industrial hideout in a functioning but disordered society: concentrated wear where used, repaired fittings, practical materials. NO photo/PBR, no plastic glossy 3D, no simplistic flat icon, no uniform tiny scratches. Truly transparent background. No floor slab, terrain patch, pedestal, circular plinth, cast ground shadow, grid, labels or people. Entire object with ample transparent margin, source canvas 1254 square if possible. Do not shear, rotate or stretch a preexisting sprite; draw its correct native camera.  Subject: Working compact smithing station within .95x.90 footprint: substantial steel anvil on a timber block at front-left, small patched brick charcoal furnace with short metal flue at rear-right, hung hammer and tongs and small quench pail. Heavy dark outlines and painted volume, soot only around furnace mouth, worn anvil strike face, iron bands. Anvil work height38px, top66px. Do not put anything on a display slab.",
+    "references": [
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\assets/map/isometric/interactive-devices-v1/forging.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\reference/street-thugs-v1/tier-1.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\assets/dungeon/street-thug-boss-room-v6/factory-desk.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\reference/hideout-facilities-v2/forging-geometry.png"
+    ],
+    "output_hint": "Generated images are saved to C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab as C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab\\exec-4f4a40e9-a326-4739-961c-45c042b9961f.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link.",
+    "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab\\exec-4f4a40e9-a326-4739-961c-45c042b9961f.png",
+    "file": "assets/map/isometric/hideout-facilities-v2/forging-ready.png",
+    "mode": "built-in image_gen"
+  },
+  {
+    "key": "sewing",
+    "state": "ready",
+    "prompt": "Use case: stylized-concept. Production transparent isometric game furniture sprite, completely REDRAW in the newly approved hand-painted scene standard. Reference 1 is OLD subject identity only, DO NOT copy its round display pedestal, its oversized accessories or toy icon proportions. Reference 2 is approved line/shading quality only (do not draw a person or pawn base). Reference 3 is the approved furniture style: thick dark silhouette, varied interior outlines, broad painted planes, upper-left illumination, selective meaningful wear. Reference 4 is exact GEOMETRY only: orthographic ground axes slopes +0.7071 and -0.7071, vertical edges upright, no perspective convergence. Fit the furniture to this footprint and surface height. Paint as convincing full-size furniture beside a human 88 display pixels tall. Modern salvaged industrial hideout in a functioning but disordered society: concentrated wear where used, repaired fittings, practical materials. NO photo/PBR, no plastic glossy 3D, no simplistic flat icon, no uniform tiny scratches. Truly transparent background. No floor slab, terrain patch, pedestal, circular plinth, cast ground shadow, grid, labels or people. Entire object with ample transparent margin, source canvas 1254 square if possible. Do not shear, rotate or stretch a preexisting sprite; draw its correct native camera.  Subject: Working sewing station: an old black cast-iron hand-operated sewing machine with muted brass wheel mounted in a worn wooden table on teal salvaged steel legs. Small blue cloth being stitched, spool and measuring tape, miniature fitting form on the rear corner sized as a tabletop sewing aid, not a human giant. Drawer repaired with a metal corner. Table38px, total62px, footprint.90x.70; front workface lower-left. Match the GEOMETRY reference's steep ground diagonals closely: look down at 45 degrees, not a low angle. Restrict wear to a few deliberate patches, broad calm paint surfaces elsewhere.",
+    "references": [
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\assets/map/isometric/interactive-devices-v1/sewing.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\reference/street-thugs-v1/tier-1.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\assets/dungeon/street-thug-boss-room-v6/factory-desk.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\reference/hideout-facilities-v2/sewing-geometry.png"
+    ],
+    "output_hint": "Generated images are saved to C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab as C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab\\exec-83aab97f-5988-4748-bef1-37978428ac0e.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link.",
+    "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab\\exec-83aab97f-5988-4748-bef1-37978428ac0e.png",
+    "file": "assets/map/isometric/hideout-facilities-v2/sewing-ready.png",
+    "mode": "built-in image_gen"
+  },
+  {
+    "key": "toolbench",
+    "state": "ready",
+    "prompt": "Use case: stylized-concept. Production transparent isometric game furniture sprite, completely REDRAW in the newly approved hand-painted scene standard. Reference 1 is OLD subject identity only, DO NOT copy its round display pedestal, its oversized accessories or toy icon proportions. Reference 2 is approved line/shading quality only (do not draw a person or pawn base). Reference 3 is the approved furniture style: thick dark silhouette, varied interior outlines, broad painted planes, upper-left illumination, selective meaningful wear. Reference 4 is exact GEOMETRY only: orthographic ground axes slopes +0.7071 and -0.7071, vertical edges upright, no perspective convergence. Fit the furniture to this footprint and surface height. Paint as convincing full-size furniture beside a human 88 display pixels tall. Modern salvaged industrial hideout in a functioning but disordered society: concentrated wear where used, repaired fittings, practical materials. NO photo/PBR, no plastic glossy 3D, no simplistic flat icon, no uniform tiny scratches. Truly transparent background. No floor slab, terrain patch, pedestal, circular plinth, cast ground shadow, grid, labels or people. Entire object with ample transparent margin, source canvas 1254 square if possible. Do not shear, rotate or stretch a preexisting sprite; draw its correct native camera.  Subject: Working observation/tool bench: worn wood worktop with muted teal salvaged metal frame, rear wooden pegboard holds paper calendar grid (no readable words), thin thermometer with red fluid and a small brass clock. A small hammer, ruler, shallow fastener tray on the table. One replacement leg bracket, corner peeling, intact assembled instruments. Table39px, top75px, .90x.70 tile, workface lower-left. Match the GEOMETRY reference's steep ground diagonals closely: look down at 45 degrees, not a low angle. Restrict wear to a few deliberate patches, broad calm paint surfaces elsewhere.",
+    "references": [
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\assets/map/isometric/interactive-devices-v1/toolbench.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\reference/street-thugs-v1/tier-1.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\assets/dungeon/street-thug-boss-room-v6/factory-desk.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\reference/hideout-facilities-v2/toolbench-geometry.png"
+    ],
+    "output_hint": "Generated images are saved to C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab as C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab\\exec-be8ee774-694b-4821-a9a7-6fec921ad679.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link.",
+    "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab\\exec-be8ee774-694b-4821-a9a7-6fec921ad679.png",
+    "file": "assets/map/isometric/hideout-facilities-v2/toolbench-ready.png",
+    "mode": "built-in image_gen"
+  },
+  {
+    "key": "warehouse",
+    "state": "ready",
+    "prompt": "Use case: stylized-concept. Production transparent isometric game furniture sprite, completely REDRAW in the newly approved hand-painted scene standard. Reference 1 is OLD subject identity only, DO NOT copy its round display pedestal, its oversized accessories or toy icon proportions. Reference 2 is approved line/shading quality only (do not draw a person or pawn base). Reference 3 is the approved furniture style: thick dark silhouette, varied interior outlines, broad painted planes, upper-left illumination, selective meaningful wear. Reference 4 is exact GEOMETRY only: orthographic ground axes slopes +0.7071 and -0.7071, vertical edges upright, no perspective convergence. Fit the furniture to this footprint and surface height. Paint as convincing full-size furniture beside a human 88 display pixels tall. Modern salvaged industrial hideout in a functioning but disordered society: concentrated wear where used, repaired fittings, practical materials. NO photo/PBR, no plastic glossy 3D, no simplistic flat icon, no uniform tiny scratches. Truly transparent background. No floor slab, terrain patch, pedestal, circular plinth, cast ground shadow, grid, labels or people. Entire object with ample transparent margin, source canvas 1254 square if possible. Do not shear, rotate or stretch a preexisting sprite; draw its correct native camera.  Subject: Hideout storage station: one sturdy muted teal salvaged steel-and-wood storage rack/cabinet with lower lockable wooden compartment, upper shelf containing a single repaired crate, compact tied cloth sack and rolled canvas. Keep original visual identity of warehouse shelf but mature full size scene furniture. Rope tie, patched sack, localized peeled paint on upright, mismatched replacement handle. .90x.80 footprint, shelf height66px, total78px. Front storage access lower-left. Match the GEOMETRY reference's steep ground diagonals closely: look down at 45 degrees, not a low angle. Restrict wear to a few deliberate patches, broad calm paint surfaces elsewhere.",
+    "references": [
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\assets/map/isometric/interactive-devices-v1/warehouse.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\reference/street-thugs-v1/tier-1.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\assets/dungeon/street-thug-boss-room-v6/factory-desk.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\reference/hideout-facilities-v2/warehouse-geometry.png"
+    ],
+    "output_hint": "Generated images are saved to C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab as C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab\\exec-665e8f1d-ce14-445f-9ede-d18bbacb9022.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link.",
+    "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab\\exec-665e8f1d-ce14-445f-9ede-d18bbacb9022.png",
+    "file": "assets/map/isometric/hideout-facilities-v2/warehouse-ready.png",
+    "mode": "built-in image_gen"
+  },
+  {
+    "key": "bathroom",
+    "state": "ready",
+    "prompt": "Use case: stylized-concept. Production transparent isometric game furniture sprite, completely REDRAW in the newly approved hand-painted scene standard. Reference 1 is OLD subject identity only, DO NOT copy its round display pedestal, its oversized accessories or toy icon proportions. Reference 2 is approved line/shading quality only (do not draw a person or pawn base). Reference 3 is the approved furniture style: thick dark silhouette, varied interior outlines, broad painted planes, upper-left illumination, selective meaningful wear. Reference 4 is exact GEOMETRY only: orthographic ground axes slopes +0.7071 and -0.7071, vertical edges upright, no perspective convergence. Fit the furniture to this footprint and surface height. Paint as convincing full-size furniture beside a human 88 display pixels tall. Modern salvaged industrial hideout in a functioning but disordered society: concentrated wear where used, repaired fittings, practical materials. NO photo/PBR, no plastic glossy 3D, no simplistic flat icon, no uniform tiny scratches. Truly transparent background. No floor slab, terrain patch, pedestal, circular plinth, cast ground shadow, grid, labels or people. Entire object with ample transparent margin, source canvas 1254 square if possible. Do not shear, rotate or stretch a preexisting sprite; draw its correct native camera.  Subject: Working improvised hideout wash/shower unit: narrow weathered wood and salvaged gray-green metal frame, turquoise fabric curtain partly gathered, showerhead on exposed pipe above, enamel shower tray is a real fitting not a floor slab, compact cream washbasin on a small cupboard at right, drinking tap, small enamel cup, soap and patched towel. Faint water marks around basin, replaced pipe coupling, practical repair. .95x.95 total footprint, sink40px, upper frame94px; open front lower-left, no building walls. Match the GEOMETRY reference's steep ground diagonals closely: look down at 45 degrees, not a low angle. Restrict wear to a few deliberate patches, broad calm paint surfaces elsewhere.",
+    "references": [
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\assets/map/isometric/interactive-devices-v1/bathroom.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\reference/street-thugs-v1/tier-1.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\assets/dungeon/street-thug-boss-room-v6/metal-sideboard.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\reference/hideout-facilities-v2/bathroom-geometry.png"
+    ],
+    "output_hint": "Generated images are saved to C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab as C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab\\exec-d75b6f54-f9ad-47e0-8140-5d8948a2883b.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link.",
+    "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab\\exec-d75b6f54-f9ad-47e0-8140-5d8948a2883b.png",
+    "file": "assets/map/isometric/hideout-facilities-v2/bathroom-ready.png",
+    "mode": "built-in image_gen"
+  },
+  {
+    "key": "barrel",
+    "state": "ready",
+    "prompt": "Use case: stylized-concept. Production transparent isometric game furniture sprite, completely REDRAW in the newly approved hand-painted scene standard. Reference 1 is OLD subject identity only, DO NOT copy its round display pedestal, its oversized accessories or toy icon proportions. Reference 2 is approved line/shading quality only (do not draw a person or pawn base). Reference 3 is the approved furniture style: thick dark silhouette, varied interior outlines, broad painted planes, upper-left illumination, selective meaningful wear. Reference 4 is exact GEOMETRY only: orthographic ground axes slopes +0.7071 and -0.7071, vertical edges upright, no perspective convergence. Fit the furniture to this footprint and surface height. Paint as convincing full-size furniture beside a human 88 display pixels tall. Modern salvaged industrial hideout in a functioning but disordered society: concentrated wear where used, repaired fittings, practical materials. NO photo/PBR, no plastic glossy 3D, no simplistic flat icon, no uniform tiny scratches. Truly transparent background. No floor slab, terrain patch, pedestal, circular plinth, cast ground shadow, grid, labels or people. Entire object with ample transparent margin, source canvas 1254 square if possible. Do not shear, rotate or stretch a preexisting sprite; draw its correct native camera.  Subject: Working hand-cranked compost drum: brown wooden stave drum with dark iron hoops on two braced muted teal steel supports, small leaf emblem painted on body, practical crank at right, closed slightly uneven lid with a few leaves at its edge. Damp discoloration localized near lid and bottom seam, one replaced stave and iron patch. Footprint .75x.70, drum45px high total49px. Four support contact points, no pedestal. Match the GEOMETRY reference's steep ground diagonals closely: look down at 45 degrees, not a low angle. Restrict wear to a few deliberate patches, broad calm paint surfaces elsewhere.",
+    "references": [
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\assets/map/isometric/interactive-devices-v1/barrel.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\reference/street-thugs-v1/tier-1.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\assets/dungeon/street-thug-boss-room-v6/metal-sideboard.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\reference/hideout-facilities-v2/barrel-geometry.png"
+    ],
+    "output_hint": "Generated images are saved to C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab as C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab\\exec-dbf15d0e-bf9a-40d5-b7bd-152634a31de7.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link.",
+    "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab\\exec-dbf15d0e-bf9a-40d5-b7bd-152634a31de7.png",
+    "file": "assets/map/isometric/hideout-facilities-v2/barrel-ready.png",
+    "mode": "built-in image_gen"
+  },
+  {
+    "key": "farm",
+    "state": "ready",
+    "prompt": "Use case: stylized-concept. Production transparent isometric game furniture sprite, completely REDRAW in the newly approved hand-painted scene standard. Reference 1 is OLD subject identity only, DO NOT copy its round display pedestal, its oversized accessories or toy icon proportions. Reference 2 is approved line/shading quality only (do not draw a person or pawn base). Reference 3 is the approved furniture style: thick dark silhouette, varied interior outlines, broad painted planes, upper-left illumination, selective meaningful wear. Reference 4 is exact GEOMETRY only: orthographic ground axes slopes +0.7071 and -0.7071, vertical edges upright, no perspective convergence. Fit the furniture to this footprint and surface height. Paint as convincing full-size furniture beside a human 88 display pixels tall. Modern salvaged industrial hideout in a functioning but disordered society: concentrated wear where used, repaired fittings, practical materials. NO photo/PBR, no plastic glossy 3D, no simplistic flat icon, no uniform tiny scratches. Truly transparent background. No floor slab, terrain patch, pedestal, circular plinth, cast ground shadow, grid, labels or people. Entire object with ample transparent margin, source canvas 1254 square if possible. Do not shear, rotate or stretch a preexisting sprite; draw its correct native camera.  Subject: Working compact indoor cultivation bed: square weathered wooden planter with four short posts, dark soil actually contained INSIDE planter, two rows of modest leafy plants, central narrow irrigation trough and small salvaged pipe with blue valve at rear. Uneven replaced plank, soil smudges at rim, repaired coupling. .95x.95 tile footprint, rim15px, highest35px. No earth patch outside the planter, no separate floor platform. Match the GEOMETRY reference's steep ground diagonals closely: look down at 45 degrees, not a low angle. Restrict wear to a few deliberate patches, broad calm paint surfaces elsewhere.",
+    "references": [
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\assets/map/isometric/interactive-devices-v1/farm.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\reference/street-thugs-v1/tier-1.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\assets/dungeon/street-thug-boss-room-v6/metal-sideboard.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\reference/hideout-facilities-v2/farm-geometry.png"
+    ],
+    "output_hint": "Generated images are saved to C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab as C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab\\exec-fc9ddfa6-a977-4ec3-ba62-e7bcbf9b5ec1.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link.",
+    "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab\\exec-fc9ddfa6-a977-4ec3-ba62-e7bcbf9b5ec1.png",
+    "file": "assets/map/isometric/hideout-facilities-v2/farm-ready.png",
+    "mode": "built-in image_gen"
+  },
+  {
+    "key": "bed",
+    "state": "ready",
+    "prompt": "Use case: stylized-concept. Production transparent isometric game furniture sprite, completely REDRAW in the newly approved hand-painted scene standard. Reference 1 is OLD subject identity only, DO NOT copy its round display pedestal, its oversized accessories or toy icon proportions. Reference 2 is approved line/shading quality only (do not draw a person or pawn base). Reference 3 is the approved furniture style: thick dark silhouette, varied interior outlines, broad painted planes, upper-left illumination, selective meaningful wear. Reference 4 is exact GEOMETRY only: orthographic ground axes slopes +0.7071 and -0.7071, vertical edges upright, no perspective convergence. Fit the furniture to this footprint and surface height. Paint as convincing full-size furniture beside a human 88 display pixels tall. Modern salvaged industrial hideout in a functioning but disordered society: concentrated wear where used, repaired fittings, practical materials. NO photo/PBR, no plastic glossy 3D, no simplistic flat icon, no uniform tiny scratches. Truly transparent background. No floor slab, terrain patch, pedestal, circular plinth, cast ground shadow, grid, labels or people. Entire object with ample transparent margin, source canvas 1254 square if possible. Do not shear, rotate or stretch a preexisting sprite; draw its correct native camera.  Subject: Hideout single bed: worn wooden headboard and footboard combined with repaired dark green iron side rails, cream pillow, blue blanket casually rumpled with one small sewn patch. No bedside objects or slippers. Native long axis extends from upper-right head to lower-left foot, exactly like the geometry guide, footprint .80x1.70 inside a logical 1x2 cells. Mattress24px above floor, head44px, four visible/inferred feet. Same thick painted scene quality as approved steel cot, but preserve old hideout bed wood and blue bedding identity. Match geometry's steep 35.26 degree diagonals, 45 degree downwards camera. Calm broad painted surfaces, wear in a few deliberate locations.",
+    "references": [
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\assets/map/isometric/interactive-devices-v1/bed.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\reference/street-thugs-v1/tier-1.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\assets/dungeon/street-thug-boss-room-v6/steel-cot.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\reference/hideout-facilities-v2/bed-geometry.png"
+    ],
+    "output_hint": "Generated images are saved to C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab as C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab\\exec-ca0c36a6-ce46-4a11-88a3-559b4354c251.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link.",
+    "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab\\exec-ca0c36a6-ce46-4a11-88a3-559b4354c251.png",
+    "file": "assets/map/isometric/hideout-facilities-v2/bed-ready.png",
+    "mode": "built-in image_gen"
+  },
+  {
+    "key": "ranch",
+    "state": "ready",
+    "prompt": "Use case: stylized-concept. Production transparent isometric game furniture sprite, completely REDRAW in the newly approved hand-painted scene standard. Reference 1 is OLD subject identity only, DO NOT copy its round display pedestal, its oversized accessories or toy icon proportions. Reference 2 is approved line/shading quality only (do not draw a person or pawn base). Reference 3 is the approved furniture style: thick dark silhouette, varied interior outlines, broad painted planes, upper-left illumination, selective meaningful wear. Reference 4 is exact GEOMETRY only: orthographic ground axes slopes +0.7071 and -0.7071, vertical edges upright, no perspective convergence. Fit the furniture to this footprint and surface height. Paint as convincing full-size furniture beside a human 88 display pixels tall. Modern salvaged industrial hideout in a functioning but disordered society: concentrated wear where used, repaired fittings, practical materials. NO photo/PBR, no plastic glossy 3D, no simplistic flat icon, no uniform tiny scratches. Truly transparent background. No floor slab, terrain patch, pedestal, circular plinth, cast ground shadow, grid, labels or people. Entire object with ample transparent margin, source canvas 1254 square if possible. Do not shear, rotate or stretch a preexisting sprite; draw its correct native camera.  Subject: Working livestock drive-pen facility: compact square pen of worn wooden rails and muted dark steel braces, a central manual livestock-drive axle with horizontal spokes (functional mechanical hub), small feed trough in one corner. Empty pen with transparent ground between rails, NO animals, NO grassy or dirt floor slab. Sparse straw only inside trough. Not a miniature toy diorama. One replaced rail, rope-wrapped hinge. .95x.95 tile footprint, rails28px, hub32px high. Match geometry's steep 35.26 degree diagonals, 45 degree downwards camera. Calm broad painted surfaces, wear in a few deliberate locations.",
+    "references": [
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\assets/map/isometric/interactive-devices-v1/ranch.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\reference/street-thugs-v1/tier-1.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\assets/dungeon/street-thug-boss-room-v6/factory-desk.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\reference/hideout-facilities-v2/ranch-geometry.png"
+    ],
+    "output_hint": "Generated images are saved to C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab as C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab\\exec-422eb966-7670-497f-b12d-96a6fd88ccda.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link.",
+    "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab\\exec-422eb966-7670-497f-b12d-96a6fd88ccda.png",
+    "file": "assets/map/isometric/hideout-facilities-v2/ranch-ready.png",
+    "mode": "built-in image_gen"
+  },
+  {
+    "key": "stove",
+    "state": "damaged",
+    "prompt": "Use case: precise-object-edit. Edit reference 1, the working facility, into its broken pre-repair state. Keep exact same canvas, object scale, native camera, frame, materials, footprint, foot positions and origin. Reference 2 and 3 are approved dark-outlined hand-painted style only; reference 4 is geometry only. Change only the functional damage: Cold unusable stove: extinguish fire completely, empty ash-dark firebox, broken door glass with visible cracks and missing wedge, loose hinge, split cooktop corner, dented short chimney seam. Pot remains in place but lid dented. Keep all four feet and heavy body unchanged. No glow, smoke or sparks. Maintain truly transparent background. No ground shadow, floor slab, pedestal, extra objects or text. Do not rescale, move, rotate or recompose the main frame.",
+    "references": [
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\assets/map/isometric/hideout-facilities-v2/stove-ready.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\reference/street-thugs-v1/tier-1.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\assets/dungeon/street-thug-boss-room-v6/factory-desk.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\reference/hideout-facilities-v2/stove-geometry.png"
+    ],
+    "output_hint": "Generated images are saved to C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab as C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab\\exec-c1711cd1-4d2c-4dd4-84d0-464530e681d2.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link.",
+    "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab\\exec-c1711cd1-4d2c-4dd4-84d0-464530e681d2.png",
+    "file": "assets/map/isometric/hideout-facilities-v2/stove-damaged.png",
+    "mode": "built-in image_gen"
+  },
+  {
+    "key": "pharmacy",
+    "state": "damaged",
+    "prompt": "Use case: precise-object-edit. Edit reference 1, the working facility, into its broken pre-repair state. Keep exact same canvas, object scale, native camera, frame, materials, footprint, foot positions and origin. Reference 2 and 3 are approved dark-outlined hand-painted style only; reference 4 is geometry only. Change only the functional damage: Unrepaired medicine bench: a clear missing/broken plank section in worktop, one upper shelf slat snapped, mortar cracked, empty dusty bottles lying on the worktop and dried brown herb fragments. Drawer loose but retained. Keep all leg contacts and overall frame intact; clearly unusable, not merely a dirty working station. Maintain truly transparent background. No ground shadow, floor slab, pedestal, extra objects or text. Do not rescale, move, rotate or recompose the main frame.",
+    "references": [
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\assets/map/isometric/hideout-facilities-v2/pharmacy-ready.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\reference/street-thugs-v1/tier-1.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\assets/dungeon/street-thug-boss-room-v6/factory-desk.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\reference/hideout-facilities-v2/pharmacy-geometry.png"
+    ],
+    "output_hint": "Generated images are saved to C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab as C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab\\exec-597e5629-aeb4-401b-b2c5-7c8cb80788bb.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link.",
+    "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab\\exec-597e5629-aeb4-401b-b2c5-7c8cb80788bb.png",
+    "file": "assets/map/isometric/hideout-facilities-v2/pharmacy-damaged.png",
+    "mode": "built-in image_gen"
+  },
+  {
+    "key": "forging",
+    "state": "damaged",
+    "prompt": "Use case: precise-object-edit. Edit reference 1, the working facility, into its broken pre-repair state. Keep exact same canvas, object scale, native camera, frame, materials, footprint, foot positions and origin. Reference 2 and 3 are approved dark-outlined hand-painted style only; reference 4 is geometry only. Change only the functional damage: Cold unusable smithing station: furnace unlit, empty black ash mouth with a few collapsed bricks still within its footprint, top iron plate cracked, chimney seam broken. Anvil remains on its block but deeply chipped, tongs bent, bucket dry. No flame, embers, sparks or glow. Keep main ground objects and contacts in same position. Maintain truly transparent background. No ground shadow, floor slab, pedestal, extra objects or text. Do not rescale, move, rotate or recompose the main frame.",
+    "references": [
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\assets/map/isometric/hideout-facilities-v2/forging-ready.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\reference/street-thugs-v1/tier-1.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\assets/dungeon/street-thug-boss-room-v6/factory-desk.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\reference/hideout-facilities-v2/forging-geometry.png"
+    ],
+    "output_hint": "Generated images are saved to C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab as C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab\\exec-f675c2e4-bd51-4d8d-8040-401df7c5aa71.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link.",
+    "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab\\exec-f675c2e4-bd51-4d8d-8040-401df7c5aa71.png",
+    "file": "assets/map/isometric/hideout-facilities-v2/forging-damaged.png",
+    "mode": "built-in image_gen"
+  },
+  {
+    "key": "bathroom",
+    "state": "damaged",
+    "prompt": "Use case: precise-object-edit. Edit reference 1, the working facility, into its broken pre-repair state. Keep exact same canvas, object scale, native camera, frame, materials, footprint, foot positions and origin. Reference 2 and 3 are approved dark-outlined hand-painted style only; reference 4 is geometry only. Change only the functional damage: Unrepaired wash unit: clearly disconnected broken shower pipe, missing showerhead with remaining mount, torn turquoise curtain with missing lower section, cracked empty enamel basin, a detached tap on cupboard surface, missing cupboard door exposing plumbing. Tray cracked but same footprint. All wood frame posts and ground contacts stay identical. No water. Maintain truly transparent background. No ground shadow, floor slab, pedestal, extra objects or text. Do not rescale, move, rotate or recompose the main frame.",
+    "references": [
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\assets/map/isometric/hideout-facilities-v2/bathroom-ready.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\reference/street-thugs-v1/tier-1.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\assets/dungeon/street-thug-boss-room-v6/factory-desk.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\reference/hideout-facilities-v2/bathroom-geometry.png"
+    ],
+    "output_hint": "Generated images are saved to C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab as C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab\\exec-145d1db2-92ac-45b4-95e0-640cf64f96e3.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link.",
+    "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab\\exec-145d1db2-92ac-45b4-95e0-640cf64f96e3.png",
+    "file": "assets/map/isometric/hideout-facilities-v2/bathroom-damaged.png",
+    "mode": "built-in image_gen"
+  },
+  {
+    "key": "barrel",
+    "state": "damaged",
+    "prompt": "Use case: precise-object-edit. Edit reference 1, the working facility, into its unfinished pre-repair/assembly state. Keep exact same canvas, object scale, native camera, frame, materials, footprint, foot positions and origin. Reference 2 and 3 are approved dark-outlined hand-painted style only; reference 4 is geometry only. Change only: Unrepaired compost drum: missing two obvious front staves leaving a large dark opening, snapped hoop with loose end against barrel body, broken crank missing wooden handle, damaged lid missing a wedge. No fresh green leaves; dry dark remnants. Keep the support feet, center axis and barrel size fixed, no scattered ground debris. Maintain truly transparent background. No ground shadow, floor slab, pedestal, extra objects or text. Do not rescale, move, rotate or recompose the main frame.",
+    "references": [
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\assets/map/isometric/hideout-facilities-v2/barrel-ready.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\reference/street-thugs-v1/tier-1.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\assets/dungeon/street-thug-boss-room-v6/factory-desk.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\reference/hideout-facilities-v2/barrel-geometry.png"
+    ],
+    "output_hint": "Generated images are saved to C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab as C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab\\exec-36fe6944-cb25-4719-a78b-827634d5e36c.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link.",
+    "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab\\exec-36fe6944-cb25-4719-a78b-827634d5e36c.png",
+    "file": "assets/map/isometric/hideout-facilities-v2/barrel-damaged.png",
+    "mode": "built-in image_gen"
+  },
+  {
+    "key": "farm",
+    "state": "damaged",
+    "prompt": "Use case: precise-object-edit. Edit reference 1, the working facility, into its unfinished pre-repair/assembly state. Keep exact same canvas, object scale, native camera, frame, materials, footprint, foot positions and origin. Reference 2 and 3 are approved dark-outlined hand-painted style only; reference 4 is geometry only. Change only: Unrestored growing bed: remove all crops and flowing water, replace with dry uneven soil and sparse dead weeds inside the same box. Split irrigation pipe and missing valve handle. One broken rim plank with obvious gap, rusty coupling. Keep four posts, dimensions, soil containment and contacts unchanged. Maintain truly transparent background. No ground shadow, floor slab, pedestal, extra objects or text. Do not rescale, move, rotate or recompose the main frame.",
+    "references": [
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\assets/map/isometric/hideout-facilities-v2/farm-ready.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\reference/street-thugs-v1/tier-1.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\assets/dungeon/street-thug-boss-room-v6/factory-desk.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\reference/hideout-facilities-v2/farm-geometry.png"
+    ],
+    "output_hint": "Generated images are saved to C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab as C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab\\exec-585e74dd-f4bb-4f44-9d7f-700ca2644eca.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link.",
+    "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab\\exec-585e74dd-f4bb-4f44-9d7f-700ca2644eca.png",
+    "file": "assets/map/isometric/hideout-facilities-v2/farm-damaged.png",
+    "mode": "built-in image_gen"
+  },
+  {
+    "key": "toolbench",
+    "state": "damaged",
+    "prompt": "Use case: precise-object-edit. Edit reference 1, the working facility, into its unfinished pre-repair/assembly state. Keep exact same canvas, object scale, native camera, frame, materials, footprint, foot positions and origin. Reference 2 and 3 are approved dark-outlined hand-painted style only; reference 4 is geometry only. Change only: Not-yet-assembled observation bench: same intact bench frame and leg contacts. Calendar papers stacked loosely on table rather than hanging; thermometer casing empty with its glass tube laid carefully on the tabletop. Leave visible vacant hooks on rear board. Keep clock and handtools. It must look like an unfinished instrument assembly, without tearing the entire bench down. Maintain truly transparent background. No ground shadow, floor slab, pedestal, extra objects or text. Do not rescale, move, rotate or recompose the main frame.",
+    "references": [
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\assets/map/isometric/hideout-facilities-v2/toolbench-ready.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\reference/street-thugs-v1/tier-1.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\assets/dungeon/street-thug-boss-room-v6/factory-desk.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\reference/hideout-facilities-v2/toolbench-geometry.png"
+    ],
+    "output_hint": "Generated images are saved to C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab as C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab\\exec-826d750a-31ac-43c9-953a-0a37df8d5a1b.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link.",
+    "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab\\exec-826d750a-31ac-43c9-953a-0a37df8d5a1b.png",
+    "file": "assets/map/isometric/hideout-facilities-v2/toolbench-damaged.png",
+    "mode": "built-in image_gen"
+  },
+  {
+    "key": "ranch",
+    "state": "damaged",
+    "prompt": "Use case: precise-object-edit. Edit reference 1, the working facility, into its unfinished pre-repair/assembly state. Keep exact same canvas, object scale, native camera, frame, materials, footprint, foot positions and origin. Reference 2 and 3 are approved dark-outlined hand-painted style only; reference 4 is geometry only. Change only: Unrestored drive pen: keep all cornerposts and positions, break two rail sections leaving clear gaps, bend and disconnect two of the center axle spokes, empty damaged feed trough, missing gate latch. No livestock, no floor surface or terrain patch, no external debris. Open transparent ground between rails. Maintain truly transparent background. No ground shadow, floor slab, pedestal, extra objects or text. Do not rescale, move, rotate or recompose the main frame.",
+    "references": [
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\assets/map/isometric/hideout-facilities-v2/ranch-ready.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\reference/street-thugs-v1/tier-1.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\assets/dungeon/street-thug-boss-room-v6/factory-desk.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\reference/hideout-facilities-v2/ranch-geometry.png"
+    ],
+    "output_hint": "Generated images are saved to C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab as C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab\\exec-ee113d20-1a64-4acb-8669-1bdfe544f7c5.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link.",
+    "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab\\exec-ee113d20-1a64-4acb-8669-1bdfe544f7c5.png",
+    "file": "assets/map/isometric/hideout-facilities-v2/ranch-damaged.png",
+    "mode": "built-in image_gen"
+  },
+  {
+    "key": "sewing",
+    "state": "damaged",
+    "prompt": "Use case: precise-object-edit. Edit reference 1, the working facility, into its unfinished pre-repair/assembly state. Keep exact same canvas, object scale, native camera, frame, materials, footprint, foot positions and origin. Reference 2 and 3 are approved dark-outlined hand-painted style only; reference 4 is geometry only. Change only: Not-yet-assembled sewing station: same intact table and four leg contacts. Sewing machine head rests tilted on its side on the table, brass flywheel detached lying beside it, belt loose, fitting torso laid sideways, unthreaded spool and folded loose blue cloth. Table machine mount empty and uncovered. Remove no table legs, don't place anything on ground. Obviously awaiting assembly. Maintain truly transparent background. No ground shadow, floor slab, pedestal, extra objects or text. Do not rescale, move, rotate or recompose the main frame.",
+    "references": [
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\assets/map/isometric/hideout-facilities-v2/sewing-ready.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\reference/street-thugs-v1/tier-1.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\assets/dungeon/street-thug-boss-room-v6/factory-desk.png",
+      "C:\\Users\\haoxian.huang\\Desktop\\work\\Deepseek\\SextingReborn2.0\\reference/hideout-facilities-v2/sewing-geometry.png"
+    ],
+    "output_hint": "Generated images are saved to C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab as C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab\\exec-0a7f87ff-d3ac-45b7-905e-6695151e9d29.png by default.\nIf you need to use a generated image at another path, copy it and leave the original in place unless the user explicitly asks you to delete it.\nThe generated image is already displayed to the user. There is no need to render it in the final response as a Markdown image or file link.",
+    "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17bb2-535a-7830-8cbe-ac3ab9f561ab\\exec-0a7f87ff-d3ac-45b7-905e-6695151e9d29.png",
+    "file": "assets/map/isometric/hideout-facilities-v2/sewing-damaged.png",
+    "mode": "built-in image_gen"
+  }
+]

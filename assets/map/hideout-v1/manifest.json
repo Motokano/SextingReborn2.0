@@ -1,0 +1,54 @@
+{
+  "style": "approved facility pawns; cartoon hand-painted broad facets",
+  "date": "2026-10-24",
+  "files": [
+    {
+      "file": "concrete-quiet.png",
+      "bytes": 1319320,
+      "sha256": "994BF8124F839F8ADF0E6B48EB14C259CD921B2A3F1D14524C04E88665902EF0"
+    },
+    {
+      "file": "fixtures-atlas.png",
+      "bytes": 851380,
+      "sha256": "6CA5F69AEF2A1266FA5FCC4DC78CA6736952799BF42C12AF9365B338A672D02B"
+    },
+    {
+      "file": "material-atlas-v2.png",
+      "bytes": 1797691,
+      "sha256": "BFD6FBA6B3A5569E68AD0158A153BF0FD356C24C38D18443107496A780151997"
+    },
+    {
+      "file": "props-atlas-v2.png",
+      "bytes": 1508586,
+      "sha256": "1DF7C1C566E691447FF195D16012C345BA3994EE8514789315A99B436D257C22"
+    },
+    {
+      "file": "transition-tile-v1.png",
+      "bytes": 1534465,
+      "sha256": "7D0FE87231B6C7452913D4BE8466C1593F6B016BD59C325F05BFE22ED1EE2484"
+    },
+    {
+      "file": "courtyard-materials-v1.png",
+      "bytes": 1816770,
+      "sha256": "113A28BFA8536FE70EEA6C0E715712C45D8C586A0C19A7AD51028F4EE98F1E64"
+    },
+    {
+      "file": "courtyard-props-v1.png",
+      "bytes": 1275192,
+      "sha256": "092C930A215AC3DA817BA7EE950E3194BD4A234D1A8ACFE986681BE28E953B94"
+    },
+    {
+      "file": "courtyard-pond-v1.png",
+      "bytes": 1464747,
+      "sha256": "E80EC5900E1D4016A3BABD595CAFB4A3184B55B9C6789F06026B84FA8F67314D"
+    },
+    {
+      "file": "courtyard-plants-v1.png",
+      "bytes": 565051,
+      "sha256": "13BC984E22C840A464FE781F931C253C45B4E09BB0D10299D482DDB48E8BCED4"
+    }
+  ],
+  "status": "installed-in-formal-game",
+  "generator": "built-in imagegen",
+  "revision": "courtyard-vision-v10"
+}

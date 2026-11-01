@@ -1,0 +1,114 @@
+{
+  "origin": "http://127.0.0.1:8000",
+  "records": [
+    {
+      "id": "cooking",
+      "art": "assets/map/isometric/hideout-facilities-v2/stove-damaged.png",
+      "state": {
+        "mapId": "M0_Base_Inside_lv_1",
+        "x": 12,
+        "y": 14
+      }
+    },
+    {
+      "id": "pharmacy",
+      "art": "assets/map/isometric/hideout-facilities-v2/pharmacy-damaged.png",
+      "state": {
+        "mapId": "M0_Base_Inside_lv_1",
+        "x": 13,
+        "y": 15
+      }
+    },
+    {
+      "id": "forging",
+      "art": "assets/map/isometric/hideout-facilities-v2/forging-damaged.png",
+      "state": {
+        "mapId": "M0_Base_Inside_lv_1",
+        "x": 5,
+        "y": 12
+      }
+    },
+    {
+      "id": "sewing",
+      "art": "assets/map/isometric/hideout-facilities-v2/sewing-damaged.png",
+      "state": {
+        "mapId": "M0_Base_Inside_lv_1",
+        "x": 6,
+        "y": 12
+      }
+    },
+    {
+      "id": "observation",
+      "art": "assets/map/isometric/hideout-facilities-v2/toolbench-damaged.png",
+      "state": {
+        "mapId": "M0_Base_Inside_lv_1",
+        "x": 7,
+        "y": 12
+      }
+    },
+    {
+      "id": "bathroom",
+      "art": "assets/map/isometric/hideout-facilities-v2/bathroom-damaged.png",
+      "state": {
+        "mapId": "M0_Base_Inside_lv_1",
+        "x": 13,
+        "y": 14
+      }
+    },
+    {
+      "id": "compost",
+      "art": "assets/map/isometric/hideout-facilities-v2/barrel-damaged.png",
+      "state": {
+        "mapId": "M0_Base_Inside_lv_1",
+        "x": 13,
+        "y": 14
+      }
+    },
+    {
+      "id": "agriculture",
+      "art": "assets/map/isometric/hideout-facilities-v2/farm-damaged.png",
+      "state": {
+        "mapId": "M0_Base_Inside_lv_1",
+        "x": 10,
+        "y": 14
+      }
+    },
+    {
+      "id": "livestock",
+      "art": "assets/map/isometric/hideout-facilities-v2/ranch-damaged.png",
+      "state": {
+        "mapId": "M0_Base_Inside_lv_1",
+        "x": 9,
+        "y": 14
+      }
+    },
+    {
+      "id": "warehouse",
+      "art": "assets/map/isometric/hideout-facilities-v2/warehouse-ready.png",
+      "state": {
+        "mapId": "M0_Base_Inside_lv_1",
+        "x": 13,
+        "y": 12
+      }
+    },
+    {
+      "id": "bed",
+      "art": "assets/map/isometric/hideout-facilities-v2/bed-ready.png",
+      "state": {
+        "mapId": "M0_Base_Inside_lv_1",
+        "x": 12,
+        "y": 14
+      }
+    },
+    {
+      "id": "manufacturing",
+      "art": "assets/map/isometric/manufacturing-bench-v1/unrepaired-v2.png",
+      "state": {
+        "mapId": "M0_Base_Inside_lv_1",
+        "x": 4,
+        "y": 12
+      }
+    }
+  ],
+  "errors": []
+}

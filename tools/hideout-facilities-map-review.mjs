@@ -1,0 +1,14 @@
+const frame=document.querySelector('#game'),status=document.querySelector('#status'),select=document.querySelector('#facility');
+const entries=[['manufacturing','制作台',4,11],['forging','铸造台',5,11],['sewing','缝纫台',6,11],['observation','工具台',7,11],['livestock','牧场',9,15],['agriculture','农场',10,15],['bed','床',11,15],['cooking','灶台',12,15],['compost','制肥桶',13,15],['pharmacy','制药台',14,15],['bathroom','卫生间',14,14],['warehouse','仓库',14,12]];
+const flags=['cooking_base_station_unlocked','npc_station_pharmacy_base_repaired','forging_station_unlocked','npc_station_compost_base_repaired','bathroom_station_unlocked','facility_restored:agriculture','facility_restored:livestock','sewing_station_unlocked','observation_calendar_unlocked','observation_temperature_unlocked'];
+let complete=false;
+try{
+ const isolation=`<script>const memory=new Map();Object.defineProperty(window,'localStorage',{value:{getItem:k=>memory.get(String(k))??null,setItem:(k,v)=>memory.set(String(k),String(v)),removeItem:k=>memory.delete(String(k)),clear:()=>memory.clear(),key:n=>Array.from(memory.keys())[n]??null,get length(){return memory.size}}});<\/script>`;
+ const html=await fetch('index.html?no_reload').then(r=>r.text());const ready=new Promise(resolve=>frame.addEventListener('load',resolve,{once:true}));
+ frame.srcdoc=html.replace('<head>','<head><base href="'+new URL('.',document.baseURI).href+'">'+isolation+'<style>#bottom-hud-stack{top:auto!important;bottom:16px!important;left:20px!important;transform:none!important}</style>');
+ await ready;const g=frame.contentWindow;await g.AppBoot.ready;g.CharacterAttributes.setState({character_creation_completed:true});g.document.querySelector('#character-creation-overlay')?.classList.add('hidden');g.MapProjection.setMode('isometric');
+ for(const [id,label]of entries){const o=document.createElement('option');o.value=id;o.textContent=label;select.append(o);}select.value=new URLSearchParams(location.search).get('facility')||'cooking';
+ function show(){g.DialogueUI.close();g.NPCSystem.menu.close();const [id,label,x,y]=entries.find(e=>e[0]===select.value);let px=x,py=y-1;if(id==='bed'){px=12;py=14;}if(y===11)py=12;if(x===14){px=13;py=y;}g.GameEngine.setState('M0_Base_Inside_lv_1',px,py);g.SceneCtx.setFacingDir(y===11?0:x===14?2:4);g.SceneRenderer.render();g.SceneHud.refresh('status');}
+ document.querySelector('#state').onclick=e=>{complete=!complete;flags.forEach(f=>g.NPCSystem.setDemoFlag(f,complete));e.target.textContent=complete?'切换到修复前':'切换到完成后';show();};select.onchange=show;
+ await Promise.all(entries.map(e=>g.NPCSystem.preloadNpc('npc.station.'+e[0]+'_base')));show();select.disabled=false;document.querySelector('#state').disabled=false;status.textContent='';window.reviewReady=true;
+}catch(error){status.textContent=error.message;console.error(error);}

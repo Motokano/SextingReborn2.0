@@ -20,16 +20,21 @@
             var y = (crop[1] - spec.anchor[1]) * scale;
             var rx = footprint[0], depth = footprint[1];
             var shadow = document.createElement('canvas');
-            shadow.width = 640; shadow.height = 352;
+            var bounds = spec.source ? [-112,-80,224,160] : [-64,-40,160,88];
+            shadow.width = bounds[2]*4; shadow.height = bounds[3]*4;
+            shadow.drawBounds = bounds;
             var sc = shadow.getContext('2d');
-            sc.scale(4,4); sc.translate(64,40);
+            sc.scale(4,4); sc.translate(-bounds[0],-bounds[1]);
             // Furniture without a pedestal casts shade from its actual four feet.
             if (spec.groundContacts) {
                 sc.beginPath();
                 spec.groundContacts.forEach(function (p, i) {
                     sc[i ? 'lineTo' : 'moveTo']((p[0]-spec.anchor[0])*scale+4,(p[1]-spec.anchor[1])*scale+2);
                 });
-                sc.closePath(); sc.fillStyle='rgba(9,15,11,.25)'; sc.fill();
+                sc.closePath();
+                if (spec.openFootprint) {
+                    sc.strokeStyle='rgba(9,15,11,.23)'; sc.lineWidth=4; sc.stroke();
+                } else { sc.fillStyle=spec.source?'rgba(9,15,11,.18)':'rgba(9,15,11,.25)'; sc.fill(); }
                 return shadow;
             }
             // Project the raised object from the CENTER of its ground footprint.
@@ -100,7 +105,7 @@
             };
             image.src = 'assets/map/terrain/' + kind + '.svg';
         });
-        // Approved device pawns. Crop and anchor are source-image pixel coordinates;
+        // Device pawns. Crop and anchor are source-image pixel coordinates;
         // sizes below describe visible content on a 144px tile, not transparent padding.
         var deviceSpecs = {
             manufacturing: { crop: [114,114,1065,1095], anchor: [637.5,903], groundCenter: [637.5,903], groundContacts: [[212,822],[735,1185],[1063,984],[540,621]], width: 1065*104.4/851, label: '制作台' },
@@ -159,16 +164,27 @@
             spriteSources[variant] = 'assets/map/isometric/interactive-devices-damaged-v1/' + key + '.png';
             deviceFootprints[variant] = deviceFootprints[key];
         });
+        // BEGIN GENERATED HIDEOUT FACILITIES V2
+        var hideoutSpecs = {"stoveHideout":{"crop":[192,81,957,1117],"anchor":[666,982.5],"groundCenter":[666,982.5],"groundContacts":[[628,781],[1055,988],[704,1184],[277,977]],"width":95.7,"label":"灶台","offset":[0,0],"openFootprint":false,"source":"assets/map/isometric/hideout-facilities-v2/stove-ready.png"},"pharmacyHideout":{"crop":[136,116,1004,1044],"anchor":[643.5,883],"groundCenter":[643.5,883],"groundContacts":[[537,622],[1108,953],[750,1144],[179,813]],"width":130.52,"label":"制药台","offset":[0,0],"openFootprint":false,"source":"assets/map/isometric/hideout-facilities-v2/pharmacy-ready.png"},"forgingHideout":{"crop":[85,54,1084,1129],"anchor":[652.5,1021.5],"groundCenter":[652.5,1021.5],"groundContacts":[[775,878],[1120,975],[530,1165],[185,1068]],"width":75.88000000000001,"label":"铸造台","offset":[0,0],"openFootprint":false,"source":"assets/map/isometric/hideout-facilities-v2/forging-ready.png"},"sewingHideout":{"crop":[137,120,1020,1063],"anchor":[641,899],"groundCenter":[641,899],"groundContacts":[[564,638],[1108,943],[718,1160],[174,855]],"width":137.70000000000002,"label":"缝纫台","offset":[0,0],"openFootprint":false,"source":"assets/map/isometric/hideout-facilities-v2/sewing-ready.png"},"toolbenchHideout":{"crop":[157,72,961,1134],"anchor":[633,936],"groundCenter":[633,936],"groundContacts":[[572,676],[1045,1000],[694,1196],[221,872]],"width":134.54000000000002,"label":"工具台","offset":[0,0],"openFootprint":false,"source":"assets/map/isometric/hideout-facilities-v2/toolbench-ready.png"},"warehouseHideout":{"crop":[255,127,781,1041],"anchor":[646.5,911],"groundCenter":[646.5,911],"groundContacts":[[518,681],[988,973],[775,1141],[305,849]],"width":109.34,"label":"仓库","offset":[0,0],"openFootprint":false,"source":"assets/map/isometric/hideout-facilities-v2/warehouse-ready.png"},"bathroomHideout":{"crop":[265,36,849,1128],"anchor":[678,989],"groundCenter":[678,989],"groundContacts":[[465,831],[1051,1048],[891,1147],[305,930]],"width":114.61500000000001,"label":"卫生间","offset":[0,0],"openFootprint":false,"source":"assets/map/isometric/hideout-facilities-v2/bathroom-ready.png"},"barrelHideout":{"crop":[204,196,961,931],"anchor":[618.5,920.5],"groundCenter":[618.5,920.5],"groundContacts":[[440,742],[971,985],[797,1099],[266,856]],"width":96.10000000000001,"label":"制肥桶","offset":[0,0],"openFootprint":false,"source":"assets/map/isometric/hideout-facilities-v2/barrel-ready.png"},"farmHideout":{"crop":[138,212,1026,960],"anchor":[645,859],"groundCenter":[645,859],"groundContacts":[[644,560],[1104,840],[646,1158],[186,878]],"width":102.60000000000001,"label":"农场","offset":[0,0],"openFootprint":false,"source":"assets/map/isometric/hideout-facilities-v2/farm-ready.png"},"bedHideout":{"crop":[48,87,1176,1106],"anchor":[640,816.5],"groundCenter":[640,816.5],"groundContacts":[[826,457],[1184,684],[454,1176],[96,949]],"width":141.12,"label":"床","offset":[0,-0.5],"openFootprint":false,"source":"assets/map/isometric/hideout-facilities-v2/bed-ready.png"},"ranchHideout":{"crop":[47,132,1160,1026],"anchor":[624,741],"groundCenter":[624,741],"groundContacts":[[620,334],[1152,741],[628,1148],[96,741]],"width":139.2,"label":"牧场","offset":[0,0],"openFootprint":true,"source":"assets/map/isometric/hideout-facilities-v2/ranch-ready.png"},"stoveHideoutDamaged":{"crop":[191,80,960,1121],"anchor":[666,982.5],"groundCenter":[666,982.5],"groundContacts":[[628,781],[1055,988],[704,1184],[277,977]],"width":96,"label":"灶台","offset":[0,0],"openFootprint":false,"source":"assets/map/isometric/hideout-facilities-v2/stove-damaged.png"},"pharmacyHideoutDamaged":{"crop":[132,107,1016,1053],"anchor":[643.5,883],"groundCenter":[643.5,883],"groundContacts":[[537,622],[1108,953],[750,1144],[179,813]],"width":132.08,"label":"制药台","offset":[0,0],"openFootprint":false,"source":"assets/map/isometric/hideout-facilities-v2/pharmacy-damaged.png"},"forgingHideoutDamaged":{"crop":[85,56,1085,1127],"anchor":[652.5,1021.5],"groundCenter":[652.5,1021.5],"groundContacts":[[775,878],[1120,975],[530,1165],[185,1068]],"width":75.95,"label":"铸造台","offset":[0,0],"openFootprint":false,"source":"assets/map/isometric/hideout-facilities-v2/forging-damaged.png"},"bathroomHideoutDamaged":{"crop":[264,35,854,1131],"anchor":[678,989],"groundCenter":[678,989],"groundContacts":[[465,831],[1051,1048],[891,1147],[305,930]],"width":115.29,"label":"卫生间","offset":[0,0],"openFootprint":false,"source":"assets/map/isometric/hideout-facilities-v2/bathroom-damaged.png"},"barrelHideoutDamaged":{"crop":[204,196,880,932],"anchor":[618.5,920.5],"groundCenter":[618.5,920.5],"groundContacts":[[440,742],[971,985],[797,1099],[266,856]],"width":88,"label":"制肥桶","offset":[0,0],"openFootprint":false,"source":"assets/map/isometric/hideout-facilities-v2/barrel-damaged.png"},"farmHideoutDamaged":{"crop":[138,261,1027,911],"anchor":[645,859],"groundCenter":[645,859],"groundContacts":[[644,560],[1104,840],[646,1158],[186,878]],"width":102.7,"label":"农场","offset":[0,0],"openFootprint":false,"source":"assets/map/isometric/hideout-facilities-v2/farm-damaged.png"},"toolbenchHideoutDamaged":{"crop":[156,71,963,1135],"anchor":[633,936],"groundCenter":[633,936],"groundContacts":[[572,676],[1045,1000],[694,1196],[221,872]],"width":134.82000000000002,"label":"工具台","offset":[0,0],"openFootprint":false,"source":"assets/map/isometric/hideout-facilities-v2/toolbench-damaged.png"},"ranchHideoutDamaged":{"crop":[48,122,1159,1036],"anchor":[624,741],"groundCenter":[624,741],"groundContacts":[[620,334],[1152,741],[628,1148],[96,741]],"width":139.07999999999998,"label":"牧场","offset":[0,0],"openFootprint":true,"source":"assets/map/isometric/hideout-facilities-v2/ranch-damaged.png"},"sewingHideoutDamaged":{"crop":[137,179,1020,1005],"anchor":[641,899],"groundCenter":[641,899],"groundContacts":[[564,638],[1108,943],[718,1160],[174,855]],"width":137.70000000000002,"label":"缝纫台","offset":[0,0],"openFootprint":false,"source":"assets/map/isometric/hideout-facilities-v2/sewing-damaged.png"}};
+        Object.keys(hideoutSpecs).forEach(function (key) {
+            pawnSpecs[key] = hideoutSpecs[key];
+            spriteSources[key] = hideoutSpecs[key].source;
+            deviceFootprints[key] = [0,0];
+        });
+        // END GENERATED HIDEOUT FACILITIES V2
         function deviceAppearanceKey(key, npcId) {
             var state = deviceStates[key], npc = global.NPCSystem;
-            // Standalone art previews and temporary/other-map stations retain
-            // their existing appearance; base repair flags must not affect them.
-            if (!state || npcId !== 'npc.station.' + state.npc + '_base' || !npc || typeof npc.isDemoFlagTrue !== 'function') return key;
+            // Only base IDs use this redraw; other maps keep their registered art.
+            var baseId = 'npc.station.' + (state ? state.npc : key) + '_base';
+            if (npcId !== baseId || !hideoutSpecs[key + 'Hideout']) return key;
+            key += 'Hideout';
+            if (!state || !npc || typeof npc.isDemoFlagTrue !== 'function') return key;
             return state.flags.every(function (flag) { return npc.isDemoFlagTrue(flag); }) ? key : key + 'Damaged';
         }
         // Dialogue reads the same sources and crops as map pawns.
         global.TileRendererV2.getSpeakerPawn = function (entityId) {
             var key = entityId === 'npc.station.manufacturing_base' ? 'manufacturing' : entityId === 'npc.station.forging_base' ? 'forging' : entityId === 'npc.station.sewing_base' ? 'sewing' : entityId === 'npc.station.observation_base' ? 'toolbench' :
+                entityId === 'npc.station.bed_base' ? deviceAppearanceKey('bed', entityId) : entityId === 'npc.station.warehouse_base' ? deviceAppearanceKey('warehouse', entityId) :
                 entityId === 'npc.supervisor.manager' ? 'linManager' :
                 entityId === 'enemy.street_thug' ? 'streetThug' : 'npc';
             Object.keys(deviceStates).some(function (device) {
@@ -231,11 +247,16 @@
             var y = (crop[1] - spec.anchor[1]) * scale;
             var footX = spec.groundCenter ? cx + (spec.anchor[0] - spec.groundCenter[0]) * scale : cx;
             var footY = spec.groundCenter ? cy + (spec.anchor[1] - spec.groundCenter[1]) * scale : cy + 8 * unit;
+            if (spec.offset) {
+                footX += (spec.offset[0]-spec.offset[1])*72*unit;
+                footY += (spec.offset[0]+spec.offset[1])*72/Math.SQRT2*unit;
+            }
             if (image) {
                 ctx.save(); ctx.translate(footX, footY);
                 ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
                 ctx.save(); ctx.filter = 'blur(.35px)';
-                ctx.drawImage(spriteCache[key].shadow,-64*unit,-40*unit,160*unit,88*unit);
+                var shadow = spriteCache[key].shadow, bounds = shadow.drawBounds || [-64,-40,160,88];
+                ctx.drawImage(shadow,bounds[0]*unit,bounds[1]*unit,bounds[2]*unit,bounds[3]*unit);
                 ctx.restore();
                 ctx.drawImage(image, crop[0], crop[1], crop[2], crop[3], x, y, width, height);
                 ctx.restore();

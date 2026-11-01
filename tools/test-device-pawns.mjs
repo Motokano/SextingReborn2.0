@@ -9,8 +9,10 @@ const root = path.resolve(process.argv[2] || fileURLToPath(new URL('../', import
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 const kinds = {bathroom:'bathroom', forging:'forging', sewing:'sewing', stove:'cooking', ranch:'livestock', farm:'agriculture', bed:'bed', barrel:'compost', pharmacy:'pharmacy', warehouse:'warehouse', toolbench:'observation'};
 const sizes = {};
+const manifest=JSON.parse(read('assets/map/isometric/hideout-facilities-v2/manifest.json'));
+const registration=(key,state='ready')=>manifest.assets.find(a=>a.key===key&&a.state===state);
 for (const key of Object.keys(kinds)) {
-    const info = inspectPng(path.join(root, 'assets/map/isometric/interactive-devices-v1', key + '.png'));
+    const info = inspectPng(path.join(root, registration(key).file));
     assert.ok(info.transparentFraction > .2 && info.transparentFraction < .9, key + ': real transparency');
     assert.deepEqual(info.cornerAlpha, [0,0,0,0], key + ': no opaque matte');
     assert.ok(info.crop[0] > 0 && info.crop[1] > 0, key + ': no clipped silhouette');
@@ -37,7 +39,7 @@ function harness({fail = false, mode = 'isometric', flags = null} = {}) {
     }, Image:class {
         set src(value) {
             this.url = value; if (!value.startsWith('assets/map/terrain/')) requests.push(value);
-            const info = sizes[(value.includes('interactive-devices-damaged-v1') ? 'damaged-' : '') + path.basename(value, '.png')] || {width:100,height:100};
+            const info = sizes[(value.endsWith('-damaged.png') ? 'damaged-' : '') + path.basename(value, '.png').replace(/-(ready|damaged)$/,'')] || {width:100,height:100};
             this.naturalWidth = info.width; this.naturalHeight = info.height;
             pending.push(() => { const callback = fail ? this.onerror : this.onload; if (callback) callback(); });
         }
@@ -59,25 +61,20 @@ function harness({fail = false, mode = 'isometric', flags = null} = {}) {
 for (const [key, flag] of Object.entries(kinds)) {
     const h = harness(), meta = {[flag+'Station']:true,npc:true,npcId:'npc.station.'+flag+'_base',npcLabel:key};
     h.render(meta);
-    assert.equal(h.requests.length,1); assert.ok(h.requests[0].endsWith('/'+key+'.png'), key + ': facility NPC selects device');
+    assert.equal(h.requests.length,1); assert.ok(h.requests[0].endsWith('/'+key+'-ready.png'), key + ': facility NPC selects device');
     h.flush(); h.render(meta);
     const body = h.draws.find(d => d.layer.id === 'map-grid-canvas-dynamic' && d.args[0].url);
     assert.ok(body, key + ': visible body');
     assert.deepEqual(body.args.slice(1,5),sizes[key].crop,key + ': measured crop');
-    assert.ok(body.args[7] <= 72.01 && body.args[8] <= (key === 'bathroom' ? 84 : 76),key + ': tile-scale size');
-    assert.ok(Math.abs(body.args[6] + body.args[8]) < .1,key + ': bottom anchored without whitespace gap');
-    const shadowMatrix=h.shadowTransforms.find(t=>t[0]===1&&t[2]===-.48&&t[3]===-.24);
-    assert.ok(shadowMatrix,key + ': silhouette shadow');
-    // A coin-shaped base has an area footprint, not a line at its front rim.
-    const footprint=h.footprintEllipses.find(e=>e[0]===0);
-    assert.ok(footprint && footprint[2]*2>body.args[7]*.8 && footprint[3]>=6,key+': full ground footprint');
-    assert.ok(Math.abs(footprint[1]+footprint[3])<.01,key+': footprint front stays under base front');
-    assert.ok(h.footprintEllipses.some(e=>e[0]>=4 && e[1]+e[3]>=2),key+': continuous side cast extends right/down');
-    assert.ok(Math.abs(shadowMatrix[5]+1.24*footprint[3])<.01,key+': body shadow starts at footprint center');
+    const a=registration(key);
+    assert.ok(Math.abs(body.args[7]/body.args[3]-body.args[8]/body.args[4])<1e-9,key+': native uniform scale');
+    assert.ok(Math.abs(body.args[7]-a.crop[2]*a.scaleAt144)<1e-8,key+': calibrated physical size');
+    assert.ok(Math.abs(body.args[6]-(a.crop[1]-a.anchor[1])*a.scaleAt144)<1e-8,key+': measured ground center');
+    assert.equal(h.footprintEllipses.length,0,key+': no oval pedestal shadow');
     const groundDraws=h.draws.filter(d=>d.layer.id==='map-grid-canvas-dynamic'&&!d.args[0].url);
     assert.equal(groundDraws.length,1,key+': a single merged shadow, no detached second oval');
     const center=h.renderer.getCellCenter(0,0);
-    assert.ok(h.translations.some(t=>Math.abs(t[1]-center.y-8)<.01),key + ': ground anchor +8');
+    assert.ok(h.translations.some(t=>Math.abs(t[1]-center.y-(a.offset[0]+a.offset[1])*72/Math.SQRT2)<.01),key + ': ground center including cot offset');
     h.render({}); assert.equal(h.draws.filter(d=>d.layer.id==='map-grid-canvas-dynamic').length,0,key + ': hidden body and shadow');
     h.render({...meta,unknownPresence:true}); assert.equal(h.draws.filter(d=>d.layer.id==='map-grid-canvas-dynamic').length,0,key + ': unknown presence does not reveal device');
     h.render(meta); assert.equal(h.requests.length,1,key + ': image cache');
@@ -126,30 +123,31 @@ const repairs = {
  toolbench:['observation_calendar_unlocked','observation_temperature_unlocked']
 };
 for (const [key, required] of Object.entries(repairs)) {
- const info=inspectPng(path.join(root,'assets/map/isometric/interactive-devices-damaged-v1',key+'.png'));
+ const info=inspectPng(path.join(root,registration(key,'damaged').file));
  sizes['damaged-'+key]=info;
  assert.deepEqual(info.cornerAlpha,[0,0,0,0]);assert.ok(info.transparentFraction>.2&&info.transparentFraction<.9);
  assert.ok(info.crop[0]>0&&info.crop[1]>0&&info.crop[0]+info.crop[2]<info.width&&info.crop[1]+info.crop[3]<info.height,key+': silhouette not clipped');
  const flags={},h=harness({flags}),kind=kinds[key],meta={[kind+'Station']:true,npc:true,npcId:'npc.station.'+kind+'_base',npcLabel:key};
  const bodies=()=>h.draws.filter(d=>d.layer.id==='map-grid-canvas-dynamic'&&d.args[0].url);
  h.render(meta);h.flush();h.render(meta);
- assert.match(bodies()[0].args[0].url,/interactive-devices-damaged-v1/);
+ assert.match(bodies()[0].args[0].url,/-damaged\.png$/);
  assert.deepEqual(bodies()[0].args.slice(1,5),info.crop,key+': measured unfinished crop');
- assert.ok(Math.abs(bodies()[0].args[6]+bodies()[0].args[8])<.1,key+': unchanged ground contact');
- assert.ok(bodies()[0].args[7]<=72.01&&bodies()[0].args[8]<=84,key+': actual tile scale');
+ const registered=registration(key,'damaged');
+ assert.ok(Math.abs(bodies()[0].args[6]-(registered.crop[1]-registered.anchor[1])*registered.scaleAt144)<1e-8,key+': unchanged ground contact');
+ assert.ok(Math.abs(bodies()[0].args[7]-registered.width)<1e-8,key+': actual tile scale');
  const center=h.renderer.getCellCenter(0,0);assert.deepEqual(JSON.parse(JSON.stringify(h.renderer.hitTest(center.x,center.y))),{x:0,y:0});
  h.render({...meta,unknownPresence:true});assert.equal(bodies().length,0);
  h.render({});assert.equal(h.draws.filter(d=>d.layer.id==='map-grid-canvas-dynamic').length,0);
- if(required.length>1){flags[required[0]]=true;h.render(meta);assert.match(bodies()[0].args[0].url,/damaged-v1/,key+': partial assembly stays unfinished');}
+ if(required.length>1){flags[required[0]]=true;h.render(meta);assert.match(bodies()[0].args[0].url,/-damaged\.png$/,key+': partial assembly stays unfinished');}
  required.forEach(flag=>{flags[flag]=true;});h.render(meta);h.flush();h.render(meta);
- assert.match(bodies()[0].args[0].url,/interactive-devices-v1/);
+ assert.match(bodies()[0].args[0].url,/-ready\.png$/);
  assert.deepEqual(bodies()[0].args.slice(1,5),sizes[key].crop,key+': repaired art unchanged');
  assert.equal(h.draws.filter(d=>d.layer.id==='map-grid-canvas-dynamic'&&!d.args[0].url).length,1,'only current shadow drawn');
  required.forEach(flag=>{flags[flag]=false;});h.render(meta);
- assert.match(bodies()[0].args[0].url,/damaged-v1/,key+': load/reset switches back');assert.equal(h.requests.length,2,key+': both states cached independently');
- const other=harness({flags:{}});other.render({...meta,npcId:'npc.station.'+kind+'_temporary'});other.flush();assert.ok(other.requests.every(url=>!url.includes('damaged-v1')),'temporary station independent of base repair');
+ assert.match(bodies()[0].args[0].url,/-damaged\.png$/,key+': load/reset switches back');assert.equal(h.requests.length,2,key+': both states cached independently');
+ const other=harness({flags:{}});other.render({...meta,npcId:'npc.station.'+kind+'_temporary'});other.flush();assert.ok(other.requests.every(url=>!url.includes('-damaged.png')),'temporary station independent of base repair');
  const staleFlags={},stale=harness({flags:staleFlags});stale.render(meta);required.forEach(flag=>{staleFlags[flag]=true;});stale.render(meta);stale.flush();stale.render(meta);
- assert.ok(stale.draws.filter(d=>d.layer.id==='map-grid-canvas-dynamic'&&d.args[0].url).every(d=>!d.args[0].url.includes('damaged-v1')),'late damaged image cannot restore stale state');
+ assert.ok(stale.draws.filter(d=>d.layer.id==='map-grid-canvas-dynamic'&&d.args[0].url).every(d=>!d.args[0].url.includes('-damaged.png')),'late damaged image cannot restore stale state');
  const failed=harness({flags:{},fail:true});failed.render(meta);failed.flush();assert.ok(failed.texts.some(t=>t[0]===key.slice(0,6)));failed.recover();failed.advance(5000);failed.render(meta);failed.flush();assert.equal(failed.requests.length,2,'unfinished image retries after outage');
 }
 console.log('PASS: 9 unfinished RGBA assets, live completion/reset, partial assembly, independent caches/shadows, stale loads, retry, visibility, picking and temporary-station isolation.');

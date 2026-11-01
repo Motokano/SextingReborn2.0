@@ -1,0 +1,86 @@
+baseAtlasPromptV2.txt
+Use case: style-transfer. Image 1 is the texture atlas to redraw. Images 2 and 3 are the APPROVED GAME ART STYLE and have priority over the rendering style in image 1. Redraw ONLY the entire nine-tile texture atlas from image 1 to look like it was painted by the same artist who painted the stove and wooden storage pawn in images 2 and 3. Preserve the exact 3-by-3 grid layout and all nine material identities and the flat top-down material view. The result must be one opaque square texture atlas, no gutters or outside border.
+
+Critical style correction: smooth CARTOON MINIATURE illustration, broad simple painted facets with at most 3-4 shade levels, bold clean dark seams and crisp illustrated chips, subtle soft gradients, chunky readable shapes. Match the oak planks, rounded bevel highlights and metal shading of the approved storage pawn. Match the stovetop's smooth steel shading. NO photographic texture, NO fine grain, NO per-pixel noise, NO gritty realism, NO intricate scratches, NO dense cracks or speckles. Fewer than 3 large readable wear marks per material cell. Keep the grey concrete deliberately quiet and mostly smooth. Material differences come from shape, color and broad highlights, not noise.
+
+Row 1: light warm-grey concrete; slightly darker patch-repaired concrete; dark steel plate.
+Row 2: simple cream and muted sage ceramic squares; warm clean worn wooden planks like the storage reference; desaturated charcoal ribbed mat with broad ribs.
+Row 3: simple grey stone paving with tiny moss seam accents; smooth taupe packed earth with a few broad stones; front-on cream plaster wall with muted olive paint on the lower half.
+
+All 9 squares are perfectly flat edge-to-edge material surfaces, no thickness, no isometric projection, no raised slab borders, no objects or props. Do not import the stove, wooden crate, round base, perspective or cast shadows from style reference images. No text, letters, logos or labels.
+
+
+baseConcretePrompt.txt
+Use case: stylized-concept. Asset type: a seamless, perfectly flat top-down CONCRETE FLOOR TEXTURE for the hand-painted cartoon miniature game shown in the input style references. This is a material surface, not a tile object or a slab. Fill the entire square image edge-to-edge, no margins, no thickness, no frame, no outline around the image. Match the simple broad painted facet shading and smooth surface rendering of the approved stove and storage pawn. Light warm grey/taupe, slightly olive, average color approximately #a29d88. Subtle broad smooth irregular tonal patches only, with no more than 8-percent brightness variation across the whole image. Quiet, even and restful so characters remain the focus. Gentle stylized painted character, NOT photographic or granular. It should repeat seamlessly on all four edges; no directional lighting, no cast shadows.
+
+Absolutely NO cracks, broken chunks, crevices, grout lines, stones, litter, footprints, grid, rivets, pipes, furniture, scratches, fine grain, noise or speckles. No text, no logos, no border, no vignette. This is the common continuous indoor concrete floor, not ruins rubble. Input images supply only the clean cartoon painting style; do not include any reference objects.
+
+
+basePropsPromptV2.txt
+Use case: style-transfer. Image 1 is a sprite sheet to redraw; images 2 and 3 are the APPROVED art style and are authoritative. Redraw all three objects in image1 to exactly match the clean hand-painted CARTOON TABLETOP MINIATURE style of the approved stove and storage pawns. The original image1 is TOO REALISTIC. Reduce fine detail drastically: broad clean painted color facets, smooth bright bevel highlights, strong crisp dark brown-black contours, NO grain, NO tiny rust speckles, NO photo textures, NO realistic tangled herbs. Use a few chunky chips to suggest old equipment. Warm timber, muted olive steel, soft metallic grey, restrained brass fittings, same palette and cheerful readable volumes as the approved references. These are humble reused objects in a subterranean workshop, not realistic military equipment.
+
+Preserve these three distinct identities in exactly three equal-width columns: left, compact reused water cistern with brass tap and three short feet; middle, narrow wooden drying rack with two open shelves, four sturdy feet and a few simply illustrated bundles of leaves; right, wooden martial training dummy with rope wraps, striking arms and its own cross feet, no face or head. Full silhouette for each, no overlaps between columns, substantial transparent outer margin. Consistent 45-degree camera elevation, orthographic southeast view, softly lit from upper left. Each fits one game tile when scaled down.
+
+IMPORTANT: Unlike the approved reference pawns, these new environmental objects must have NO DISPLAY BASE, NO ROUND PEDESTAL and NO INTEGRATED FLOOR. Keep only each object's actual feet, which touch the same implied ground line. Background and all gaps between legs must be genuinely transparent. Do not draw a drop shadow. No text, logos or labels.
+
+
+baseFixturesPrompt.txt
+Use case: stylized-concept. Create a coherent 2x2 sprite atlas of FOUR wall-mounted environmental fittings for our game. Input images are STYLE REFERENCES, not edit targets. Match the approved stove and wooden storage pawns EXACTLY in painting style: bold clean dark outlines, smooth cartoon hand-painted volumes, broad simple highlights, chunky forms, very limited wear marks, NO photorealistic grime, NO grain or tiny noise. Muted grey metal, olive enamel, warm brown copper and warm yellow light. All four objects are seen in straight-on frontal orthographic view, no perspective or floor; the game will project them onto a wall. Each isolated and centered in its own equal-size quadrant, with ample transparent padding and no overlap.
+
+Top-left: compact rounded old industrial wall lamp, dark olive metal guard with THREE broad bars, warm cream amber glowing frosted oval glass, sturdy mounting plate. Small warm glow confined near the glass, no vast halo.
+Top-right: small CLOSED metal fuse box with an olive grey hinged door, one latch, a tiny dark red switch and two short chunky conduit stubs. No letters, warning text or labels.
+Bottom-left: square old ventilation grille with six broad horizontal metal slats in an iron square frame, four big corner screws, dark interior. Simple icon-like readable object with painted depth.
+Bottom-right: a short single horizontal industrial pipe assembly, rusty warm copper elbow at each end, a small central red valve wheel, two mounting brackets. No huge background plumbing network.
+
+True transparent background including gaps. No walls, floors, display bases, characters, labels, logos or text. These should be crisp readable hand-painted miniature game assets that sit naturally beside the provided approved facility pawns.
+
+
+===== transition-tile-v1.png / built-in imagegen =====
+
+Use case: stylized-concept
+Create a production game FLOOR TEXTURE, a special one-square transition/teleport entrance tile for a reused industrial hideout, matching the attached game's existing cartoon pawn art.
+The attached stove is STYLE REFERENCE ONLY: match its bold near-black clean outlines, broad hand-painted shading, simple rounded bevel highlights, chunky readable shapes. Do not draw the stove, a pawn base, a room, or isometric scenery.
+Output: one opaque SQUARE image, straight orthographic TOP-DOWN view, no perspective, edges parallel to image edges, fills the entire canvas. This texture will be projected onto the game's diamond-shaped floor later. No raised platform or visible side faces.
+Design: a single flat inset dark desaturated olive-grey steel floor panel, restrained brass/ochre frame, four chunky corner bolt mounts. Centered LARGE simple ivory painted open-door-with-outward-arrow pictogram, designed to read when the complete texture is only 60 pixels wide. Two short warm amber recessed marker strips at left and right edges. Keep corners and frame orderly and symmetric, with a few asymmetric broad paint chips for reuse/wear. Fine scratches should be sparse. Broad dark panel surrounding center symbol, clear calm negative space. Opaque full-bleed flat texture with slim dark perimeter seam.
+Lighting is subtle painted highlights from upper left, as on the reference. NO photorealism, NO grunge noise, NO tiny mechanical clutter, NO text or letters, NO glowing magic circle, NO strong bloom, NO 3D pedestal, NO checkerboard background, NO transparent margins. The whole image is floor surface.
+
+
+
+===== courtyard-materials-prompt.txt / built-in imagegen =====
+Use case: stylized-concept.
+Production 2D game texture ATLAS for an orderly reused industrial hideout courtyard. Match the attached existing wooden storage pawn STYLE ONLY: clean thick dark contours, broad hand-painted soft facets, warm wood and muted grey-green palette, readable cartoon materials, low noise. Do NOT reproduce the pawn or its display base.
+ONE opaque square atlas, EXACTLY 3 columns x 2 rows of equal square textures, no gaps, margins, labels, typography, grid borders or perspective. Each panel fills its cell edge-to-edge and is FLAT orthographic material artwork, later projected onto in-game roof / wall / floor polygons.
+Row 1 left: muted desaturated sage-grey corrugated sheet-metal ROOF, just 6 broad parallel raised ribs running vertically, sparse large paint chips, quiet flat edges, no bolts everywhere.
+Row 1 middle: building WALL, pale warm plaster upper 60%, faded olive painted lower 30%, dark thin concrete footing bottom 10%; broad gentle hand-painted shading, only a few chips, no window, no excessive grime.
+Row 1 right: same flat FRONT-ON wall material and color bands, centered single compact square metal-framed dark window with 2x2 panes, slim faded wooden shutters folded open beside it, modest cream highlights. Window and shutters entirely fit in cell. No perspective.
+Row 2 left: calm flat packed courtyard earth, muted warm taupe soil, broad diffuse tonal variation, only TWO or THREE small stones in whole cell, no grass, no cracks, no noisy texture.
+Row 2 middle: calm desaturated moss/grass lawn surface, broad soft olive-green painted color clusters with a FEW sparse blade accents, no bushes, no flowers, no loose stones, low contrast.
+Row 2 right: orderly reclaimed courtyard pavers, FOUR large roughly rectangular grey limestone slabs aligned in a 2x2 pattern, very thin dark seams and sparse moss, restrained chips, smoother and quieter than rubble.
+Maintain matching cartoon painted material across all six panels. Not photorealistic, not 3D rendered objects, no isometric view, no display pedestal. Designed for small game tile display.
+
+
+===== courtyard-props-prompt.txt / built-in imagegen =====
+Use case: stylized-concept.
+One production transparent sprite atlas containing FOUR separate game courtyard decoration props, exactly 2 columns x 2 rows with large transparent gutters and transparent margins. Match attached wooden storage pawn STYLE ONLY: bold clean dark outlines, hand-painted broad soft shadows and rounded highlights, clear chunky detail, warm timber, muted olive painted metal. No people, no labels, no floor planes, NO display bases.
+Projection: orthographic isometric-like game view from 45 degree elevation and 45 degree azimuth. Horizontal ground axes slope about 35 degrees, vertical edges remain vertical, both sides equally visible. Consistent upper-left light.
+TOP LEFT: one modest compact leafy courtyard TREE. Thick shaped brown trunk, three rounded layered crown masses in muted olive green, a few readable leaf-cluster facets. Full roots/trunk visible, foliage not huge or wide. Natural tree, no pot, no ground disk.
+TOP RIGHT: neatly stacked short FIREWOOD pile held in a low simple timber rack, chopped log ends visible, compact rectangular footprint. Neat useful storage, not debris.
+BOTTOM LEFT: two recycled olive metal WATER BARRELS next to each other, one slightly taller, topped with lids, compact tied bundle of pipe alongside, tidy coordinated set. No large base/pallet.
+BOTTOM RIGHT: squat industrial ROOF VENT hood with broad curved metal cap, short dark olive fluted duct and small actual mounting flange, simple visible bolts. No stand or display base.
+Four objects must be complete isolated silhouettes, each fits comfortably inside its quadrant with no overlaps, no clipped parts, consistent near-black contours and quiet warm highlights. Transparent empty spaces, including holes below rack and around tree. No checkerboard, no white matte, no fake ground shadow oval, no terrain chunks. Clean production sprites.
+
+
+===== courtyard-pond-prompt.txt / built-in imagegen =====
+Use case: stylized-concept.
+Create ONE square top-down flat FLOOR TILE texture of the fishing-pond access in a tidy survival hideout courtyard, matching the attached cartoon storage pawn's hand-painted broad shading, strong clean dark outlines, warm reclaimed wood and quiet olive/grey colors. Reference is STYLE ONLY, no pawn or base.
+True ORTHOGRAPHIC TOP DOWN, no isometric perspective, no visible elevated side faces. Opaque square canvas filled edge to edge with the ground tile. The engine will project it onto a diamond later.
+Design: a small old stone-lined water recess in the LEFT HALF, calm desaturated blue-green water with 2 broad ripple strokes and a tiny reed clump at its upper-left rim; a straight reclaimed timber landing occupies the CENTER and RIGHT HALF and crosses all the way from top to bottom, providing a clear wide safe standing/walking surface at the EXACT image center. The wood boards align vertically, three chunky planks, slim dark joints, simple fasteners. At very right a thin packed-earth shoulder. Stone rim is low and flush. Keep the composition orderly, compact and immediately readable at 60px; moderate contrast on rim and wood, very little clutter.
+The center point must be on solid timber, not water. No tools, loot, fish, people, signs, text, railing or display base. No photographic grunge, speckle noise, glow or vignette.
+
+
+===== courtyard-plants-prompt.txt / built-in imagegen =====
+Use case: stylized-concept.
+Two isolated small low-growing courtyard vegetation sprites on one transparent canvas, arranged LEFT and RIGHT with wide transparent gap, full silhouette, no overlap. Matching the attached game pawn STYLE ONLY: clear near-black outline, broad hand-painted shaded facets, warm desaturated olive green, simple chunky readable shapes. These are tiny map plants, not inventory icons.
+LEFT: one small low tuft of broad wild grass / generic edible weeds, 5 to 7 chunky leaves splaying from a short center, no flowers, no fruit, no container. Silhouette twice as wide as tall. Barely visible short brown roots.
+RIGHT: one compact very low rounded leafy shrub, 3 connected olive foliage masses, few visible leaf clusters, tiny short woody base, no fruit, no flowers. Silhouette twice as wide as tall.
+C/45-degree elevated orthographic game view, consistent light from upper left, soft painted shading, no photographic texture. No text, no ground disks, no display bases, no pots, no soil mounds, no floor, no cast shadow baked into background. Both transparent cutouts, no checkerboard or matte. Fine details kept minimal so they read when scaled to 25 to 35 pixels wide on a 144px grid tile.

@@ -1,0 +1,1690 @@
+{
+  "version": 2,
+  "standard": "docs/design/77-grid-scene-art-standard.md",
+  "tileWidth": 144,
+  "pawnScale": 1.25,
+  "assets": [
+    {
+      "key": "stove",
+      "state": "ready",
+      "file": "assets/map/isometric/hideout-facilities-v2/stove-ready.png",
+      "label": "灶台",
+      "crop": [
+        192,
+        81,
+        957,
+        1117
+      ],
+      "anchor": [
+        666,
+        982.5
+      ],
+      "groundCenter": [
+        666,
+        982.5
+      ],
+      "groundContacts": [
+        [
+          628,
+          781
+        ],
+        [
+          1055,
+          988
+        ],
+        [
+          704,
+          1184
+        ],
+        [
+          277,
+          977
+        ]
+      ],
+      "width": 95.7,
+      "scaleAt144": 0.1,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "offset": [
+        0,
+        0
+      ],
+      "openFootprint": false,
+      "groundSpanPx": [
+        77.80000000000001,
+        40.300000000000004
+      ],
+      "heightReference": {
+        "kind": "cooktop",
+        "points": [
+          [
+            704,
+            782
+          ],
+          [
+            704,
+            1184
+          ]
+        ],
+        "pixels": 40.2
+      },
+      "registrationNote": "Three visible ground contacts estimated manually; back contact inferred by parallelogram.",
+      "nativeAxisResidualPx": [
+        -9.493459556665579,
+        -5.2194480196478175
+      ],
+      "contentSha256": "183f9449b5994f371476999ccfd1593afa52baa52ffcec2adcb863c6541f4b02",
+      "sourceSha256": "183f9449b5994f371476999ccfd1593afa52baa52ffcec2adcb863c6541f4b02",
+      "png": {
+        "width": 1254,
+        "height": 1254,
+        "transparentFraction": 0.5793906071543946,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "key": "pharmacy",
+      "state": "ready",
+      "file": "assets/map/isometric/hideout-facilities-v2/pharmacy-ready.png",
+      "label": "制药台",
+      "crop": [
+        136,
+        116,
+        1004,
+        1044
+      ],
+      "anchor": [
+        643.5,
+        883
+      ],
+      "groundCenter": [
+        643.5,
+        883
+      ],
+      "groundContacts": [
+        [
+          537,
+          622
+        ],
+        [
+          1108,
+          953
+        ],
+        [
+          750,
+          1144
+        ],
+        [
+          179,
+          813
+        ]
+      ],
+      "width": 130.52,
+      "scaleAt144": 0.13,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "offset": [
+        0,
+        0
+      ],
+      "openFootprint": false,
+      "groundSpanPx": [
+        120.77000000000001,
+        67.86
+      ],
+      "heightReference": {
+        "kind": "worktop",
+        "points": [
+          [
+            750,
+            858
+          ],
+          [
+            750,
+            1144
+          ]
+        ],
+        "pixels": 37.18
+      },
+      "registrationNote": "Three visible ground contacts estimated manually; back contact inferred by parallelogram.",
+      "nativeAxisResidualPx": [
+        -9.458536367477418,
+        -8.078749596421918
+      ],
+      "contentSha256": "ca1eb514644c3de5bb7848f89364f8bdcc35130bfc868e69b2095ca8fd1b2717",
+      "sourceSha256": "ca1eb514644c3de5bb7848f89364f8bdcc35130bfc868e69b2095ca8fd1b2717",
+      "png": {
+        "width": 1254,
+        "height": 1254,
+        "transparentFraction": 0.6002380897873217,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "key": "forging",
+      "state": "ready",
+      "file": "assets/map/isometric/hideout-facilities-v2/forging-ready.png",
+      "label": "铸造台",
+      "crop": [
+        85,
+        54,
+        1084,
+        1129
+      ],
+      "anchor": [
+        652.5,
+        1021.5
+      ],
+      "groundCenter": [
+        652.5,
+        1021.5
+      ],
+      "groundContacts": [
+        [
+          775,
+          878
+        ],
+        [
+          1120,
+          975
+        ],
+        [
+          530,
+          1165
+        ],
+        [
+          185,
+          1068
+        ]
+      ],
+      "width": 75.88000000000001,
+      "scaleAt144": 0.07,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "offset": [
+        0,
+        0
+      ],
+      "openFootprint": false,
+      "groundSpanPx": [
+        65.45,
+        20.090000000000003
+      ],
+      "heightReference": {
+        "kind": "anvil",
+        "points": [
+          [
+            530,
+            521
+          ],
+          [
+            530,
+            1165
+          ]
+        ],
+        "pixels": 45.080000000000005
+      },
+      "registrationNote": "Compound object boundary; back point inferred, not a rectangular-plane fit.",
+      "nativeAxisResidualPx": null,
+      "contentSha256": "67458898ad51db50247cf75eaaab34177d70c9cf747269a63e59fd6978c1a808",
+      "sourceSha256": "67458898ad51db50247cf75eaaab34177d70c9cf747269a63e59fd6978c1a808",
+      "png": {
+        "width": 1254,
+        "height": 1254,
+        "transparentFraction": 0.487324135334712,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "key": "sewing",
+      "state": "ready",
+      "file": "assets/map/isometric/hideout-facilities-v2/sewing-ready.png",
+      "label": "缝纫台",
+      "crop": [
+        137,
+        120,
+        1020,
+        1063
+      ],
+      "anchor": [
+        641,
+        899
+      ],
+      "groundCenter": [
+        641,
+        899
+      ],
+      "groundContacts": [
+        [
+          564,
+          638
+        ],
+        [
+          1108,
+          943
+        ],
+        [
+          718,
+          1160
+        ],
+        [
+          174,
+          855
+        ]
+      ],
+      "width": 137.70000000000002,
+      "scaleAt144": 0.135,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "offset": [
+        0,
+        0
+      ],
+      "openFootprint": false,
+      "groundSpanPx": [
+        126.09,
+        70.47
+      ],
+      "heightReference": {
+        "kind": "worktop",
+        "points": [
+          [
+            718,
+            880
+          ],
+          [
+            718,
+            1160
+          ]
+        ],
+        "pixels": 37.800000000000004
+      },
+      "registrationNote": "Three visible ground contacts estimated manually; back contact inferred by parallelogram.",
+      "nativeAxisResidualPx": [
+        -10.754922010340048,
+        -7.934172029471721
+      ],
+      "contentSha256": "67ae94d9c2ec56b3ac6a8391c529e8234d2f8ff3d505d78f7e10a852ed726140",
+      "sourceSha256": "67ae94d9c2ec56b3ac6a8391c529e8234d2f8ff3d505d78f7e10a852ed726140",
+      "png": {
+        "width": 1254,
+        "height": 1254,
+        "transparentFraction": 0.6425937796499368,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "key": "toolbench",
+      "state": "ready",
+      "file": "assets/map/isometric/hideout-facilities-v2/toolbench-ready.png",
+      "label": "工具台",
+      "crop": [
+        157,
+        72,
+        961,
+        1134
+      ],
+      "anchor": [
+        633,
+        936
+      ],
+      "groundCenter": [
+        633,
+        936
+      ],
+      "groundContacts": [
+        [
+          572,
+          676
+        ],
+        [
+          1045,
+          1000
+        ],
+        [
+          694,
+          1196
+        ],
+        [
+          221,
+          872
+        ]
+      ],
+      "width": 134.54000000000002,
+      "scaleAt144": 0.14,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "offset": [
+        0,
+        0
+      ],
+      "openFootprint": false,
+      "groundSpanPx": [
+        115.36000000000001,
+        72.80000000000001
+      ],
+      "heightReference": {
+        "kind": "worktop",
+        "points": [
+          [
+            694,
+            913
+          ],
+          [
+            694,
+            1196
+          ]
+        ],
+        "pixels": 39.620000000000005
+      },
+      "registrationNote": "Three visible ground contacts estimated manually; back contact inferred by parallelogram.",
+      "nativeAxisResidualPx": [
+        -1.4646110501731733,
+        -7.307227227506944
+      ],
+      "contentSha256": "469f487739b897b25e0ed2e1068ac4b459bf4e4a907511079e71db4a02b12611",
+      "sourceSha256": "469f487739b897b25e0ed2e1068ac4b459bf4e4a907511079e71db4a02b12611",
+      "png": {
+        "width": 1254,
+        "height": 1254,
+        "transparentFraction": 0.5816316018406172,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "key": "warehouse",
+      "state": "ready",
+      "file": "assets/map/isometric/hideout-facilities-v2/warehouse-ready.png",
+      "label": "仓库",
+      "crop": [
+        255,
+        127,
+        781,
+        1041
+      ],
+      "anchor": [
+        646.5,
+        911
+      ],
+      "groundCenter": [
+        646.5,
+        911
+      ],
+      "groundContacts": [
+        [
+          518,
+          681
+        ],
+        [
+          988,
+          973
+        ],
+        [
+          775,
+          1141
+        ],
+        [
+          305,
+          849
+        ]
+      ],
+      "width": 109.34,
+      "scaleAt144": 0.14,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "offset": [
+        0,
+        0
+      ],
+      "openFootprint": false,
+      "groundSpanPx": [
+        95.62,
+        64.4
+      ],
+      "heightReference": {
+        "kind": "storage shelf",
+        "points": [
+          [
+            775,
+            718
+          ],
+          [
+            775,
+            1141
+          ]
+        ],
+        "pixels": 59.220000000000006
+      },
+      "registrationNote": "Three visible ground contacts estimated manually; back contact inferred by parallelogram.",
+      "nativeAxisResidualPx": [
+        -5.647626202074822,
+        2.434075785017154
+      ],
+      "contentSha256": "c4290a3fcad01d9409854ec571266d8519dff0dacee7542559265601e13a6353",
+      "sourceSha256": "c4290a3fcad01d9409854ec571266d8519dff0dacee7542559265601e13a6353",
+      "png": {
+        "width": 1254,
+        "height": 1254,
+        "transparentFraction": 0.642899022967016,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "key": "bathroom",
+      "state": "ready",
+      "file": "assets/map/isometric/hideout-facilities-v2/bathroom-ready.png",
+      "label": "卫生间",
+      "crop": [
+        265,
+        36,
+        849,
+        1128
+      ],
+      "anchor": [
+        678,
+        989
+      ],
+      "groundCenter": [
+        678,
+        989
+      ],
+      "groundContacts": [
+        [
+          465,
+          831
+        ],
+        [
+          1051,
+          1048
+        ],
+        [
+          891,
+          1147
+        ],
+        [
+          305,
+          930
+        ]
+      ],
+      "width": 114.61500000000001,
+      "scaleAt144": 0.135,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "offset": [
+        0,
+        0
+      ],
+      "openFootprint": false,
+      "groundSpanPx": [
+        100.71000000000001,
+        42.660000000000004
+      ],
+      "heightReference": {
+        "kind": "basin",
+        "points": [
+          [
+            891,
+            845
+          ],
+          [
+            891,
+            1147
+          ]
+        ],
+        "pixels": 40.77
+      },
+      "registrationNote": "Compound object boundary; back point inferred, not a rectangular-plane fit.",
+      "nativeAxisResidualPx": null,
+      "contentSha256": "9831636cf37891a6a6d879acfe910342147d45a4e6aa223819749b09e07739b1",
+      "sourceSha256": "9831636cf37891a6a6d879acfe910342147d45a4e6aa223819749b09e07739b1",
+      "png": {
+        "width": 1254,
+        "height": 1254,
+        "transparentFraction": 0.6000040699108944,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "key": "barrel",
+      "state": "ready",
+      "file": "assets/map/isometric/hideout-facilities-v2/barrel-ready.png",
+      "label": "制肥桶",
+      "crop": [
+        204,
+        196,
+        961,
+        931
+      ],
+      "anchor": [
+        618.5,
+        920.5
+      ],
+      "groundCenter": [
+        618.5,
+        920.5
+      ],
+      "groundContacts": [
+        [
+          440,
+          742
+        ],
+        [
+          971,
+          985
+        ],
+        [
+          797,
+          1099
+        ],
+        [
+          266,
+          856
+        ]
+      ],
+      "width": 96.10000000000001,
+      "scaleAt144": 0.1,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "offset": [
+        0,
+        0
+      ],
+      "openFootprint": false,
+      "groundSpanPx": [
+        70.5,
+        35.7
+      ],
+      "heightReference": {
+        "kind": "drum",
+        "points": [
+          [
+            797,
+            510
+          ],
+          [
+            797,
+            1099
+          ]
+        ],
+        "pixels": 58.900000000000006
+      },
+      "registrationNote": "Support feet registration; do not fit or stretch round barrel contour.",
+      "nativeAxisResidualPx": null,
+      "contentSha256": "86b59cd0905117ecd9a4c0d4081acf3cfb41388d982c6519d6a7ae595f6600b4",
+      "sourceSha256": "86b59cd0905117ecd9a4c0d4081acf3cfb41388d982c6519d6a7ae595f6600b4",
+      "png": {
+        "width": 1254,
+        "height": 1254,
+        "transparentFraction": 0.6897894838589878,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "key": "farm",
+      "state": "ready",
+      "file": "assets/map/isometric/hideout-facilities-v2/farm-ready.png",
+      "label": "农场",
+      "crop": [
+        138,
+        212,
+        1026,
+        960
+      ],
+      "anchor": [
+        645,
+        859
+      ],
+      "groundCenter": [
+        645,
+        859
+      ],
+      "groundContacts": [
+        [
+          644,
+          560
+        ],
+        [
+          1104,
+          840
+        ],
+        [
+          646,
+          1158
+        ],
+        [
+          186,
+          878
+        ]
+      ],
+      "width": 102.60000000000001,
+      "scaleAt144": 0.1,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "offset": [
+        0,
+        0
+      ],
+      "openFootprint": false,
+      "groundSpanPx": [
+        91.80000000000001,
+        59.800000000000004
+      ],
+      "heightReference": {
+        "kind": "planter rim",
+        "points": [
+          [
+            646,
+            948
+          ],
+          [
+            646,
+            1158
+          ]
+        ],
+        "pixels": 21
+      },
+      "registrationNote": "Three visible ground contacts estimated manually; back contact inferred by parallelogram.",
+      "nativeAxisResidualPx": [
+        -4.5269119345811815,
+        -0.5854905783438767
+      ],
+      "contentSha256": "eb181af065dc55379563331e503a7dbf3bbd8cb4caf551b12fa648da80ff90d6",
+      "sourceSha256": "eb181af065dc55379563331e503a7dbf3bbd8cb4caf551b12fa648da80ff90d6",
+      "png": {
+        "width": 1254,
+        "height": 1254,
+        "transparentFraction": 0.6281869310073792,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "key": "bed",
+      "state": "ready",
+      "file": "assets/map/isometric/hideout-facilities-v2/bed-ready.png",
+      "label": "床",
+      "crop": [
+        48,
+        87,
+        1176,
+        1106
+      ],
+      "anchor": [
+        640,
+        816.5
+      ],
+      "groundCenter": [
+        640,
+        816.5
+      ],
+      "groundContacts": [
+        [
+          826,
+          457
+        ],
+        [
+          1184,
+          684
+        ],
+        [
+          454,
+          1176
+        ],
+        [
+          96,
+          949
+        ]
+      ],
+      "width": 141.12,
+      "scaleAt144": 0.12,
+      "logicalFootprint": [
+        1,
+        2
+      ],
+      "offset": [
+        0,
+        -0.5
+      ],
+      "openFootprint": false,
+      "groundSpanPx": [
+        130.56,
+        86.28
+      ],
+      "heightReference": {
+        "kind": "mattress",
+        "points": [
+          [
+            454,
+            962
+          ],
+          [
+            454,
+            1176
+          ]
+        ],
+        "pixels": 25.68
+      },
+      "registrationNote": "Three visible ground contacts estimated manually; back contact inferred by parallelogram.",
+      "nativeAxisResidualPx": [
+        -3.1373073197740777,
+        -2.9025540319415586
+      ],
+      "contentSha256": "42cb84d84cc2b21df914dc99c678dd905e0e25e4bbd7fb6b29282c1ebf5cfb9e",
+      "sourceSha256": "42cb84d84cc2b21df914dc99c678dd905e0e25e4bbd7fb6b29282c1ebf5cfb9e",
+      "png": {
+        "width": 1254,
+        "height": 1254,
+        "transparentFraction": 0.6049706330492027,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "key": "ranch",
+      "state": "ready",
+      "file": "assets/map/isometric/hideout-facilities-v2/ranch-ready.png",
+      "label": "牧场",
+      "crop": [
+        47,
+        132,
+        1160,
+        1026
+      ],
+      "anchor": [
+        624,
+        741
+      ],
+      "groundCenter": [
+        624,
+        741
+      ],
+      "groundContacts": [
+        [
+          620,
+          334
+        ],
+        [
+          1152,
+          741
+        ],
+        [
+          628,
+          1148
+        ],
+        [
+          96,
+          741
+        ]
+      ],
+      "width": 139.2,
+      "scaleAt144": 0.12,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "offset": [
+        0,
+        0
+      ],
+      "openFootprint": true,
+      "groundSpanPx": [
+        126.72,
+        97.67999999999999
+      ],
+      "heightReference": {
+        "kind": "rail",
+        "points": [
+          [
+            628,
+            885
+          ],
+          [
+            628,
+            1148
+          ]
+        ],
+        "pixels": 31.56
+      },
+      "registrationNote": "Three visible ground contacts estimated manually; back contact inferred by parallelogram.",
+      "nativeAxisResidualPx": [
+        3.6983030890508095,
+        4.377125598989894
+      ],
+      "contentSha256": "2df10b0eb96ae3433e63cce13397fe007e8794674dd0f86a2c0a56761f54dcaf",
+      "sourceSha256": "2df10b0eb96ae3433e63cce13397fe007e8794674dd0f86a2c0a56761f54dcaf",
+      "png": {
+        "width": 1254,
+        "height": 1254,
+        "transparentFraction": 0.6437568838727237,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "key": "stove",
+      "state": "damaged",
+      "file": "assets/map/isometric/hideout-facilities-v2/stove-damaged.png",
+      "label": "灶台",
+      "crop": [
+        191,
+        80,
+        960,
+        1121
+      ],
+      "anchor": [
+        666,
+        982.5
+      ],
+      "groundCenter": [
+        666,
+        982.5
+      ],
+      "groundContacts": [
+        [
+          628,
+          781
+        ],
+        [
+          1055,
+          988
+        ],
+        [
+          704,
+          1184
+        ],
+        [
+          277,
+          977
+        ]
+      ],
+      "width": 96,
+      "scaleAt144": 0.1,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "offset": [
+        0,
+        0
+      ],
+      "openFootprint": false,
+      "groundSpanPx": [
+        77.80000000000001,
+        40.300000000000004
+      ],
+      "heightReference": {
+        "kind": "cooktop",
+        "points": [
+          [
+            704,
+            782
+          ],
+          [
+            704,
+            1184
+          ]
+        ],
+        "pixels": 40.2
+      },
+      "registrationNote": "Three visible ground contacts estimated manually; back contact inferred by parallelogram.",
+      "nativeAxisResidualPx": [
+        -9.493459556665579,
+        -5.2194480196478175
+      ],
+      "contentSha256": "3946d6646f388fe44a555d4540d8617a1397d6de33d2208ca9012e9ded717f9b",
+      "sourceSha256": "3946d6646f388fe44a555d4540d8617a1397d6de33d2208ca9012e9ded717f9b",
+      "png": {
+        "width": 1254,
+        "height": 1254,
+        "transparentFraction": 0.5778484924795678,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "key": "pharmacy",
+      "state": "damaged",
+      "file": "assets/map/isometric/hideout-facilities-v2/pharmacy-damaged.png",
+      "label": "制药台",
+      "crop": [
+        132,
+        107,
+        1016,
+        1053
+      ],
+      "anchor": [
+        643.5,
+        883
+      ],
+      "groundCenter": [
+        643.5,
+        883
+      ],
+      "groundContacts": [
+        [
+          537,
+          622
+        ],
+        [
+          1108,
+          953
+        ],
+        [
+          750,
+          1144
+        ],
+        [
+          179,
+          813
+        ]
+      ],
+      "width": 132.08,
+      "scaleAt144": 0.13,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "offset": [
+        0,
+        0
+      ],
+      "openFootprint": false,
+      "groundSpanPx": [
+        120.77000000000001,
+        67.86
+      ],
+      "heightReference": {
+        "kind": "worktop",
+        "points": [
+          [
+            750,
+            858
+          ],
+          [
+            750,
+            1144
+          ]
+        ],
+        "pixels": 37.18
+      },
+      "registrationNote": "Three visible ground contacts estimated manually; back contact inferred by parallelogram.",
+      "nativeAxisResidualPx": [
+        -9.458536367477418,
+        -8.078749596421918
+      ],
+      "contentSha256": "9c859744460447771b548ec5140e6b8a97012882cfc5bb733e15631797f9a329",
+      "sourceSha256": "9c859744460447771b548ec5140e6b8a97012882cfc5bb733e15631797f9a329",
+      "png": {
+        "width": 1254,
+        "height": 1254,
+        "transparentFraction": 0.5893523499919874,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "key": "forging",
+      "state": "damaged",
+      "file": "assets/map/isometric/hideout-facilities-v2/forging-damaged.png",
+      "label": "铸造台",
+      "crop": [
+        85,
+        56,
+        1085,
+        1127
+      ],
+      "anchor": [
+        652.5,
+        1021.5
+      ],
+      "groundCenter": [
+        652.5,
+        1021.5
+      ],
+      "groundContacts": [
+        [
+          775,
+          878
+        ],
+        [
+          1120,
+          975
+        ],
+        [
+          530,
+          1165
+        ],
+        [
+          185,
+          1068
+        ]
+      ],
+      "width": 75.95,
+      "scaleAt144": 0.07,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "offset": [
+        0,
+        0
+      ],
+      "openFootprint": false,
+      "groundSpanPx": [
+        65.45,
+        20.090000000000003
+      ],
+      "heightReference": {
+        "kind": "anvil",
+        "points": [
+          [
+            530,
+            521
+          ],
+          [
+            530,
+            1165
+          ]
+        ],
+        "pixels": 45.080000000000005
+      },
+      "registrationNote": "Compound object boundary; back point inferred, not a rectangular-plane fit.",
+      "nativeAxisResidualPx": null,
+      "contentSha256": "80501e9571381a77b866cd8fe89e9416521ad25fdcf8193c640bda44391235f4",
+      "sourceSha256": "80501e9571381a77b866cd8fe89e9416521ad25fdcf8193c640bda44391235f4",
+      "png": {
+        "width": 1254,
+        "height": 1254,
+        "transparentFraction": 0.48784050527943756,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "key": "bathroom",
+      "state": "damaged",
+      "file": "assets/map/isometric/hideout-facilities-v2/bathroom-damaged.png",
+      "label": "卫生间",
+      "crop": [
+        264,
+        35,
+        854,
+        1131
+      ],
+      "anchor": [
+        678,
+        989
+      ],
+      "groundCenter": [
+        678,
+        989
+      ],
+      "groundContacts": [
+        [
+          465,
+          831
+        ],
+        [
+          1051,
+          1048
+        ],
+        [
+          891,
+          1147
+        ],
+        [
+          305,
+          930
+        ]
+      ],
+      "width": 115.29,
+      "scaleAt144": 0.135,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "offset": [
+        0,
+        0
+      ],
+      "openFootprint": false,
+      "groundSpanPx": [
+        100.71000000000001,
+        42.660000000000004
+      ],
+      "heightReference": {
+        "kind": "basin",
+        "points": [
+          [
+            891,
+            845
+          ],
+          [
+            891,
+            1147
+          ]
+        ],
+        "pixels": 40.77
+      },
+      "registrationNote": "Compound object boundary; back point inferred, not a rectangular-plane fit.",
+      "nativeAxisResidualPx": null,
+      "contentSha256": "d82b0d9f59155ddc4116c2bce565a007439a9640c731bd48b3bd40f91da43c27",
+      "sourceSha256": "d82b0d9f59155ddc4116c2bce565a007439a9640c731bd48b3bd40f91da43c27",
+      "png": {
+        "width": 1254,
+        "height": 1254,
+        "transparentFraction": 0.6133877175176596,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "key": "barrel",
+      "state": "damaged",
+      "file": "assets/map/isometric/hideout-facilities-v2/barrel-damaged.png",
+      "label": "制肥桶",
+      "crop": [
+        204,
+        196,
+        880,
+        932
+      ],
+      "anchor": [
+        618.5,
+        920.5
+      ],
+      "groundCenter": [
+        618.5,
+        920.5
+      ],
+      "groundContacts": [
+        [
+          440,
+          742
+        ],
+        [
+          971,
+          985
+        ],
+        [
+          797,
+          1099
+        ],
+        [
+          266,
+          856
+        ]
+      ],
+      "width": 88,
+      "scaleAt144": 0.1,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "offset": [
+        0,
+        0
+      ],
+      "openFootprint": false,
+      "groundSpanPx": [
+        70.5,
+        35.7
+      ],
+      "heightReference": {
+        "kind": "drum",
+        "points": [
+          [
+            797,
+            510
+          ],
+          [
+            797,
+            1099
+          ]
+        ],
+        "pixels": 58.900000000000006
+      },
+      "registrationNote": "Support feet registration; do not fit or stretch round barrel contour.",
+      "nativeAxisResidualPx": null,
+      "contentSha256": "440e978e63072429ed67b16202fa33e965c987926be6f6337e3bdb51210d8c52",
+      "sourceSha256": "440e978e63072429ed67b16202fa33e965c987926be6f6337e3bdb51210d8c52",
+      "png": {
+        "width": 1254,
+        "height": 1254,
+        "transparentFraction": 0.6967178712331067,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "key": "farm",
+      "state": "damaged",
+      "file": "assets/map/isometric/hideout-facilities-v2/farm-damaged.png",
+      "label": "农场",
+      "crop": [
+        138,
+        261,
+        1027,
+        911
+      ],
+      "anchor": [
+        645,
+        859
+      ],
+      "groundCenter": [
+        645,
+        859
+      ],
+      "groundContacts": [
+        [
+          644,
+          560
+        ],
+        [
+          1104,
+          840
+        ],
+        [
+          646,
+          1158
+        ],
+        [
+          186,
+          878
+        ]
+      ],
+      "width": 102.7,
+      "scaleAt144": 0.1,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "offset": [
+        0,
+        0
+      ],
+      "openFootprint": false,
+      "groundSpanPx": [
+        91.80000000000001,
+        59.800000000000004
+      ],
+      "heightReference": {
+        "kind": "planter rim",
+        "points": [
+          [
+            646,
+            948
+          ],
+          [
+            646,
+            1158
+          ]
+        ],
+        "pixels": 21
+      },
+      "registrationNote": "Three visible ground contacts estimated manually; back contact inferred by parallelogram.",
+      "nativeAxisResidualPx": [
+        -4.5269119345811815,
+        -0.5854905783438767
+      ],
+      "contentSha256": "fb44d89444f911c0e9c9e0c2692b30d7fb8941a0d6e26415e65be5b247522501",
+      "sourceSha256": "fb44d89444f911c0e9c9e0c2692b30d7fb8941a0d6e26415e65be5b247522501",
+      "png": {
+        "width": 1254,
+        "height": 1254,
+        "transparentFraction": 0.635089245514831,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "key": "toolbench",
+      "state": "damaged",
+      "file": "assets/map/isometric/hideout-facilities-v2/toolbench-damaged.png",
+      "label": "工具台",
+      "crop": [
+        156,
+        71,
+        963,
+        1135
+      ],
+      "anchor": [
+        633,
+        936
+      ],
+      "groundCenter": [
+        633,
+        936
+      ],
+      "groundContacts": [
+        [
+          572,
+          676
+        ],
+        [
+          1045,
+          1000
+        ],
+        [
+          694,
+          1196
+        ],
+        [
+          221,
+          872
+        ]
+      ],
+      "width": 134.82000000000002,
+      "scaleAt144": 0.14,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "offset": [
+        0,
+        0
+      ],
+      "openFootprint": false,
+      "groundSpanPx": [
+        115.36000000000001,
+        72.80000000000001
+      ],
+      "heightReference": {
+        "kind": "worktop",
+        "points": [
+          [
+            694,
+            913
+          ],
+          [
+            694,
+            1196
+          ]
+        ],
+        "pixels": 39.620000000000005
+      },
+      "registrationNote": "Three visible ground contacts estimated manually; back contact inferred by parallelogram.",
+      "nativeAxisResidualPx": [
+        -1.4646110501731733,
+        -7.307227227506944
+      ],
+      "contentSha256": "ca4607f1ce58ca6769dd7de659a5a767ec35867415015d452b647ab36ec9b53c",
+      "sourceSha256": "ca4607f1ce58ca6769dd7de659a5a767ec35867415015d452b647ab36ec9b53c",
+      "png": {
+        "width": 1254,
+        "height": 1254,
+        "transparentFraction": 0.5803953664064467,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "key": "ranch",
+      "state": "damaged",
+      "file": "assets/map/isometric/hideout-facilities-v2/ranch-damaged.png",
+      "label": "牧场",
+      "crop": [
+        48,
+        122,
+        1159,
+        1036
+      ],
+      "anchor": [
+        624,
+        741
+      ],
+      "groundCenter": [
+        624,
+        741
+      ],
+      "groundContacts": [
+        [
+          620,
+          334
+        ],
+        [
+          1152,
+          741
+        ],
+        [
+          628,
+          1148
+        ],
+        [
+          96,
+          741
+        ]
+      ],
+      "width": 139.07999999999998,
+      "scaleAt144": 0.12,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "offset": [
+        0,
+        0
+      ],
+      "openFootprint": true,
+      "groundSpanPx": [
+        126.72,
+        97.67999999999999
+      ],
+      "heightReference": {
+        "kind": "rail",
+        "points": [
+          [
+            628,
+            885
+          ],
+          [
+            628,
+            1148
+          ]
+        ],
+        "pixels": 31.56
+      },
+      "registrationNote": "Three visible ground contacts estimated manually; back contact inferred by parallelogram.",
+      "nativeAxisResidualPx": [
+        3.6983030890508095,
+        4.377125598989894
+      ],
+      "contentSha256": "5cb03accc72706d7ff3ee04f8e7855fcbd4be816a237b425a7b652eb68bcd25f",
+      "sourceSha256": "5cb03accc72706d7ff3ee04f8e7855fcbd4be816a237b425a7b652eb68bcd25f",
+      "png": {
+        "width": 1254,
+        "height": 1254,
+        "transparentFraction": 0.658152921814468,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "key": "sewing",
+      "state": "damaged",
+      "file": "assets/map/isometric/hideout-facilities-v2/sewing-damaged.png",
+      "label": "缝纫台",
+      "crop": [
+        137,
+        179,
+        1020,
+        1005
+      ],
+      "anchor": [
+        641,
+        899
+      ],
+      "groundCenter": [
+        641,
+        899
+      ],
+      "groundContacts": [
+        [
+          564,
+          638
+        ],
+        [
+          1108,
+          943
+        ],
+        [
+          718,
+          1160
+        ],
+        [
+          174,
+          855
+        ]
+      ],
+      "width": 137.70000000000002,
+      "scaleAt144": 0.135,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "offset": [
+        0,
+        0
+      ],
+      "openFootprint": false,
+      "groundSpanPx": [
+        126.09,
+        70.47
+      ],
+      "heightReference": {
+        "kind": "worktop",
+        "points": [
+          [
+            718,
+            880
+          ],
+          [
+            718,
+            1160
+          ]
+        ],
+        "pixels": 37.800000000000004
+      },
+      "registrationNote": "Three visible ground contacts estimated manually; back contact inferred by parallelogram.",
+      "nativeAxisResidualPx": [
+        -10.754922010340048,
+        -7.934172029471721
+      ],
+      "contentSha256": "84963cf90e28a0e0b62df1089a8e75937232a7b6be94d7c30e4f3d884cc47ce6",
+      "sourceSha256": "84963cf90e28a0e0b62df1089a8e75937232a7b6be94d7c30e4f3d884cc47ce6",
+      "png": {
+        "width": 1254,
+        "height": 1254,
+        "transparentFraction": 0.6314384082578492,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    }
+  ]
+}

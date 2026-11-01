@@ -1,0 +1,13 @@
+{
+  "stove": {"label":"灶台","scale":0.1,"left":[277,977],"front":[704,1184],"right":[1055,988],"heightSample":[[704,782],[704,1184]],"kind":"cooktop"},
+  "pharmacy": {"label":"制药台","scale":0.13,"left":[179,813],"front":[750,1144],"right":[1108,953],"heightSample":[[750,858],[750,1144]],"kind":"worktop"},
+  "forging": {"label":"铸造台","scale":0.07,"left":[185,1068],"front":[530,1165],"right":[1120,975],"heightSample":[[530,521],[530,1165]],"kind":"anvil","compound":true},
+  "sewing": {"label":"缝纫台","scale":0.135,"left":[174,855],"front":[718,1160],"right":[1108,943],"heightSample":[[718,880],[718,1160]],"kind":"worktop"},
+  "toolbench": {"label":"工具台","scale":0.14,"left":[221,872],"front":[694,1196],"right":[1045,1000],"heightSample":[[694,913],[694,1196]],"kind":"worktop"},
+  "warehouse": {"label":"仓库","scale":0.14,"left":[305,849],"front":[775,1141],"right":[988,973],"heightSample":[[775,718],[775,1141]],"kind":"storage shelf"},
+  "bathroom": {"label":"卫生间","scale":0.135,"left":[305,930],"front":[891,1147],"right":[1051,1048],"heightSample":[[891,845],[891,1147]],"kind":"basin","compound":true},
+  "barrel": {"label":"制肥桶","scale":0.1,"left":[266,856],"front":[797,1099],"right":[971,985],"heightSample":[[797,510],[797,1099]],"kind":"drum","round":true},
+  "farm": {"label":"农场","scale":0.1,"left":[186,878],"front":[646,1158],"right":[1104,840],"heightSample":[[646,948],[646,1158]],"kind":"planter rim"},
+  "ranch": {"label":"牧场","scale":0.12,"left":[96,741],"front":[628,1148],"right":[1152,741],"heightSample":[[628,885],[628,1148]],"kind":"rail","openFootprint":true},
+  "bed": {"label":"床","scale":0.12,"left":[96,949],"front":[454,1176],"right":[1184,684],"heightSample":[[454,962],[454,1176]],"kind":"mattress","logicalFootprint":[1,2],"offset":[0,-0.5]}
+}

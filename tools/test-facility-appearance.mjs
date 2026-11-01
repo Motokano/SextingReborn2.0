@@ -6,8 +6,8 @@ for (const full of [false, true]) test(`${full ? 'Svelte' : 'native'} facility a
  const h=await boot(full),g=h.g;
  const ids=['cooking','pharmacy','forging','compost','bathroom','agriculture','livestock','sewing','observation'];
  const art=id=>g.TileRendererV2.getSpeakerPawn('npc.station.'+id+'_base').url;
- const unfinished=id=>assert.match(art(id),/interactive-devices-damaged-v1/,id);
- const ready=id=>assert.match(art(id),/interactive-devices-v1\//,id);
+ const unfinished=id=>assert.match(art(id),/hideout-facilities-v2\/.*-damaged\.png$/,id);
+ const ready=id=>assert.match(art(id),/hideout-facilities-v2\/.*-ready\.png$/,id);
  function supply(id) {
   const project=g.FacilityUnlock.get(id),[x,y]=project.spec.position;
   g.GameEngine.setState('M0_Base_Inside_lv_1',x,y-1);

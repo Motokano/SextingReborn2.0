@@ -1,0 +1,10 @@
+Use case: stylized-concept.
+Production 2D game texture ATLAS for an orderly reused industrial hideout courtyard. Match the attached existing wooden storage pawn STYLE ONLY: clean thick dark contours, broad hand-painted soft facets, warm wood and muted grey-green palette, readable cartoon materials, low noise. Do NOT reproduce the pawn or its display base.
+ONE opaque square atlas, EXACTLY 3 columns x 2 rows of equal square textures, no gaps, margins, labels, typography, grid borders or perspective. Each panel fills its cell edge-to-edge and is FLAT orthographic material artwork, later projected onto in-game roof / wall / floor polygons.
+Row 1 left: muted desaturated sage-grey corrugated sheet-metal ROOF, just 6 broad parallel raised ribs running vertically, sparse large paint chips, quiet flat edges, no bolts everywhere.
+Row 1 middle: building WALL, pale warm plaster upper 60%, faded olive painted lower 30%, dark thin concrete footing bottom 10%; broad gentle hand-painted shading, only a few chips, no window, no excessive grime.
+Row 1 right: same flat FRONT-ON wall material and color bands, centered single compact square metal-framed dark window with 2x2 panes, slim faded wooden shutters folded open beside it, modest cream highlights. Window and shutters entirely fit in cell. No perspective.
+Row 2 left: calm flat packed courtyard earth, muted warm taupe soil, broad diffuse tonal variation, only TWO or THREE small stones in whole cell, no grass, no cracks, no noisy texture.
+Row 2 middle: calm desaturated moss/grass lawn surface, broad soft olive-green painted color clusters with a FEW sparse blade accents, no bushes, no flowers, no loose stones, low contrast.
+Row 2 right: orderly reclaimed courtyard pavers, FOUR large roughly rectangular grey limestone slabs aligned in a 2x2 pattern, very thin dark seams and sparse moss, restrained chips, smoother and quieter than rubble.
+Maintain matching cartoon painted material across all six panels. Not photorealistic, not 3D rendered objects, no isometric view, no display pedestal. Designed for small game tile display.

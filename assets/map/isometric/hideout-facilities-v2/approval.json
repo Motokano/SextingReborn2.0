@@ -1,0 +1,115 @@
+{
+  "version": 1,
+  "status": "approved-and-integrated",
+  "approvedDate": "2026-11-01",
+  "userMessage": "可以实装了",
+  "standard": "docs/design/77-grid-scene-art-standard.md",
+  "scope": {
+    "facilityTypes": 11,
+    "pngStates": 20,
+    "repairedPairs": 7,
+    "assembledPairs": 2,
+    "readyOnly": [
+      "bed",
+      "warehouse"
+    ]
+  },
+  "retainedManufacturingArt": "assets/map/isometric/manufacturing-bench-v1/unrepaired-v2.png",
+  "runtime": [
+    "index.html",
+    "js/core/tile-renderer-v2.js",
+    "js/core/base-hideout-art.js",
+    "data/maps/M0_Base_Inside_lv_1.json"
+  ],
+  "behavior": "地图与设施对话按原持久完成标记自动切换，保留存档进度；床占1×2格，原入口保持。",
+  "files": [
+    {
+      "file": "assets/map/isometric/hideout-facilities-v2/stove-ready.png",
+      "sha256": "183f9449b5994f371476999ccfd1593afa52baa52ffcec2adcb863c6541f4b02"
+    },
+    {
+      "file": "assets/map/isometric/hideout-facilities-v2/pharmacy-ready.png",
+      "sha256": "ca1eb514644c3de5bb7848f89364f8bdcc35130bfc868e69b2095ca8fd1b2717"
+    },
+    {
+      "file": "assets/map/isometric/hideout-facilities-v2/forging-ready.png",
+      "sha256": "67458898ad51db50247cf75eaaab34177d70c9cf747269a63e59fd6978c1a808"
+    },
+    {
+      "file": "assets/map/isometric/hideout-facilities-v2/sewing-ready.png",
+      "sha256": "67ae94d9c2ec56b3ac6a8391c529e8234d2f8ff3d505d78f7e10a852ed726140"
+    },
+    {
+      "file": "assets/map/isometric/hideout-facilities-v2/toolbench-ready.png",
+      "sha256": "469f487739b897b25e0ed2e1068ac4b459bf4e4a907511079e71db4a02b12611"
+    },
+    {
+      "file": "assets/map/isometric/hideout-facilities-v2/warehouse-ready.png",
+      "sha256": "c4290a3fcad01d9409854ec571266d8519dff0dacee7542559265601e13a6353"
+    },
+    {
+      "file": "assets/map/isometric/hideout-facilities-v2/bathroom-ready.png",
+      "sha256": "9831636cf37891a6a6d879acfe910342147d45a4e6aa223819749b09e07739b1"
+    },
+    {
+      "file": "assets/map/isometric/hideout-facilities-v2/barrel-ready.png",
+      "sha256": "86b59cd0905117ecd9a4c0d4081acf3cfb41388d982c6519d6a7ae595f6600b4"
+    },
+    {
+      "file": "assets/map/isometric/hideout-facilities-v2/farm-ready.png",
+      "sha256": "eb181af065dc55379563331e503a7dbf3bbd8cb4caf551b12fa648da80ff90d6"
+    },
+    {
+      "file": "assets/map/isometric/hideout-facilities-v2/bed-ready.png",
+      "sha256": "42cb84d84cc2b21df914dc99c678dd905e0e25e4bbd7fb6b29282c1ebf5cfb9e"
+    },
+    {
+      "file": "assets/map/isometric/hideout-facilities-v2/ranch-ready.png",
+      "sha256": "2df10b0eb96ae3433e63cce13397fe007e8794674dd0f86a2c0a56761f54dcaf"
+    },
+    {
+      "file": "assets/map/isometric/hideout-facilities-v2/stove-damaged.png",
+      "sha256": "3946d6646f388fe44a555d4540d8617a1397d6de33d2208ca9012e9ded717f9b"
+    },
+    {
+      "file": "assets/map/isometric/hideout-facilities-v2/pharmacy-damaged.png",
+      "sha256": "9c859744460447771b548ec5140e6b8a97012882cfc5bb733e15631797f9a329"
+    },
+    {
+      "file": "assets/map/isometric/hideout-facilities-v2/forging-damaged.png",
+      "sha256": "80501e9571381a77b866cd8fe89e9416521ad25fdcf8193c640bda44391235f4"
+    },
+    {
+      "file": "assets/map/isometric/hideout-facilities-v2/bathroom-damaged.png",
+      "sha256": "d82b0d9f59155ddc4116c2bce565a007439a9640c731bd48b3bd40f91da43c27"
+    },
+    {
+      "file": "assets/map/isometric/hideout-facilities-v2/barrel-damaged.png",
+      "sha256": "440e978e63072429ed67b16202fa33e965c987926be6f6337e3bdb51210d8c52"
+    },
+    {
+      "file": "assets/map/isometric/hideout-facilities-v2/farm-damaged.png",
+      "sha256": "fb44d89444f911c0e9c9e0c2692b30d7fb8941a0d6e26415e65be5b247522501"
+    },
+    {
+      "file": "assets/map/isometric/hideout-facilities-v2/toolbench-damaged.png",
+      "sha256": "ca4607f1ce58ca6769dd7de659a5a767ec35867415015d452b647ab36ec9b53c"
+    },
+    {
+      "file": "assets/map/isometric/hideout-facilities-v2/ranch-damaged.png",
+      "sha256": "5cb03accc72706d7ff3ee04f8e7855fcbd4be816a237b425a7b652eb68bcd25f"
+    },
+    {
+      "file": "assets/map/isometric/hideout-facilities-v2/sewing-damaged.png",
+      "sha256": "84963cf90e28a0e0b62df1089a8e75937232a7b6be94d7c30e4f3d884cc47ce6"
+    },
+    {
+      "file": "assets/map/isometric/hideout-facilities-v2/manifest.json",
+      "sha256": "3508286f5289a98cef87f6c7dea56959662dad82b2f9d7c5c8fa893417147cbb"
+    },
+    {
+      "file": "assets/map/isometric/hideout-facilities-v2/calibration.json",
+      "sha256": "a6a7bdbaea437f1321fece9f7ad32e982bf4385fb081526e2724d324607e5cf6"
+    }
+  ]
+}
