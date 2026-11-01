@@ -1110,45 +1110,6 @@
         return getLimbDestroy(limb) >= maxV;
     }
 
-    /**
-     * 血气化劲：选一非头肢 +destroyDelta 损毁（须 ≤ 上限−1），并返还 diqiGain 底气（经 Survival 夹紧）。
-     * @returns {{ ok: boolean, reason_key?: string, limb?: string }}
-     */
-    function tryApplyXueQiHuaJing(destroyDelta, diqiGain) {
-        var dDel = Math.max(0, Math.floor(Number(destroyDelta) || 0));
-        var dGain = Math.max(0, Math.floor(Number(diqiGain) || 0));
-        if (dDel <= 0) return { ok: false, reason_key: 'combat.hub.fail.xue_qi.params' };
-        var order = LIMB_DESTROY_IDS.slice();
-        var seed = Date.now() % 1000;
-        for (var s = 0; s < order.length; s++) {
-            var j = s + (seed % (order.length - s));
-            var tmp = order[s];
-            order[s] = order[j];
-            order[j] = tmp;
-        }
-        var i;
-        for (i = 0; i < order.length; i++) {
-            var limb = order[i];
-            var maxTotal = getBodyPartDestroyMax(limb);
-            var capAfter = maxTotal - 1;
-            if (capAfter < 1) continue;
-            var cur = getLimbDestroy(limb);
-            if (cur + dDel <= capAfter) {
-                state.part_destroy[limb] = cur + dDel;
-                noteDestroyDamage();
-                if (typeof global !== 'undefined' && global.Survival && dGain > 0) {
-                    if (typeof global.Survival.changeDiqi === 'function') {
-                        global.Survival.changeDiqi({ curDelta: dGain, sourceTag: 'hub_action:xue_qi_hua_jing' });
-                    } else if (typeof global.Survival.addDiqiCurrent === 'function') {
-                        global.Survival.addDiqiCurrent(dGain);
-                    }
-                }
-                return { ok: true, limb: limb };
-            }
-        }
-        return { ok: false, reason_key: 'combat.hub.fail.xue_qi.no_limb' };
-    }
-
     /** 登记曾获得的后遗症（去重）；返回是否新加入 */
     function registerPostEffectObtained(postEffectId) {
         var id = String(postEffectId || '').trim();
@@ -1561,7 +1522,6 @@
         getDestroyRecoverBlockTicks: getDestroyRecoverBlockTicks,
         onWorldTickDestroyRecover: onWorldTickDestroyRecover,
         isBodyPartDestroyedForParry: isBodyPartDestroyedForParry,
-        tryApplyXueQiHuaJing: tryApplyXueQiHuaJing,
         getCharacterName: getCharacterName,
         isCharacterCreationCompleted: isCharacterCreationCompleted,
         PLACEHOLDER_CHARACTER_NAME: PLACEHOLDER_CHARACTER_NAME,

@@ -615,50 +615,6 @@
   },
   "common_diqi_actions": [
     {
-      "id": "xue_qi_hua_jing",
-      "name": "血气化劲",
-      "hub_effect": "xue_qi_hua_jing",
-      "design_meta": {
-        "sheet_row_id": "HUB_XUE_QI",
-        "doc_anchor": "19-action-system §6.1",
-        "tags": [
-          "breath",
-          "hub_action",
-          "xue_qi_hua_jing"
-        ],
-        "wip_status": "live",
-        "applies_to": [
-          "player"
-        ]
-      },
-      "unlock_level": 1,
-      "tick_cost": 1,
-      "xue_qi_destroy": 10,
-      "xue_qi_diqi_gain": 10
-    },
-    {
-      "id": "tu_qi_na_jing",
-      "name": "吐气纳精",
-      "hub_effect": "tu_qi_na_jing",
-      "design_meta": {
-        "sheet_row_id": "HUB_TU_QI",
-        "doc_anchor": "19-action-system §6.2",
-        "tags": [
-          "breath",
-          "hub_action",
-          "tu_qi_na_jing"
-        ],
-        "wip_status": "live",
-        "applies_to": [
-          "player"
-        ]
-      },
-      "unlock_level": 1,
-      "tick_cost": 1,
-      "tu_qi_diqi_cost": 10,
-      "tu_qi_energy_gain": 1
-    },
-    {
       "id": "tiao_xi_once",
       "name": "调息",
       "hub_effect": "tiao_xi_once",

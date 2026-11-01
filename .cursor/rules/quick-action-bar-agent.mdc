@@ -21,7 +21,8 @@ alwaysApply: false
    - Token：`hub|skillId|actionId`（例 `hub|combat_basic_breath|tu_na`、`hub|combat_basic_footwork|nie_bu`）。  
    - 普通常态动作使用 `action|actionId`：`rest_toggle`为休息，`drink_flask`为从壶饮用。水壶登记跟随当前装备槽，不绑定实例；允许未装备或暂不可饮用时先登记，实际点击沿饮用校验提示，不扣无效动作的水量／时间。
    - **右键**槽位清除；执行与失败提示与菜单内一致。  
-   - 槽位 **`textContent`** 使用 **`combat-skills.json`** 中对应 hub 动作的**展示名**（`name`），勿在渲染里截断到不可读。  
+   - 槽位 **`textContent`** 使用 **`combat-skills.json`** 中对应 hub 动作的**展示名**（`name`），勿在渲染里截断到不可读。原生与 Svelte 共用 `SceneApp.getQuickBarPinLabel`，同时查询 `common_diqi_actions` 与技能 `hub_actions`，不可只查技能专属表。
+   - 已取消的 `xue_qi_hua_jing` 与 `tu_qi_na_jing` 在 `setActionBarSlots` 恢复为空槽，不移动其他槽位、不自动补入替代动作。
    - 存档：`player.sceneUi.action_bar_slots`（见 **`js/save-system.js`**）；运行时 **`SceneCtx.getActionBarSlots` / `setActionBarSlots`**。
 
 ## 扩展新类型时

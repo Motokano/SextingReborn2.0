@@ -394,7 +394,7 @@
 - **装备到肢体与出招循环**
   - **徒手**与**兵器**类主动战斗技能必须**装备在肢体上**才能在战斗中参与普攻出招循环；当前可装备的肢体包括：左手、右手、左脚、右脚。
   - **呼吸法**、**步法**不占上述肢上主动槽，挂载 **`hubs.breath` / `hubs.footwork`**，规则见 [19-action-system.md](19-action-system.md) 与 [07-combat-core.md](07-combat-core.md)（**\(V_{\text{base}}\)** 来自步法，见 `05` 5.7）。
-  - **呼吸法**（`category: breath`）**不设肢上招式槽**，不参与普攻链；其 **「血气化劲」「吐气纳精」「调息」「底气护体」等**在 **`hub_actions[]`** 配表（**底气护体已迁移**：= 激活模块化防具，见 **[37-equipment-modular-armor.md](37-equipment-modular-armor.md)**），由 **`19` 动作菜单**执行（见 **8.3.3「基本呼吸法」**）；**呼吸条（气力）形态由该呼吸法 `breath_bar` 定义**（见 `07`「气力值＝呼吸条」）。
+  - **呼吸法**（`category: breath`）**不设肢上招式槽**，不参与普攻链；其 **「调息」「底气护体」等**在 **`hub_actions[]`** 配表（**底气护体已迁移**：= 激活模块化防具，见 **[37-equipment-modular-armor.md](37-equipment-modular-armor.md)**），由 **`19` 动作菜单**执行（见 **8.3.3「基本呼吸法」**）；**呼吸条（气力）形态由该呼吸法 `breath_bar` 定义**（见 `07`「气力值＝呼吸条」）。
   - 每条肢体同时可装备 **1 个主动战斗技能（徒手或兵器）**；招架由全局步法提供。
   - **技能槽位模型（策划已定：每肢 = 1 主动技能 + 槽1 招式 + 槽2..N 变式）**：每个**带招式槽**的主动战斗技能（**徒手 / 兵器**）拥有若干个槽位（数量按该技能 `slots_unlock_by_level`）：
     - **槽 1（下标 0）＝ 招式槽**：从该技能**在该肢可用的招式**中选一个（按技能 `moves[]` 顺序 + 肢体动作标签过滤，如左手装基本拳脚可选刺拳/摆拳、不可选正蹬/鞭腿）；默认填第一个可用招式；出招即用此招。
@@ -606,16 +606,16 @@
     - **踢击** `kick`：**−25%**（对应旧正蹬 `front_kick`、鞭腿 `whip_kick` 均为 `0.25`）。
   - **扣气口径**：沿用 `14` 方案 1——\(B=\mathrm{clamp}(\lfloor qi\_li\_max \times |r| \rfloor,\,1,\,50)\)，\(C=B\times(k/10)\)，实扣 \(\max(1,\mathrm{round}(C))\)；夹紧 `[0, qi_li_max]`、不记负、**不中断出招**（出招总发生；资源不足由核心条件不满足分支接管，见 `07`「核心条件不满足时的结算」）。回气方向（正变动）对称处理，不设下限夹紧。
   - **状态**：`states` = **空**（后续按需展开）；**核心条件**（`usage_conditions`）：**`check` = `pay_move_cost`**（「能支付该招的呼吸条消耗」）——**满足** → `on_satisfied` = `normal`（正常结算）；**不满足** → `on_unsatisfied` = `damage_zero_drain_zero`（**最终伤害降为 0 + 气力扣至 0 + 仍走完整命中/招架/减伤链**，命中即叠类效果照常触发）。
-- **Hub 配表 `hub_actions[]`**：每条为 **呼吸法特殊动作**的数据源（**非**肢上招式槽），至少 **`id`**、**`name`**、**`unlock_level`**、**`tick_cost`**、效果字段（各 hub 动作按自身效果声明；**底气护体**的效果见 **[37-equipment-modular-armor.md](37-equipment-modular-armor.md)**）、可选 **`cooldown_ticks`**、**`battle_only`**、**`proficiency_max_uses`**、可选 **`exclude_from_skill_total_proficiency`**（见下 **底气护体**）。**玩家执行入口**为 **`19`「动作」菜单**（血气化劲 / 吐气纳精 / 调息 / 底气护体）。**「吐纳」已取消**：呼吸条恢复不再有主动回气动作，仅由 `breath_bar.regen` 被动模型负责（见上）。
+- **Hub 配表 `hub_actions[]`**：每条为 **呼吸法特殊动作**的数据源（**非**肢上招式槽），至少 **`id`**、**`name`**、**`unlock_level`**、**`tick_cost`**、效果字段（各 hub 动作按自身效果声明；**底气护体**的效果见 **[37-equipment-modular-armor.md](37-equipment-modular-armor.md)**）、可选 **`cooldown_ticks`**、**`battle_only`**、**`proficiency_max_uses`**、可选 **`exclude_from_skill_total_proficiency`**（见下 **底气护体**）。**玩家执行入口**为 **`19`「动作」菜单**（调息 / 底气护体）。**「吐纳」已取消**：呼吸条恢复不再有主动回气动作，仅由 `breath_bar.regen` 被动模型负责（见上）。
 - **冷却存档**：**`skills[combat_basic_breath].hub_action_cooldown_ticks[hub_action_id]`**（剩余 tick），规则见 **`19` §6** 总述。
 - **`tu_na` 熟练度键（实现对齐）**：
   - 当前 `combat_basic_breath.hub_actions[]` 中**未定义独立 `tu_na` 动作条目**（原「吐纳」动作已取消）。
-  - 运行时仍使用 `move_usage.tu_na` 作为呼吸法熟练度主键；由 **血气化劲 / 吐气纳精 / 调息** 等动作成功结算共同累加。
+  - 运行时仍使用 `move_usage.tu_na` 作为呼吸法熟练度主键；由 **调息** 等动作成功结算共同累加。
   - `tiao_xi_once` 保留 `proficiency_usage_key: "tu_na"` 作为呼吸法熟练度计数键；不再用于后天五维奖励。
 - **底气护体**（`diqi_huti`，**50 级**解锁，见 `19` §6.6、`06` 底气护体示例）：
   - ⚠️ **已迁移**：机制改为「**激活模块化躯干防具**」——**必须装备防具**（裸奔不可激活）；激活一次性消耗 = 基础盾量 × (1 + Σ模块消耗%)；盾的减伤比例 = 板位模块减伤，盾量（容量）= 基础盾量。效果字段与数值见 **[37-equipment-modular-armor.md](37-equipment-modular-armor.md)**（旧字段 `diqi_consume_ratio_of_max` / `diqi_consume_min` / `shield_tri_type_damage_reduce_pct` 及固定 25% 减伤不再使用）。
   - **熟练度与总熟练**：**不**计入 **`move_usage.tu_na`**；配 **`exclude_from_skill_total_proficiency: true`**，**不参与** **`getSkillTotalProficiency`** 平均，以免稀释呼吸法熟练度对 **`breath_power_multiplier`** 的影响（运行时见 **`CombatSkills.getSkillTotalProficiency`**）。
-- **与 `19-action-system` §6**：**基本呼吸法 ≥1** 解锁 **血气化劲、吐气纳精、调息**；**≥50** 额外解锁 **底气护体**（**已迁移**：底气护体 = 激活模块化防具，见 **[37-equipment-modular-armor.md](37-equipment-modular-armor.md)**）。呼吸法熟练线依赖 **`move_usage.tu_na`** 与 **`getSkillTotalProficiency(combat_basic_breath, …)`**（`exclude_from_skill_total_proficiency` 的 hub 条目不参与平均）。
+- **与 `19-action-system` §6**：**基本呼吸法 ≥1** 解锁 **调息**；**≥50** 额外解锁 **底气护体**（**已迁移**：底气护体 = 激活模块化防具，见 **[37-equipment-modular-armor.md](37-equipment-modular-armor.md)**）。呼吸法熟练线依赖 **`move_usage.tu_na`** 与 **`getSkillTotalProficiency(combat_basic_breath, …)`**（`exclude_from_skill_total_proficiency` 的 hub 条目不参与平均）。
 - **呼吸法威力系数** \(F_{\text{呼吸法威力}}\)（乘入 `05`/`08` **技能侧** \(W_{\text{skill}}\)）：  
   - **`breath_power_multiplier`**：**`base` = 1.0** + **`proficiency_bonus_unlocks`**（`min_proficiency_ratio`、`multiplier_delta` **加法**）。  
   - **熟练度口径（当前实现）**：`category: breath` 直接读取 **`move_usage.tu_na`** 计算熟练度比例（见 `CombatSkills.getSkillTotalProficiency`）；即总熟练度按 `tu_na` 键单线计算。  

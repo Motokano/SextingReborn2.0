@@ -1886,20 +1886,8 @@
             if (partsp.length >= 3 && partsp[0] === 'hub') {
                 var skPin = partsp[1];
                 var acPin = partsp[2];
-                var CSab = (typeof window !== 'undefined' && window.CombatSkills) ? window.CombatSkills : null;
-                if (CSab && typeof CSab.getSkill === 'function') {
-                    var tplab = CSab.getSkill(skPin);
-                    if (tplab && tplab.hub_actions) {
-                        var hx;
-                        for (hx = 0; hx < tplab.hub_actions.length; hx++) {
-                            if (tplab.hub_actions[hx].id === acPin) {
-                                lblPin = tplab.hub_actions[hx].name || acPin;
-                                break;
-                            }
-                        }
-                    }
-                }
-                if (lblPin === '—') lblPin = acPin;
+                lblPin = window.SceneApp && window.SceneApp.getQuickBarPinLabel
+                    ? window.SceneApp.getQuickBarPinLabel(skPin, acPin) : acPin;
             } else if (partsp.length >= 2 && partsp[0] === 'action') {
                 if (partsp[1] === 'rest_toggle') lblPin = tNie('action.bar.pin.rest');
                 else if (partsp[1] === 'drink_flask') lblPin = tNie('flask.action.drink');

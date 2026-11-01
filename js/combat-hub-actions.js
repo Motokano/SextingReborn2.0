@@ -122,50 +122,6 @@
         emitHubResolved(Surv, skillId, actionId, ['diqi_shield', actionId]);
     }
 
-    function tryExecuteXueQiHuaJing(skillId, actionId, ha, IE, Surv, result) {
-        var CA = global.CharacterAttributes;
-        if (!CA || typeof CA.tryApplyXueQiHuaJing !== 'function') {
-            result.reason_key = 'combat.hub.fail.modules';
-            return;
-        }
-        var dDel = ha.xue_qi_destroy != null ? parseInt(ha.xue_qi_destroy, 10) : 10;
-        var dGain = ha.xue_qi_diqi_gain != null ? parseInt(ha.xue_qi_diqi_gain, 10) : 10;
-        var xr = CA.tryApplyXueQiHuaJing(dDel, dGain);
-        if (!xr.ok) {
-            result.reason_key = xr.reason_key || 'combat.hub.fail.xue_qi.no_limb';
-            return;
-        }
-        advanceActionTicks(Surv, ha.tick_cost);
-        incrementBreathTuNaLine(IE, skillId);
-        result.ok = true;
-        result.reason_key = 'combat.hub.ok.xue_qi';
-        result.limb = xr.limb;
-        emitHubResolved(Surv, skillId, actionId, ['xue_qi_hua_jing']);
-    }
-
-    function tryExecuteTuQiNaJing(skillId, actionId, ha, IE, Surv, result) {
-        var cost = ha.tu_qi_diqi_cost != null ? parseInt(ha.tu_qi_diqi_cost, 10) : 10;
-        var eg = ha.tu_qi_energy_gain != null ? parseInt(ha.tu_qi_energy_gain, 10) : 1;
-        var st = typeof Surv.getState === 'function' ? Surv.getState() : {};
-        var dCur = st.diqi_current != null ? st.diqi_current : 0;
-        if (dCur < cost) {
-            result.reason_key = 'combat.hub.fail.tu_qi.diqi';
-            return;
-        }
-        if (typeof Surv.changeDiqi === 'function') {
-            Surv.changeDiqi({ curDelta: -cost, sourceTag: 'hub_action:tu_qi_na_jing' });
-        } else if (typeof Surv.consumeDiqi === 'function') {
-            Surv.consumeDiqi(cost);
-        }
-        if (typeof Surv.addEnergy === 'function') Surv.addEnergy(eg);
-        advanceActionTicks(Surv, ha.tick_cost);
-        incrementBreathTuNaLine(IE, skillId);
-        result.ok = true;
-        result.reason_key = 'combat.hub.ok.tu_qi';
-        result.energy_gain = eg;
-        emitHubResolved(Surv, skillId, actionId, ['tu_qi_na_jing']);
-    }
-
     function tryExecuteTiaoXiOnce(skillId, actionId, ha, IE, Surv, result) {
         var st0 = typeof Surv.getState === 'function' ? Surv.getState() : {};
         var dmx = st0.diqi_max != null ? st0.diqi_max : (st0.diqi_max_effective != null ? st0.diqi_max_effective : 0);
@@ -267,12 +223,6 @@
                 break;
             case 'diqi_shield':
                 tryExecuteDiqiShield(skillId, actionId, ha, IE, Surv, result);
-                break;
-            case 'xue_qi_hua_jing':
-                tryExecuteXueQiHuaJing(skillId, actionId, ha, IE, Surv, result);
-                break;
-            case 'tu_qi_na_jing':
-                tryExecuteTuQiNaJing(skillId, actionId, ha, IE, Surv, result);
                 break;
             case 'tiao_xi_once':
                 tryExecuteTiaoXiOnce(skillId, actionId, ha, IE, Surv, result);

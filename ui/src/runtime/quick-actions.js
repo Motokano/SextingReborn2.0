@@ -4,7 +4,7 @@ export function readPins(g) {
     let label = '·';
     if (token) {
       const [kind, skill, action] = token.split('|');
-      label = kind === 'hub' ? g.CombatSkills?.getSkill(skill)?.hub_actions?.find(a => a.id === action)?.name || action : skill === 'rest_toggle' ? text(g,'action.bar.pin.rest') : skill === 'drink_flask' ? text(g,'flask.action.drink') : skill;
+      label = kind === 'hub' ? g.SceneApp?.getQuickBarPinLabel(skill, action) || action : skill === 'rest_toggle' ? text(g,'action.bar.pin.rest') : skill === 'drink_flask' ? text(g,'flask.action.drink') : skill;
     }
     return { token, label, title: (token ? label : text(g,'action.bar.pin.empty_title')) + ' · ' + text(g,'action.bar.pin.right_clear') };
   });

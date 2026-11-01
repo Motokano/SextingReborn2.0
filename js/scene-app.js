@@ -258,6 +258,8 @@
                     if (s.indexOf('hub|') === 0) {
                         var partsHub = s.split('|');
                         if (partsHub.length < 3 || !partsHub[1] || !partsHub[2]) continue;
+                        // Retired actions in old saves leave an empty slot; preserve other positions.
+                        if (partsHub[2] === 'xue_qi_hua_jing' || partsHub[2] === 'tu_qi_na_jing') continue;
                         out[j] = s;
                         continue;
                     }
@@ -1485,16 +1487,6 @@
                 return;
             }
             if (act === 'diqi_huti') showMsg(ui(rx.reason_key, { shield: rx.shield_value != null ? rx.shield_value : 0 }), 'success');
-            else if (act === 'xue_qi_hua_jing') {
-                var CAxq = window.CharacterAttributes;
-                var limbIdx = rx.limb;
-                var limbUiKey2 = limbIdx && BODY_PART_LABELS[limbIdx] ? BODY_PART_LABELS[limbIdx] : null;
-                var limbLabel2 = limbUiKey2 ? ui(limbUiKey2) : String(limbIdx || '—');
-                var dmaxXq2 = (CAxq && typeof CAxq.getBodyPartDestroyMax === 'function' && limbIdx) ? CAxq.getBodyPartDestroyMax(limbIdx) : 100;
-                var curXq2 = (CAxq && typeof CAxq.getLimbDestroy === 'function' && limbIdx) ? CAxq.getLimbDestroy(limbIdx) : 0;
-                showMsg(ui('combat.hub.ok.xue_qi.detail', { limb: limbLabel2, cur: String(curXq2), max: String(dmaxXq2) }), 'success');
-            } else if (act === 'tu_qi_na_jing') showMsg(ui('combat.hub.ok.tu_qi', { e: rx.energy_gain != null ? rx.energy_gain : 1 }), 'success');
-            else if (act === 'tiao_xi_once') showMsg(ui('combat.hub.ok.tiao_xi', { n: rx.diqi_gained != null ? rx.diqi_gained : 0 }), 'success');
             else {
                 var hubOkVars2 = {};
                 if (rx.qi_li_restored != null) hubOkVars2.n = rx.qi_li_restored;
@@ -1729,17 +1721,6 @@
                                 return;
                             }
                             if (actionId === 'diqi_huti') showMsg(ui(r.reason_key, { shield: r.shield_value != null ? r.shield_value : 0 }), 'success');
-                            else if (actionId === 'xue_qi_hua_jing') {
-                                var CAxq = window.CharacterAttributes;
-                                var limbId = r.limb;
-                                var limbUiKey = limbId && BODY_PART_LABELS[limbId] ? BODY_PART_LABELS[limbId] : null;
-                                var limbLabel = limbUiKey ? ui(limbUiKey) : String(limbId || '—');
-                                var dmaxXq = (CAxq && typeof CAxq.getBodyPartDestroyMax === 'function' && limbId)
-                                    ? CAxq.getBodyPartDestroyMax(limbId) : 100;
-                                var curXq = (CAxq && typeof CAxq.getLimbDestroy === 'function' && limbId) ? CAxq.getLimbDestroy(limbId) : 0;
-                                showMsg(ui('combat.hub.ok.xue_qi.detail', { limb: limbLabel, cur: String(curXq), max: String(dmaxXq) }), 'success');
-                            }
-                            else if (actionId === 'tu_qi_na_jing') showMsg(ui('combat.hub.ok.tu_qi', { e: r.energy_gain != null ? r.energy_gain : 1 }), 'success');
                             else if (actionId === 'tiao_xi_once') showMsg(ui('combat.hub.ok.tiao_xi', { n: r.diqi_gained != null ? r.diqi_gained : 0 }), 'success');
                             else if (actionId === 'jin_shi') showMsg(ui('combat.hub.ok.eat', {
                                 gain: r.stamina_gain != null ? String(r.stamina_gain) : '0',
@@ -8990,6 +8971,7 @@
     window.SceneApp.showItemTooltip = SceneUi.showItemTooltip;
     window.SceneApp.hideItemTooltip = SceneUi.hideItemTooltip;
     window.SceneApp.executeQuickBarPinnedSlot = executeQuickBarPinnedSlot;
+    window.SceneApp.getQuickBarPinLabel = getQuickBarPinLabel;
     window.SceneApp.clearQuickBarPinSlot = clearQuickBarPinSlot;
 
 
