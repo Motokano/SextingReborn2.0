@@ -1435,6 +1435,7 @@
                     unknownPresence: unknownPresence,
                     groundUnknown: unknownGround,
                     groundCount: rawGroundCount,
+                    groundBackpackCount: rawGroundCount ? groundAt.filter(function (item) { return IE.getItemTemplate(item && item.item_id)?.equip_slot === 'backpack'; }).length : 0,
                     playerFacingDir: resolvePlayerFacingDir()
                 };
             },

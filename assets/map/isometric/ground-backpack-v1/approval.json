@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "date": "2026-11-01",
+  "status": "approved-art-not-runtime-deployed",
+  "userConfirmation": "可以，给我看看完整的地面交互逻辑",
+  "approvedScope": ["第一版地面背包闭合外观", "当前画风、透明原图与尺寸登记"],
+  "notIncluded": ["三种型号各自的专属外观", "地面存取窗口正式接入", "正式多物件排序与交互距离规则", "同格脚边偏移作为最终交互规则"],
+  "files": {"closed.png": "5a3e5a259e0c6c971035fa8aa561eeb76549df308a2414357f723e23725be25d"},
+  "registration": "manifest.json",
+  "promptRecord": "generation.json"
+}

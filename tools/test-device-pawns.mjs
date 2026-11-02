@@ -83,6 +83,29 @@ for (const [key, flag] of Object.entries(kinds)) {
     const legacy=harness({mode:'legacy'});legacy.render({[flag+'Station']:true});assert.equal(legacy.requests.length,0,key + ': legacy stays text');
 }
 
+// Ordinary loot uses current root items, never a separately persisted marker.
+{
+ const a=JSON.parse(read('assets/map/isometric/ground-items-v1/manifest.json')).asset;
+ sizes.pile=inspectPng(path.join(root,a.src));
+ const h=harness(),bodies=()=>h.draws.filter(d=>d.layer.id&&d.args[0].url===a.src),shadows=()=>h.draws.filter(d=>d.layer.id&&!d.args[0].url);
+ h.render({groundCount:3});h.flush();h.render({groundCount:3});
+ assert.equal(bodies().length,1,'several ordinary root items share one pile');
+ assert.deepEqual(bodies()[0].args.slice(1,5),a.crop);
+ assert.ok(Math.abs(bodies()[0].args[7]-a.crop[2]*a.scaleAt144)<1e-8,'approved pile dimensions');
+ h.render({groundCount:1});assert.equal(bodies().length,1,'partial pickup keeps pile');
+ h.render({groundCount:0});assert.equal(bodies().length,0,'last pickup removes pile');assert.equal(shadows().length,0,'last pickup removes shadow too');
+ h.render({player:true,groundCount:2,groundBackpackCount:1});h.flush();h.render({player:true,groundCount:2,groundBackpackCount:1});
+ assert.equal(bodies().length,1);assert.equal(bodies()[0].layer.id,'map-grid-canvas-foreground','same-cell pile stays above pawn cutaway');
+ const center=h.renderer.getCellCenter(0,0);
+ assert.ok(h.translations.some(t=>Math.abs(t[0]-center.x+36)<.01&&Math.abs(t[1]-center.y-18)<.01),'mixed pile lies beside bags');
+ h.render({player:true,groundCount:1,groundBackpackCount:1});assert.equal(bodies().length,0,'bag alone never creates loose loot');
+ assert.equal(h.draws.filter(d=>d.layer.id&&d.args[0].url?.endsWith('ground-backpack-v1/closed.png')).length,1,'empty or full ground bag retains its own sprite');
+ h.render({player:true,groundCount:0});assert.equal(shadows().length,0,'cleared foreground contains no item shadows');
+ h.render({groundCount:0,groundUnknown:true});assert.equal(bodies().length,0,'unknown loot does not reveal art');assert.ok(h.texts.some(t=>t[0]==='?'));
+ const late=harness();late.render({groundCount:1});late.render({groundCount:0});late.flush();assert.equal(late.draws.filter(d=>d.layer.id&&d.args[0].url===a.src).length,0,'late image load cannot restore a picked-up pile');
+}
+console.log('PASS: loose-item pile, partial/last pickup, independent bags, same-cell placement, shadows, unknown visibility and stale image loads.');
+
 // Exercise the actual scene metadata closure with different vision states. This
 // guards the newly added bed flag in all visibility/occlusion paths.
 const sceneCode=read('js/scene-renderer.js').replace(/\r\n/g,'\n');
@@ -110,6 +133,13 @@ for(const state of [[1,1,false,true],[0,0,false,false],[1,0,false,false],[1,1,tr
     assert.equal(metaAt(10,10).npcId,state[3]?'npc.station.forging_base':null,'forging: NPC visibility '+state);
     env.E.getInteractNpcIdAt=()=> 'npc.station.bathroom_base';
     assert.equal(metaAt(10,10).npcId,state[3]?'npc.station.bathroom_base':null,'bathroom: NPC visibility '+state);
+}
+// Ground art classification depends on item templates, not the optional exchange UI.
+env.IE.getGroundItemsAt=()=>[{item_id:'cloth'},{item_id:'bag'}];
+env.IE.getItemTemplate=id=>({equip_slot:id==='bag'?'backpack':undefined});
+for(const state of [[1,1,false,2,1],[0,0,false,0,0],[1,0,false,0,0],[1,1,true,0,0]]){
+ [visual,identified,rear]=state;const m=metaAt(10,10);
+ assert.equal(m.groundCount,state[3]);assert.equal(m.groundBackpackCount,state[4]);
 }
 console.log('PASS: 11 RGBA sprites, crops/anchors/scale, facility NPC mapping, body/shadow visibility, load/failure cache, legacy fallback, all scene vision gates.');
 

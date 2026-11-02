@@ -70,6 +70,11 @@
         var staticCanvas = createCanvas('map-grid-canvas-static', mapGridEl);
         var dynamicCanvas = createCanvas('map-grid-canvas-dynamic', mapGridEl);
         var fxCanvas = createCanvas('map-grid-canvas-fx', mapGridEl);
+        // Architecture in front of the pawn shares the pawn's stacking context.
+        // Appended after the DOM pawn at z=20; combat remains above both at z=21.
+        var foregroundCanvas = createCanvas('map-grid-canvas-foreground', opts.combatHost || mapGridEl);
+        foregroundCanvas.style.zIndex='20';
+        var foregroundCtx = foregroundCanvas.getContext('2d');
         // The DOM player lives above map-grid's transformed stacking context.
         // Combat needs its own synchronized foreground surface, above that pawn.
         var combatCanvas = createCanvas('map-grid-canvas-combat', opts.combatHost || mapGridEl);
@@ -79,6 +84,7 @@
         var fxCtx = fxCanvas.getContext('2d');
         var combatCtx = combatCanvas.getContext('2d');
         var combatEffectsRenderer = null;
+        var pawnPaints = [];
         var scene = { map: null, st: null, dynamicMetaAt: null };
         var projection = null;
         var staticMapKey = '', staticDataKey = '', staticSizeKey = '';
@@ -138,9 +144,15 @@
         };
         // Character art shares calibrated placement and the merged ground shadow.
         var pawnSpecs = Object.assign({}, deviceSpecs, {
+            groundBackpack: {crop:[227,61,1034,1052],anchor:[618,938],groundCenter:[618,938],groundContacts:[[500,780],[980,949],[736,1094],[257,925]],width:1034*32/723,label:'背包',hideLabel:true},
+            groundItems: {crop:[277,226,941,584],anchor:[746,641],groundCenter:[746,641],groundContacts:[[557,481],[896,491],[1171,692],[1008,752],[866,790],[560,736],[319,640]],width:941*40/925,label:'散落物品',hideLabel:true},
             linManager: {crop:[276,44,666,1208],anchor:[607.5,1251],width:46,label:'林经理'},
             streetThug: {crop:[230,38,757,1216],anchor:[609.5,1253],width:46,label:'地痞'}
         });
+        spriteSources.groundBackpack = 'assets/map/isometric/ground-backpack-v1/closed.png';
+        deviceFootprints.groundBackpack = [16,6];
+        spriteSources.groundItems = 'assets/map/isometric/ground-items-v1/pile.png';
+        deviceFootprints.groundItems = [10,4];
         spriteSources.streetThug = 'assets/map/isometric/street-thug-v1/standing.png';
         deviceFootprints.streetThug = [23,7];
         spriteSources.linManager = 'assets/npc/npc_supervisor_manager/standing-mailbag-v2.png';
@@ -260,7 +272,8 @@
                 ctx.restore();
                 ctx.drawImage(image, crop[0], crop[1], crop[2], crop[3], x, y, width, height);
                 ctx.restore();
-                drawSpriteLabel(ctx, label || spec.label, cx, footY + y - 4 * unit);
+                pawnPaints.push({image:image,crop:crop,anchor:spec.anchor,width:spec.width,shadow:spriteCache[key].shadow,scale:unit,cx:cx,cy:cy,actorKey:null});
+                if (!spec.hideLabel) drawSpriteLabel(ctx, label || spec.label, cx, footY + y - 4 * unit);
             } else {
                 // Keep a recognizable device label during loading or failure, never a person.
                 drawSpriteLabel(ctx, label || spec.label, cx, cy - 9 * unit);
@@ -330,6 +343,15 @@
         function resize(w, h) {
             w = Math.max(1, Math.ceil(w)); h = Math.max(1, Math.ceil(h));
             [staticCanvas, dynamicCanvas, fxCanvas].forEach(function (c) { if (c.width !== w) c.width = w; if (c.height !== h) c.height = h; });
+            var atPlayer=scene.dynamicMetaAt(scene.st.x,scene.st.y);
+            var raised=projection.isIsometric&&(atPlayer.groundCount>0);
+            var fw=raised?w:1,fh=raised?h:1;
+            if(foregroundCanvas.width!==fw)foregroundCanvas.width=fw;
+            if(foregroundCanvas.height!==fh)foregroundCanvas.height=fh;
+            foregroundCanvas.style.width=fw+'px';foregroundCanvas.style.height=fh+'px';
+            // Keep its transform transition alive while the 1px surface is unused.
+            // display:none cancels CSS transitions and breaks re-entry mid-move.
+            foregroundCanvas.style.visibility=raised?'visible':'hidden';
             // Same backing resolution as the demo: subpixel dry-brush strands
             // must not be blurred by stretching a 1x bitmap on a high-DPI screen.
             combatPixelRatio=global.devicePixelRatio||1;
@@ -416,6 +438,15 @@
             if(m.leapTarget)paintCell(dynamicCtx,gx,gy,'rgba(139,181,177,.14)','rgba(139,181,177,.82)',2,2);
             if(m.player)paintCell(dynamicCtx,gx,gy,'rgba(197,176,131,.10)','rgba(215,193,145,.95)',2,2);
         }
+        function drawGroundItems(ctx,gx,gy,m){
+            // Visibility-filtered live counts own both images and shadows; no marker state is saved.
+            var bags=m.groundBackpackCount||0,loose=(m.groundCount||0)-bags;
+            if(!projection.isIsometric||(!bags&&loose<=0))return;
+            var c=projection.cellCenter(gx,gy),unit=projection.tileWidth/144;
+            for(var i=0;i<Math.min(bags,3);i++)drawCalibratedPawn(ctx,'groundBackpack',c.x+((m.player?25:0)+i*6)*unit,c.y+((m.player?7:0)+i*3)*unit);
+            // Mixed piles sit opposite the bags so both remain visible beside the player.
+            if(loose>0)drawCalibratedPawn(ctx,'groundItems',c.x+(bags?-36:m.player?36:0)*unit,c.y+(bags||m.player?18:0)*unit);
+        }
         function drawEntity(gx,gy,m){
             var c=projection.cellCenter(gx,gy), lift=projection.isIsometric?18:0;
             if(m.enemy&&global.CombatFxRuntime){
@@ -447,7 +478,8 @@
                 dynamicCtx.font='bold 20px "Microsoft YaHei",sans-serif';dynamicCtx.fillText(lab,c.x,c.y-(projection.isIsometric?9:0));
             }
             if(m.portal&&m.portal.label){var pl=String(m.portal.label).trim();if(pl.length>6)pl=pl.slice(0,6);dynamicCtx.fillStyle='#7dd3fc';dynamicCtx.font='bold 12px sans-serif';dynamicCtx.fillText(pl,c.x,c.y+(projection.isIsometric?12:0));}
-            if(m.groundCount>0||m.groundUnknown){dynamicCtx.fillStyle='#d4a373';dynamicCtx.font='14px sans-serif';dynamicCtx.fillText(m.groundCount>0?'📦':'?',c.x+projection.tileWidth*.27,c.y+projection.tileHeight*.17);}
+            if(!m.player)drawGroundItems(dynamicCtx,gx,gy,m);
+            if((!projection.isIsometric&&m.groundCount>0)||m.groundUnknown){dynamicCtx.fillStyle='#d4a373';dynamicCtx.font='14px sans-serif';dynamicCtx.fillText(m.groundCount>0?'📦':'?',c.x+projection.tileWidth*.27,c.y+projection.tileHeight*.17);}
         }
         function ensureStatic(nextScene){
             var map=nextScene.map,key=(map.map_id||'map')+':'+map.width+'x'+map.height+':'+(map.version||0)+':'+projection.mode,data=nextScene.staticDataKey||'',size=staticCanvas.width+'x'+staticCanvas.height;
@@ -463,9 +495,12 @@
             var hw=Math.ceil((vp.width||1042)/cellPx/2)+2,hh=Math.ceil((vp.height||638)/cellPx/2)+2;return{minX:clamp(st.x-hw,0,map.width-1),maxX:clamp(st.x+hw,0,map.width-1),minY:clamp(st.y-hh,0,map.height-1),maxY:clamp(st.y+hh,0,map.height-1)};
         }
         function drawFullDynamic(nextScene){
+            pawnPaints=[];foregroundCtx.clearRect(0,0,foregroundCanvas.width,foregroundCanvas.height);
             dynamicCtx.clearRect(0,0,dynamicCanvas.width,dynamicCanvas.height);var vr=visibleRange(nextScene),cells=[];
             for(var gy=vr.minY;gy<=vr.maxY;gy++)for(var gx=vr.minX;gx<=vr.maxX;gx++){var m=scene.dynamicMetaAt(gx,gy);cells.push({x:gx,y:gy,m:m});drawOverlay(gx,gy,m);}
             cells.sort(function(a,b){var ca=projection.cellCenter(a.x,a.y),cb=projection.cellCenter(b.x,b.y);return ca.y-cb.y||ca.x-cb.x;});for(var i=0;i<cells.length;i++)drawEntity(cells[i].x,cells[i].y,cells[i].m);
+            var underPlayer=scene.dynamicMetaAt(scene.st.x,scene.st.y);
+            if(underPlayer.player)drawGroundItems(foregroundCtx,scene.st.x,scene.st.y,underPlayer);
         }
         function render(nextScene){
             presentationNow=typeof opts.getAnimationTime==='function'?opts.getAnimationTime(nowMs()):nowMs();
@@ -480,7 +515,7 @@
         function renderFxLayer(ts){
             fxCtx.clearRect(0,0,fxCanvas.width,fxCanvas.height);combatCtx.clearRect(0,0,combatCanvas.width,combatCanvas.height);
             if(!scene.map||!scene.st||!projection)return;
-            var frame={ctx:fxCtx,nowMs:ts,combatNowMs:useCombatClock?global.CombatFxRuntime.getPlaybackTime():ts,map:scene.map,state:scene.st,cellPx:cellPx,cellToPx:projection.cellToPx,cellCenter:projection.cellCenter,cellPolygon:projection.cellPolygon,projection:projection,mapWidthPx:projection.widthPx,mapHeightPx:projection.heightPx};
+            var frame={pawnPaints:pawnPaints,dynamicMetaAt:scene.dynamicMetaAt,ctx:fxCtx,nowMs:ts,combatNowMs:useCombatClock?global.CombatFxRuntime.getPlaybackTime():ts,map:scene.map,state:scene.st,cellPx:cellPx,cellToPx:projection.cellToPx,cellCenter:projection.cellCenter,cellPolygon:projection.cellPolygon,projection:projection,mapWidthPx:projection.widthPx,mapHeightPx:projection.heightPx};
             try{if(effectsRenderer)effectsRenderer(frame);if(combatEffectsRenderer)combatEffectsRenderer(Object.assign({},frame,{ctx:combatCtx}));}catch(e){}
         }
         function tick(ts){
@@ -498,8 +533,16 @@
         function stop(){animationLoopEnabled=false;if(animationLoopId){cancelAnimationFrame(animationLoopId);animationLoopId=null;}}
         function hitTest(clientX,clientY){if(!scene.map||!projection)return null;var rect=mapGridEl.getBoundingClientRect(),h=projection.pick(clientX-rect.left,clientY-rect.top);if(!h||h.x<0||h.y<0||h.x>=scene.map.width||h.y>=scene.map.height)return null;return h;}
         function setHoverCursor(x,y,turnOnly){var h=hitTest(x,y);if(!h||!scene.dynamicMetaAt){mapGridEl.style.cursor='default';return;}var m=scene.dynamicMetaAt(h.x,h.y);mapGridEl.style.cursor=((turnOnly&&m.adjacent)||m.leapTarget||(m.adjacent&&(m.walkable||m.npc||m.enemy)))?'pointer':'default';}
-        function invalidate(){staticMapKey='';staticDataKey='';staticSizeKey='';staticCtx.clearRect(0,0,staticCanvas.width,staticCanvas.height);dynamicCtx.clearRect(0,0,dynamicCanvas.width,dynamicCanvas.height);fxCtx.clearRect(0,0,fxCanvas.width,fxCanvas.height);combatCtx.clearRect(0,0,combatCanvas.width,combatCanvas.height);}
-        return {render:render,hitTest:hitTest,setCamera:function(x,y){mapGridEl.style.transform='translate('+x+'px, '+y+'px)';if(opts.combatHost)combatCanvas.style.transform=mapGridEl.style.transform;},getCellCenter:function(x,y){return projection?projection.cellCenter(x,y):{x:(x+.5)*cellPx,y:(y+.5)*cellPx};},getProjection:function(){return projection;},setHoverCursor:setHoverCursor,setCombatEffectsRenderer:function(fn){combatEffectsRenderer=typeof fn==='function'?fn:null;},setEffectsRenderer:function(fn){effectsRenderer=typeof fn==='function'?fn:null;},startAnimationLoop:start,stopAnimationLoop:stop,renderFxLayer:function(ts){renderFxLayer(ts!=null?ts:nowMs());},invalidateStatic:invalidate};
+        function invalidate(){foregroundCtx.clearRect(0,0,foregroundCanvas.width,foregroundCanvas.height);staticMapKey='';staticDataKey='';staticSizeKey='';staticCtx.clearRect(0,0,staticCanvas.width,staticCanvas.height);dynamicCtx.clearRect(0,0,dynamicCanvas.width,dynamicCanvas.height);fxCtx.clearRect(0,0,fxCanvas.width,fxCanvas.height);combatCtx.clearRect(0,0,combatCanvas.width,combatCanvas.height);}
+        function setCamera(x,y){
+            if(opts.combatHost){
+                var transition=typeof global.getComputedStyle==='function'?global.getComputedStyle(mapGridEl).transition:(mapGridEl.style.transition||'none');
+                combatCanvas.style.transition=transition;foregroundCanvas.style.transition=transition;
+            }
+            mapGridEl.style.transform='translate('+x+'px, '+y+'px)';
+            if(opts.combatHost){combatCanvas.style.transform=mapGridEl.style.transform;foregroundCanvas.style.transform=mapGridEl.style.transform;}
+        }
+        return {render:render,hitTest:hitTest,setCamera:setCamera,getCellCenter:function(x,y){return projection?projection.cellCenter(x,y):{x:(x+.5)*cellPx,y:(y+.5)*cellPx};},getProjection:function(){return projection;},setHoverCursor:setHoverCursor,setCombatEffectsRenderer:function(fn){combatEffectsRenderer=typeof fn==='function'?fn:null;},setEffectsRenderer:function(fn){effectsRenderer=typeof fn==='function'?fn:null;},startAnimationLoop:start,stopAnimationLoop:stop,renderFxLayer:function(ts){renderFxLayer(ts!=null?ts:nowMs());},invalidateStatic:invalidate};
     }
     global.TileRendererV2={create:create,clamp:clamp,makeGroundShadow:makeGroundShadow};
 })(typeof window !== 'undefined' ? window : this);

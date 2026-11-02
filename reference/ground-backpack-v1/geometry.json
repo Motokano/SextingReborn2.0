@@ -1,0 +1,34 @@
+{
+  "referenceTileWidth": 144,
+  "referenceTileHeight": 101.82337649086284,
+  "logicalCell": [
+    1,
+    1
+  ],
+  "blocksMovement": false,
+  "bodyFootprint": [
+    0.36,
+    0.22
+  ],
+  "verticalBodyHeightAt144": 32,
+  "nativeFront": [
+    0,
+    1
+  ],
+  "geometryScale": 14,
+  "origin": [
+    512.0,
+    741.0
+  ],
+  "groundCorners": [
+    441.44,
+    534.299,
+    804.32,
+    790.893,
+    582.56,
+    947.701,
+    219.68,
+    691.107
+  ],
+  "purpose": "Pre-generation geometry envelope; generated result must be measured independently."
+}

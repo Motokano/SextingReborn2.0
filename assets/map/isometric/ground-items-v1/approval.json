@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "date": "2026-11-01",
+  "status": "approved-art-runtime-deployed",
+  "userConfirmation": "直接接入吧，当地面没东西的时候需要消失这点规则有吗",
+  "approvedScope": ["第一版通用散落杂物外观", "正式地图与地牢的已识别散物显示", "同格普通散物共用一枚，普通散物清空即消失", "背包保留独立棋子，所有地面物品清空后均不显示"],
+  "files": {"pile.png": "1f432b5dcfa50b4062a4430b48a1927595aa53782925d02e2b35b435d9755fd6"},
+  "registration": "manifest.json",
+  "promptRecord": "generation.json",
+  "runtime": "js/core/tile-renderer-v2.js",
+  "sameCellOffsetAt144": [36, 18],
+  "mixedWithBackpacksOffsetAt144": [-36, 18],
+  "notes": "原图、人物倍率、真实物品归属与清理期限保持。无独立棋子存档状态，无新增物品或容器。"
+}

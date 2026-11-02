@@ -1,0 +1,34 @@
+{
+  "referenceTileWidth": 144,
+  "referenceTileHeight": 101.82337649086284,
+  "logicalCell": [
+    1,
+    1
+  ],
+  "blocksMovement": false,
+  "footprint": [
+    0.34,
+    0.24
+  ],
+  "verticalHeightAt144": 10.0,
+  "nativeFront": [
+    0,
+    1
+  ],
+  "geometryScale": 18.0,
+  "origin": [
+    512.0,
+    610.0
+  ],
+  "groundCorners": [
+    447.2,
+    344.241,
+    887.84,
+    655.82,
+    576.8,
+    875.759,
+    136.16,
+    564.18
+  ],
+  "purpose": "Pre-generation loose-pile envelope only, not a hard box. Final art is measured independently without distortion."
+}

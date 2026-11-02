@@ -1,0 +1,19 @@
+{
+  "date": "2026-11-02",
+  "parent": "a063a892bba6824b0ae97987f3765c1a9083f75a",
+  "scope": "Ground-item drawing, approved pile and bag artwork, previews and regression checks only",
+  "isolatedCommitSnapshot": {
+    "devicePawns": "passed: pile, bags, shadows, visibility, late image loads and existing facilities",
+    "nativeAndSvelte": "passed: partial removal, last removal, world-tick cleanup and snapshot restoration",
+    "artReview": "passed: original hash, transparency, 144px board, contact anchors and both map positions",
+    "backpackAndDungeon": "separate pending features, not part of this isolated commit",
+    "existingCharacterScale": "unchanged; 100% in parent runtime, 125% in art comparison board"
+  },
+  "workingGame": {
+    "devicePawns": "passed",
+    "nativeAndSvelte": "passed: partial pickup, last loose item, bag remaining, all empty, save rollback, cleanup, restoration and dungeon pickup",
+    "results": "runtime/checks.json",
+    "existingCharacterScale": "125%, unchanged"
+  },
+  "excluded": ["backpack gameplay and exchange UI", "dungeon implementation", "combat changes", "character scale rollout"]
+}

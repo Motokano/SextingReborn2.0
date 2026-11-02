@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "created": "2026-11-01",
+  "mode": "built-in image_gen",
+  "status": "candidate-awaiting-user-art-review",
+  "source": "C:/Users/haoxian.huang/.codex/generated_images/01a192a8-78af-79e1-a754-be16aaf332e0/exec-4861ff4b-d5c6-4ad9-acc0-62f59cdff5a4.png",
+  "output": "assets/map/isometric/ground-items-v1/pile.png",
+  "refs": [
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/street-thugs-v1/tier-1.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/map/isometric/interactive-devices-v1/warehouse.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/street-thug-boss-room-v6/stolen-basket.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/ground-items-v1/geometry.png"
+  ],
+  "referenceRoles": [
+    "Approved street-thug outline and painted volume, no human/base",
+    "Approved warehouse materials, no pedestal or crates",
+    "Approved v6 cloth and scene style, no basket/sack",
+    "Pre-generation low-pile geometry envelope"
+  ],
+  "prompt": "Use case: stylized-concept / sketch-to-render.\nAsset type: ONE alpha-transparent isometric ground-loot sprite for an existing hand-painted survival RPG.\nPrimary request: render the low loose-item envelope in reference 4 as a small, flat, casually dropped pile of useful belongings: a loosely folded faded blue-grey work garment with a clear folded cuff and soft irregular edges, a little squat ochre-brown metal parts tin sitting partly beside/over the cloth, and one short dark metal spare part with a small loose cord loop nearby. Only 3-4 large readable shapes; no tiny scatter. The garment is actual clothing, not a rug, tray, display mat or supporting pedestal. The belongings overlap naturally but are NOT inside a bag, sack, basket or chest, and are not tied into a bundle. This is a generic marker for ordinary loose items, with a low broken silhouette clearly different from a tall backpack or tied corpse sack.\nInput images and roles:\n1. Approved street-thug art: STYLE ONLY, strong dark outlines, broad hand-painted volume and detail level. Do not draw the person, weapon, base or checkerboard.\n2. Approved warehouse prop: STYLE ONLY, cloth thickness, metal edge construction and selective interior lines. Do not draw the crates, sacks, platform or circular base.\n3. Approved v6 cloth-lined basket: STYLE ONLY, muted palette, broad cloth folds, purposeful scuffs and exact scene-art finish. Do not draw the basket or bags.\n4. Pre-drawn GEOMETRY ONLY: approximate bounding volume for the loose low pile, not a box shape to reproduce. Ground axes have slopes +/-0.70710678, verticals remain vertical, orthographic view without perspective convergence. Ground footprint 0.34 x 0.24 tile; physical height about 10 px at a 144 px-wide tile. The small tin's horizontal edges follow those axes; cloth may drape irregularly around the footprint. No guide, label, line, dot or background in the output.\nStyle: dark, confident outer contour with lighter selective internal lines, broad two-to-three-tone hand-painted facets, subdued slightly warm upper-left highlights and darker lower-right faces. Used but useful possessions in a still-functioning industrial society: one localized cloth mend and a little wear at metal corners; no uniform micro-scratches or fabric weave. Keep cloth light enough to read on a dark green game floor. Clear, weighty cartoon volume like references, not photorealism, not PBR, not glossy 3D, not a flat UI icon.\nFraming: isolated complete pile centered with ample transparent margin; no detached fragment far from the pile; native camera and aspect ratio preserved. Readable at approximately 38-42 px total width in the actual game. Wider and flatter than a backpack, all belongings rest on the same ground plane, no floating.\nCRITICAL: real alpha-transparent background. Pile ONLY, no floor, tile, pedestal, plinth, circular base, paper sheet, ground patch or cast ground shadow; the game draws the ground shadow separately. No glow, loot beam, label, text, logo, watermark, person, blood, weapons, bread or corpse sack. Render one single static state."
+}

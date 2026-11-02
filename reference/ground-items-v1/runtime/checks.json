@@ -1,0 +1,30 @@
+[
+  {
+    "mode": "native",
+    "passed": true,
+    "checks": [
+      "partial pickup",
+      "last loose item",
+      "bag remains",
+      "all empty",
+      "save rollback",
+      "world-tick cleanup",
+      "save restoration",
+      "dungeon pickup"
+    ]
+  },
+  {
+    "mode": "svelte",
+    "passed": true,
+    "checks": [
+      "partial pickup",
+      "last loose item",
+      "bag remains",
+      "all empty",
+      "save rollback",
+      "world-tick cleanup",
+      "save restoration",
+      "dungeon pickup"
+    ]
+  }
+]

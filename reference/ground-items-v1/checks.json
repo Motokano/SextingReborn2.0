@@ -1,0 +1,66 @@
+{
+  "status": "automated-checks-passed-not-user-art-approval",
+  "origin": "http://127.0.0.1:8037",
+  "board": {
+    "tileWidth": 144,
+    "tileHeight": 101.82337649086284,
+    "playerBaseWidth": 57.5,
+    "pileWidth": 40,
+    "pileVisibleHeight": 24.562162162162164,
+    "scale": 0.043243243243243246
+  },
+  "map": {
+    "map": "M0_Base_Inside_lv_1",
+    "player": {
+      "mapId": "M0_Base_Inside_lv_1",
+      "x": 9,
+      "y": 12
+    },
+    "pile": {
+      "x": 10,
+      "y": 12,
+      "sameCellOffsetAt144": [
+        0,
+        0
+      ]
+    },
+    "tileWidth": 142.8355697996826,
+    "playerScale": 1.25,
+    "pileWidth": 39.6765471665785,
+    "source": "assets/map/isometric/ground-items-v1/pile.png"
+  },
+  "sameCell": {
+    "map": "M0_Base_Inside_lv_1",
+    "player": {
+      "mapId": "M0_Base_Inside_lv_1",
+      "x": 9,
+      "y": 12
+    },
+    "pile": {
+      "x": 9,
+      "y": 12,
+      "sameCellOffsetAt144": [
+        36,
+        18
+      ]
+    },
+    "tileWidth": 142.8355697996826,
+    "playerScale": 1.25,
+    "pileWidth": 39.6765471665785,
+    "source": "assets/map/isometric/ground-items-v1/pile.png"
+  },
+  "alpha": {
+    "width": 1493,
+    "height": 1054,
+    "transparent": 1225982,
+    "opaque": 759,
+    "partial": 346881,
+    "bounds": [
+      285,
+      234,
+      1210,
+      802
+    ]
+  },
+  "errors": []
+}

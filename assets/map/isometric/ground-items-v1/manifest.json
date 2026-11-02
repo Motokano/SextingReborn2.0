@@ -1,0 +1,87 @@
+{
+  "version": 1,
+  "status": "approved-art-runtime-deployed",
+  "referenceTileWidth": 144,
+  "playerDisplayScale": 1.25,
+  "asset": {
+    "id": "ground-loose-items",
+    "src": "assets/map/isometric/ground-items-v1/pile.png",
+    "size": [
+      1493,
+      1054
+    ],
+    "crop": [
+      277,
+      226,
+      941,
+      584
+    ],
+    "alphaBounds": [
+      285,
+      234,
+      1210,
+      802
+    ],
+    "anchor": [
+      746,
+      641
+    ],
+    "groundContacts": [
+      [
+        557,
+        481
+      ],
+      [
+        896,
+        491
+      ],
+      [
+        1171,
+        692
+      ],
+      [
+        1008,
+        752
+      ],
+      [
+        866,
+        790
+      ],
+      [
+        560,
+        736
+      ],
+      [
+        319,
+        640
+      ]
+    ],
+    "bodyWidth": 925,
+    "bodyWidthAt144": 40,
+    "scaleAt144": 0.043243243243243246,
+    "nativeFront": [
+      0,
+      1
+    ],
+    "projectionMode": "native",
+    "footprintShape": "irregular-loose-pile",
+    "logicalCell": [
+      1,
+      1
+    ],
+    "blocksMovement": false,
+    "bodyHeightEstimateAt144": 9,
+    "heightProbe": [
+      [
+        971,
+        430
+      ],
+      [
+        971,
+        638
+      ]
+    ],
+    "sha256": "1f432b5dcfa50b4062a4430b48a1927595aa53782925d02e2b35b435d9755fd6",
+    "calibrationNotes": "Uniform scaling only. Contacts and height probe are manual visual estimates; hidden rear contacts are inferred. Cloth is irregular; small tin edges approximate the requested native ground projection. Do not fit an affine transform or infer exact gameplay geometry from the PNG. One generic pile represents loose items, no item contents or container added."
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "status": "approved-art-runtime-deployed",
+  "referenceTileWidth": 144,
+  "playerDisplayScale": 1.25,
+  "asset": {
+    "id": "ground-backpack-closed",
+    "src": "assets/map/isometric/ground-backpack-v1/closed.png",
+    "size": [1312, 1199],
+    "crop": [227, 61, 1034, 1052],
+    "alphaBounds": [235, 69, 1253, 1105],
+    "anchor": [618, 938],
+    "groundContacts": [[500, 780], [980, 949], [736, 1094], [257, 925]],
+    "bodyWidth": 723,
+    "bodyWidthAt144": 32,
+    "scaleAt144": 0.04426002766251729,
+    "nativeFront": [0, 1],
+    "projectionMode": "native",
+    "footprintShape": "soft-rounded-rectangle",
+    "logicalCell": [1, 1],
+    "blocksMovement": false,
+    "bodyHeightEstimateAt144": 27.6,
+    "heightProbe": [[500, 156], [500, 780]],
+    "sha256": "5a3e5a259e0c6c971035fa8aa561eeb76549df308a2414357f723e23725be25d",
+    "calibrationNotes": "Contact points are manual contour estimates on a soft bag; rear contact is inferred. Do not fit an affine camera transform to these points. Uniform scaling only. Initial generation envelope was 0.36 x 0.22 tile / 32 px vertical height; display body width reduced uniformly to 32 px for portable scale beside the approved 125% player. Shoulder straps extend beyond the body footprint."
+  }
+}
