@@ -578,7 +578,7 @@
     var EQUIP_SLOT_GROUPS = [
         { label: 'equip.group.strike', slots: ['weapon_left', 'weapon_right', 'glove_left', 'glove_right', 'shoe_left', 'shoe_right'] },
         { label: 'equip.group.armor', slots: ['head', 'clothing'] },
-        { label: 'equip.group.carry', slots: ['vest', 'backpack', 'water_flask'] }
+        { label: 'equip.group.carry', slots: ['backpack', 'water_flask'] }
     ];
     var BODY_PART_IDS = ['head', 'chest', 'belly', 'lhand', 'rhand', 'lfoot', 'rfoot'];
     var BODY_PART_LABELS = { head: 'body.part.head', chest: 'body.part.chest', belly: 'body.part.belly', lhand: 'body.part.lhand', rhand: 'body.part.rhand', lfoot: 'body.part.lfoot', rfoot: 'body.part.rfoot' };

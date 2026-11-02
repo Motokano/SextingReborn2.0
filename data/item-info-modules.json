@@ -197,10 +197,6 @@
                 "label_key": "item.attr.pocket_slots"
               },
               {
-                "field": "vest_slots",
-                "label_key": "item.attr.vest_slots"
-              },
-              {
                 "field": "backpack_slots",
                 "label_key": "item.attr.backpack_slots"
               }

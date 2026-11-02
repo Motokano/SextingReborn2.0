@@ -1,6 +1,6 @@
 /**
  * 物品栏与装备栏系统 - 按设计文档 02-regions、05、14-implementation
- * 四类容器：口袋、背心、背包、载具；11 个装备槽；快捷腰带 = 口袋 + 背心（先口袋后背心）
+ * 当前容器：衣服口袋、背包、载具；10 个可见装备槽。旧 vest 数据与迁移接口保留兼容。
  * getItemTemplate 先 equipment 再 items；装备穿戴校验；死亡清空、新游戏仅 default_equipment
  */
 (function (global) {
@@ -1630,7 +1630,7 @@
             var weaponValidation = global.ModularWeaponCombat.validateEquip(instance, slotId);
             if (!weaponValidation.success) return weaponValidation;
         } else if (tpl.equip_slot !== slotId) return { success: false, message: t('inv.equip.slot_mismatch') };
-        if (slotId === 'vest' && global.SewingSystem) return { success: false, message: '弹挂收纳已整合进衣服口袋。' };
+        if (slotId === 'vest' && global.SewingSystem) return { success: false, message: '此旧式装备已停用，随身收纳由衣服口袋提供。' };
         var maxEnchants = (tpl.enchant_slots != null) ? parseInt(tpl.enchant_slots, 10) : 6;
         var enc = instance.enchants;
         if (enc && enc.length > maxEnchants) return { success: false, message: t('inv.equip.enchant_over') };
@@ -2105,8 +2105,8 @@
             name_1: '连帽衫',
             name_2: '连帽衫',
             desc_0: '一件带帽子的厚衣服，里头能装点小东西。',
-            desc_1: '连帽衫，胸前有两格收纳，当背心用。',
-            desc_2: '连帽衫，提供两格背心栏位。',
+            desc_1: '连帽衫，胸前缝有口袋。',
+            desc_2: '连帽衫，胸前缝有口袋。',
             display_skill_id: 'survival_language',
             equip_slot: 'vest',
             enchant_slots: 6,

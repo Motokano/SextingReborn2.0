@@ -27,7 +27,7 @@
             result.push({ instance_id: instance.instance_id, instance: instance, location: location,
                 name: IE.getDisplayName(tpl, IE.getItemDisplayTier(instance.item_id, character), character), profile: p });
         }
-        [['口袋', IE.getPocketArray()], ['背心', IE.getVestArray()], ['背包', IE.getBackpackArray()]].forEach(function (container) {
+        [['口袋', IE.getPocketArray()], ['旧式收纳', IE.getVestArray()], ['背包', IE.getBackpackArray()]].forEach(function (container) {
             container[1].forEach(function (instance, index) { add(instance, container[0] + '第' + (index + 1) + '格'); });
         });
         var equipment = IE.getState().equipment;

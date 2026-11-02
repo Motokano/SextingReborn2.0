@@ -1,5 +1,5 @@
 {
-  "_comment": "装备表。equip_slot 见设计文档。背心须声明 vest_slots；背包须声明 backpack_slots 与 backpack_weight_factor。所有装备均有六个词条槽位（enchant_slots: 6）；数值差异化由 numeric_rolls 数值区间承担（品质系统已移除）。头部与衣服防具须写三种伤害减伤。物品展示：name_0/1/2 与 desc_0/1/2 由技能判断接口决定档位。",
+  "_comment": "装备表。equip_slot 见设计文档。vest_slots 仅保留旧档兼容；背包须声明 backpack_slots 与 backpack_weight_factor。所有装备均有六个词条槽位（enchant_slots: 6）；数值差异化由 numeric_rolls 数值区间承担（品质系统已移除）。头部与衣服防具须写三种伤害减伤。物品展示：name_0/1/2 与 desc_0/1/2 由技能判断接口决定档位。",
   "eq_head_cloth_cap": {
     "id": "eq_head_cloth_cap",
     "name_0": "旧软帽",
@@ -41,8 +41,8 @@
     "name_1": "连帽衫",
     "name_2": "连帽衫",
     "desc_0": "一件带帽子的厚衣服，里头能装点小东西。",
-    "desc_1": "连帽衫，胸前有两格收纳，当背心用。",
-    "desc_2": "连帽衫，提供两格背心栏位。",
+    "desc_1": "连帽衫，胸前缝有口袋。",
+    "desc_2": "连帽衫，胸前缝有口袋。",
     "display_skill_id": "survival_language",
     "info_module_set_id": "module.equipment_armor",
     "equip_slot": "vest",

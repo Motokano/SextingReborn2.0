@@ -6,7 +6,7 @@ export function inventoryPanel(g, publish, t) {
     const tokens = new WeakMap();
     function token(item) { if (!tokens.has(item)) tokens.set(item, ++nextToken); return tokens.get(item); }
     function item(r) { return array(r.source)[r.index]; }
-    const sources = ['pocket', 'vest', 'backpack', 'vehicle', 'ground'];
+    const sources = ['pocket', 'backpack', 'vehicle', 'ground'];
     const plates = { 'clothing.chest': '胸', 'clothing.abdomen': '腹', 'clothing.arm_l': '左臂', 'clothing.arm_r': '右臂', 'clothing.leg_l': '左腿', 'clothing.leg_r': '右腿', 'head.shell': '盔体', 'head.liner': '内衬', 'head.face': '护面' };
     function array(source) { const p = api.position(); return source === 'ground' ? IE.getGroundItemsAt(p.mapId, p.x, p.y) : source === 'equipment' ? IE.getState().equipment : IE['get' + source[0].toUpperCase() + source.slice(1) + 'Array']?.() || []; }
     function ref(source, index) { const it = array(source)[index]; return it ? { source, index, token: token(it), id: it.instance_id, itemId: it.item_id, pos: source === 'ground' ? { ...api.position() } : null } : null; }

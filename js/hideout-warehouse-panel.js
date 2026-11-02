@@ -1380,7 +1380,7 @@
             detail={index:uiState.selectedSlot,guard:itemGuard(selected),name:d.name+(d.count>1?' ×'+d.count:''),desc:d.desc,locked:!!selected.warehouse_locked,starred:!!selected.warehouse_starred,modules:[]};
             try{detail.modules=global.ItemInfoModules.tooltipView({itemId:selected.item_id,tpl:d.tpl,inst:selected,character:getCharacter()});}catch(e){}
         }
-        var containers=['pocket','vest','backpack','vehicle'].map(function(type){return {id:type,items:(getContainerArray(type)||[]).flatMap(function(inst,index){if(!inst||!inst.item_id)return [];var d=resolveItemDisplay(inst.item_id,inst);return [{index:index,guard:itemGuard(inst),label:d.name+(d.count>1?' ×'+d.count:'')}];})};});
+        var containers=['pocket','backpack','vehicle'].map(function(type){return {id:type,items:(getContainerArray(type)||[]).flatMap(function(inst,index){if(!inst||!inst.item_id)return [];var d=resolveItemDisplay(inst.item_id,inst);return [{index:index,guard:itemGuard(inst),label:d.name+(d.count>1?' ×'+d.count:'')}];})};});
         var qos={};['qol_tab_view','qol_tidy_one_click','qol_craft_stash','qol_deposit_all','qol_withdraw_fill'].forEach(function(k){qos[k]=HW.hasQoL(k);});
         return {open:true,page:uiState.page,totalPages:getTotalPages(capacity),pageSize:PAGE_SIZE,filter:uiState.filterTab,capacity:capacity,used:used,cold:cold,pin:pin,outpost:isOutpostView(),qos:qos,prefer:HW.getPreferDeductWarehouse(),cells:cells,padding:cells.length?(GRID_COLS-cells.length%GRID_COLS)%GRID_COLS:0,detail:detail,containers:containers,upgradeOpen:uiState.upgradeOverlayOpen,upgrade:uiState.upgradeOverlayOpen?getUpgradeView():null};
     }

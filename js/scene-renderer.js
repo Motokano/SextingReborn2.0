@@ -861,7 +861,7 @@
         var lines = [];
         if (tpl.weight_kg != null) lines.push(tQuick('item.tooltip.weight', null, { v: tpl.weight_kg }));
         if (tpl.pocket_slots != null) lines.push(tQuick('item.tooltip.pocket', null, { v: tpl.pocket_slots }));
-        if (tpl.vest_slots != null) lines.push(tQuick('item.tooltip.vest', null, { v: tpl.vest_slots }));
+
         if (tpl.backpack_slots != null) lines.push(tQuick('item.tooltip.backpack', null, { v: tpl.backpack_slots }));
         if (tpl.backpack_weight_factor != null) lines.push(tQuick('item.tooltip.backpack_weight', null, { v: tpl.backpack_weight_factor * 100 }));
         if (tpl.damage_reduce_slash_pct != null || tpl.damage_reduce_pierce_pct != null || tpl.damage_reduce_blunt_pct != null) {
