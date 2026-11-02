@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "date": "2026-10-30",
-  "status": "8种材料模板已注册；已补可升级制作台与逐配方台级、工具条件；三级划分及具体数值为待接入试玩方案",
+  "status": "1级基础、其余研究的解锁规则已确认并同步独立试玩；台级、工具、用料与产出保持试调；正式制作执行器待接入",
   "classification": "../manufacturing-classification-v1.json",
   "facilities": {
     "simple": {
@@ -148,31 +148,31 @@
   "methods": {
     "wood": {
       "name": "木竹整形与绑扎",
-      "learning": "基础配方随对应技能等级一并授予该配方所需工序；高级配方按有效实物或完整兴趣点记录授予",
+      "learning": "1级基础配方随对应技能1级一并授予该配方所需工序；高级配方按有效实物或完整兴趣点记录授予",
       "source": "basic_tools",
       "grant_scope": "按配方登记方法适用范围；共用工序名称不自动解锁其他型号或上游原料生产"
     },
     "fiber": {
       "name": "捻绳与基础布作",
-      "learning": "基础配方随对应技能等级一并授予该配方所需工序；高级配方按有效实物或完整兴趣点记录授予",
+      "learning": "1级基础配方随对应技能1级一并授予该配方所需工序；高级配方按有效实物或完整兴趣点记录授予",
       "source": "basic_tools",
       "grant_scope": "按配方登记方法适用范围；共用工序名称不自动解锁其他型号或上游原料生产"
     },
     "stone": {
       "name": "石器整形",
-      "learning": "基础配方随对应技能等级一并授予该配方所需工序；高级配方按有效实物或完整兴趣点记录授予",
+      "learning": "1级基础配方随对应技能1级一并授予该配方所需工序；高级配方按有效实物或完整兴趣点记录授予",
       "source": "basic_tools",
       "grant_scope": "按配方登记方法适用范围；共用工序名称不自动解锁其他型号或上游原料生产"
     },
     "iron": {
       "name": "日用金工",
-      "learning": "基础配方随对应技能等级一并授予该配方所需工序；高级配方按有效实物或完整兴趣点记录授予",
+      "learning": "1级基础配方随对应技能1级一并授予该配方所需工序；高级配方按有效实物或完整兴趣点记录授予",
       "source": "metal_workshop",
       "grant_scope": "按配方登记方法适用范围；共用工序名称不自动解锁其他型号或上游原料生产"
     },
     "lead": {
       "name": "铅坠定重成形",
-      "learning": "基础配方随对应技能等级一并授予该配方所需工序；高级配方按有效实物或完整兴趣点记录授予",
+      "learning": "1级基础配方随对应技能1级一并授予该配方所需工序；高级配方按有效实物或完整兴趣点记录授予",
       "source": "tackle_basic",
       "grant_scope": "按配方登记方法适用范围；共用工序名称不自动解锁其他型号或上游原料生产"
     },
@@ -184,13 +184,13 @@
     },
     "line": {
       "name": "定规格线件加工",
-      "learning": "基础配方随对应技能等级一并授予该配方所需工序；高级配方按有效实物或完整兴趣点记录授予",
+      "learning": "1级基础配方随对应技能1级一并授予该配方所需工序；高级配方按有效实物或完整兴趣点记录授予",
       "source": "tackle_basic",
       "grant_scope": "按配方登记方法适用范围；共用工序名称不自动解锁其他型号或上游原料生产"
     },
     "assembly": {
       "name": "机械与工具装配",
-      "learning": "基础配方随对应技能等级一并授予该配方所需工序；高级配方按有效实物或完整兴趣点记录授予",
+      "learning": "1级基础配方随对应技能1级一并授予该配方所需工序；高级配方按有效实物或完整兴趣点记录授予",
       "source": "metal_workshop",
       "grant_scope": "按配方登记方法适用范围；共用工序名称不自动解锁其他型号或上游原料生产"
     },
@@ -208,49 +208,49 @@
     },
     "bait": {
       "name": "固定饵料配制",
-      "learning": "基础配方随对应技能等级一并授予该配方所需工序；高级配方按有效实物或完整兴趣点记录授予",
+      "learning": "1级基础配方随对应技能1级一并授予该配方所需工序；高级配方按有效实物或完整兴趣点记录授予",
       "source": "tackle_basic",
       "grant_scope": "按配方登记方法适用范围；共用工序名称不自动解锁其他型号或上游原料生产"
     },
     "clean": {
       "name": "清洁布料处理",
-      "learning": "基础配方随对应技能等级一并授予该配方所需工序；高级配方按有效实物或完整兴趣点记录授予",
+      "learning": "1级基础配方随对应技能1级一并授予该配方所需工序；高级配方按有效实物或完整兴趣点记录授予",
       "source": "medical_records",
       "grant_scope": "按配方登记方法适用范围；共用工序名称不自动解锁其他型号或上游原料生产"
     },
     "seal": {
       "name": "容器密封",
-      "learning": "基础配方随对应技能等级一并授予该配方所需工序；高级配方按有效实物或完整兴趣点记录授予",
+      "learning": "1级基础配方随对应技能1级一并授予该配方所需工序；高级配方按有效实物或完整兴趣点记录授予",
       "source": "kitchen",
       "grant_scope": "按配方登记方法适用范围；共用工序名称不自动解锁其他型号或上游原料生产"
     },
     "pottery": {
       "name": "陶作烧制",
-      "learning": "基础配方随对应技能等级一并授予该配方所需工序；高级配方按有效实物或完整兴趣点记录授予",
+      "learning": "1级基础配方随对应技能1级一并授予该配方所需工序；高级配方按有效实物或完整兴趣点记录授予",
       "source": "pottery",
       "grant_scope": "按配方登记方法适用范围；共用工序名称不自动解锁其他型号或上游原料生产"
     },
     "glass": {
       "name": "回收玻璃成形",
-      "learning": "基础容器随对应等级掌握本方案玻璃成形，高级器具随完整资料掌握；需要陶玻工位能力",
+      "learning": "玻璃器具随对应有效研究方案掌握成形工序，需要陶玻工位；不随烹饪等级自动授予",
       "source": "medical_records",
       "grant_scope": "按配方登记方法适用范围；共用工序名称不自动解锁其他型号或上游原料生产"
     },
     "filter": {
       "name": "叠层过滤材料",
-      "learning": "基础配方随对应技能等级一并授予该配方所需工序；高级配方按有效实物或完整兴趣点记录授予",
+      "learning": "1级基础配方随对应技能1级一并授予该配方所需工序；高级配方按有效实物或完整兴趣点记录授予",
       "source": "medical_records",
       "grant_scope": "按配方登记方法适用范围；共用工序名称不自动解锁其他型号或上游原料生产"
     },
     "medical": {
       "name": "医用器具装配",
-      "learning": "基础配方随对应技能等级一并授予该配方所需工序；高级配方按有效实物或完整兴趣点记录授予",
+      "learning": "1级基础配方随对应技能1级一并授予该配方所需工序；高级配方按有效实物或完整兴趣点记录授予",
       "source": "medical_records",
       "grant_scope": "按配方登记方法适用范围；共用工序名称不自动解锁其他型号或上游原料生产"
     },
     "soil": {
       "name": "客土配制",
-      "learning": "种植5级与对应土壤观察；完整配土记录可提前授予；使用已有基质和矿物辅料，不搬运新增原土",
+      "learning": "主动研究对应客土成品或完整配土记录；不要求种植等级，普通地貌观察不直接授予配方；使用已有基质和辅料",
       "source": "soil_sources",
       "grant_scope": "按配方登记方法适用范围；共用工序名称不自动解锁其他型号或上游原料生产"
     },
@@ -327,59 +327,59 @@
   "discovery_sources": {
     "basic_tools": {
       "name": "基础工具的技能解锁与材料供应",
-      "primary": "对应生活技能等级直接授予基础方案",
+      "primary": "仅1级基础方案随对应技能掌握；其余方案按配表研究有效实物或完整记录",
       "fallback": "外部旧物或交易提供现成工具和原料",
-      "phase": "1至5级试值",
+      "phase": "1级基础与后续研究",
       "note": "不要求找到成品样本；加工与工位仍需真实材料"
     },
     "tackle_basic": {
       "name": "基础钓具的技能解锁",
-      "primary": "钓鱼1级掌握首套手竿方案及相关钢丝加工；铅坠直接使用现有铅料，尼龙料提供早期外部供应",
+      "primary": "仅1级基础方案随对应技能掌握；其余方案按配表研究有效实物或完整记录",
       "fallback": "现有计划中的起步钓组与外部原料供应",
-      "phase": "1至10级试值",
+      "phase": "1级基础与后续研究",
       "note": "不因接触起步钓组额外解锁高级型号；无需先钓鱼升级才能制造首套工具"
     },
     "tackle_lure": {
       "name": "高级渔具兴趣点",
-      "primary": "旧渔具维修桌、拟饵工作角的实物与制作记录",
+      "primary": "仅1级基础方案随对应技能掌握；其余方案按配表研究有效实物或完整记录",
       "fallback": "交易流通的同型实物或同内容资料",
-      "phase": "地牢探索",
+      "phase": "1级基础与后续研究",
       "note": "完整资料可独立解锁，直接使用已有机械零件；专用碳线原料保留外部供应"
     },
     "metal_workshop": {
       "name": "金工材料与维修兴趣点",
-      "primary": "普通铁坯加工随制造1级，复杂维修钳来自旧维修工位",
+      "primary": "仅1级基础方案随对应技能掌握；其余方案按配表研究有效实物或完整记录",
       "fallback": "普通铁坯、机件或完整资料交易",
-      "phase": "基础供料与探索分别配置",
+      "phase": "1级基础与后续研究",
       "note": "基础工具不因铁坯加工知识再次被锁住"
     },
     "kitchen": {
       "name": "炊具技能与发酵兴趣点",
-      "primary": "基础炊具随烹饪等级；陶发酵坛来自发酵作业区",
+      "primary": "仅1级基础方案随对应技能掌握；其余方案按配表研究有效实物或完整记录",
       "fallback": "成品、半成品或高级制作记录交易",
-      "phase": "基础1至10级及地牢探索",
+      "phase": "1级基础与后续研究",
       "note": "制造器具不解锁菜谱与料理技法"
     },
     "pottery": {
       "name": "配方范围内陶作与玻璃成形",
-      "primary": "基础配方授予所需工序，高级复合器具随对应完整资料掌握",
+      "primary": "仅1级基础方案随对应技能掌握；其余方案按配表研究有效实物或完整记录",
       "fallback": "现成器具或原料交易",
-      "phase": "基础与高级分别开放",
+      "phase": "1级基础与后续研究",
       "note": "玻璃、陶土为已有输入；不新增玻璃器坯或磨料库存"
     },
     "medical_records": {
       "name": "制药基础工具与专业兴趣点",
-      "primary": "基础器具随制药等级；专业器具来自药房、实验室及医用装配点",
+      "primary": "仅1级基础方案随对应技能掌握；其余方案按配表研究有效实物或完整记录",
       "fallback": "器具、玻璃与其他既有原料或相同专业资料交易",
-      "phase": "基础1至3级及地牢探索",
+      "phase": "1级基础与后续研究",
       "note": "器筒、针头、软管和密封件作为完整配方工序，不另投放医用组件包；不授予药方或注射使用知识"
     },
     "soil_sources": {
-      "name": "种植技能与对应土壤认识",
-      "primary": "种植5级加对应土壤实际观察；完整配土记录也可提前授予",
-      "fallback": "同种客土成品检查可补土壤认识；制造用料来自已有基质与辅料",
-      "phase": "地域独立发现，非土质升级链",
-      "note": "取消七种原土与搬运额度；土源仅为知识证据，不从远处取料"
+      "name": "客土研究与配土记录",
+      "primary": "主动研究同种客土成品或对应完整配土记录",
+      "fallback": "交易取得同种成品或有效记录后研究",
+      "phase": "七种独立研究，无种植等级门槛",
+      "note": "普通地貌观察不自动授予制作知识；不新增原土或远程取料"
     }
   },
   "recipes": [
@@ -661,7 +661,7 @@
       "recipe_id": "manufacturing.fishing_line_main_nylon_thick",
       "item_id": "fishing_line_main_nylon_thick",
       "name": "尼龙主线·粗",
-      "unlock_rule": "L",
+      "unlock_rule": "X",
       "station": "bench",
       "methods": [
         "line"
@@ -676,7 +676,7 @@
           "count": 1
         }
       ],
-      "discovery_source": "tackle_basic",
+      "discovery_source": "tackle_specs",
       "status": "新增试调配方，未实装",
       "balance_snapshot": {
         "input_weight_kg": 0.15,
@@ -684,21 +684,30 @@
         "mass_difference_kg": 0.03
       },
       "unlock": {
-        "kind": "skill_level",
-        "skill_id": "life_fishing",
-        "level": 5,
-        "grants": {
-          "recipe": true,
-          "structure": true,
-          "listed_material_relations": true,
-          "recipe_scoped_processes": true,
-          "other_recipes": false,
-          "upstream_industrial_production": false,
-          "hidden_item_properties": false,
-          "use_recipes_or_tactics": false
+        "kind": "exploration",
+        "interest_point": "tackle_specs",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
         },
-        "experience_on_unlock": 0,
+        "hard_skill_level": null,
         "persistent": true,
+        "sample_route": {
+          "research_profile": "M",
+          "consumes_sample": true,
+          "research_eligibility": "关键可研究结构完整；先清空内容物、卸下外接子树；拆解或取样研究消耗选定一件",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
         "linked_processing_grants": []
       },
       "material_roots": [
@@ -996,7 +1005,7 @@
       "recipe_id": "manufacturing.fishing_float_large",
       "item_id": "fishing_float_large",
       "name": "较大吃铅浮漂",
-      "unlock_rule": "L",
+      "unlock_rule": "X",
       "station": "bench",
       "methods": [
         "wood"
@@ -1011,7 +1020,7 @@
           "count": 4
         }
       ],
-      "discovery_source": "tackle_basic",
+      "discovery_source": "tackle_specs",
       "status": "新增试调配方，未实装",
       "balance_snapshot": {
         "input_weight_kg": 0.04,
@@ -1019,21 +1028,30 @@
         "mass_difference_kg": 0.01
       },
       "unlock": {
-        "kind": "skill_level",
-        "skill_id": "life_fishing",
-        "level": 10,
-        "grants": {
-          "recipe": true,
-          "structure": true,
-          "listed_material_relations": true,
-          "recipe_scoped_processes": true,
-          "other_recipes": false,
-          "upstream_industrial_production": false,
-          "hidden_item_properties": false,
-          "use_recipes_or_tactics": false
+        "kind": "exploration",
+        "interest_point": "tackle_specs",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
         },
-        "experience_on_unlock": 0,
+        "hard_skill_level": null,
         "persistent": true,
+        "sample_route": {
+          "research_profile": "S",
+          "consumes_sample": false,
+          "research_eligibility": "可观察的关键结构完整；可访问真实样本，研究期间保留并占用",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
         "linked_processing_grants": []
       },
       "material_roots": [
@@ -1098,7 +1116,7 @@
       "recipe_id": "manufacturing.fishing_sinker_fixed_2g",
       "item_id": "fishing_sinker_fixed_2g",
       "name": "固定铅坠·两克",
-      "unlock_rule": "L",
+      "unlock_rule": "X",
       "station": "metal",
       "methods": [
         "lead"
@@ -1113,7 +1131,7 @@
           "count": 1
         }
       ],
-      "discovery_source": "tackle_basic",
+      "discovery_source": "tackle_specs",
       "status": "新增试调配方，未实装",
       "balance_snapshot": {
         "input_weight_kg": 0.64,
@@ -1121,21 +1139,30 @@
         "mass_difference_kg": 0.628
       },
       "unlock": {
-        "kind": "skill_level",
-        "skill_id": "life_fishing",
-        "level": 5,
-        "grants": {
-          "recipe": true,
-          "structure": true,
-          "listed_material_relations": true,
-          "recipe_scoped_processes": true,
-          "other_recipes": false,
-          "upstream_industrial_production": false,
-          "hidden_item_properties": false,
-          "use_recipes_or_tactics": false
+        "kind": "exploration",
+        "interest_point": "tackle_specs",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
         },
-        "experience_on_unlock": 0,
+        "hard_skill_level": null,
         "persistent": true,
+        "sample_route": {
+          "research_profile": "S",
+          "consumes_sample": false,
+          "research_eligibility": "可观察的关键结构完整；可访问真实样本，研究期间保留并占用",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
         "linked_processing_grants": []
       },
       "material_roots": [
@@ -1149,7 +1176,7 @@
       "recipe_id": "manufacturing.fishing_sinker_fixed_3g",
       "item_id": "fishing_sinker_fixed_3g",
       "name": "固定铅坠·三克",
-      "unlock_rule": "L",
+      "unlock_rule": "X",
       "station": "metal",
       "methods": [
         "lead"
@@ -1164,7 +1191,7 @@
           "count": 1
         }
       ],
-      "discovery_source": "tackle_basic",
+      "discovery_source": "tackle_specs",
       "status": "新增试调配方，未实装",
       "balance_snapshot": {
         "input_weight_kg": 0.64,
@@ -1172,21 +1199,30 @@
         "mass_difference_kg": 0.622
       },
       "unlock": {
-        "kind": "skill_level",
-        "skill_id": "life_fishing",
-        "level": 10,
-        "grants": {
-          "recipe": true,
-          "structure": true,
-          "listed_material_relations": true,
-          "recipe_scoped_processes": true,
-          "other_recipes": false,
-          "upstream_industrial_production": false,
-          "hidden_item_properties": false,
-          "use_recipes_or_tactics": false
+        "kind": "exploration",
+        "interest_point": "tackle_specs",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
         },
-        "experience_on_unlock": 0,
+        "hard_skill_level": null,
         "persistent": true,
+        "sample_route": {
+          "research_profile": "S",
+          "consumes_sample": false,
+          "research_eligibility": "可观察的关键结构完整；可访问真实样本，研究期间保留并占用",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
         "linked_processing_grants": []
       },
       "material_roots": [
@@ -1253,7 +1289,7 @@
       "recipe_id": "manufacturing.fishing_hook_single_medium",
       "item_id": "fishing_hook_single_medium",
       "name": "中号单钩",
-      "unlock_rule": "L",
+      "unlock_rule": "X",
       "station": "metal",
       "methods": [
         "wire"
@@ -1268,7 +1304,7 @@
           "count": 1
         }
       ],
-      "discovery_source": "tackle_basic",
+      "discovery_source": "tackle_specs",
       "status": "新增试调配方，未实装",
       "balance_snapshot": {
         "input_weight_kg": 0.1,
@@ -1276,21 +1312,30 @@
         "mass_difference_kg": 0.052
       },
       "unlock": {
-        "kind": "skill_level",
-        "skill_id": "life_fishing",
-        "level": 5,
-        "grants": {
-          "recipe": true,
-          "structure": true,
-          "listed_material_relations": true,
-          "recipe_scoped_processes": true,
-          "other_recipes": false,
-          "upstream_industrial_production": false,
-          "hidden_item_properties": false,
-          "use_recipes_or_tactics": false
+        "kind": "exploration",
+        "interest_point": "tackle_specs",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
         },
-        "experience_on_unlock": 0,
+        "hard_skill_level": null,
         "persistent": true,
+        "sample_route": {
+          "research_profile": "S",
+          "consumes_sample": false,
+          "research_eligibility": "可观察的关键结构完整；可访问真实样本，研究期间保留并占用",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
         "linked_processing_grants": [
           "manufacturing.draw_steel_wire"
         ]
@@ -1552,7 +1597,7 @@
       "recipe_id": "manufacturing.tool_repair_hammer",
       "item_id": "tool_repair_hammer",
       "name": "修理锤",
-      "unlock_rule": "L",
+      "unlock_rule": "X",
       "station": "metal",
       "methods": [
         "iron",
@@ -1572,7 +1617,7 @@
           "count": 1
         }
       ],
-      "discovery_source": "metal_workshop",
+      "discovery_source": "repair",
       "status": "新增试调配方，未实装",
       "balance_snapshot": {
         "input_weight_kg": 0.95,
@@ -1580,21 +1625,30 @@
         "mass_difference_kg": -2.05
       },
       "unlock": {
-        "kind": "skill_level",
-        "skill_id": "life_manufacturing",
-        "level": 5,
-        "grants": {
-          "recipe": true,
-          "structure": true,
-          "listed_material_relations": true,
-          "recipe_scoped_processes": true,
-          "other_recipes": false,
-          "upstream_industrial_production": false,
-          "hidden_item_properties": false,
-          "use_recipes_or_tactics": false
+        "kind": "exploration",
+        "interest_point": "repair",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
         },
-        "experience_on_unlock": 0,
+        "hard_skill_level": null,
         "persistent": true,
+        "sample_route": {
+          "research_profile": "S",
+          "consumes_sample": false,
+          "research_eligibility": "可观察的关键结构完整；可访问真实样本，研究期间保留并占用",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
         "linked_processing_grants": []
       },
       "material_roots": [
@@ -1681,7 +1735,7 @@
       "recipe_id": "manufacturing.tool_repair_whetstone",
       "item_id": "tool_repair_whetstone",
       "name": "磨刀石",
-      "unlock_rule": "L",
+      "unlock_rule": "X",
       "station": "kiln",
       "methods": [
         "stone",
@@ -1701,7 +1755,7 @@
           "count": 4
         }
       ],
-      "discovery_source": "metal_workshop",
+      "discovery_source": "repair",
       "status": "新增试调配方，未实装",
       "balance_snapshot": {
         "input_weight_kg": 2.4,
@@ -1709,21 +1763,30 @@
         "mass_difference_kg": 0.4
       },
       "unlock": {
-        "kind": "skill_level",
-        "skill_id": "life_manufacturing",
-        "level": 5,
-        "grants": {
-          "recipe": true,
-          "structure": true,
-          "listed_material_relations": true,
-          "recipe_scoped_processes": true,
-          "other_recipes": false,
-          "upstream_industrial_production": false,
-          "hidden_item_properties": false,
-          "use_recipes_or_tactics": false
+        "kind": "exploration",
+        "interest_point": "repair",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
         },
-        "experience_on_unlock": 0,
+        "hard_skill_level": null,
         "persistent": true,
+        "sample_route": {
+          "research_profile": "M",
+          "consumes_sample": true,
+          "research_eligibility": "关键可研究结构完整；先清空内容物、卸下外接子树；拆解或取样研究消耗选定一件",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
         "linked_processing_grants": []
       },
       "material_note": "采用玻璃与陶土的复合磨料成形方案，工序内完成粒度分选与两面成形；这是游戏试配方案，不直接把任意花岗岩当磨刀石",
@@ -1739,7 +1802,7 @@
       "recipe_id": "manufacturing.tool_repair_roll",
       "item_id": "tool_repair_roll",
       "name": "帆布工具卷",
-      "unlock_rule": "L",
+      "unlock_rule": "X",
       "station": "bench",
       "methods": [
         "fiber"
@@ -1758,7 +1821,7 @@
           "count": 1
         }
       ],
-      "discovery_source": "basic_tools",
+      "discovery_source": "textile_tools",
       "status": "新增试调配方，未实装",
       "balance_snapshot": {
         "input_weight_kg": 0.5,
@@ -1766,21 +1829,30 @@
         "mass_difference_kg": 0.2
       },
       "unlock": {
-        "kind": "skill_level",
-        "skill_id": "life_weaving",
-        "level": 3,
-        "grants": {
-          "recipe": true,
-          "structure": true,
-          "listed_material_relations": true,
-          "recipe_scoped_processes": true,
-          "other_recipes": false,
-          "upstream_industrial_production": false,
-          "hidden_item_properties": false,
-          "use_recipes_or_tactics": false
+        "kind": "exploration",
+        "interest_point": "textile_tools",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
         },
-        "experience_on_unlock": 0,
+        "hard_skill_level": null,
         "persistent": true,
+        "sample_route": {
+          "research_profile": "S",
+          "consumes_sample": false,
+          "research_eligibility": "可观察的关键结构完整；可访问真实样本，研究期间保留并占用",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
         "linked_processing_grants": []
       },
       "material_roots": [
@@ -1914,7 +1986,7 @@
       "recipe_id": "manufacturing.supply_flint_fire",
       "item_id": "supply_flint_fire",
       "name": "火石",
-      "unlock_rule": "L",
+      "unlock_rule": "X",
       "station": "metal",
       "methods": [
         "stone",
@@ -1934,7 +2006,7 @@
           "count": 1
         }
       ],
-      "discovery_source": "basic_tools",
+      "discovery_source": "daily_tools",
       "status": "新增试调配方，未实装",
       "balance_snapshot": {
         "input_weight_kg": 0.3,
@@ -1942,21 +2014,30 @@
         "mass_difference_kg": 0.1
       },
       "unlock": {
-        "kind": "skill_level",
-        "skill_id": "life_manufacturing",
-        "level": 3,
-        "grants": {
-          "recipe": true,
-          "structure": true,
-          "listed_material_relations": true,
-          "recipe_scoped_processes": true,
-          "other_recipes": false,
-          "upstream_industrial_production": false,
-          "hidden_item_properties": false,
-          "use_recipes_or_tactics": false
+        "kind": "exploration",
+        "interest_point": "daily_tools",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
         },
-        "experience_on_unlock": 0,
+        "hard_skill_level": null,
         "persistent": true,
+        "sample_route": {
+          "research_profile": "S",
+          "consumes_sample": false,
+          "research_eligibility": "可观察的关键结构完整；可访问真实样本，研究期间保留并占用",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
         "linked_processing_grants": []
       },
       "material_roots": [
@@ -2029,7 +2110,7 @@
       "recipe_id": "manufacturing.tool_bucket_water_empty",
       "item_id": "tool_bucket_water_empty",
       "name": "水桶",
-      "unlock_rule": "L",
+      "unlock_rule": "X",
       "station": "bench",
       "methods": [
         "wood",
@@ -2053,7 +2134,7 @@
           "count": 1
         }
       ],
-      "discovery_source": "basic_tools",
+      "discovery_source": "daily_tools",
       "status": "新增试调配方，未实装",
       "balance_snapshot": {
         "input_weight_kg": 1.6,
@@ -2061,21 +2142,30 @@
         "mass_difference_kg": 0.4
       },
       "unlock": {
-        "kind": "skill_level",
-        "skill_id": "life_manufacturing",
-        "level": 3,
-        "grants": {
-          "recipe": true,
-          "structure": true,
-          "listed_material_relations": true,
-          "recipe_scoped_processes": true,
-          "other_recipes": false,
-          "upstream_industrial_production": false,
-          "hidden_item_properties": false,
-          "use_recipes_or_tactics": false
+        "kind": "exploration",
+        "interest_point": "daily_tools",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
         },
-        "experience_on_unlock": 0,
+        "hard_skill_level": null,
         "persistent": true,
+        "sample_route": {
+          "research_profile": "S",
+          "consumes_sample": false,
+          "research_eligibility": "可观察的关键结构完整；可访问真实样本，研究期间保留并占用",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
         "linked_processing_grants": []
       },
       "material_roots": [
@@ -2091,7 +2181,7 @@
       "recipe_id": "manufacturing.tool_flask_iron_water",
       "item_id": "tool_flask_iron_water",
       "name": "铁皮水壶",
-      "unlock_rule": "L",
+      "unlock_rule": "X",
       "station": "metal",
       "methods": [
         "iron",
@@ -2111,7 +2201,7 @@
           "count": 1
         }
       ],
-      "discovery_source": "basic_tools",
+      "discovery_source": "daily_tools",
       "status": "新增试调配方，未实装",
       "balance_snapshot": {
         "input_weight_kg": 0.21,
@@ -2119,21 +2209,30 @@
         "mass_difference_kg": -0.49
       },
       "unlock": {
-        "kind": "skill_level",
-        "skill_id": "life_manufacturing",
-        "level": 5,
-        "grants": {
-          "recipe": true,
-          "structure": true,
-          "listed_material_relations": true,
-          "recipe_scoped_processes": true,
-          "other_recipes": false,
-          "upstream_industrial_production": false,
-          "hidden_item_properties": false,
-          "use_recipes_or_tactics": false
+        "kind": "exploration",
+        "interest_point": "daily_tools",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
         },
-        "experience_on_unlock": 0,
+        "hard_skill_level": null,
         "persistent": true,
+        "sample_route": {
+          "research_profile": "M",
+          "consumes_sample": true,
+          "research_eligibility": "关键可研究结构完整；先清空内容物、卸下外接子树；拆解或取样研究消耗选定一件",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
         "linked_processing_grants": []
       },
       "material_roots": [
@@ -2161,7 +2260,7 @@
       "recipe_id": "manufacturing.tool_flask_bamboo_water",
       "item_id": "tool_flask_bamboo_water",
       "name": "青竹水壶",
-      "unlock_rule": "L",
+      "unlock_rule": "X",
       "station": "bench",
       "methods": [
         "wood",
@@ -2181,7 +2280,7 @@
           "count": 1
         }
       ],
-      "discovery_source": "basic_tools",
+      "discovery_source": "daily_tools",
       "status": "已接入制作台独立试玩；配方数值试调，正式执行器待接入",
       "balance_snapshot": {
         "input_weight_kg": 1.01,
@@ -2189,21 +2288,30 @@
         "mass_difference_kg": 0.31
       },
       "unlock": {
-        "kind": "skill_level",
-        "skill_id": "life_manufacturing",
-        "level": 5,
-        "grants": {
-          "recipe": true,
-          "structure": true,
-          "listed_material_relations": true,
-          "recipe_scoped_processes": true,
-          "other_recipes": false,
-          "upstream_industrial_production": false,
-          "hidden_item_properties": false,
-          "use_recipes_or_tactics": false
+        "kind": "exploration",
+        "interest_point": "daily_tools",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
         },
-        "experience_on_unlock": 0,
+        "hard_skill_level": null,
         "persistent": true,
+        "sample_route": {
+          "research_profile": "M",
+          "consumes_sample": true,
+          "research_eligibility": "关键可研究结构完整；先清空内容物、卸下外接子树；拆解或取样研究消耗选定一件",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
         "linked_processing_grants": []
       },
       "material_roots": [
@@ -2340,7 +2448,7 @@
       "recipe_id": "manufacturing.tool_steamer_bamboo_cooking",
       "item_id": "tool_steamer_bamboo_cooking",
       "name": "竹蒸笼",
-      "unlock_rule": "L",
+      "unlock_rule": "X",
       "station": "bench",
       "methods": [
         "wood",
@@ -2360,7 +2468,7 @@
           "count": 1
         }
       ],
-      "discovery_source": "kitchen",
+      "discovery_source": "kitchen_tools",
       "status": "新增试调配方，未实装",
       "balance_snapshot": {
         "input_weight_kg": 1.5,
@@ -2368,21 +2476,30 @@
         "mass_difference_kg": 0.7
       },
       "unlock": {
-        "kind": "skill_level",
-        "skill_id": "life_cooking",
-        "level": 3,
-        "grants": {
-          "recipe": true,
-          "structure": true,
-          "listed_material_relations": true,
-          "recipe_scoped_processes": true,
-          "other_recipes": false,
-          "upstream_industrial_production": false,
-          "hidden_item_properties": false,
-          "use_recipes_or_tactics": false
+        "kind": "exploration",
+        "interest_point": "kitchen_tools",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
         },
-        "experience_on_unlock": 0,
+        "hard_skill_level": null,
         "persistent": true,
+        "sample_route": {
+          "research_profile": "S",
+          "consumes_sample": false,
+          "research_eligibility": "可观察的关键结构完整；可访问真实样本，研究期间保留并占用",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
         "linked_processing_grants": []
       },
       "material_roots": [
@@ -2397,7 +2514,7 @@
       "recipe_id": "manufacturing.tool_wok_iron_cooking",
       "item_id": "tool_wok_iron_cooking",
       "name": "铸铁炒锅",
-      "unlock_rule": "L",
+      "unlock_rule": "X",
       "station": "metal",
       "methods": [
         "iron"
@@ -2412,7 +2529,7 @@
           "count": 2
         }
       ],
-      "discovery_source": "kitchen",
+      "discovery_source": "kitchen_tools",
       "status": "新增试调配方，未实装",
       "balance_snapshot": {
         "input_weight_kg": 4,
@@ -2420,21 +2537,30 @@
         "mass_difference_kg": 1.8
       },
       "unlock": {
-        "kind": "skill_level",
-        "skill_id": "life_cooking",
-        "level": 5,
-        "grants": {
-          "recipe": true,
-          "structure": true,
-          "listed_material_relations": true,
-          "recipe_scoped_processes": true,
-          "other_recipes": false,
-          "upstream_industrial_production": false,
-          "hidden_item_properties": false,
-          "use_recipes_or_tactics": false
+        "kind": "exploration",
+        "interest_point": "kitchen_tools",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
         },
-        "experience_on_unlock": 0,
+        "hard_skill_level": null,
         "persistent": true,
+        "sample_route": {
+          "research_profile": "S",
+          "consumes_sample": false,
+          "research_eligibility": "可观察的关键结构完整；可访问真实样本，研究期间保留并占用",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
         "linked_processing_grants": []
       },
       "material_roots": [
@@ -2454,7 +2580,7 @@
       "recipe_id": "manufacturing.tool_fryer_pot_iron_cooking",
       "item_id": "tool_fryer_pot_iron_cooking",
       "name": "深炸铁锅",
-      "unlock_rule": "L",
+      "unlock_rule": "X",
       "station": "metal",
       "methods": [
         "iron"
@@ -2469,7 +2595,7 @@
           "count": 2
         }
       ],
-      "discovery_source": "kitchen",
+      "discovery_source": "kitchen_tools",
       "status": "新增试调配方，未实装",
       "balance_snapshot": {
         "input_weight_kg": 4,
@@ -2477,21 +2603,30 @@
         "mass_difference_kg": 1.2
       },
       "unlock": {
-        "kind": "skill_level",
-        "skill_id": "life_cooking",
-        "level": 10,
-        "grants": {
-          "recipe": true,
-          "structure": true,
-          "listed_material_relations": true,
-          "recipe_scoped_processes": true,
-          "other_recipes": false,
-          "upstream_industrial_production": false,
-          "hidden_item_properties": false,
-          "use_recipes_or_tactics": false
+        "kind": "exploration",
+        "interest_point": "kitchen_tools",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
         },
-        "experience_on_unlock": 0,
+        "hard_skill_level": null,
         "persistent": true,
+        "sample_route": {
+          "research_profile": "S",
+          "consumes_sample": false,
+          "research_eligibility": "可观察的关键结构完整；可访问真实样本，研究期间保留并占用",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
         "linked_processing_grants": []
       },
       "material_roots": [
@@ -2511,7 +2646,7 @@
       "recipe_id": "manufacturing.tool_pickling_jar_cooking",
       "item_id": "tool_pickling_jar_cooking",
       "name": "腌缸（玻璃罐）",
-      "unlock_rule": "L",
+      "unlock_rule": "X",
       "station": "kiln",
       "methods": [
         "glass",
@@ -2531,7 +2666,7 @@
           "count": 1
         }
       ],
-      "discovery_source": "kitchen",
+      "discovery_source": "kitchen_tools",
       "status": "新增试调配方，未实装",
       "balance_snapshot": {
         "input_weight_kg": 1.2,
@@ -2539,21 +2674,30 @@
         "mass_difference_kg": 0.1
       },
       "unlock": {
-        "kind": "skill_level",
-        "skill_id": "life_cooking",
-        "level": 5,
-        "grants": {
-          "recipe": true,
-          "structure": true,
-          "listed_material_relations": true,
-          "recipe_scoped_processes": true,
-          "other_recipes": false,
-          "upstream_industrial_production": false,
-          "hidden_item_properties": false,
-          "use_recipes_or_tactics": false
+        "kind": "exploration",
+        "interest_point": "kitchen_tools",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
         },
-        "experience_on_unlock": 0,
+        "hard_skill_level": null,
         "persistent": true,
+        "sample_route": {
+          "research_profile": "M",
+          "consumes_sample": true,
+          "research_eligibility": "关键可研究结构完整；先清空内容物、卸下外接子树；拆解或取样研究消耗选定一件",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
         "linked_processing_grants": []
       },
       "material_roots": [
@@ -3040,7 +3184,7 @@
       "recipe_id": "manufacturing.tool_steel_basin_pharmacy",
       "item_id": "tool_steel_basin_pharmacy",
       "name": "钢盆",
-      "unlock_rule": "L",
+      "unlock_rule": "X",
       "station": "metal",
       "methods": [
         "iron"
@@ -3055,7 +3199,7 @@
           "count": 1
         }
       ],
-      "discovery_source": "medical_records",
+      "discovery_source": "pharmacy_tools",
       "status": "新增试调配方，未实装",
       "balance_snapshot": {
         "input_weight_kg": 0.8,
@@ -3063,21 +3207,30 @@
         "mass_difference_kg": 0.2
       },
       "unlock": {
-        "kind": "skill_level",
-        "skill_id": "life_pharmacy",
-        "level": 3,
-        "grants": {
-          "recipe": true,
-          "structure": true,
-          "listed_material_relations": true,
-          "recipe_scoped_processes": true,
-          "other_recipes": false,
-          "upstream_industrial_production": false,
-          "hidden_item_properties": false,
-          "use_recipes_or_tactics": false
+        "kind": "exploration",
+        "interest_point": "pharmacy_tools",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
         },
-        "experience_on_unlock": 0,
+        "hard_skill_level": null,
         "persistent": true,
+        "sample_route": {
+          "research_profile": "S",
+          "consumes_sample": false,
+          "research_eligibility": "可观察的关键结构完整；可访问真实样本，研究期间保留并占用",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
         "linked_processing_grants": []
       },
       "material_roots": [
@@ -3442,7 +3595,7 @@
       "recipe_id": "manufacturing.soil_amend_yellow_cotton",
       "item_id": "soil_amend_yellow_cotton",
       "name": "黄绵土客土",
-      "unlock_rule": "LT",
+      "unlock_rule": "X",
       "station": "soil",
       "methods": [
         "soil"
@@ -3469,19 +3622,7 @@
           "count": 4
         }
       ],
-      "input_alternatives": {
-        "compost_matrix_grade_low": [
-          {
-            "item_id": "compost_matrix_grade_mid",
-            "count": 3
-          },
-          {
-            "item_id": "compost_matrix_grade_high",
-            "count": 3
-          }
-        ]
-      },
-      "discovery_source": "soil_sources",
+      "discovery_source": "soil_research",
       "status": "新增试调配方，未实装",
       "balance_snapshot": {
         "input_weight_kg": 10.95,
@@ -3489,27 +3630,33 @@
         "mass_difference_kg": 0.95
       },
       "unlock": {
-        "kind": "skill_and_soil_evidence",
-        "skill_id": "life_planting",
-        "level": 5,
-        "soil_evidence_key": "soil_source.yellow_cotton",
-        "evidence": "实际观察对应土壤地貌，或检查已取得的同种客土成品；不消耗土样，不新增原土物品；到达区域不自动完成",
-        "complete_record_alternative": true,
-        "grants": {
-          "recipe": true,
-          "structure": true,
-          "listed_material_relations": true,
-          "recipe_scoped_processes": true,
-          "other_recipes": false,
-          "upstream_industrial_production": false,
-          "hidden_item_properties": false,
-          "use_recipes_or_tactics": false
+        "kind": "exploration",
+        "interest_point": "soil_research",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
         },
-        "experience_on_unlock": 0,
+        "hard_skill_level": null,
         "persistent": true,
+        "sample_route": {
+          "research_profile": "M",
+          "consumes_sample": true,
+          "research_eligibility": "同种客土成品一份；主动取样研究消耗所选样本，不使用新原土物品",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
         "linked_processing_grants": []
       },
-      "material_note": "沿用23号基质经制造成为换土材料的游戏抽象；矿物粉碎和混配包含在配方中，不新增原土、石粉与土源额度",
+      "material_note": "沿用23号基质经制造成为换土材料的游戏抽象；矿物粉碎和混配包含在配方中，不新增原土、石粉与土源额度；固定使用配方指定基质，散／匀／细不互相替代",
       "material_roots": [
         "compost_matrix_grade_low",
         "ore_clay_raw",
@@ -3524,7 +3671,7 @@
       "recipe_id": "manufacturing.soil_amend_cinnamon",
       "item_id": "soil_amend_cinnamon",
       "name": "褐土客土",
-      "unlock_rule": "LT",
+      "unlock_rule": "X",
       "station": "soil",
       "methods": [
         "soil"
@@ -3535,7 +3682,7 @@
       "output_count": 4,
       "inputs": [
         {
-          "item_id": "compost_matrix_grade_low",
+          "item_id": "compost_matrix_grade_mid",
           "count": 3
         },
         {
@@ -3551,19 +3698,7 @@
           "count": 4
         }
       ],
-      "input_alternatives": {
-        "compost_matrix_grade_low": [
-          {
-            "item_id": "compost_matrix_grade_mid",
-            "count": 3
-          },
-          {
-            "item_id": "compost_matrix_grade_high",
-            "count": 3
-          }
-        ]
-      },
-      "discovery_source": "soil_sources",
+      "discovery_source": "soil_research",
       "status": "新增试调配方，未实装",
       "balance_snapshot": {
         "input_weight_kg": 10.25,
@@ -3571,29 +3706,35 @@
         "mass_difference_kg": 0.25
       },
       "unlock": {
-        "kind": "skill_and_soil_evidence",
-        "skill_id": "life_planting",
-        "level": 5,
-        "soil_evidence_key": "soil_source.cinnamon",
-        "evidence": "实际观察对应土壤地貌，或检查已取得的同种客土成品；不消耗土样，不新增原土物品；到达区域不自动完成",
-        "complete_record_alternative": true,
-        "grants": {
-          "recipe": true,
-          "structure": true,
-          "listed_material_relations": true,
-          "recipe_scoped_processes": true,
-          "other_recipes": false,
-          "upstream_industrial_production": false,
-          "hidden_item_properties": false,
-          "use_recipes_or_tactics": false
+        "kind": "exploration",
+        "interest_point": "soil_research",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
         },
-        "experience_on_unlock": 0,
+        "hard_skill_level": null,
         "persistent": true,
+        "sample_route": {
+          "research_profile": "M",
+          "consumes_sample": true,
+          "research_eligibility": "同种客土成品一份；主动取样研究消耗所选样本，不使用新原土物品",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
         "linked_processing_grants": []
       },
-      "material_note": "沿用23号基质经制造成为换土材料的游戏抽象；矿物粉碎和混配包含在配方中，不新增原土、石粉与土源额度",
+      "material_note": "沿用23号基质经制造成为换土材料的游戏抽象；矿物粉碎和混配包含在配方中，不新增原土、石粉与土源额度；固定使用配方指定基质，散／匀／细不互相替代",
       "material_roots": [
-        "compost_matrix_grade_low",
+        "compost_matrix_grade_mid",
         "ore_clay_raw",
         "ore_limestone",
         "textile_hemp_cloth"
@@ -3606,7 +3747,7 @@
       "recipe_id": "manufacturing.soil_amend_purple",
       "item_id": "soil_amend_purple",
       "name": "紫色土客土",
-      "unlock_rule": "LT",
+      "unlock_rule": "X",
       "station": "soil",
       "methods": [
         "soil"
@@ -3633,19 +3774,7 @@
           "count": 4
         }
       ],
-      "input_alternatives": {
-        "compost_matrix_grade_low": [
-          {
-            "item_id": "compost_matrix_grade_mid",
-            "count": 3
-          },
-          {
-            "item_id": "compost_matrix_grade_high",
-            "count": 3
-          }
-        ]
-      },
-      "discovery_source": "soil_sources",
+      "discovery_source": "soil_research",
       "status": "新增试调配方，未实装",
       "balance_snapshot": {
         "input_weight_kg": 12.45,
@@ -3653,27 +3782,33 @@
         "mass_difference_kg": 2.45
       },
       "unlock": {
-        "kind": "skill_and_soil_evidence",
-        "skill_id": "life_planting",
-        "level": 5,
-        "soil_evidence_key": "soil_source.purple",
-        "evidence": "实际观察对应土壤地貌，或检查已取得的同种客土成品；不消耗土样，不新增原土物品；到达区域不自动完成",
-        "complete_record_alternative": true,
-        "grants": {
-          "recipe": true,
-          "structure": true,
-          "listed_material_relations": true,
-          "recipe_scoped_processes": true,
-          "other_recipes": false,
-          "upstream_industrial_production": false,
-          "hidden_item_properties": false,
-          "use_recipes_or_tactics": false
+        "kind": "exploration",
+        "interest_point": "soil_research",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
         },
-        "experience_on_unlock": 0,
+        "hard_skill_level": null,
         "persistent": true,
+        "sample_route": {
+          "research_profile": "M",
+          "consumes_sample": true,
+          "research_eligibility": "同种客土成品一份；主动取样研究消耗所选样本，不使用新原土物品",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
         "linked_processing_grants": []
       },
-      "material_note": "沿用23号基质经制造成为换土材料的游戏抽象；矿物粉碎和混配包含在配方中，不新增原土、石粉与土源额度",
+      "material_note": "沿用23号基质经制造成为换土材料的游戏抽象；矿物粉碎和混配包含在配方中，不新增原土、石粉与土源额度；固定使用配方指定基质，散／匀／细不互相替代",
       "material_roots": [
         "compost_matrix_grade_low",
         "ore_granite",
@@ -3688,7 +3823,7 @@
       "recipe_id": "manufacturing.soil_amend_red",
       "item_id": "soil_amend_red",
       "name": "红壤客土",
-      "unlock_rule": "LT",
+      "unlock_rule": "X",
       "station": "soil",
       "methods": [
         "soil"
@@ -3715,19 +3850,7 @@
           "count": 4
         }
       ],
-      "input_alternatives": {
-        "compost_matrix_grade_low": [
-          {
-            "item_id": "compost_matrix_grade_mid",
-            "count": 2
-          },
-          {
-            "item_id": "compost_matrix_grade_high",
-            "count": 2
-          }
-        ]
-      },
-      "discovery_source": "soil_sources",
+      "discovery_source": "soil_research",
       "status": "新增试调配方，未实装",
       "balance_snapshot": {
         "input_weight_kg": 10.15,
@@ -3735,27 +3858,33 @@
         "mass_difference_kg": 0.15
       },
       "unlock": {
-        "kind": "skill_and_soil_evidence",
-        "skill_id": "life_planting",
-        "level": 5,
-        "soil_evidence_key": "soil_source.red",
-        "evidence": "实际观察对应土壤地貌，或检查已取得的同种客土成品；不消耗土样，不新增原土物品；到达区域不自动完成",
-        "complete_record_alternative": true,
-        "grants": {
-          "recipe": true,
-          "structure": true,
-          "listed_material_relations": true,
-          "recipe_scoped_processes": true,
-          "other_recipes": false,
-          "upstream_industrial_production": false,
-          "hidden_item_properties": false,
-          "use_recipes_or_tactics": false
+        "kind": "exploration",
+        "interest_point": "soil_research",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
         },
-        "experience_on_unlock": 0,
+        "hard_skill_level": null,
         "persistent": true,
+        "sample_route": {
+          "research_profile": "M",
+          "consumes_sample": true,
+          "research_eligibility": "同种客土成品一份；主动取样研究消耗所选样本，不使用新原土物品",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
         "linked_processing_grants": []
       },
-      "material_note": "沿用23号基质经制造成为换土材料的游戏抽象；矿物粉碎和混配包含在配方中，不新增原土、石粉与土源额度",
+      "material_note": "沿用23号基质经制造成为换土材料的游戏抽象；矿物粉碎和混配包含在配方中，不新增原土、石粉与土源额度；固定使用配方指定基质，散／匀／细不互相替代",
       "material_roots": [
         "compost_matrix_grade_low",
         "ore_iron_raw",
@@ -3770,7 +3899,7 @@
       "recipe_id": "manufacturing.soil_amend_alpine_meadow",
       "item_id": "soil_amend_alpine_meadow",
       "name": "高山草甸土客土",
-      "unlock_rule": "LT",
+      "unlock_rule": "X",
       "station": "soil",
       "methods": [
         "soil"
@@ -3781,7 +3910,7 @@
       "output_count": 4,
       "inputs": [
         {
-          "item_id": "compost_matrix_grade_low",
+          "item_id": "compost_matrix_grade_high",
           "count": 3
         },
         {
@@ -3797,19 +3926,7 @@
           "count": 4
         }
       ],
-      "input_alternatives": {
-        "compost_matrix_grade_low": [
-          {
-            "item_id": "compost_matrix_grade_mid",
-            "count": 3
-          },
-          {
-            "item_id": "compost_matrix_grade_high",
-            "count": 3
-          }
-        ]
-      },
-      "discovery_source": "soil_sources",
+      "discovery_source": "soil_research",
       "status": "新增试调配方，未实装",
       "balance_snapshot": {
         "input_weight_kg": 10.2,
@@ -3817,29 +3934,35 @@
         "mass_difference_kg": 0.2
       },
       "unlock": {
-        "kind": "skill_and_soil_evidence",
-        "skill_id": "life_planting",
-        "level": 5,
-        "soil_evidence_key": "soil_source.alpine_meadow",
-        "evidence": "实际观察对应土壤地貌，或检查已取得的同种客土成品；不消耗土样，不新增原土物品；到达区域不自动完成",
-        "complete_record_alternative": true,
-        "grants": {
-          "recipe": true,
-          "structure": true,
-          "listed_material_relations": true,
-          "recipe_scoped_processes": true,
-          "other_recipes": false,
-          "upstream_industrial_production": false,
-          "hidden_item_properties": false,
-          "use_recipes_or_tactics": false
+        "kind": "exploration",
+        "interest_point": "soil_research",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
         },
-        "experience_on_unlock": 0,
+        "hard_skill_level": null,
         "persistent": true,
+        "sample_route": {
+          "research_profile": "M",
+          "consumes_sample": true,
+          "research_eligibility": "同种客土成品一份；主动取样研究消耗所选样本，不使用新原土物品",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
         "linked_processing_grants": []
       },
-      "material_note": "沿用23号基质经制造成为换土材料的游戏抽象；矿物粉碎和混配包含在配方中，不新增原土、石粉与土源额度",
+      "material_note": "沿用23号基质经制造成为换土材料的游戏抽象；矿物粉碎和混配包含在配方中，不新增原土、石粉与土源额度；固定使用配方指定基质，散／匀／细不互相替代",
       "material_roots": [
-        "compost_matrix_grade_low",
+        "compost_matrix_grade_high",
         "wood_bits",
         "textile_coir",
         "textile_hemp_cloth"
@@ -3852,7 +3975,7 @@
       "recipe_id": "manufacturing.soil_amend_paddy",
       "item_id": "soil_amend_paddy",
       "name": "水稻土客土",
-      "unlock_rule": "LT",
+      "unlock_rule": "X",
       "station": "soil",
       "methods": [
         "soil"
@@ -3863,7 +3986,7 @@
       "output_count": 4,
       "inputs": [
         {
-          "item_id": "compost_matrix_grade_low",
+          "item_id": "compost_matrix_grade_mid",
           "count": 3
         },
         {
@@ -3875,19 +3998,7 @@
           "count": 4
         }
       ],
-      "input_alternatives": {
-        "compost_matrix_grade_low": [
-          {
-            "item_id": "compost_matrix_grade_mid",
-            "count": 3
-          },
-          {
-            "item_id": "compost_matrix_grade_high",
-            "count": 3
-          }
-        ]
-      },
-      "discovery_source": "soil_sources",
+      "discovery_source": "soil_research",
       "status": "新增试调配方，未实装",
       "balance_snapshot": {
         "input_weight_kg": 10.5,
@@ -3895,29 +4006,35 @@
         "mass_difference_kg": 0.5
       },
       "unlock": {
-        "kind": "skill_and_soil_evidence",
-        "skill_id": "life_planting",
-        "level": 5,
-        "soil_evidence_key": "soil_source.paddy",
-        "evidence": "实际观察对应土壤地貌，或检查已取得的同种客土成品；不消耗土样，不新增原土物品；到达区域不自动完成",
-        "complete_record_alternative": true,
-        "grants": {
-          "recipe": true,
-          "structure": true,
-          "listed_material_relations": true,
-          "recipe_scoped_processes": true,
-          "other_recipes": false,
-          "upstream_industrial_production": false,
-          "hidden_item_properties": false,
-          "use_recipes_or_tactics": false
+        "kind": "exploration",
+        "interest_point": "soil_research",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
         },
-        "experience_on_unlock": 0,
+        "hard_skill_level": null,
         "persistent": true,
+        "sample_route": {
+          "research_profile": "M",
+          "consumes_sample": true,
+          "research_eligibility": "同种客土成品一份；主动取样研究消耗所选样本，不使用新原土物品",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
         "linked_processing_grants": []
       },
-      "material_note": "沿用23号基质经制造成为换土材料的游戏抽象；矿物粉碎和混配包含在配方中，不新增原土、石粉与土源额度",
+      "material_note": "沿用23号基质经制造成为换土材料的游戏抽象；矿物粉碎和混配包含在配方中，不新增原土、石粉与土源额度；固定使用配方指定基质，散／匀／细不互相替代",
       "material_roots": [
-        "compost_matrix_grade_low",
+        "compost_matrix_grade_mid",
         "ore_clay_raw",
         "textile_hemp_cloth"
       ],
@@ -3929,7 +4046,7 @@
       "recipe_id": "manufacturing.soil_amend_black",
       "item_id": "soil_amend_black",
       "name": "典型黑土客土",
-      "unlock_rule": "LT",
+      "unlock_rule": "X",
       "station": "soil",
       "methods": [
         "soil"
@@ -3940,7 +4057,7 @@
       "output_count": 4,
       "inputs": [
         {
-          "item_id": "compost_matrix_grade_low",
+          "item_id": "compost_matrix_grade_high",
           "count": 3
         },
         {
@@ -3952,19 +4069,7 @@
           "count": 4
         }
       ],
-      "input_alternatives": {
-        "compost_matrix_grade_low": [
-          {
-            "item_id": "compost_matrix_grade_mid",
-            "count": 3
-          },
-          {
-            "item_id": "compost_matrix_grade_high",
-            "count": 3
-          }
-        ]
-      },
-      "discovery_source": "soil_sources",
+      "discovery_source": "soil_research",
       "status": "新增试调配方，未实装",
       "balance_snapshot": {
         "input_weight_kg": 10.3,
@@ -3972,29 +4077,35 @@
         "mass_difference_kg": 0.3
       },
       "unlock": {
-        "kind": "skill_and_soil_evidence",
-        "skill_id": "life_planting",
-        "level": 5,
-        "soil_evidence_key": "soil_source.black",
-        "evidence": "实际观察对应土壤地貌，或检查已取得的同种客土成品；不消耗土样，不新增原土物品；到达区域不自动完成",
-        "complete_record_alternative": true,
-        "grants": {
-          "recipe": true,
-          "structure": true,
-          "listed_material_relations": true,
-          "recipe_scoped_processes": true,
-          "other_recipes": false,
-          "upstream_industrial_production": false,
-          "hidden_item_properties": false,
-          "use_recipes_or_tactics": false
+        "kind": "exploration",
+        "interest_point": "soil_research",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
         },
-        "experience_on_unlock": 0,
+        "hard_skill_level": null,
         "persistent": true,
+        "sample_route": {
+          "research_profile": "M",
+          "consumes_sample": true,
+          "research_eligibility": "同种客土成品一份；主动取样研究消耗所选样本，不使用新原土物品",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
         "linked_processing_grants": []
       },
-      "material_note": "沿用23号基质经制造成为换土材料的游戏抽象；矿物粉碎和混配包含在配方中，不新增原土、石粉与土源额度",
+      "material_note": "沿用23号基质经制造成为换土材料的游戏抽象；矿物粉碎和混配包含在配方中，不新增原土、石粉与土源额度；固定使用配方指定基质，散／匀／细不互相替代",
       "material_roots": [
-        "compost_matrix_grade_low",
+        "compost_matrix_grade_high",
         "wood_charcoal",
         "textile_hemp_cloth"
       ],
@@ -4054,7 +4165,7 @@
       "recipe_id": "existing_hunting.consumable_hunting_snare",
       "item_id": "consumable_hunting_snare",
       "name": "套索",
-      "unlock_rule": "L",
+      "unlock_rule": "X",
       "station": "simple",
       "methods": [],
       "work_profile": "existing_hunting",
@@ -4067,40 +4178,50 @@
           "count": 1
         }
       ],
-      "discovery_source": "existing_hunting",
-      "status": "既有狩猎用料、费用与执行器保留；本轮仅提议接入技能解锁与旧认知兼容",
+      "discovery_source": "hunting_tools",
+      "status": "既有狩猎用料、费用与执行器保留；制作系统方案改为套索研究解锁，正式狩猎解锁尚未改动",
       "balance_snapshot": {
         "input_weight_kg": 0.5,
         "output_weight_kg": 0.2,
         "mass_difference_kg": 0.3
       },
       "unlock": {
-        "kind": "skill_level",
-        "skill_id": "life_hunting",
-        "level": 5,
-        "grants": {
-          "recipe": true,
-          "structure": true,
-          "listed_material_relations": true,
-          "recipe_scoped_processes": true,
-          "other_recipes": false,
-          "upstream_industrial_production": false,
-          "hidden_item_properties": false,
-          "use_recipes_or_tactics": false
+        "kind": "exploration",
+        "interest_point": "hunting_tools",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
         },
-        "experience_on_unlock": 0,
+        "hard_skill_level": null,
         "persistent": true,
-        "legacy_alternative": {
-          "all_flags": [
-            "snare_tightening",
-            "snare_anchor"
-          ]
+        "sample_route": {
+          "research_profile": "S",
+          "consumes_sample": false,
+          "research_eligibility": "可观察的关键结构完整；可访问真实样本，研究期间保留并占用",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
         },
+        "linked_processing_grants": [],
         "additional_grants": [
           "snare_tightening",
           "snare_anchor"
         ],
-        "linked_processing_grants": []
+        "migration": {
+          "previously_known_flags": [
+            "snare_tightening",
+            "snare_anchor"
+          ],
+          "policy": "仅保留旧档已有套索制作知识；新角色不能靠等级或普通查看获得配方"
+        }
       },
       "workbench_level_min": 0,
       "required_tools": []
@@ -4413,11 +4534,11 @@
     "research_experience_rule": "一次研究任务结算一次；只对新增知识发放，按任务预算不按字段个数叠加"
   },
   "knowledge_contract": {
-    "structure": "基础等级包或高级有效证据授予该标准型号；不鉴定未知样本全部配料与性能",
-    "methods": "基础等级包或高级完整证据授予本方案工序及明确关联的4种中间料加工；不扩展到所有上游工业生产",
-    "standard_recipe": "基础以等级为知识来源，高级以有效实物或记录为来源；任何路径均不扩大到未列出的型号",
+    "structure": "对应生活技能1级基础包或研究完成的有效证据授予该标准型号；不鉴定未知样本的全部性能",
+    "methods": "1级基础包或研究证据授予本方案工序及明确关联的2种中间料加工；不扩展到所有上游生产",
+    "standard_recipe": "22种成品随对应生活技能1级掌握；41种成品必须完成研究，不叠加技能硬门槛",
     "evidence": "按角色、知识内容与授予事实幂等；重复点位或副本不重复发经验",
-    "skills": "解锁技能决定何时学会，制造技能影响在制造台执行；解锁不发经验，知识不因掉级删除"
+    "skills": "1级提供基础制作知识；后续技能成长只影响既有作业能力，不自动追加配方；已学知识永久保留"
   },
   "lifecycle": {
     "material_commit": "首个有效工作tick前原子扣除当前批全部投入并保存任务种子；未来批不预扣",
@@ -4518,13 +4639,14 @@
     "acyclic_material_dependencies": true,
     "price_balance": "未通过经济定稿；原表大量价格为0、空值或占位，不能宣称无套利",
     "unlock_distribution": {
-      "new_skill_level": 34,
-      "new_exploration": 16,
-      "new_soil_skill_and_evidence": 7,
-      "existing_hunting_skill_routes": 6,
+      "new_skill_level": 17,
+      "new_exploration": 40,
+      "existing_hunting_skill_routes": 5,
+      "existing_hunting_research_routes": 1,
+      "total_basic_products": 22,
+      "total_research_products": 41,
       "external_state_or_facilities": 10
     },
-    "advanced_points_cover_all_16_targets": true,
     "material_supply": {
       "new_products": 57,
       "existing_root_materials_only": 50,
@@ -4546,14 +4668,16 @@
     "tool_and_upgrade_dependencies_acyclic": true,
     "required_tools_are_registered": true,
     "retired_registered_materials": 2,
-    "mass_snapshot_semantics": "份数为配方计量，模板重量保留；有符号重量差仅作数据参考，允许负值，不用于约束批量或反推材料份数"
+    "mass_snapshot_semantics": "份数为配方计量，模板重量保留；有符号重量差仅作数据参考，允许负值，不用于约束批量或反推材料份数",
+    "research_interest_point_targets": 41,
+    "all_research_targets_have_complete_record_route": true
   },
-  "review_revision": 9,
+  "review_revision": 11,
   "unlock_policy": {
-    "confirmed_direction": "基础随对应生活技能等级，高级通过地牢探索研究仿制，兴趣点可提供配方",
-    "scope": "本次制造范围；不自动改写武器、防具、菜谱和药方",
-    "numeric_status": "等级1/3/5/10均为试调值",
-    "legacy_hunting": "五条入门配方保持开放，套索新增狩猎5级路径，原两项认知仍可独立满足制作条件；用料费用不变",
+    "confirmed_direction": "对应生活技能1级只解锁基础用具；其余工具和成品全部通过研究实物或有效完整资料／兴趣点记录解锁",
+    "scope": "本次制作系统63条成品及2条材料加工；不自动改写武器、防具、背包缝纫、菜谱、药方及正式狩猎执行器",
+    "numeric_status": "仅1级基础自动授予为用户确认；不再有3／5／10级自动配方，研究费用及逐项样本方式为试调",
+    "legacy_hunting": "五条1级基础配方保留；套索改为研究解锁，已有套索知识保留，正式狩猎执行器本轮未替换",
     "skill_names": {
       "life_manufacturing": "制造",
       "life_fishing": "钓鱼",
@@ -4576,7 +4700,7 @@
       "use_recipes_or_tactics": false,
       "explicit_linked_material_processes": true
     },
-    "grant_event": "初始化、有效生活技能等级变化、读档迁移时幂等核对；1级配方无首个经验要求",
+    "grant_event": "初始化、有效技能状态变化或读档时仅核对1级基础包；提升到任意更高等级不追加成品配方",
     "persistent": "已学配方永久保留；掉级、死亡或转移样本不忘记",
     "unlock_experience": 0,
     "work_skill": "制造执行器以life_manufacturing计算成功率、费用与工作经验；解锁所属技能不重复获得制作经验；旧狩猎保留原执行器结算",
@@ -4621,7 +4745,9 @@
       "scene": "厂房维修间",
       "evidence": "可拆维修钳、装配图与夹持机构",
       "recipes": [
-        "tool_repair_pliers"
+        "tool_repair_pliers",
+        "tool_repair_hammer",
+        "tool_repair_whetstone"
       ],
       "sample": true,
       "status": "待投放的设计模板，不代表现有地图已放置",
@@ -4651,7 +4777,8 @@
         "tool_layer_filter_sheet_pharmacy",
         "tool_long_handle_flask_pharmacy",
         "tool_garlic_press_pharmacy",
-        "tool_roller_pharmacy"
+        "tool_roller_pharmacy",
+        "tool_steel_basin_pharmacy"
       ],
       "sample": true,
       "status": "待投放的设计模板，不代表现有地图已放置",
@@ -4681,6 +4808,100 @@
         "tool_iv_set_pharmacy"
       ],
       "sample": false,
+      "status": "待投放的设计模板，不代表现有地图已放置",
+      "grant_policy": "每个实例明确配置1至2个相关配方内容；recipes仅为候选池，不是一次全送",
+      "complete_evidence": "对应完整记录授予该方案结构、材料关系与所需工序",
+      "research_profile": "interest_point"
+    },
+    "tackle_specs": {
+      "name": "钓具整备台",
+      "scene": "渔具店或钓具整备间",
+      "evidence": "线材规格样本、漂坠钩实物与对应制作记录",
+      "recipes": [
+        "fishing_line_main_nylon_thick",
+        "fishing_float_large",
+        "fishing_sinker_fixed_2g",
+        "fishing_sinker_fixed_3g",
+        "fishing_hook_single_medium"
+      ],
+      "sample": true,
+      "status": "待投放的设计模板，不代表现有地图已放置",
+      "grant_policy": "每个实例明确配置1至2个相关配方内容；recipes仅为候选池，不是一次全送",
+      "complete_evidence": "对应完整记录授予该方案结构、材料关系与所需工序",
+      "research_profile": "interest_point"
+    },
+    "textile_tools": {
+      "name": "旧布作工具桌",
+      "scene": "旧缝纫间",
+      "evidence": "工具卷实物与裁制记录",
+      "recipes": [
+        "tool_repair_roll"
+      ],
+      "sample": true,
+      "status": "待投放的设计模板，不代表现有地图已放置",
+      "grant_policy": "每个实例明确配置1至2个相关配方内容；recipes仅为候选池，不是一次全送",
+      "complete_evidence": "对应完整记录授予该方案结构、材料关系与所需工序",
+      "research_profile": "interest_point"
+    },
+    "daily_tools": {
+      "name": "旧日用器具工作台",
+      "scene": "居民杂物间或维修间",
+      "evidence": "取水容器、引火工具与制作记录",
+      "recipes": [
+        "supply_flint_fire",
+        "tool_bucket_water_empty",
+        "tool_flask_iron_water",
+        "tool_flask_bamboo_water"
+      ],
+      "sample": true,
+      "status": "待投放的设计模板，不代表现有地图已放置",
+      "grant_policy": "每个实例明确配置1至2个相关配方内容；recipes仅为候选池，不是一次全送",
+      "complete_evidence": "对应完整记录授予该方案结构、材料关系与所需工序",
+      "research_profile": "interest_point"
+    },
+    "kitchen_tools": {
+      "name": "旧炊具工作间",
+      "scene": "厨房或炊具维修间",
+      "evidence": "炊具样本与成形密封记录",
+      "recipes": [
+        "tool_steamer_bamboo_cooking",
+        "tool_wok_iron_cooking",
+        "tool_fryer_pot_iron_cooking",
+        "tool_pickling_jar_cooking"
+      ],
+      "sample": true,
+      "status": "待投放的设计模板，不代表现有地图已放置",
+      "grant_policy": "每个实例明确配置1至2个相关配方内容；recipes仅为候选池，不是一次全送",
+      "complete_evidence": "对应完整记录授予该方案结构、材料关系与所需工序",
+      "research_profile": "interest_point"
+    },
+    "hunting_tools": {
+      "name": "猎具整备角",
+      "scene": "猎具存放处",
+      "evidence": "套索实物、收紧固定结构与制作记录",
+      "recipes": [
+        "consumable_hunting_snare"
+      ],
+      "sample": true,
+      "status": "待投放的设计模板，不代表现有地图已放置",
+      "grant_policy": "每个实例明确配置1至2个相关配方内容；recipes仅为候选池，不是一次全送",
+      "complete_evidence": "对应完整记录授予该方案结构、材料关系与所需工序",
+      "research_profile": "interest_point"
+    },
+    "soil_research": {
+      "name": "配土工作角",
+      "scene": "种植作业区",
+      "evidence": "对应客土成品与配土记录",
+      "recipes": [
+        "soil_amend_yellow_cotton",
+        "soil_amend_cinnamon",
+        "soil_amend_purple",
+        "soil_amend_red",
+        "soil_amend_alpine_meadow",
+        "soil_amend_paddy",
+        "soil_amend_black"
+      ],
+      "sample": true,
       "status": "待投放的设计模板，不代表现有地图已放置",
       "grant_policy": "每个实例明确配置1至2个相关配方内容；recipes仅为候选池，不是一次全送",
       "complete_evidence": "对应完整记录授予该方案结构、材料关系与所需工序",
@@ -4715,13 +4936,37 @@
     "retired_previous_concepts": 16,
     "upstream_depth": "新增链最多一层；不拆出针头、垫片、玻璃粉和七种原土",
     "knowledge": "普通铁坯加工在制造1级掌握，钢丝加工随使用它的首个完整配方授予；不另加材料研究门槛",
-    "soil": "保留七个现有客土成品；取消七种原土，以23号腐熟基质制造线为根",
+    "soil": "七种客土按散3／匀2／细2指定已有基质，各做一批消耗8／6／6份；不互相替代，不新增原土",
     "status": "8种物品模板已注册，当前制造路线使用6种（2种中间料、4种外部专材）；小份铅料和精密机件仅兼容保留。配方用于独立试玩，正式流程、解锁及供应待接入",
     "retired_registered_materials": [
       "material_lead_portion",
       "material_precision_parts"
     ],
-    "yield_policy": "用户确认按玩法节奏收敛批量，不以真实重量损耗推导数量。铁坯与钢丝一批3份、钩坠6个、鱼饵20份；雷蛙和耐用器具一批1件。同步收敛工具投入，取消小份铅料与精密机件加工。具体数值仍为试调值。"
+    "yield_policy": "用户确认按玩法节奏收敛批量，不以真实重量损耗推导数量。铁坯与钢丝一批3份、钩坠6个、鱼饵20份；雷蛙和耐用器具一批1件。同步收敛工具投入，取消小份铅料与精密机件加工。具体数值仍为试调值。",
+    "soil_substrates": {
+      "status": "用户要求三种基质均匀分配；具体3／2／2归属为本轮安排",
+      "recipe_counts": {
+        "low": 3,
+        "mid": 2,
+        "high": 2
+      },
+      "one_batch_each_input_counts": {
+        "low": 8,
+        "mid": 6,
+        "high": 6
+      },
+      "assignment": {
+        "soil_amend_yellow_cotton": "low",
+        "soil_amend_cinnamon": "mid",
+        "soil_amend_purple": "low",
+        "soil_amend_red": "low",
+        "soil_amend_alpine_meadow": "high",
+        "soil_amend_paddy": "mid",
+        "soil_amend_black": "high"
+      },
+      "substitution": "七种客土固定使用所列基质，三种基质互不替代，发酵废坨无效",
+      "semantics": "对应不同客土的材料用途，不改变客土效果或建立品质升级关系"
+    }
   },
   "facility_contract": {
     "multi_facility": "精密玻璃配方须在同一台体的精密工位执行并拥有可用陶玻工位；两者共享台级，不跨台或跨地图借用",

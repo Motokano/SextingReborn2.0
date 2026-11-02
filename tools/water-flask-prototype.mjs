@@ -79,7 +79,7 @@ function crafting() {
       <summary>制作水壶 <span>${state.workshop.recipeKnown ? '配方已掌握' : '配方未掌握'}</span></summary>
       <div class="refit-body"><div class="refit-preview"><label for="craft-plan">选择水壶配方</label><select id="craft-plan" data-field="plan-craft">${options(CRAFT_RECIPES, state.plannedCraft)}</select><p class="preview-label">容量200 · 空壶 · 无词条 · 无改造</p>
         <p class="settings-copy">${MODELS[state.plannedCraft].detail}</p>
-        <p class="settings-copy">制造${recipe.level}级学会，已学配方死亡不遗忘。<br>需要${recipe.benchLevel}级制作台${state.plannedCraft === 'iron' ? '、金工工位和修理锤，工具不消耗' : '，使用台体工具'}。</p>
+        <p class="settings-copy">研究实物或完整制作记录后学会，已学配方死亡不遗忘。<br>需要${recipe.benchLevel}级制作台${state.plannedCraft === 'iron' ? '、金工工位和修理锤，工具不消耗' : '，使用台体工具'}。</p>
         <p class="settings-copy">本页已备好上述条件，演示成功制作。成品放入背包，需自行装备、装水和改造。</p></div>
         <div class="refit-cost"><table class="material-table" aria-label="水壶制作材料"><thead><tr><th scope="col">家中材料</th><th scope="col">需要</th><th scope="col">持有</th></tr></thead><tbody>${Object.entries(recipe.costs).map(([id, count]) => `<tr${state.materials[id] < count ? ' class="missing"' : ''}><th scope="row">${MATERIALS[id].name}</th><td>${count}</td><td>${state.materials[id]}</td></tr>`).join('')}</tbody></table>
         <div class="refit-action"><p>消耗${recipe.stamina}体力 · 当前${num(state.player.stamina)}</p><button id="craft-button" class="primary" data-action="craft" aria-describedby="craft-reason"${disabled(reason)}>制作水壶 · ${recipe.ticks}刻</button></div><p class="refit-reason" id="craft-reason">${escape(reason || '条件齐备，可制作一只新水壶。')}</p></div></div>

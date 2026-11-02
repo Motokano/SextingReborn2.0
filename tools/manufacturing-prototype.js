@@ -30,14 +30,14 @@ function syncKnowledge() {
   const added=[];
   for (const r of recipes) {
     const u=r.unlock || {};
-    const basic=u.kind==='skill_level' && (state.skills[u.skill_id]||1)>=u.level;
+    const basic=u.kind==='skill_level' && u.level===1 && (state.skills[u.skill_id]||0)>=1;
     const linked=['any_known_recipe','any_known_plan'].includes(u.kind) && ((u.recipe_ids||[]).some(id=>state.known.has(id)) || (u.upgrade_ids||[]).some(id=>state.inspected.has(id)));
     if ((basic || linked) && grant(r)) added.push(r.name);
   }
   return added;
 }
 function reset(preset='start') {
-  state={level:1,facilities:new Set(['simple','bench','soil','metal']),inventory:{},craftedFlasks:[],flaskSerial:0,known:new Set(),inspected:new Set(),skills:Object.fromEntries(Object.keys(skillNames).map(k=>[k,k==='life_manufacturing'?5:1])),stamina:300,focus:100,xp:0,ticks:0,job:null,message:'',evidence:structuredClone(defaultEvidence),broken:true,preset};
+  state={level:1,facilities:new Set(['simple','bench','soil','metal']),inventory:{},craftedFlasks:[],flaskSerial:0,known:new Set(),inspected:new Set(),skills:Object.fromEntries(Object.keys(skillNames).map(k=>[k,1])),stamina:300,focus:100,xp:0,ticks:0,job:null,message:'',evidence:structuredClone(defaultEvidence),broken:true,preset};
   const productIds=new Set(recipes.map(r=>r.item_id));
   for(const r of recipes) for(const i of r.inputs||[]) if(!productIds.has(i.item_id)) state.inventory[i.item_id]=24;
   for(const f of Object.values(data.facilities)) for(const [id] of f.inputs||[]) if(!productIds.has(id)) state.inventory[id]=24;
@@ -46,6 +46,14 @@ function reset(preset='start') {
     state.level=2;state.facilities.add('precision');
     Object.assign(state.inventory,{wood_bamboo_green:0,material_nylon_stock:0,tool_repair_hammer:0,tool_repair_pliers:0,mechanical_parts:1});
     for(const id of ['fishing_reel_basic','tool_repair_pliers']) grant(recipeForItem(id));
+  }
+  if(preset==='research') {
+    // Review fixture: evidence is available, but no research recipes are granted.
+    state.focus=500;state.stamina=500;
+    for(const r of recipes.filter(r=>r.unlock?.kind==='exploration')) {
+      if(r.unlock.sample_route?.grants==='complete_standard_recipe_from_listed_inputs') state.inventory[r.item_id]=Math.max(owned(r.item_id),1);
+      else if(!state.evidence.some(e=>e.item===r.item_id&&e.type==='record')) state.evidence.push({id:`record-${r.item_id}`,item:r.item_id,type:'record',title:`${r.name}制作记录`,source:data.interest_points[r.unlock.interest_point].name});
+    }
   }
   if(preset==='advanced') {
     state.level=3;state.facilities=new Set(Object.keys(data.facilities));
@@ -76,6 +84,7 @@ function successRate(r) {
 }
 function requirements(r, count=1, committed=false) {
   const missing=[];
+  if(!r.kind && r.recipe_id && !state.known.has(r.recipe_id)) missing.push('尚未掌握配方');
   if(state.level<(r.workbench_level_min||0)) missing.push(`需要 ${r.workbench_level_min} 级制作台`);
   const facilities=[r.station,...(r.support_facilities||[]),...(r.required_facilities||[])].filter(Boolean);
   for(const f of new Set(facilities)) if(!state.facilities.has(f)) missing.push(`缺少${data.facilities[f].name}`);
@@ -88,6 +97,7 @@ function requirements(r, count=1, committed=false) {
   if(r.kind==='upgrade' && state.level!==r.from_level) missing.push('台体等级已改变');
   if(r.kind==='facility' && state.facilities.has(r.facility)) missing.push('工位已经安装');
   if(r.kind==='research' && state.known.has(r.target_recipe)) missing.push('已经掌握');
+  if(r.kind==='research' && r.research_type==='record' && !state.evidence.some(e=>e.id===r.evidence&&e.item===r.item_id&&e.type==='record')) missing.push('研究资料不可用');
   return missing;
 }
 function glyph(id,large=false) {
@@ -157,14 +167,28 @@ function VariantB(list,r) {
 function VariantC(list) {
   return `<div class="ledger-view"><div class="ledger-tools">${filters()}</div>${list.map(r=>`<section class="ledger-item">${recipeRow(r)}${r.recipe_id===selected?recipeDetail(r,true):''}</section>`).join('')||'<p class="empty">没有符合条件的已学配方。</p>'}</div>`;
 }
+function researchEvidence() {
+  const evidence=state.evidence.filter(e=>{
+    const u=recipeForItem(e.item)?.unlock;
+    return u?.kind==='exploration' && (e.type==='record'?!!u.complete_record_route:u.sample_route?.research_profile===e.type&&u.sample_route.grants==='complete_standard_recipe_from_listed_inputs');
+  });
+  for(const r of recipes) {
+    const u=r.unlock,s=u?.sample_route;
+    if(u?.kind!=='exploration'||s?.grants!=='complete_standard_recipe_from_listed_inputs'||owned(r.item_id)<1||evidence.some(e=>e.item===r.item_id&&e.type===s.research_profile)) continue;
+    evidence.push({id:`sample-${r.item_id}`,item:r.item_id,type:s.research_profile,title:r.name,source:'实物样本'});
+  }
+  return evidence;
+}
 function researchAction(e) {
+  if(!e || !researchEvidence().some(x=>x.id===e.id&&x.item===e.item&&x.type===e.type)) return null;
   const p=data.research[e.type];
-  return {kind:'research',name:`研究 · ${name(e.item)}`,item_id:e.item,target_recipe:recipeForItem(e.item).recipe_id,evidence:e.id,station:'bench',workbench_level_min:1,inputs:p.consumes_sample?[{item_id:e.item,count:1}]:[],required_tools:[],...p};
+  return {kind:'research',name:`研究 · ${name(e.item)}`,item_id:e.item,target_recipe:recipeForItem(e.item).recipe_id,evidence:e.id,research_type:e.type,station:'bench',workbench_level_min:1,inputs:p.consumes_sample?[{item_id:e.item,count:1}]:[],required_tools:e.type==='S'?[{item_id:e.item,count:1,consume:false}]:[],...p};
 }
 function researchView() {
-  return `<div class="vertical-list">${state.evidence.map(e=>{
+  return `<div class="vertical-list">${researchEvidence().map(e=>{
     const r=researchAction(e),known=state.known.has(r.target_recipe),missing=requirements(r);
-    return `<article class="entry"><span class="paper-icon" aria-hidden="true">${e.type==='M'?'⚙':'▤'}</span><div class="entry-body"><h3>${esc(e.title)}</h3><div class="entry-meta"><span>${esc(e.source)}</span><span>${e.type==='M'?'消耗实物 × 1':'资料不消耗'}</span></div><small>${r.ticks} 刻 · ${r.stamina} 体力 · ${r.focus} 专注</small>${!known&&missing.length?`<p class="bad">${missing.map(esc).join('；')}</p>`:''}</div><button data-action="research" data-id="${e.id}" ${known||missing.length?'disabled':''}>${known?'已掌握':e.type==='M'?'拆解研究':'研读资料'}</button></article>`;
+    const sampling=e.type==='M'&&recipeForItem(e.item).methods.some(m=>['soil','line','stone'].includes(m));
+    return `<article class="entry"><span class="paper-icon" aria-hidden="true">${e.type==='record'?'▤':'⚙'}</span><div class="entry-body"><h3>${esc(e.title)}</h3><div class="entry-meta"><span>${esc(e.source)}</span><span>${e.type==='M'?'消耗实物 × 1':e.type==='S'?'保留实物':'资料不消耗'}</span></div><small>${r.ticks} 刻 · ${r.stamina} 体力 · ${r.focus} 专注</small>${!known&&missing.length?`<p class="bad">${missing.map(esc).join('；')}</p>`:''}</div><button data-action="research" data-id="${e.id}" ${known||missing.length?'disabled':''}>${known?'已掌握':e.type==='M'?(sampling?'取样研究':'拆解研究'):e.type==='S'?'观察研究':'研读资料'}</button></article>`;
   }).join('')}</div>`;
 }
 function repairAction() {
@@ -288,7 +312,7 @@ function render() {
 }
 function announce(text) {$('#announcer').textContent=text;}
 function renderSettings() {
-  $('#settings').innerHTML=`<h3>试玩设置</h3><label>情境（切换后重置）<select id="preset"><option value="start" ${state.preset==='start'?'selected':''}>初建制作台</option><option value="short" ${state.preset==='short'?'selected':''}>缺材料与工具</option><option value="advanced" ${state.preset==='advanced'?'selected':''}>精密台 · 全配方</option></select></label><button data-action="reset" class="small">重置</button><p>生活技能</p><div class="skill-edit"><select id="skill" aria-label="调整的生活技能">${Object.entries(skillNames).map(([k,n])=>`<option value="${k}">${n}</option>`).join('')}</select><input id="skill-level" aria-label="生活技能等级" type="number" min="1" max="100" value="${state.skills.life_fishing}"><button class="small" data-action="skill-apply" ${state.job?'disabled':''}>应用</button></div><p class="skill-summary">${Object.entries(state.skills).map(([k,v])=>`${skillNames[k]} ${v}`).join(' · ')}</p><p>不写入存档，刷新重置。</p><button class="quiet small" data-action="settings-close">收起</button>`;
+  $('#settings').innerHTML=`<h3>试玩设置</h3><label>情境（切换后重置）<select id="preset"><option value="start" ${state.preset==='start'?'selected':''}>初建制作台</option><option value="short" ${state.preset==='short'?'selected':''}>缺材料与工具</option><option value="research" ${state.preset==='research'?'selected':''}>研究样本</option><option value="advanced" ${state.preset==='advanced'?'selected':''}>精密台 · 全配方</option></select></label><button data-action="reset" class="small">重置</button><p>生活技能</p><div class="skill-edit"><select id="skill" aria-label="调整的生活技能">${Object.entries(skillNames).map(([k,n])=>`<option value="${k}">${n}</option>`).join('')}</select><input id="skill-level" aria-label="生活技能等级" type="number" min="1" max="100" value="${state.skills.life_fishing}"><button class="small" data-action="skill-apply" ${state.job?'disabled':''}>应用</button></div><p class="skill-summary">${Object.entries(state.skills).map(([k,v])=>`${skillNames[k]} ${v}`).join(' · ')}</p><p>不写入存档，刷新重置。</p><button class="quiet small" data-action="settings-close">收起</button>`;
 }
 function switchVariant(delta) {
   const names=Object.keys(variantNames);variant=names[(names.indexOf(variant)+delta+names.length)%names.length];
@@ -324,7 +348,7 @@ document.addEventListener('click',e=>{
   else if(a==='module') moduleView=id;
   else if(a==='module-back') moduleView=null;
   else if(a==='start') {startJob(currentAction(),['make','process'].includes(tab)?quantity:1);return;}
-  else if(a==='research') {startJob(researchAction(state.evidence.find(e=>e.id===id)));return;}
+  else if(a==='research') {startJob(researchAction(researchEvidence().find(e=>e.id===id)));return;}
   render();
   if(['tab','goto-recipe','open-bench','module','module-back'].includes(a)) $('.content')?.scrollTo(0,0);
 });

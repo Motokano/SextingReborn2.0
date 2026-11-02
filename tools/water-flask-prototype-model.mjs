@@ -34,15 +34,15 @@ export const MODIFICATIONS = {
 export const CRAFT_RECIPE = {
   id: 'manufacturing.tool_flask_iron_water', itemId: 'tool_flask_iron_water',
   name: '铁皮水壶', ticks: 8, stamina: 8, output: 1,
-  level: 5, benchLevel: 2,
+  unlock: 'research', benchLevel: 2,
   costs: { material_iron_blank_common: 1, wood_cork: 1 }
 };
-// Mirrors the same revision-9 recipe table used by the manufacturing prototype.
+// Mirrors the same revision-10 recipe table used by the manufacturing prototype.
 export const CRAFT_RECIPES = {
   iron: CRAFT_RECIPE,
   bamboo: {
     id: 'manufacturing.tool_flask_bamboo_water', itemId: 'tool_flask_bamboo_water',
-    name: '青竹水壶', ticks: 6, stamina: 6, output: 1, level: 5, benchLevel: 1,
+    name: '青竹水壶', ticks: 6, stamina: 6, output: 1, unlock: 'research', benchLevel: 1,
     costs: { wood_bamboo_green: 1, wood_cork: 1 }
   }
 };

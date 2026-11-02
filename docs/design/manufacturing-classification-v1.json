@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "date": "2026-10-30",
-  "status": "8种材料模板已注册；已补可升级制作台与逐配方台级、工具条件；三级划分及具体数值为待接入试玩方案",
+  "status": "1级基础、其余研究的解锁规则已确认并同步独立试玩；台级、工具、用料与产出保持试调；正式制作执行器待接入",
   "scope": "制造系统全量工具、钓具、耗材及其原料；含固定设施与外部供应的明确归属",
   "statistics": {
     "existing_items": 73,
@@ -25,10 +25,12 @@
     "unclassified_core_items": 0,
     "unclassified_inputs": 0,
     "unlock_distribution": {
-      "new_skill_level": 34,
-      "new_exploration": 16,
-      "new_soil_skill_and_evidence": 7,
-      "existing_hunting_skill_routes": 6,
+      "new_skill_level": 17,
+      "new_exploration": 40,
+      "existing_hunting_skill_routes": 5,
+      "existing_hunting_research_routes": 1,
+      "total_basic_products": 22,
+      "total_research_products": 41,
       "external_state_or_facilities": 10
     },
     "material_supply": {
@@ -50,22 +52,16 @@
   },
   "unlock_rules": {
     "L": {
-      "name": "对应生活技能等级",
-      "status": "用户确认方向；等级试调",
-      "detail": "达到该配方对应技能等级即永久掌握标准配方及必要基础工序，不要求先研究成品，也不再叠加制造等级硬门槛。",
-      "fallback": "入门工具设在1级；旧存档已知方法保留。"
+      "name": "对应生活技能1级基础包",
+      "status": "用户确认",
+      "detail": "仅1级授予已列出的基础成品及其必要工序；提升至3／5／10级或更高均不自动追加成品配方。",
+      "fallback": "已学方法永久保留，不免费发放成品或原料。"
     },
     "X": {
       "name": "地牢研究或兴趣点",
       "status": "用户确认方向；投放待配置",
-      "detail": "高级型号通过合格实物研究，或研究地牢兴趣点的完整制作资料掌握；每种配方配置实际有效路线。等级不能自动授予。",
+      "detail": "所有非1级基础成品都须主动研究有效实物或完整资料／兴趣点记录；普通查看、持有物品、技能升级不授予配方。",
       "fallback": "完整记录可独立解锁，无需再拆一件成品；实物不能说明的加工步骤由专项记录补足。"
-    },
-    "LT": {
-      "name": "种植等级与土壤认识",
-      "status": "本轮细化提案",
-      "detail": "种植5级加对应土壤实际观察，或检查同种客土成品，掌握该种配土方案；七种独立",
-      "fallback": "完整配土记录可提前解锁；使用已有基质与辅料制造，不要求新增原土"
     },
     "G": {
       "name": "获取与用途认识",
@@ -104,9 +100,9 @@
         "supply_rope_hemp_short",
         "resin_pine"
       ],
-      "discovery": "钓鱼达到1级直接掌握；等级为试值，无样本或资料前置",
+      "discovery": "钓鱼达到1级直接掌握；无样本或资料前置",
       "current": "现有完整手竿，不新增竿身或握把子物品；竹材方案为提案，须验算能否保持现有规格",
-      "decision_status": "用户确定基础技能解锁、高级地牢探索与兴趣点解锁；逐项分配和等级为试调提案",
+      "decision_status": "用户确认：对应生活技能1级基础包；工作数值为试调",
       "source_file": "data/items.json",
       "recipe_candidate": "manufacturing.fishing_rod_hand_basic",
       "unlock": {
@@ -251,9 +247,9 @@
       "input_ids": [
         "material_nylon_stock"
       ],
-      "discovery": "钓鱼达到1级直接掌握；等级为试值，无样本或资料前置",
+      "discovery": "钓鱼达到1级直接掌握；无样本或资料前置",
       "current": "输出仍是4米完整线件，不保存余线长度",
-      "decision_status": "用户确定基础技能解锁、高级地牢探索与兴趣点解锁；逐项分配和等级为试调提案",
+      "decision_status": "用户确认：对应生活技能1级基础包；工作数值为试调",
       "source_file": "data/items.json",
       "recipe_candidate": "manufacturing.fishing_line_main_nylon_thin",
       "unlock": {
@@ -281,32 +277,41 @@
       "item_id": "fishing_line_main_nylon_thick",
       "name": "尼龙主线·粗",
       "category": "fishing_line",
-      "unlock_rule": "L",
+      "unlock_rule": "X",
       "conditions": "制造台本体；定规格线件加工",
       "input_ids": [
         "material_nylon_stock"
       ],
-      "discovery": "钓鱼达到5级直接掌握；等级为试值，无样本或资料前置",
+      "discovery": "研究尼龙主线·粗合格实物（消耗样本一件），或研究钓具整备台的对应完整制作记录；没有技能等级门槛",
       "current": "与细线规格分别登记，不因细线解锁而自动得知粗线",
-      "decision_status": "用户确定基础技能解锁、高级地牢探索与兴趣点解锁；逐项分配和等级为试调提案",
+      "decision_status": "用户确认：仅1级基础配方随技能解锁，其余全部研究；逐项观察／拆研及来源安排为首版试调",
       "source_file": "data/items.json",
       "recipe_candidate": "manufacturing.fishing_line_main_nylon_thick",
       "unlock": {
-        "kind": "skill_level",
-        "skill_id": "life_fishing",
-        "level": 5,
-        "grants": {
-          "recipe": true,
-          "structure": true,
-          "listed_material_relations": true,
-          "recipe_scoped_processes": true,
-          "other_recipes": false,
-          "upstream_industrial_production": false,
-          "hidden_item_properties": false,
-          "use_recipes_or_tactics": false
+        "kind": "exploration",
+        "interest_point": "tackle_specs",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
         },
-        "experience_on_unlock": 0,
+        "hard_skill_level": null,
         "persistent": true,
+        "sample_route": {
+          "research_profile": "M",
+          "consumes_sample": true,
+          "research_eligibility": "关键可研究结构完整；先清空内容物、卸下外接子树；拆解或取样研究消耗选定一件",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
         "linked_processing_grants": []
       },
       "workbench_level_min": 1,
@@ -321,9 +326,9 @@
       "input_ids": [
         "material_nylon_stock"
       ],
-      "discovery": "钓鱼达到1级直接掌握；等级为试值，无样本或资料前置",
+      "discovery": "钓鱼达到1级直接掌握；无样本或资料前置",
       "current": "输出仍是半米子线",
-      "decision_status": "用户确定基础技能解锁、高级地牢探索与兴趣点解锁；逐项分配和等级为试调提案",
+      "decision_status": "用户确认：对应生活技能1级基础包；工作数值为试调",
       "source_file": "data/items.json",
       "recipe_candidate": "manufacturing.fishing_leader_nylon_basic",
       "unlock": {
@@ -482,9 +487,9 @@
       "input_ids": [
         "wood_cork"
       ],
-      "discovery": "钓鱼达到1级直接掌握；等级为试值，无样本或资料前置",
+      "discovery": "钓鱼达到1级直接掌握；无样本或资料前置",
       "current": "只解锁该规格",
-      "decision_status": "用户确定基础技能解锁、高级地牢探索与兴趣点解锁；逐项分配和等级为试调提案",
+      "decision_status": "用户确认：对应生活技能1级基础包；工作数值为试调",
       "source_file": "data/items.json",
       "recipe_candidate": "manufacturing.fishing_float_small",
       "unlock": {
@@ -512,32 +517,41 @@
       "item_id": "fishing_float_large",
       "name": "较大吃铅浮漂",
       "category": "fishing_small",
-      "unlock_rule": "L",
+      "unlock_rule": "X",
       "conditions": "制造台本体；木竹整形与绑扎",
       "input_ids": [
         "wood_cork"
       ],
-      "discovery": "钓鱼达到10级直接掌握；等级为试值，无样本或资料前置",
-      "current": "与小漂共享工艺，规格在钓鱼10级独立掌握",
-      "decision_status": "用户确定基础技能解锁、高级地牢探索与兴趣点解锁；逐项分配和等级为试调提案",
+      "discovery": "研究较大吃铅浮漂合格实物（保留样本），或研究钓具整备台的对应完整制作记录；没有技能等级门槛",
+      "current": "与小漂共享工艺，规格通过独立研究掌握",
+      "decision_status": "用户确认：仅1级基础配方随技能解锁，其余全部研究；逐项观察／拆研及来源安排为首版试调",
       "source_file": "data/items.json",
       "recipe_candidate": "manufacturing.fishing_float_large",
       "unlock": {
-        "kind": "skill_level",
-        "skill_id": "life_fishing",
-        "level": 10,
-        "grants": {
-          "recipe": true,
-          "structure": true,
-          "listed_material_relations": true,
-          "recipe_scoped_processes": true,
-          "other_recipes": false,
-          "upstream_industrial_production": false,
-          "hidden_item_properties": false,
-          "use_recipes_or_tactics": false
+        "kind": "exploration",
+        "interest_point": "tackle_specs",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
         },
-        "experience_on_unlock": 0,
+        "hard_skill_level": null,
         "persistent": true,
+        "sample_route": {
+          "research_profile": "S",
+          "consumes_sample": false,
+          "research_eligibility": "可观察的关键结构完整；可访问真实样本，研究期间保留并占用",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
         "linked_processing_grants": []
       },
       "workbench_level_min": 1,
@@ -552,9 +566,9 @@
       "input_ids": [
         "material_forging_lead"
       ],
-      "discovery": "钓鱼达到1级直接掌握；等级为试值，无样本或资料前置",
+      "discovery": "钓鱼达到1级直接掌握；无样本或资料前置",
       "current": "铅料×1直接制作6个；保留固定重量，不开放剪铅皮或自动配重；产量为玩法试值",
-      "decision_status": "用户确定基础技能解锁、高级地牢探索与兴趣点解锁；逐项分配和等级为试调提案",
+      "decision_status": "用户确认：对应生活技能1级基础包；工作数值为试调",
       "source_file": "data/items.json",
       "recipe_candidate": "manufacturing.fishing_sinker_fixed_1g",
       "unlock": {
@@ -582,32 +596,41 @@
       "item_id": "fishing_sinker_fixed_2g",
       "name": "固定铅坠·两克",
       "category": "fishing_small",
-      "unlock_rule": "L",
+      "unlock_rule": "X",
       "conditions": "金工工位；铅坠定重成形",
       "input_ids": [
         "material_forging_lead"
       ],
-      "discovery": "钓鱼达到5级直接掌握；等级为试值，无样本或资料前置",
+      "discovery": "研究固定铅坠·两克合格实物（保留样本），或研究钓具整备台的对应完整制作记录；没有技能等级门槛",
       "current": "铅料×1直接制作6个；保留固定重量，不开放剪铅皮或自动配重；产量为玩法试值",
-      "decision_status": "用户确定基础技能解锁、高级地牢探索与兴趣点解锁；逐项分配和等级为试调提案",
+      "decision_status": "用户确认：仅1级基础配方随技能解锁，其余全部研究；逐项观察／拆研及来源安排为首版试调",
       "source_file": "data/items.json",
       "recipe_candidate": "manufacturing.fishing_sinker_fixed_2g",
       "unlock": {
-        "kind": "skill_level",
-        "skill_id": "life_fishing",
-        "level": 5,
-        "grants": {
-          "recipe": true,
-          "structure": true,
-          "listed_material_relations": true,
-          "recipe_scoped_processes": true,
-          "other_recipes": false,
-          "upstream_industrial_production": false,
-          "hidden_item_properties": false,
-          "use_recipes_or_tactics": false
+        "kind": "exploration",
+        "interest_point": "tackle_specs",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
         },
-        "experience_on_unlock": 0,
+        "hard_skill_level": null,
         "persistent": true,
+        "sample_route": {
+          "research_profile": "S",
+          "consumes_sample": false,
+          "research_eligibility": "可观察的关键结构完整；可访问真实样本，研究期间保留并占用",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
         "linked_processing_grants": []
       },
       "workbench_level_min": 1,
@@ -617,32 +640,41 @@
       "item_id": "fishing_sinker_fixed_3g",
       "name": "固定铅坠·三克",
       "category": "fishing_small",
-      "unlock_rule": "L",
+      "unlock_rule": "X",
       "conditions": "金工工位；铅坠定重成形",
       "input_ids": [
         "material_forging_lead"
       ],
-      "discovery": "钓鱼达到10级直接掌握；等级为试值，无样本或资料前置",
+      "discovery": "研究固定铅坠·三克合格实物（保留样本），或研究钓具整备台的对应完整制作记录；没有技能等级门槛",
       "current": "铅料×1直接制作6个；保留固定重量，不开放剪铅皮或自动配重；产量为玩法试值",
-      "decision_status": "用户确定基础技能解锁、高级地牢探索与兴趣点解锁；逐项分配和等级为试调提案",
+      "decision_status": "用户确认：仅1级基础配方随技能解锁，其余全部研究；逐项观察／拆研及来源安排为首版试调",
       "source_file": "data/items.json",
       "recipe_candidate": "manufacturing.fishing_sinker_fixed_3g",
       "unlock": {
-        "kind": "skill_level",
-        "skill_id": "life_fishing",
-        "level": 10,
-        "grants": {
-          "recipe": true,
-          "structure": true,
-          "listed_material_relations": true,
-          "recipe_scoped_processes": true,
-          "other_recipes": false,
-          "upstream_industrial_production": false,
-          "hidden_item_properties": false,
-          "use_recipes_or_tactics": false
+        "kind": "exploration",
+        "interest_point": "tackle_specs",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
         },
-        "experience_on_unlock": 0,
+        "hard_skill_level": null,
         "persistent": true,
+        "sample_route": {
+          "research_profile": "S",
+          "consumes_sample": false,
+          "research_eligibility": "可观察的关键结构完整；可访问真实样本，研究期间保留并占用",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
         "linked_processing_grants": []
       },
       "workbench_level_min": 1,
@@ -657,9 +689,9 @@
       "input_ids": [
         "material_steel_wire"
       ],
-      "discovery": "钓鱼达到1级直接掌握；等级为试值，无样本或资料前置",
+      "discovery": "钓鱼达到1级直接掌握；无样本或资料前置",
       "current": "钩可重复使用，制造与挂饵分开",
-      "decision_status": "用户确定基础技能解锁、高级地牢探索与兴趣点解锁；逐项分配和等级为试调提案",
+      "decision_status": "用户确认：对应生活技能1级基础包；工作数值为试调",
       "source_file": "data/items.json",
       "recipe_candidate": "manufacturing.fishing_hook_single_small",
       "unlock": {
@@ -689,32 +721,41 @@
       "item_id": "fishing_hook_single_medium",
       "name": "中号单钩",
       "category": "fishing_small",
-      "unlock_rule": "L",
+      "unlock_rule": "X",
       "conditions": "金工工位；金属线件成形",
       "input_ids": [
         "material_steel_wire"
       ],
-      "discovery": "钓鱼达到5级直接掌握；等级为试值，无样本或资料前置",
+      "discovery": "研究中号单钩合格实物（保留样本），或研究钓具整备台的对应完整制作记录；没有技能等级门槛",
       "current": "与小钩共享工艺，不共享型号发现",
-      "decision_status": "用户确定基础技能解锁、高级地牢探索与兴趣点解锁；逐项分配和等级为试调提案",
+      "decision_status": "用户确认：仅1级基础配方随技能解锁，其余全部研究；逐项观察／拆研及来源安排为首版试调",
       "source_file": "data/items.json",
       "recipe_candidate": "manufacturing.fishing_hook_single_medium",
       "unlock": {
-        "kind": "skill_level",
-        "skill_id": "life_fishing",
-        "level": 5,
-        "grants": {
-          "recipe": true,
-          "structure": true,
-          "listed_material_relations": true,
-          "recipe_scoped_processes": true,
-          "other_recipes": false,
-          "upstream_industrial_production": false,
-          "hidden_item_properties": false,
-          "use_recipes_or_tactics": false
+        "kind": "exploration",
+        "interest_point": "tackle_specs",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
         },
-        "experience_on_unlock": 0,
+        "hard_skill_level": null,
         "persistent": true,
+        "sample_route": {
+          "research_profile": "S",
+          "consumes_sample": false,
+          "research_eligibility": "可观察的关键结构完整；可访问真实样本，研究期间保留并占用",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
         "linked_processing_grants": [
           "manufacturing.draw_steel_wire"
         ]
@@ -787,9 +828,9 @@
         "herb_wheat_flour",
         "solvent_water_pure"
       ],
-      "discovery": "钓鱼达到1级直接掌握；等级为试值，无样本或资料前置",
+      "discovery": "钓鱼达到1级直接掌握；无样本或资料前置",
       "current": "从现有tool分类调整为饵料的提案；一批20份，鲜度与使用节奏仍需试玩",
-      "decision_status": "用户确定基础技能解锁、高级地牢探索与兴趣点解锁；逐项分配和等级为试调提案",
+      "decision_status": "用户确认：对应生活技能1级基础包；工作数值为试调",
       "source_file": "data/items.json",
       "recipe_candidate": "manufacturing.fishing_bait_grain",
       "unlock": {
@@ -835,9 +876,9 @@
         "material_iron_blank_common",
         "wood_hickory"
       ],
-      "discovery": "挖矿达到1级直接掌握；等级为试值，无样本或资料前置",
+      "discovery": "挖矿达到1级直接掌握；无样本或资料前置",
       "current": "工具使用规则不在本稿重做",
-      "decision_status": "用户确定基础技能解锁、高级地牢探索与兴趣点解锁；逐项分配和等级为试调提案",
+      "decision_status": "用户确认：对应生活技能1级基础包；工作数值为试调",
       "source_file": "data/items.json",
       "recipe_candidate": "manufacturing.tool_pickaxe_iron_simple",
       "unlock": {
@@ -871,9 +912,9 @@
         "material_iron_blank_common",
         "wood_hickory"
       ],
-      "discovery": "伐木达到1级直接掌握；等级为试值，无样本或资料前置",
+      "discovery": "伐木达到1级直接掌握；无样本或资料前置",
       "current": "与矿镐分别随各自生活技能解锁",
-      "decision_status": "用户确定基础技能解锁、高级地牢探索与兴趣点解锁；逐项分配和等级为试调提案",
+      "decision_status": "用户确认：对应生活技能1级基础包；工作数值为试调",
       "source_file": "data/items.json",
       "recipe_candidate": "manufacturing.tool_hatchet_woodcutter",
       "unlock": {
@@ -901,33 +942,42 @@
       "item_id": "tool_repair_hammer",
       "name": "修理锤",
       "category": "gathering",
-      "unlock_rule": "L",
+      "unlock_rule": "X",
       "conditions": "金工工位；日用金工、木竹整形与绑扎",
       "input_ids": [
         "material_iron_blank_common",
         "wood_hickory"
       ],
-      "discovery": "制造达到5级直接掌握；等级为试值，无样本或资料前置",
+      "discovery": "研究修理锤合格实物（保留样本），或研究旧维修工位的对应完整制作记录；没有技能等级门槛",
       "current": "武器维修范围与铸造等级修复上限保持原规则",
-      "decision_status": "用户确定基础技能解锁、高级地牢探索与兴趣点解锁；逐项分配和等级为试调提案",
+      "decision_status": "用户确认：仅1级基础配方随技能解锁，其余全部研究；逐项观察／拆研及来源安排为首版试调",
       "source_file": "data/forging/item-catalog-v2.json",
       "recipe_candidate": "manufacturing.tool_repair_hammer",
       "unlock": {
-        "kind": "skill_level",
-        "skill_id": "life_manufacturing",
-        "level": 5,
-        "grants": {
-          "recipe": true,
-          "structure": true,
-          "listed_material_relations": true,
-          "recipe_scoped_processes": true,
-          "other_recipes": false,
-          "upstream_industrial_production": false,
-          "hidden_item_properties": false,
-          "use_recipes_or_tactics": false
+        "kind": "exploration",
+        "interest_point": "repair",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
         },
-        "experience_on_unlock": 0,
+        "hard_skill_level": null,
         "persistent": true,
+        "sample_route": {
+          "research_profile": "S",
+          "consumes_sample": false,
+          "research_eligibility": "可观察的关键结构完整；可访问真实样本，研究期间保留并占用",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
         "linked_processing_grants": []
       },
       "workbench_level_min": 1,
@@ -988,33 +1038,42 @@
       "item_id": "tool_repair_whetstone",
       "name": "磨刀石",
       "category": "gathering",
-      "unlock_rule": "L",
+      "unlock_rule": "X",
       "conditions": "陶玻工位；石器整形、陶作烧制",
       "input_ids": [
         "item_glass",
         "ore_clay_raw"
       ],
-      "discovery": "制造达到5级直接掌握；等级为试值，无样本或资料前置",
+      "discovery": "研究磨刀石合格实物（消耗样本一件），或研究旧维修工位的对应完整制作记录；没有技能等级门槛",
       "current": "采用玻璃与陶土的复合磨料成形方案，工序内完成粒度分选与两面成形；这是游戏试配方案，不直接把任意花岗岩当磨刀石",
-      "decision_status": "用户确定基础技能解锁、高级地牢探索与兴趣点解锁；逐项分配和等级为试调提案",
+      "decision_status": "用户确认：仅1级基础配方随技能解锁，其余全部研究；逐项观察／拆研及来源安排为首版试调",
       "source_file": "data/forging/item-catalog-v2.json",
       "recipe_candidate": "manufacturing.tool_repair_whetstone",
       "unlock": {
-        "kind": "skill_level",
-        "skill_id": "life_manufacturing",
-        "level": 5,
-        "grants": {
-          "recipe": true,
-          "structure": true,
-          "listed_material_relations": true,
-          "recipe_scoped_processes": true,
-          "other_recipes": false,
-          "upstream_industrial_production": false,
-          "hidden_item_properties": false,
-          "use_recipes_or_tactics": false
+        "kind": "exploration",
+        "interest_point": "repair",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
         },
-        "experience_on_unlock": 0,
+        "hard_skill_level": null,
         "persistent": true,
+        "sample_route": {
+          "research_profile": "M",
+          "consumes_sample": true,
+          "research_eligibility": "关键可研究结构完整；先清空内容物、卸下外接子树；拆解或取样研究消耗选定一件",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
         "linked_processing_grants": []
       },
       "workbench_level_min": 1,
@@ -1024,33 +1083,42 @@
       "item_id": "tool_repair_roll",
       "name": "帆布工具卷",
       "category": "gathering",
-      "unlock_rule": "L",
+      "unlock_rule": "X",
       "conditions": "制造台本体；捻绳与基础布作",
       "input_ids": [
         "textile_hemp_cloth",
         "supply_rope_hemp_short"
       ],
-      "discovery": "纺织达到3级直接掌握；等级为试值，无样本或资料前置",
+      "discovery": "研究帆布工具卷合格实物（保留样本），或研究旧布作工具桌的对应完整制作记录；没有技能等级门槛",
       "current": "只产空卷；工具为三个真实独立实例",
-      "decision_status": "用户确定基础技能解锁、高级地牢探索与兴趣点解锁；逐项分配和等级为试调提案",
+      "decision_status": "用户确认：仅1级基础配方随技能解锁，其余全部研究；逐项观察／拆研及来源安排为首版试调",
       "source_file": "data/forging/item-catalog-v2.json",
       "recipe_candidate": "manufacturing.tool_repair_roll",
       "unlock": {
-        "kind": "skill_level",
-        "skill_id": "life_weaving",
-        "level": 3,
-        "grants": {
-          "recipe": true,
-          "structure": true,
-          "listed_material_relations": true,
-          "recipe_scoped_processes": true,
-          "other_recipes": false,
-          "upstream_industrial_production": false,
-          "hidden_item_properties": false,
-          "use_recipes_or_tactics": false
+        "kind": "exploration",
+        "interest_point": "textile_tools",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
         },
-        "experience_on_unlock": 0,
+        "hard_skill_level": null,
         "persistent": true,
+        "sample_route": {
+          "research_profile": "S",
+          "consumes_sample": false,
+          "research_eligibility": "可观察的关键结构完整；可访问真实样本，研究期间保留并占用",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
         "linked_processing_grants": []
       },
       "workbench_level_min": 1,
@@ -1071,9 +1139,9 @@
       "input_ids": [
         "textile_coir"
       ],
-      "discovery": "狩猎达到1级直接掌握；等级为试值，无样本或资料前置",
+      "discovery": "狩猎达到1级直接掌握；无样本或资料前置",
       "current": "现配方椰纤维2；4体力、1刻；用后消耗，不能当捕鱼网",
-      "decision_status": "用户确定基础技能解锁、高级地牢探索与兴趣点解锁；逐项分配和等级为试调提案",
+      "decision_status": "用户确认：对应生活技能1级基础包；工作数值为试调",
       "source_file": "data/items.json",
       "unlock": {
         "kind": "skill_level",
@@ -1103,42 +1171,52 @@
       "item_id": "consumable_hunting_snare",
       "name": "套索",
       "category": "hunting",
-      "unlock_rule": "L",
+      "unlock_rule": "X",
       "conditions": "保留基地捕猎用品操作",
       "input_ids": [
         "textile_coir"
       ],
-      "discovery": "狩猎达到5级直接掌握；等级为试值，无样本或资料前置",
+      "discovery": "研究套索合格实物（保留样本），或研究猎具整备角的对应完整制作记录；没有技能等级门槛",
       "current": "现配方椰纤维1；3体力、1刻",
-      "decision_status": "用户确定基础技能解锁、高级地牢探索与兴趣点解锁；逐项分配和等级为试调提案",
+      "decision_status": "用户确认：仅1级基础配方随技能解锁，其余全部研究；逐项观察／拆研及来源安排为首版试调",
       "source_file": "data/items.json",
       "unlock": {
-        "kind": "skill_level",
-        "skill_id": "life_hunting",
-        "level": 5,
-        "grants": {
-          "recipe": true,
-          "structure": true,
-          "listed_material_relations": true,
-          "recipe_scoped_processes": true,
-          "other_recipes": false,
-          "upstream_industrial_production": false,
-          "hidden_item_properties": false,
-          "use_recipes_or_tactics": false
+        "kind": "exploration",
+        "interest_point": "hunting_tools",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
         },
-        "experience_on_unlock": 0,
+        "hard_skill_level": null,
         "persistent": true,
-        "legacy_alternative": {
-          "all_flags": [
-            "snare_tightening",
-            "snare_anchor"
-          ]
+        "sample_route": {
+          "research_profile": "S",
+          "consumes_sample": false,
+          "research_eligibility": "可观察的关键结构完整；可访问真实样本，研究期间保留并占用",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
         },
+        "linked_processing_grants": [],
         "additional_grants": [
           "snare_tightening",
           "snare_anchor"
         ],
-        "linked_processing_grants": []
+        "migration": {
+          "previously_known_flags": [
+            "snare_tightening",
+            "snare_anchor"
+          ],
+          "policy": "仅保留旧档已有套索制作知识；新角色不能靠等级或普通查看获得配方"
+        }
       },
       "workbench_level_min": 0,
       "required_tools": []
@@ -1152,9 +1230,9 @@
       "input_ids": [
         "herb_carrot"
       ],
-      "discovery": "狩猎达到1级直接掌握；等级为试值，无样本或资料前置",
+      "discovery": "狩猎达到1级直接掌握；无样本或资料前置",
       "current": "现配方胡萝卜1；2体力、1刻",
-      "decision_status": "用户确定基础技能解锁、高级地牢探索与兴趣点解锁；逐项分配和等级为试调提案",
+      "decision_status": "用户确认：对应生活技能1级基础包；工作数值为试调",
       "source_file": "data/items.json",
       "unlock": {
         "kind": "skill_level",
@@ -1190,9 +1268,9 @@
         "wood_bamboo_green",
         "ore_limestone"
       ],
-      "discovery": "狩猎达到1级直接掌握；等级为试值，无样本或资料前置",
+      "discovery": "狩猎达到1级直接掌握；无样本或资料前置",
       "current": "现配方青竹杆1、石灰石1；4体力、1刻",
-      "decision_status": "用户确定基础技能解锁、高级地牢探索与兴趣点解锁；逐项分配和等级为试调提案",
+      "decision_status": "用户确认：对应生活技能1级基础包；工作数值为试调",
       "source_file": "data/items.json",
       "unlock": {
         "kind": "skill_level",
@@ -1228,9 +1306,9 @@
         "item_glass",
         "textile_coir"
       ],
-      "discovery": "狩猎达到1级直接掌握；等级为试值，无样本或资料前置",
+      "discovery": "狩猎达到1级直接掌握；无样本或资料前置",
       "current": "现配方玻璃1、椰纤维1；3体力、1刻",
-      "decision_status": "用户确定基础技能解锁、高级地牢探索与兴趣点解锁；逐项分配和等级为试调提案",
+      "decision_status": "用户确认：对应生活技能1级基础包；工作数值为试调",
       "source_file": "data/items.json",
       "unlock": {
         "kind": "skill_level",
@@ -1266,9 +1344,9 @@
         "ore_limestone",
         "textile_coir"
       ],
-      "discovery": "狩猎达到1级直接掌握；等级为试值，无样本或资料前置",
+      "discovery": "狩猎达到1级直接掌握；无样本或资料前置",
       "current": "现配方石灰石1、椰纤维1；3体力、1刻",
-      "decision_status": "用户确定基础技能解锁、高级地牢探索与兴趣点解锁；逐项分配和等级为试调提案",
+      "decision_status": "用户确认：对应生活技能1级基础包；工作数值为试调",
       "source_file": "data/items.json",
       "unlock": {
         "kind": "skill_level",
@@ -1303,9 +1381,9 @@
       "input_ids": [
         "textile_hemp_fiber"
       ],
-      "discovery": "制造达到1级直接掌握；等级为试值，无样本或资料前置",
+      "discovery": "制造达到1级直接掌握；无样本或资料前置",
       "current": "农牧设施已有消耗；必须保证不用绳也能进入捻绳操作",
-      "decision_status": "用户确定基础技能解锁、高级地牢探索与兴趣点解锁；逐项分配和等级为试调提案",
+      "decision_status": "用户确认：对应生活技能1级基础包；工作数值为试调",
       "source_file": "data/items.json",
       "recipe_candidate": "manufacturing.supply_rope_hemp_short",
       "unlock": {
@@ -1340,9 +1418,9 @@
         "textile_cotton_cloth",
         "hus_pork_lard"
       ],
-      "discovery": "制造达到1级直接掌握；等级为试值，无样本或资料前置",
+      "discovery": "制造达到1级直接掌握；无样本或资料前置",
       "current": "猪油作为燃料输入为提案；维持原有浸油火把外形",
-      "decision_status": "用户确定基础技能解锁、高级地牢探索与兴趣点解锁；逐项分配和等级为试调提案",
+      "decision_status": "用户确认：对应生活技能1级基础包；工作数值为试调",
       "source_file": "data/items.json",
       "recipe_candidate": "manufacturing.supply_torch_bamboo",
       "unlock": {
@@ -1370,33 +1448,42 @@
       "item_id": "supply_flint_fire",
       "name": "火石",
       "category": "daily",
-      "unlock_rule": "L",
+      "unlock_rule": "X",
       "conditions": "金工工位；石器整形、日用金工",
       "input_ids": [
         "ore_flint",
         "material_iron_blank_common"
       ],
-      "discovery": "制造达到3级直接掌握；等级为试值，无样本或资料前置",
+      "discovery": "研究火石合格实物（保留样本），或研究旧日用器具工作台的对应完整制作记录；没有技能等级门槛",
       "current": "保持火石与铁片组合，燧石料作为少量外部特材；不把石灰石静默代替",
-      "decision_status": "用户确定基础技能解锁、高级地牢探索与兴趣点解锁；逐项分配和等级为试调提案",
+      "decision_status": "用户确认：仅1级基础配方随技能解锁，其余全部研究；逐项观察／拆研及来源安排为首版试调",
       "source_file": "data/items.json",
       "recipe_candidate": "manufacturing.supply_flint_fire",
       "unlock": {
-        "kind": "skill_level",
-        "skill_id": "life_manufacturing",
-        "level": 3,
-        "grants": {
-          "recipe": true,
-          "structure": true,
-          "listed_material_relations": true,
-          "recipe_scoped_processes": true,
-          "other_recipes": false,
-          "upstream_industrial_production": false,
-          "hidden_item_properties": false,
-          "use_recipes_or_tactics": false
+        "kind": "exploration",
+        "interest_point": "daily_tools",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
         },
-        "experience_on_unlock": 0,
+        "hard_skill_level": null,
         "persistent": true,
+        "sample_route": {
+          "research_profile": "S",
+          "consumes_sample": false,
+          "research_eligibility": "可观察的关键结构完整；可访问真实样本，研究期间保留并占用",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
         "linked_processing_grants": []
       },
       "workbench_level_min": 1,
@@ -1412,9 +1499,9 @@
         "textile_cotton_cloth",
         "solvent_water_pure"
       ],
-      "discovery": "制药达到1级直接掌握；等级为试值，无样本或资料前置",
+      "discovery": "制药达到1级直接掌握；无样本或资料前置",
       "current": "制造条件是游戏抽象，不新增治疗效果",
-      "decision_status": "用户确定基础技能解锁、高级地牢探索与兴趣点解锁；逐项分配和等级为试调提案",
+      "decision_status": "用户确认：对应生活技能1级基础包；工作数值为试调",
       "source_file": "data/items.json",
       "recipe_candidate": "manufacturing.supply_bandage_cloth",
       "unlock": {
@@ -1442,34 +1529,43 @@
       "item_id": "tool_bucket_water_empty",
       "name": "水桶",
       "category": "daily",
-      "unlock_rule": "L",
+      "unlock_rule": "X",
       "conditions": "制造台本体；木竹整形与绑扎、容器密封",
       "input_ids": [
         "wood_oak",
         "material_iron_blank_common",
         "resin_pine"
       ],
-      "discovery": "制造达到3级直接掌握；等级为试值，无样本或资料前置",
+      "discovery": "研究水桶合格实物（保留样本），或研究旧日用器具工作台的对应完整制作记录；没有技能等级门槛",
       "current": "只制造空桶；原料替代必须验证容器性能",
-      "decision_status": "用户确定基础技能解锁、高级地牢探索与兴趣点解锁；逐项分配和等级为试调提案",
+      "decision_status": "用户确认：仅1级基础配方随技能解锁，其余全部研究；逐项观察／拆研及来源安排为首版试调",
       "source_file": "data/items.json",
       "recipe_candidate": "manufacturing.tool_bucket_water_empty",
       "unlock": {
-        "kind": "skill_level",
-        "skill_id": "life_manufacturing",
-        "level": 3,
-        "grants": {
-          "recipe": true,
-          "structure": true,
-          "listed_material_relations": true,
-          "recipe_scoped_processes": true,
-          "other_recipes": false,
-          "upstream_industrial_production": false,
-          "hidden_item_properties": false,
-          "use_recipes_or_tactics": false
+        "kind": "exploration",
+        "interest_point": "daily_tools",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
         },
-        "experience_on_unlock": 0,
+        "hard_skill_level": null,
         "persistent": true,
+        "sample_route": {
+          "research_profile": "S",
+          "consumes_sample": false,
+          "research_eligibility": "可观察的关键结构完整；可访问真实样本，研究期间保留并占用",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
         "linked_processing_grants": []
       },
       "workbench_level_min": 1,
@@ -1493,33 +1589,42 @@
       "item_id": "tool_flask_iron_water",
       "name": "铁皮水壶",
       "category": "daily",
-      "unlock_rule": "L",
+      "unlock_rule": "X",
       "conditions": "金工工位；日用金工、容器密封",
       "input_ids": [
         "material_iron_blank_common",
         "wood_cork"
       ],
-      "discovery": "制造达到5级直接掌握；等级为试值，无样本或资料前置",
-      "current": "本方案密封工序随配方等级授予；不能只看外形就识别全部隐藏性能",
-      "decision_status": "用户确定基础技能解锁、高级地牢探索与兴趣点解锁；逐项分配和等级为试调提案",
+      "discovery": "研究铁皮水壶合格实物（消耗样本一件），或研究旧日用器具工作台的对应完整制作记录；没有技能等级门槛",
+      "current": "本方案密封工序随完整研究方案授予；不能只看外形就识别全部隐藏性能",
+      "decision_status": "用户确认：仅1级基础配方随技能解锁，其余全部研究；逐项观察／拆研及来源安排为首版试调",
       "source_file": "data/items.json",
       "recipe_candidate": "manufacturing.tool_flask_iron_water",
       "unlock": {
-        "kind": "skill_level",
-        "skill_id": "life_manufacturing",
-        "level": 5,
-        "grants": {
-          "recipe": true,
-          "structure": true,
-          "listed_material_relations": true,
-          "recipe_scoped_processes": true,
-          "other_recipes": false,
-          "upstream_industrial_production": false,
-          "hidden_item_properties": false,
-          "use_recipes_or_tactics": false
+        "kind": "exploration",
+        "interest_point": "daily_tools",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
         },
-        "experience_on_unlock": 0,
+        "hard_skill_level": null,
         "persistent": true,
+        "sample_route": {
+          "research_profile": "M",
+          "consumes_sample": true,
+          "research_eligibility": "关键可研究结构完整；先清空内容物、卸下外接子树；拆解或取样研究消耗选定一件",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
         "linked_processing_grants": []
       },
       "workbench_level_min": 2,
@@ -1535,33 +1640,42 @@
       "item_id": "tool_flask_bamboo_water",
       "name": "青竹水壶",
       "category": "daily",
-      "unlock_rule": "L",
+      "unlock_rule": "X",
       "conditions": "制造台本体；木竹整形与绑扎、容器密封",
       "input_ids": [
         "wood_bamboo_green",
         "wood_cork"
       ],
-      "discovery": "制造达到5级直接掌握；等级为试值，无样本或资料前置",
+      "discovery": "研究青竹水壶合格实物（消耗样本一件），或研究旧日用器具工作台的对应完整制作记录；没有技能等级门槛",
       "current": "成品为空壶，青竹基底从水源装水入壶量+60%；已接制作台独立试玩，正式装备与水源消费者待接入",
-      "decision_status": "用户确定基础技能解锁、高级地牢探索与兴趣点解锁；逐项分配和等级为试调提案",
+      "decision_status": "用户确认：仅1级基础配方随技能解锁，其余全部研究；逐项观察／拆研及来源安排为首版试调",
       "source_file": "data/items.json",
       "recipe_candidate": "manufacturing.tool_flask_bamboo_water",
       "unlock": {
-        "kind": "skill_level",
-        "skill_id": "life_manufacturing",
-        "level": 5,
-        "grants": {
-          "recipe": true,
-          "structure": true,
-          "listed_material_relations": true,
-          "recipe_scoped_processes": true,
-          "other_recipes": false,
-          "upstream_industrial_production": false,
-          "hidden_item_properties": false,
-          "use_recipes_or_tactics": false
+        "kind": "exploration",
+        "interest_point": "daily_tools",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
         },
-        "experience_on_unlock": 0,
+        "hard_skill_level": null,
         "persistent": true,
+        "sample_route": {
+          "research_profile": "M",
+          "consumes_sample": true,
+          "research_eligibility": "关键可研究结构完整；先清空内容物、卸下外接子树；拆解或取样研究消耗选定一件",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
         "linked_processing_grants": []
       },
       "workbench_level_min": 1,
@@ -1578,9 +1692,9 @@
         "textile_hemp_fiber",
         "material_steel_wire"
       ],
-      "discovery": "纺织达到1级直接掌握；等级为试值，无样本或资料前置",
+      "discovery": "纺织达到1级直接掌握；无样本或资料前置",
       "current": "不要求先有这个包才能生产第一个包；沿用工作台基础工具",
-      "decision_status": "用户确定基础技能解锁、高级地牢探索与兴趣点解锁；逐项分配和等级为试调提案",
+      "decision_status": "用户确认：对应生活技能1级基础包；工作数值为试调",
       "source_file": "data/items.json",
       "recipe_candidate": "manufacturing.tool_sewing_kit_cloth",
       "unlock": {
@@ -1615,9 +1729,9 @@
       "input_ids": [
         "ore_clay_raw"
       ],
-      "discovery": "烹饪达到1级直接掌握；等级为试值，无样本或资料前置",
+      "discovery": "烹饪达到1级直接掌握；无样本或资料前置",
       "current": "锅的制造与烹饪技法解锁分开",
-      "decision_status": "用户确定基础技能解锁、高级地牢探索与兴趣点解锁；逐项分配和等级为试调提案",
+      "decision_status": "用户确认：对应生活技能1级基础包；工作数值为试调",
       "source_file": "data/items.json",
       "recipe_candidate": "manufacturing.tool_pot_clay_cooking",
       "unlock": {
@@ -1645,33 +1759,42 @@
       "item_id": "tool_steamer_bamboo_cooking",
       "name": "竹蒸笼",
       "category": "cooking",
-      "unlock_rule": "L",
+      "unlock_rule": "X",
       "conditions": "制造台本体；木竹整形与绑扎、捻绳与基础布作",
       "input_ids": [
         "wood_bamboo_green",
         "textile_coir"
       ],
-      "discovery": "烹饪达到3级直接掌握；等级为试值，无样本或资料前置",
+      "discovery": "研究竹蒸笼合格实物（保留样本），或研究旧炊具工作间的对应完整制作记录；没有技能等级门槛",
       "current": "保留与煮炖锅不同的器具身份",
-      "decision_status": "用户确定基础技能解锁、高级地牢探索与兴趣点解锁；逐项分配和等级为试调提案",
+      "decision_status": "用户确认：仅1级基础配方随技能解锁，其余全部研究；逐项观察／拆研及来源安排为首版试调",
       "source_file": "data/items.json",
       "recipe_candidate": "manufacturing.tool_steamer_bamboo_cooking",
       "unlock": {
-        "kind": "skill_level",
-        "skill_id": "life_cooking",
-        "level": 3,
-        "grants": {
-          "recipe": true,
-          "structure": true,
-          "listed_material_relations": true,
-          "recipe_scoped_processes": true,
-          "other_recipes": false,
-          "upstream_industrial_production": false,
-          "hidden_item_properties": false,
-          "use_recipes_or_tactics": false
+        "kind": "exploration",
+        "interest_point": "kitchen_tools",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
         },
-        "experience_on_unlock": 0,
+        "hard_skill_level": null,
         "persistent": true,
+        "sample_route": {
+          "research_profile": "S",
+          "consumes_sample": false,
+          "research_eligibility": "可观察的关键结构完整；可访问真实样本，研究期间保留并占用",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
         "linked_processing_grants": []
       },
       "workbench_level_min": 1,
@@ -1681,32 +1804,41 @@
       "item_id": "tool_wok_iron_cooking",
       "name": "铸铁炒锅",
       "category": "cooking",
-      "unlock_rule": "L",
+      "unlock_rule": "X",
       "conditions": "金工工位；日用金工",
       "input_ids": [
         "ore_cast_iron"
       ],
-      "discovery": "烹饪达到5级直接掌握；等级为试值，无样本或资料前置",
+      "discovery": "研究铸铁炒锅合格实物（保留样本），或研究旧炊具工作间的对应完整制作记录；没有技能等级门槛",
       "current": "用铸铁，不将普通铁料静默改名铸铁",
-      "decision_status": "用户确定基础技能解锁、高级地牢探索与兴趣点解锁；逐项分配和等级为试调提案",
+      "decision_status": "用户确认：仅1级基础配方随技能解锁，其余全部研究；逐项观察／拆研及来源安排为首版试调",
       "source_file": "data/items.json",
       "recipe_candidate": "manufacturing.tool_wok_iron_cooking",
       "unlock": {
-        "kind": "skill_level",
-        "skill_id": "life_cooking",
-        "level": 5,
-        "grants": {
-          "recipe": true,
-          "structure": true,
-          "listed_material_relations": true,
-          "recipe_scoped_processes": true,
-          "other_recipes": false,
-          "upstream_industrial_production": false,
-          "hidden_item_properties": false,
-          "use_recipes_or_tactics": false
+        "kind": "exploration",
+        "interest_point": "kitchen_tools",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
         },
-        "experience_on_unlock": 0,
+        "hard_skill_level": null,
         "persistent": true,
+        "sample_route": {
+          "research_profile": "S",
+          "consumes_sample": false,
+          "research_eligibility": "可观察的关键结构完整；可访问真实样本，研究期间保留并占用",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
         "linked_processing_grants": []
       },
       "workbench_level_min": 2,
@@ -1722,32 +1854,41 @@
       "item_id": "tool_fryer_pot_iron_cooking",
       "name": "深炸铁锅",
       "category": "cooking",
-      "unlock_rule": "L",
+      "unlock_rule": "X",
       "conditions": "金工工位；日用金工",
       "input_ids": [
         "ore_cast_iron"
       ],
-      "discovery": "烹饪达到10级直接掌握；等级为试值，无样本或资料前置",
-      "current": "同材料不同结构，按各自配方等级掌握",
-      "decision_status": "用户确定基础技能解锁、高级地牢探索与兴趣点解锁；逐项分配和等级为试调提案",
+      "discovery": "研究深炸铁锅合格实物（保留样本），或研究旧炊具工作间的对应完整制作记录；没有技能等级门槛",
+      "current": "同材料不同结构，按各自研究方案掌握",
+      "decision_status": "用户确认：仅1级基础配方随技能解锁，其余全部研究；逐项观察／拆研及来源安排为首版试调",
       "source_file": "data/items.json",
       "recipe_candidate": "manufacturing.tool_fryer_pot_iron_cooking",
       "unlock": {
-        "kind": "skill_level",
-        "skill_id": "life_cooking",
-        "level": 10,
-        "grants": {
-          "recipe": true,
-          "structure": true,
-          "listed_material_relations": true,
-          "recipe_scoped_processes": true,
-          "other_recipes": false,
-          "upstream_industrial_production": false,
-          "hidden_item_properties": false,
-          "use_recipes_or_tactics": false
+        "kind": "exploration",
+        "interest_point": "kitchen_tools",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
         },
-        "experience_on_unlock": 0,
+        "hard_skill_level": null,
         "persistent": true,
+        "sample_route": {
+          "research_profile": "S",
+          "consumes_sample": false,
+          "research_eligibility": "可观察的关键结构完整；可访问真实样本，研究期间保留并占用",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
         "linked_processing_grants": []
       },
       "workbench_level_min": 2,
@@ -1763,33 +1904,42 @@
       "item_id": "tool_pickling_jar_cooking",
       "name": "腌缸（玻璃罐）",
       "category": "cooking",
-      "unlock_rule": "L",
+      "unlock_rule": "X",
       "conditions": "陶玻工位；回收玻璃成形、容器密封",
       "input_ids": [
         "item_glass",
         "sewing_rubber_sheet"
       ],
-      "discovery": "烹饪达到5级直接掌握；等级为试值，无样本或资料前置",
+      "discovery": "研究腌缸（玻璃罐）合格实物（消耗样本一件），或研究旧炊具工作间的对应完整制作记录；没有技能等级门槛",
       "current": "农业已有同ID用料；不得另建同名罐绕开库存",
-      "decision_status": "用户确定基础技能解锁、高级地牢探索与兴趣点解锁；逐项分配和等级为试调提案",
+      "decision_status": "用户确认：仅1级基础配方随技能解锁，其余全部研究；逐项观察／拆研及来源安排为首版试调",
       "source_file": "data/items.json",
       "recipe_candidate": "manufacturing.tool_pickling_jar_cooking",
       "unlock": {
-        "kind": "skill_level",
-        "skill_id": "life_cooking",
-        "level": 5,
-        "grants": {
-          "recipe": true,
-          "structure": true,
-          "listed_material_relations": true,
-          "recipe_scoped_processes": true,
-          "other_recipes": false,
-          "upstream_industrial_production": false,
-          "hidden_item_properties": false,
-          "use_recipes_or_tactics": false
+        "kind": "exploration",
+        "interest_point": "kitchen_tools",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
         },
-        "experience_on_unlock": 0,
+        "hard_skill_level": null,
         "persistent": true,
+        "sample_route": {
+          "research_profile": "M",
+          "consumes_sample": true,
+          "research_eligibility": "关键可研究结构完整；先清空内容物、卸下外接子树；拆解或取样研究消耗选定一件",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
         "linked_processing_grants": []
       },
       "workbench_level_min": 2,
@@ -1857,9 +2007,9 @@
         "ore_granite",
         "wood_olive"
       ],
-      "discovery": "烹饪达到1级直接掌握；等级为试值，无样本或资料前置",
+      "discovery": "烹饪达到1级直接掌握；无样本或资料前置",
       "current": "烹饪研磨器具，与药钵保留原ID",
-      "decision_status": "用户确定基础技能解锁、高级地牢探索与兴趣点解锁；逐项分配和等级为试调提案",
+      "decision_status": "用户确认：对应生活技能1级基础包；工作数值为试调",
       "source_file": "data/items.json",
       "recipe_candidate": "manufacturing.tool_mortar_pestle_cooking",
       "unlock": {
@@ -1892,9 +2042,9 @@
       "input_ids": [
         "wood_olive"
       ],
-      "discovery": "制药达到1级直接掌握；等级为试值，无样本或资料前置",
+      "discovery": "制药达到1级直接掌握；无样本或资料前置",
       "current": "制造不自动掌握制药碾压方法",
-      "decision_status": "用户确定基础技能解锁、高级地牢探索与兴趣点解锁；逐项分配和等级为试调提案",
+      "decision_status": "用户确认：对应生活技能1级基础包；工作数值为试调",
       "source_file": "data/items.json",
       "recipe_candidate": "manufacturing.tool_rolling_pin_pharmacy",
       "unlock": {
@@ -2113,32 +2263,41 @@
       "item_id": "tool_steel_basin_pharmacy",
       "name": "钢盆",
       "category": "pharmacy",
-      "unlock_rule": "L",
+      "unlock_rule": "X",
       "conditions": "金工工位；日用金工",
       "input_ids": [
         "material_stainless_sheet"
       ],
-      "discovery": "制药达到3级直接掌握；等级为试值，无样本或资料前置",
+      "discovery": "研究钢盆合格实物（保留样本），或研究药房配制工作台的对应完整制作记录；没有技能等级门槛",
       "current": "保持不锈钢描述，采用保留的外部耐蚀薄板；不把普通钢锭自动变成不锈钢",
-      "decision_status": "用户确定基础技能解锁、高级地牢探索与兴趣点解锁；逐项分配和等级为试调提案",
+      "decision_status": "用户确认：仅1级基础配方随技能解锁，其余全部研究；逐项观察／拆研及来源安排为首版试调",
       "source_file": "data/items.json",
       "recipe_candidate": "manufacturing.tool_steel_basin_pharmacy",
       "unlock": {
-        "kind": "skill_level",
-        "skill_id": "life_pharmacy",
-        "level": 3,
-        "grants": {
-          "recipe": true,
-          "structure": true,
-          "listed_material_relations": true,
-          "recipe_scoped_processes": true,
-          "other_recipes": false,
-          "upstream_industrial_production": false,
-          "hidden_item_properties": false,
-          "use_recipes_or_tactics": false
+        "kind": "exploration",
+        "interest_point": "pharmacy_tools",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
         },
-        "experience_on_unlock": 0,
+        "hard_skill_level": null,
         "persistent": true,
+        "sample_route": {
+          "research_profile": "S",
+          "consumes_sample": false,
+          "research_eligibility": "可观察的关键结构完整；可访问真实样本，研究期间保留并占用",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
         "linked_processing_grants": []
       },
       "workbench_level_min": 2,
@@ -2216,9 +2375,9 @@
         "ore_clay_raw",
         "wood_olive"
       ],
-      "discovery": "制药达到1级直接掌握；等级为试值，无样本或资料前置",
+      "discovery": "制药达到1级直接掌握；无样本或资料前置",
       "current": "保留药钵已有身份，不与烹饪研磨钵合并",
-      "decision_status": "用户确定基础技能解锁、高级地牢探索与兴趣点解锁；逐项分配和等级为试调提案",
+      "decision_status": "用户确认：对应生活技能1级基础包；工作数值为试调",
       "source_file": "data/items.json",
       "recipe_candidate": "manufacturing.tool_mortar_pharmacy",
       "unlock": {
@@ -2382,7 +2541,7 @@
       "item_id": "soil_amend_yellow_cotton",
       "name": "黄绵土客土",
       "category": "agriculture",
-      "unlock_rule": "LT",
+      "unlock_rule": "X",
       "conditions": "制造台配土操作；客土配制",
       "input_ids": [
         "compost_matrix_grade_low",
@@ -2390,30 +2549,36 @@
         "ore_limestone",
         "textile_hemp_cloth"
       ],
-      "discovery": "种植5级与对应土壤认识；完整记录可提前解锁。制造使用已有基质与辅料，不要求取得新增原土",
-      "current": "沿用23号基质经制造成为换土材料的游戏抽象；矿物粉碎和混配包含在配方中，不新增原土、石粉与土源额度",
-      "decision_status": "用户确定基础技能解锁、高级地牢探索与兴趣点解锁；逐项分配和等级为试调提案",
+      "discovery": "研究黄绵土客土合格实物（消耗样本一件），或研究配土工作角的对应完整制作记录；没有技能等级门槛",
+      "current": "保留原换土成品与已有基质辅料；普通地貌观察或种植升级不授予配方，完成对应客土研究才授予",
+      "decision_status": "用户确认：仅1级基础配方随技能解锁，其余全部研究；逐项观察／拆研及来源安排为首版试调",
       "source_file": "data/items.json",
       "recipe_candidate": "manufacturing.soil_amend_yellow_cotton",
       "unlock": {
-        "kind": "skill_and_soil_evidence",
-        "skill_id": "life_planting",
-        "level": 5,
-        "soil_evidence_key": "soil_source.yellow_cotton",
-        "evidence": "实际观察对应土壤地貌，或检查已取得的同种客土成品；不消耗土样，不新增原土物品；到达区域不自动完成",
-        "complete_record_alternative": true,
-        "grants": {
-          "recipe": true,
-          "structure": true,
-          "listed_material_relations": true,
-          "recipe_scoped_processes": true,
-          "other_recipes": false,
-          "upstream_industrial_production": false,
-          "hidden_item_properties": false,
-          "use_recipes_or_tactics": false
+        "kind": "exploration",
+        "interest_point": "soil_research",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
         },
-        "experience_on_unlock": 0,
+        "hard_skill_level": null,
         "persistent": true,
+        "sample_route": {
+          "research_profile": "M",
+          "consumes_sample": true,
+          "research_eligibility": "同种客土成品一份；主动取样研究消耗所选样本，不使用新原土物品",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
         "linked_processing_grants": []
       },
       "workbench_level_min": 1,
@@ -2423,38 +2588,44 @@
       "item_id": "soil_amend_cinnamon",
       "name": "褐土客土",
       "category": "agriculture",
-      "unlock_rule": "LT",
+      "unlock_rule": "X",
       "conditions": "制造台配土操作；客土配制",
       "input_ids": [
-        "compost_matrix_grade_low",
+        "compost_matrix_grade_mid",
         "ore_clay_raw",
         "ore_limestone",
         "textile_hemp_cloth"
       ],
-      "discovery": "种植5级与对应土壤认识；完整记录可提前解锁。制造使用已有基质与辅料，不要求取得新增原土",
-      "current": "沿用23号基质经制造成为换土材料的游戏抽象；矿物粉碎和混配包含在配方中，不新增原土、石粉与土源额度",
-      "decision_status": "用户确定基础技能解锁、高级地牢探索与兴趣点解锁；逐项分配和等级为试调提案",
+      "discovery": "研究褐土客土合格实物（消耗样本一件），或研究配土工作角的对应完整制作记录；没有技能等级门槛",
+      "current": "保留原换土成品与已有基质辅料；普通地貌观察或种植升级不授予配方，完成对应客土研究才授予",
+      "decision_status": "用户确认：仅1级基础配方随技能解锁，其余全部研究；逐项观察／拆研及来源安排为首版试调",
       "source_file": "data/items.json",
       "recipe_candidate": "manufacturing.soil_amend_cinnamon",
       "unlock": {
-        "kind": "skill_and_soil_evidence",
-        "skill_id": "life_planting",
-        "level": 5,
-        "soil_evidence_key": "soil_source.cinnamon",
-        "evidence": "实际观察对应土壤地貌，或检查已取得的同种客土成品；不消耗土样，不新增原土物品；到达区域不自动完成",
-        "complete_record_alternative": true,
-        "grants": {
-          "recipe": true,
-          "structure": true,
-          "listed_material_relations": true,
-          "recipe_scoped_processes": true,
-          "other_recipes": false,
-          "upstream_industrial_production": false,
-          "hidden_item_properties": false,
-          "use_recipes_or_tactics": false
+        "kind": "exploration",
+        "interest_point": "soil_research",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
         },
-        "experience_on_unlock": 0,
+        "hard_skill_level": null,
         "persistent": true,
+        "sample_route": {
+          "research_profile": "M",
+          "consumes_sample": true,
+          "research_eligibility": "同种客土成品一份；主动取样研究消耗所选样本，不使用新原土物品",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
         "linked_processing_grants": []
       },
       "workbench_level_min": 1,
@@ -2464,7 +2635,7 @@
       "item_id": "soil_amend_purple",
       "name": "紫色土客土",
       "category": "agriculture",
-      "unlock_rule": "LT",
+      "unlock_rule": "X",
       "conditions": "制造台配土操作；客土配制",
       "input_ids": [
         "compost_matrix_grade_low",
@@ -2472,30 +2643,36 @@
         "ore_clay_raw",
         "textile_hemp_cloth"
       ],
-      "discovery": "种植5级与对应土壤认识；完整记录可提前解锁。制造使用已有基质与辅料，不要求取得新增原土",
-      "current": "沿用23号基质经制造成为换土材料的游戏抽象；矿物粉碎和混配包含在配方中，不新增原土、石粉与土源额度",
-      "decision_status": "用户确定基础技能解锁、高级地牢探索与兴趣点解锁；逐项分配和等级为试调提案",
+      "discovery": "研究紫色土客土合格实物（消耗样本一件），或研究配土工作角的对应完整制作记录；没有技能等级门槛",
+      "current": "保留原换土成品与已有基质辅料；普通地貌观察或种植升级不授予配方，完成对应客土研究才授予",
+      "decision_status": "用户确认：仅1级基础配方随技能解锁，其余全部研究；逐项观察／拆研及来源安排为首版试调",
       "source_file": "data/items.json",
       "recipe_candidate": "manufacturing.soil_amend_purple",
       "unlock": {
-        "kind": "skill_and_soil_evidence",
-        "skill_id": "life_planting",
-        "level": 5,
-        "soil_evidence_key": "soil_source.purple",
-        "evidence": "实际观察对应土壤地貌，或检查已取得的同种客土成品；不消耗土样，不新增原土物品；到达区域不自动完成",
-        "complete_record_alternative": true,
-        "grants": {
-          "recipe": true,
-          "structure": true,
-          "listed_material_relations": true,
-          "recipe_scoped_processes": true,
-          "other_recipes": false,
-          "upstream_industrial_production": false,
-          "hidden_item_properties": false,
-          "use_recipes_or_tactics": false
+        "kind": "exploration",
+        "interest_point": "soil_research",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
         },
-        "experience_on_unlock": 0,
+        "hard_skill_level": null,
         "persistent": true,
+        "sample_route": {
+          "research_profile": "M",
+          "consumes_sample": true,
+          "research_eligibility": "同种客土成品一份；主动取样研究消耗所选样本，不使用新原土物品",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
         "linked_processing_grants": []
       },
       "workbench_level_min": 1,
@@ -2505,7 +2682,7 @@
       "item_id": "soil_amend_red",
       "name": "红壤客土",
       "category": "agriculture",
-      "unlock_rule": "LT",
+      "unlock_rule": "X",
       "conditions": "制造台配土操作；客土配制",
       "input_ids": [
         "compost_matrix_grade_low",
@@ -2513,30 +2690,36 @@
         "ore_clay_raw",
         "textile_hemp_cloth"
       ],
-      "discovery": "种植5级与对应土壤认识；完整记录可提前解锁。制造使用已有基质与辅料，不要求取得新增原土",
-      "current": "沿用23号基质经制造成为换土材料的游戏抽象；矿物粉碎和混配包含在配方中，不新增原土、石粉与土源额度",
-      "decision_status": "用户确定基础技能解锁、高级地牢探索与兴趣点解锁；逐项分配和等级为试调提案",
+      "discovery": "研究红壤客土合格实物（消耗样本一件），或研究配土工作角的对应完整制作记录；没有技能等级门槛",
+      "current": "保留原换土成品与已有基质辅料；普通地貌观察或种植升级不授予配方，完成对应客土研究才授予",
+      "decision_status": "用户确认：仅1级基础配方随技能解锁，其余全部研究；逐项观察／拆研及来源安排为首版试调",
       "source_file": "data/items.json",
       "recipe_candidate": "manufacturing.soil_amend_red",
       "unlock": {
-        "kind": "skill_and_soil_evidence",
-        "skill_id": "life_planting",
-        "level": 5,
-        "soil_evidence_key": "soil_source.red",
-        "evidence": "实际观察对应土壤地貌，或检查已取得的同种客土成品；不消耗土样，不新增原土物品；到达区域不自动完成",
-        "complete_record_alternative": true,
-        "grants": {
-          "recipe": true,
-          "structure": true,
-          "listed_material_relations": true,
-          "recipe_scoped_processes": true,
-          "other_recipes": false,
-          "upstream_industrial_production": false,
-          "hidden_item_properties": false,
-          "use_recipes_or_tactics": false
+        "kind": "exploration",
+        "interest_point": "soil_research",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
         },
-        "experience_on_unlock": 0,
+        "hard_skill_level": null,
         "persistent": true,
+        "sample_route": {
+          "research_profile": "M",
+          "consumes_sample": true,
+          "research_eligibility": "同种客土成品一份；主动取样研究消耗所选样本，不使用新原土物品",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
         "linked_processing_grants": []
       },
       "workbench_level_min": 1,
@@ -2546,38 +2729,44 @@
       "item_id": "soil_amend_alpine_meadow",
       "name": "高山草甸土客土",
       "category": "agriculture",
-      "unlock_rule": "LT",
+      "unlock_rule": "X",
       "conditions": "制造台配土操作；客土配制",
       "input_ids": [
-        "compost_matrix_grade_low",
+        "compost_matrix_grade_high",
         "wood_bits",
         "textile_coir",
         "textile_hemp_cloth"
       ],
-      "discovery": "种植5级与对应土壤认识；完整记录可提前解锁。制造使用已有基质与辅料，不要求取得新增原土",
-      "current": "沿用23号基质经制造成为换土材料的游戏抽象；矿物粉碎和混配包含在配方中，不新增原土、石粉与土源额度",
-      "decision_status": "用户确定基础技能解锁、高级地牢探索与兴趣点解锁；逐项分配和等级为试调提案",
+      "discovery": "研究高山草甸土客土合格实物（消耗样本一件），或研究配土工作角的对应完整制作记录；没有技能等级门槛",
+      "current": "保留原换土成品与已有基质辅料；普通地貌观察或种植升级不授予配方，完成对应客土研究才授予",
+      "decision_status": "用户确认：仅1级基础配方随技能解锁，其余全部研究；逐项观察／拆研及来源安排为首版试调",
       "source_file": "data/items.json",
       "recipe_candidate": "manufacturing.soil_amend_alpine_meadow",
       "unlock": {
-        "kind": "skill_and_soil_evidence",
-        "skill_id": "life_planting",
-        "level": 5,
-        "soil_evidence_key": "soil_source.alpine_meadow",
-        "evidence": "实际观察对应土壤地貌，或检查已取得的同种客土成品；不消耗土样，不新增原土物品；到达区域不自动完成",
-        "complete_record_alternative": true,
-        "grants": {
-          "recipe": true,
-          "structure": true,
-          "listed_material_relations": true,
-          "recipe_scoped_processes": true,
-          "other_recipes": false,
-          "upstream_industrial_production": false,
-          "hidden_item_properties": false,
-          "use_recipes_or_tactics": false
+        "kind": "exploration",
+        "interest_point": "soil_research",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
         },
-        "experience_on_unlock": 0,
+        "hard_skill_level": null,
         "persistent": true,
+        "sample_route": {
+          "research_profile": "M",
+          "consumes_sample": true,
+          "research_eligibility": "同种客土成品一份；主动取样研究消耗所选样本，不使用新原土物品",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
         "linked_processing_grants": []
       },
       "workbench_level_min": 1,
@@ -2587,37 +2776,43 @@
       "item_id": "soil_amend_paddy",
       "name": "水稻土客土",
       "category": "agriculture",
-      "unlock_rule": "LT",
+      "unlock_rule": "X",
       "conditions": "制造台配土操作；客土配制",
       "input_ids": [
-        "compost_matrix_grade_low",
+        "compost_matrix_grade_mid",
         "ore_clay_raw",
         "textile_hemp_cloth"
       ],
-      "discovery": "种植5级与对应土壤认识；完整记录可提前解锁。制造使用已有基质与辅料，不要求取得新增原土",
-      "current": "沿用23号基质经制造成为换土材料的游戏抽象；矿物粉碎和混配包含在配方中，不新增原土、石粉与土源额度",
-      "decision_status": "用户确定基础技能解锁、高级地牢探索与兴趣点解锁；逐项分配和等级为试调提案",
+      "discovery": "研究水稻土客土合格实物（消耗样本一件），或研究配土工作角的对应完整制作记录；没有技能等级门槛",
+      "current": "保留原换土成品与已有基质辅料；普通地貌观察或种植升级不授予配方，完成对应客土研究才授予",
+      "decision_status": "用户确认：仅1级基础配方随技能解锁，其余全部研究；逐项观察／拆研及来源安排为首版试调",
       "source_file": "data/items.json",
       "recipe_candidate": "manufacturing.soil_amend_paddy",
       "unlock": {
-        "kind": "skill_and_soil_evidence",
-        "skill_id": "life_planting",
-        "level": 5,
-        "soil_evidence_key": "soil_source.paddy",
-        "evidence": "实际观察对应土壤地貌，或检查已取得的同种客土成品；不消耗土样，不新增原土物品；到达区域不自动完成",
-        "complete_record_alternative": true,
-        "grants": {
-          "recipe": true,
-          "structure": true,
-          "listed_material_relations": true,
-          "recipe_scoped_processes": true,
-          "other_recipes": false,
-          "upstream_industrial_production": false,
-          "hidden_item_properties": false,
-          "use_recipes_or_tactics": false
+        "kind": "exploration",
+        "interest_point": "soil_research",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
         },
-        "experience_on_unlock": 0,
+        "hard_skill_level": null,
         "persistent": true,
+        "sample_route": {
+          "research_profile": "M",
+          "consumes_sample": true,
+          "research_eligibility": "同种客土成品一份；主动取样研究消耗所选样本，不使用新原土物品",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
         "linked_processing_grants": []
       },
       "workbench_level_min": 1,
@@ -2627,37 +2822,43 @@
       "item_id": "soil_amend_black",
       "name": "典型黑土客土",
       "category": "agriculture",
-      "unlock_rule": "LT",
+      "unlock_rule": "X",
       "conditions": "制造台配土操作；客土配制",
       "input_ids": [
-        "compost_matrix_grade_low",
+        "compost_matrix_grade_high",
         "wood_charcoal",
         "textile_hemp_cloth"
       ],
-      "discovery": "种植5级与对应土壤认识；完整记录可提前解锁。制造使用已有基质与辅料，不要求取得新增原土",
-      "current": "沿用23号基质经制造成为换土材料的游戏抽象；矿物粉碎和混配包含在配方中，不新增原土、石粉与土源额度",
-      "decision_status": "用户确定基础技能解锁、高级地牢探索与兴趣点解锁；逐项分配和等级为试调提案",
+      "discovery": "研究典型黑土客土合格实物（消耗样本一件），或研究配土工作角的对应完整制作记录；没有技能等级门槛",
+      "current": "保留原换土成品与已有基质辅料；普通地貌观察或种植升级不授予配方，完成对应客土研究才授予",
+      "decision_status": "用户确认：仅1级基础配方随技能解锁，其余全部研究；逐项观察／拆研及来源安排为首版试调",
       "source_file": "data/items.json",
       "recipe_candidate": "manufacturing.soil_amend_black",
       "unlock": {
-        "kind": "skill_and_soil_evidence",
-        "skill_id": "life_planting",
-        "level": 5,
-        "soil_evidence_key": "soil_source.black",
-        "evidence": "实际观察对应土壤地貌，或检查已取得的同种客土成品；不消耗土样，不新增原土物品；到达区域不自动完成",
-        "complete_record_alternative": true,
-        "grants": {
-          "recipe": true,
-          "structure": true,
-          "listed_material_relations": true,
-          "recipe_scoped_processes": true,
-          "other_recipes": false,
-          "upstream_industrial_production": false,
-          "hidden_item_properties": false,
-          "use_recipes_or_tactics": false
+        "kind": "exploration",
+        "interest_point": "soil_research",
+        "complete_record_route": {
+          "research_profile": "record",
+          "grants": {
+            "recipe": true,
+            "structure": true,
+            "listed_material_relations": true,
+            "recipe_scoped_processes": true,
+            "other_recipes": false,
+            "upstream_industrial_production": false,
+            "hidden_item_properties": false,
+            "use_recipes_or_tactics": false
+          }
         },
-        "experience_on_unlock": 0,
+        "hard_skill_level": null,
         "persistent": true,
+        "sample_route": {
+          "research_profile": "M",
+          "consumes_sample": true,
+          "research_eligibility": "同种客土成品一份；主动取样研究消耗所选样本，不使用新原土物品",
+          "grants": "complete_standard_recipe_from_listed_inputs",
+          "missing_processes": []
+        },
         "linked_processing_grants": []
       },
       "workbench_level_min": 1,
@@ -3506,16 +3707,12 @@
       "item_id": "compost_matrix_grade_low",
       "name": "腐熟基质·散",
       "category": "农业配土基质",
-      "unlock": "沿用堆肥产出；种植等级与土源证据或完整配土记录授予对应方案",
-      "acquisition": "散、匀、细均为可用基质；默认用量与等量替代见79号，不能把发酵废坨放入替代材料组",
+      "unlock": "沿用堆肥产出；对应客土实物或完整配土记录研究授予方案",
+      "acquisition": "沿用堆肥产出；客土配方固定指定散／匀／细基质，不互相替代，发酵废坨不能投入",
       "usage": [
         "soil_amend_yellow_cotton",
-        "soil_amend_cinnamon",
         "soil_amend_purple",
-        "soil_amend_red",
-        "soil_amend_alpine_meadow",
-        "soil_amend_paddy",
-        "soil_amend_black"
+        "soil_amend_red"
       ],
       "source_file": "data/items.json",
       "status": "已有模板；本轮制造用途为提案，既有外部规则保留"
@@ -3524,9 +3721,12 @@
       "item_id": "compost_matrix_grade_mid",
       "name": "腐熟基质·匀",
       "category": "农业配土基质",
-      "unlock": "沿用堆肥产出；种植等级与土源证据或完整配土记录授予对应方案",
-      "acquisition": "散、匀、细均为可用基质；默认用量与等量替代见79号，不能把发酵废坨放入替代材料组",
-      "usage": [],
+      "unlock": "沿用堆肥产出；对应客土实物或完整配土记录研究授予方案",
+      "acquisition": "沿用堆肥产出；客土配方固定指定散／匀／细基质，不互相替代，发酵废坨不能投入",
+      "usage": [
+        "soil_amend_cinnamon",
+        "soil_amend_paddy"
+      ],
       "source_file": "data/items.json",
       "status": "已有模板；本轮制造用途为提案，既有外部规则保留"
     },
@@ -3534,9 +3734,12 @@
       "item_id": "compost_matrix_grade_high",
       "name": "腐熟基质·细",
       "category": "农业配土基质",
-      "unlock": "沿用堆肥产出；种植等级与土源证据或完整配土记录授予对应方案",
-      "acquisition": "散、匀、细均为可用基质；默认用量与等量替代见79号，不能把发酵废坨放入替代材料组",
-      "usage": [],
+      "unlock": "沿用堆肥产出；对应客土实物或完整配土记录研究授予方案",
+      "acquisition": "沿用堆肥产出；客土配方固定指定散／匀／细基质，不互相替代，发酵废坨不能投入",
+      "usage": [
+        "soil_amend_alpine_meadow",
+        "soil_amend_black"
+      ],
       "source_file": "data/items.json",
       "status": "已有模板；本轮制造用途为提案，既有外部规则保留"
     },
@@ -3695,14 +3898,14 @@
     },
     {
       "name": "饵笼",
-      "unlock": "基础型号随钓鱼等级；特殊型号走探索",
+      "unlock": "仅明确列入1级基础包的型号随钓鱼1级；特殊型号走探索",
       "conditions": "制造台编网或金工工位",
       "note": "作为钓组部件，不与捕捞笼混用",
       "status": "既有设计概念；未注册，型号和原料需在对应玩法定型后补齐"
     },
     {
       "name": "捕鱼网体",
-      "unlock": "基础型号随钓鱼等级；特殊网目结构走探索",
+      "unlock": "仅明确列入1级基础包的型号随钓鱼1级；特殊网目结构走探索",
       "conditions": "制造台编网工位",
       "note": "独立于一次性狩猎捕网；网目与容量由具体型号决定",
       "status": "既有设计概念；未注册，型号和原料需在对应玩法定型后补齐"
@@ -3716,7 +3919,7 @@
     },
     {
       "name": "捕捞笼体",
-      "unlock": "基础型号随钓鱼等级；复杂机关笼走探索",
+      "unlock": "仅明确列入1级基础包的型号随钓鱼1级；复杂机关笼走探索",
       "conditions": "制造台框架与编网工位",
       "note": "笼体与可替换入口分别建物品",
       "status": "既有设计概念；未注册，型号和原料需在对应玩法定型后补齐"
@@ -3730,14 +3933,14 @@
     },
     {
       "name": "浅水采捕工具",
-      "unlock": "基础型号随钓鱼等级；等级随形制定案",
+      "unlock": "仅明确列入1级基础包的型号随钓鱼1级；其余型号研究解锁",
       "conditions": "制造台对应工位",
       "note": "62号只确认完整工具；具体形制未定，不能虚构现役型号",
       "status": "既有设计概念；未注册，型号和原料需在对应玩法定型后补齐"
     },
     {
       "name": "窝料",
-      "unlock": "基础配方随钓鱼等级；特殊配方由兴趣点提供",
+      "unlock": "仅明确列入1级基础包的配方随钓鱼1级；特殊配方由兴趣点提供",
       "conditions": "基地配料操作面",
       "note": "固定配方成品；与钩饵分开，不新增自由混配",
       "status": "既有设计概念；未注册，型号和原料需在对应玩法定型后补齐"
@@ -3761,14 +3964,14 @@
     "data/items/manufacturing_materials_base.csv",
     "data/item-catalog-v2.json"
   ],
-  "review_revision": 9,
+  "review_revision": 11,
   "detailed_design": "79-manufacturing-system.md",
   "detailed_data": "examples/manufacturing-system-v1.json",
   "unlock_policy": {
-    "confirmed_direction": "基础随对应生活技能等级，高级通过地牢探索研究仿制，兴趣点可提供配方",
-    "scope": "本次制造范围；不自动改写武器、防具、菜谱和药方",
-    "numeric_status": "等级1/3/5/10均为试调值",
-    "legacy_hunting": "五条入门配方保持开放，套索新增狩猎5级路径，原两项认知仍可独立满足制作条件；用料费用不变"
+    "confirmed_direction": "对应生活技能1级只解锁基础用具；其余工具和成品全部通过研究实物或有效完整资料／兴趣点记录解锁",
+    "scope": "本次制作系统63条成品及2条材料加工；不自动改写武器、防具、背包缝纫、菜谱、药方及正式狩猎执行器",
+    "numeric_status": "仅1级基础自动授予为用户确认；不再有3／5／10级自动配方，研究费用及逐项样本方式为试调",
+    "legacy_hunting": "五条1级基础配方保留；套索改为研究解锁，已有套索知识保留，正式狩猎执行器本轮未替换"
   },
   "material_policy": {
     "confirmed": "尽量复用已有材料；必要新增材料优先由已有物品加工，允许极少数无法合理推导的外部专用原料",
@@ -3787,13 +3990,37 @@
     "retired_previous_concepts": 16,
     "upstream_depth": "新增链最多一层；不拆出针头、垫片、玻璃粉和七种原土",
     "knowledge": "普通铁坯加工在制造1级掌握，钢丝加工随使用它的首个完整配方授予；不另加材料研究门槛",
-    "soil": "保留七个现有客土成品；取消七种原土，以23号腐熟基质制造线为根",
+    "soil": "七种客土按散3／匀2／细2指定已有基质，各做一批消耗8／6／6份；不互相替代，不新增原土",
     "status": "8种物品模板已注册，当前制造路线使用6种（2种中间料、4种外部专材）；小份铅料和精密机件仅兼容保留。配方用于独立试玩，正式流程、解锁及供应待接入",
     "retired_registered_materials": [
       "material_lead_portion",
       "material_precision_parts"
     ],
-    "yield_policy": "用户确认按玩法节奏收敛批量，不以真实重量损耗推导数量。铁坯与钢丝一批3份、钩坠6个、鱼饵20份；雷蛙和耐用器具一批1件。同步收敛工具投入，取消小份铅料与精密机件加工。具体数值仍为试调值。"
+    "yield_policy": "用户确认按玩法节奏收敛批量，不以真实重量损耗推导数量。铁坯与钢丝一批3份、钩坠6个、鱼饵20份；雷蛙和耐用器具一批1件。同步收敛工具投入，取消小份铅料与精密机件加工。具体数值仍为试调值。",
+    "soil_substrates": {
+      "status": "用户要求三种基质均匀分配；具体3／2／2归属为本轮安排",
+      "recipe_counts": {
+        "low": 3,
+        "mid": 2,
+        "high": 2
+      },
+      "one_batch_each_input_counts": {
+        "low": 8,
+        "mid": 6,
+        "high": 6
+      },
+      "assignment": {
+        "soil_amend_yellow_cotton": "low",
+        "soil_amend_cinnamon": "mid",
+        "soil_amend_purple": "low",
+        "soil_amend_red": "low",
+        "soil_amend_alpine_meadow": "high",
+        "soil_amend_paddy": "mid",
+        "soil_amend_black": "high"
+      },
+      "substitution": "七种客土固定使用所列基质，三种基质互不替代，发酵废坨无效",
+      "semantics": "对应不同客土的材料用途，不改变客土效果或建立品质升级关系"
+    }
   },
   "material_decisions": [
     [

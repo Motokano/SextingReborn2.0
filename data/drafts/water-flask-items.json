@@ -460,11 +460,11 @@
         "name": "粗陶水壶",
         "status": "候选，未注册制作配表",
         "unlock": {
-          "kind": "skill_level",
-          "skill_id": "life_manufacturing",
-          "level": 5,
+          "kind": "exploration",
+          "hard_skill_level": null,
           "persistent": true,
-          "hidden_item_properties": false
+          "hidden_item_properties": false,
+          "route_status": "研究有效实物或完整记录；具体样本方式与投放待定，尚未注册正式配方"
         },
         "station": "kiln",
         "methods": [
