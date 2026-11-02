@@ -1,0 +1,1335 @@
+[
+  {
+    "id": "patched-bulk-sack-v1",
+    "name": "补缀吨袋",
+    "tileWidth": 0.58,
+    "unsearched": {
+      "file": "patched-bulk-sack",
+      "contacts": [
+        [
+          143,
+          878
+        ],
+        [
+          618,
+          1142
+        ],
+        [
+          1102,
+          878
+        ]
+      ]
+    },
+    "searched": {
+      "file": "patched-bulk-sack-searched",
+      "contacts": [
+        [
+          143,
+          878
+        ],
+        [
+          618,
+          1142
+        ],
+        [
+          1102,
+          878
+        ]
+      ]
+    },
+    "heightReference": "144px grid, 125% player; manually reviewed body or wheelbase contacts; uniform scale only; opened lids and doors excluded from scale",
+    "projectionMode": "native",
+    "sourceRoot": "assets/dungeon/containers-v2/",
+    "contactKind": "ground corners"
+  },
+  {
+    "id": "salvaged-shopping-cart-v1",
+    "name": "旧购物车货笼",
+    "tileWidth": 0.46,
+    "unsearched": {
+      "file": "salvaged-shopping-cart",
+      "contacts": [
+        [
+          230,
+          965
+        ],
+        [
+          483,
+          1101
+        ],
+        [
+          1059,
+          890
+        ]
+      ]
+    },
+    "searched": {
+      "file": "salvaged-shopping-cart-searched",
+      "contacts": [
+        [
+          230,
+          965
+        ],
+        [
+          483,
+          1101
+        ],
+        [
+          1059,
+          890
+        ]
+      ]
+    },
+    "heightReference": "144px grid, 125% player; manually reviewed body or wheelbase contacts; uniform scale only; opened lids and doors excluded from scale",
+    "projectionMode": "native",
+    "sourceRoot": "assets/dungeon/containers-v2/",
+    "contactKind": "ground corners"
+  },
+  {
+    "id": "abandoned-chest-v1",
+    "name": "遗留箱子",
+    "tileWidth": 0.5,
+    "unsearched": {
+      "file": "abandoned-chest",
+      "contacts": [
+        [
+          166,
+          752
+        ],
+        [
+          618,
+          1048
+        ],
+        [
+          1075,
+          752
+        ]
+      ]
+    },
+    "searched": {
+      "file": "abandoned-chest-searched",
+      "contacts": [
+        [
+          166,
+          864
+        ],
+        [
+          618,
+          1160
+        ],
+        [
+          1075,
+          864
+        ]
+      ]
+    },
+    "heightReference": "144px grid, 125% player; manually reviewed body or wheelbase contacts; uniform scale only; opened lids and doors excluded from scale",
+    "projectionMode": "native",
+    "sourceRoot": "assets/dungeon/containers-v2/",
+    "contactKind": "ground corners"
+  },
+  {
+    "id": "discarded-toolbox-v1",
+    "name": "废弃工具箱",
+    "tileWidth": 0.3,
+    "unsearched": {
+      "file": "discarded-toolbox-clean",
+      "contacts": [
+        [
+          219,
+          583
+        ],
+        [
+          839,
+          923
+        ],
+        [
+          1185,
+          726
+        ]
+      ]
+    },
+    "searched": {
+      "file": "discarded-toolbox-searched",
+      "contacts": [
+        [
+          214,
+          611
+        ],
+        [
+          823,
+          945
+        ],
+        [
+          1190,
+          748
+        ]
+      ]
+    },
+    "heightReference": "144px grid, 125% player; manually reviewed body or wheelbase contacts; uniform scale only; opened lids and doors excluded from scale",
+    "projectionMode": "native",
+    "sourceRoot": "assets/dungeon/containers-v2/",
+    "contactKind": "ground corners"
+  },
+  {
+    "id": "reused-fridge-v1",
+    "name": "旧冰箱储物柜",
+    "tileWidth": 0.34,
+    "unsearched": {
+      "file": "reused-fridge",
+      "contacts": [
+        [
+          349,
+          972
+        ],
+        [
+          640,
+          1173
+        ],
+        [
+          891,
+          1039
+        ]
+      ]
+    },
+    "searched": {
+      "file": "reused-fridge-searched-right",
+      "contacts": [
+        [
+          345,
+          941
+        ],
+        [
+          631,
+          1133
+        ],
+        [
+          882,
+          999
+        ]
+      ]
+    },
+    "projectionMode": "native",
+    "heightReference": "144px grid, 125% player; manually reviewed body or wheelbase contacts; uniform scale only; opened lids and doors excluded from scale",
+    "sourceRoot": "assets/dungeon/containers-v2/",
+    "contactKind": "ground corners"
+  },
+  {
+    "id": "overturned-cart-v1",
+    "name": "翻倒的货车",
+    "tileWidth": 0.48,
+    "unsearched": {
+      "file": "overturned-cart",
+      "contacts": [
+        [
+          376,
+          1021
+        ],
+        [
+          712,
+          1079
+        ],
+        [
+          1070,
+          869
+        ]
+      ]
+    },
+    "searched": {
+      "file": "overturned-cart-searched",
+      "contacts": [
+        [
+          376,
+          1021
+        ],
+        [
+          712,
+          1079
+        ],
+        [
+          1070,
+          869
+        ]
+      ]
+    },
+    "projectionMode": "native",
+    "heightReference": "144px grid, 125% player; manually reviewed body or wheelbase contacts; uniform scale only; opened lids and doors excluded from scale",
+    "sourceRoot": "assets/dungeon/containers-v2/",
+    "contactKind": "ground corners"
+  },
+  {
+    "id": "abandoned-cargo-v1",
+    "name": "废弃货堆",
+    "tileWidth": 0.58,
+    "unsearched": {
+      "file": "abandoned-cargo",
+      "contacts": [
+        [
+          202,
+          797
+        ],
+        [
+          636,
+          1075
+        ],
+        [
+          1035,
+          833
+        ]
+      ]
+    },
+    "searched": {
+      "file": "abandoned-cargo-searched",
+      "contacts": [
+        [
+          188,
+          860
+        ],
+        [
+          631,
+          1142
+        ],
+        [
+          1008,
+          932
+        ]
+      ]
+    },
+    "projectionMode": "native",
+    "heightReference": "144px grid, 125% player; manually reviewed body or wheelbase contacts; uniform scale only; opened lids and doors excluded from scale",
+    "sourceRoot": "assets/dungeon/containers-v2/",
+    "contactKind": "ground corners"
+  },
+  {
+    "id": "damaged-barrel-v1",
+    "name": "破损木桶",
+    "tileWidth": 0.35,
+    "unsearched": {
+      "file": "damaged-barrel",
+      "contacts": [
+        [
+          251,
+          829
+        ],
+        [
+          609,
+          1008
+        ],
+        [
+          941,
+          829
+        ]
+      ]
+    },
+    "searched": {
+      "file": "damaged-barrel-searched",
+      "contacts": [
+        [
+          251,
+          958
+        ],
+        [
+          609,
+          1138
+        ],
+        [
+          941,
+          958
+        ]
+      ]
+    },
+    "contactKind": "round silhouette",
+    "heightReference": "144px grid, 125% player; manually reviewed body or wheelbase contacts; uniform scale only; opened lids and doors excluded from scale",
+    "projectionMode": "native",
+    "sourceRoot": "assets/dungeon/containers-v2/"
+  },
+  {
+    "id": "lost-backpack-v1",
+    "name": "遗落背包",
+    "tileWidth": 0.22,
+    "unsearched": {
+      "file": "lost-backpack",
+      "contacts": [
+        [
+          300,
+          914
+        ],
+        [
+          667,
+          1093
+        ],
+        [
+          963,
+          976
+        ]
+      ]
+    },
+    "searched": {
+      "file": "lost-backpack-searched",
+      "contacts": [
+        [
+          300,
+          923
+        ],
+        [
+          667,
+          1102
+        ],
+        [
+          963,
+          985
+        ]
+      ]
+    },
+    "heightReference": "144px grid, 125% player; manually reviewed body or wheelbase contacts; uniform scale only; opened lids and doors excluded from scale",
+    "projectionMode": "native",
+    "sourceRoot": "assets/dungeon/containers-v2/",
+    "contactKind": "ground corners"
+  },
+  {
+    "id": "collapsed-shelf-v1",
+    "name": "倒塌货架",
+    "tileWidth": 0.6,
+    "unsearched": {
+      "file": "collapsed-shelf",
+      "contacts": [
+        [
+          148,
+          797
+        ],
+        [
+          748,
+          1133
+        ],
+        [
+          1039,
+          963
+        ]
+      ]
+    },
+    "searched": {
+      "file": "collapsed-shelf-searched",
+      "contacts": [
+        [
+          148,
+          797
+        ],
+        [
+          748,
+          1133
+        ],
+        [
+          1039,
+          963
+        ]
+      ]
+    },
+    "projectionMode": "native",
+    "heightReference": "144px grid, 125% player; manually reviewed body or wheelbase contacts; uniform scale only; opened lids and doors excluded from scale",
+    "sourceRoot": "assets/dungeon/containers-v2/",
+    "contactKind": "ground corners"
+  },
+  {
+    "id": "reused-plastic-drum-v1",
+    "name": "蓝塑料储物桶",
+    "tileWidth": 0.38,
+    "unsearched": {
+      "file": "reused-plastic-drum",
+      "contacts": [
+        [
+          287,
+          896
+        ],
+        [
+          623,
+          1061
+        ],
+        [
+          954,
+          896
+        ]
+      ]
+    },
+    "searched": {
+      "file": "reused-plastic-drum-searched",
+      "contacts": [
+        [
+          291,
+          923
+        ],
+        [
+          623,
+          1093
+        ],
+        [
+          949,
+          923
+        ]
+      ]
+    },
+    "contactKind": "round silhouette",
+    "heightReference": "144px grid, 125% player; manually reviewed body or wheelbase contacts; uniform scale only; opened lids and doors excluded from scale",
+    "projectionMode": "native",
+    "sourceRoot": "assets/dungeon/containers-v2/"
+  },
+  {
+    "id": "reused-washer-drum-v1",
+    "name": "洗衣机内胆货篓",
+    "tileWidth": 0.42,
+    "unsearched": {
+      "file": "reused-washer-drum",
+      "contacts": [
+        [
+          228,
+          761
+        ],
+        [
+          587,
+          981
+        ],
+        [
+          967,
+          761
+        ]
+      ]
+    },
+    "searched": {
+      "file": "reused-washer-drum-searched",
+      "contacts": [
+        [
+          228,
+          761
+        ],
+        [
+          587,
+          981
+        ],
+        [
+          967,
+          761
+        ]
+      ]
+    },
+    "contactKind": "round silhouette",
+    "heightReference": "144px grid, 125% player; manually reviewed body or wheelbase contacts; uniform scale only; opened lids and doors excluded from scale",
+    "projectionMode": "native",
+    "sourceRoot": "assets/dungeon/containers-v2/"
+  },
+  {
+    "id": "patched-suitcase-v1",
+    "name": "补缀拉杆箱",
+    "tileWidth": 0.23,
+    "unsearched": {
+      "file": "patched-suitcase",
+      "contacts": [
+        [
+          349,
+          972
+        ],
+        [
+          703,
+          1155
+        ],
+        [
+          878,
+          1079
+        ]
+      ]
+    },
+    "searched": {
+      "file": "patched-suitcase-searched",
+      "contacts": [
+        [
+          528,
+          963
+        ],
+        [
+          864,
+          1160
+        ],
+        [
+          1044,
+          1084
+        ]
+      ]
+    },
+    "heightReference": "144px grid, 125% player; manually reviewed body or wheelbase contacts; uniform scale only; opened lids and doors excluded from scale",
+    "projectionMode": "native",
+    "sourceRoot": "assets/dungeon/containers-v2/",
+    "contactKind": "ground corners"
+  },
+  {
+    "id": "repaired-cooler-v1",
+    "name": "修补保温箱",
+    "tileWidth": 0.36,
+    "unsearched": {
+      "file": "repaired-cooler",
+      "contacts": [
+        [
+          170,
+          806
+        ],
+        [
+          618,
+          1075
+        ],
+        [
+          994,
+          851
+        ]
+      ]
+    },
+    "searched": {
+      "file": "repaired-cooler-searched",
+      "contacts": [
+        [
+          161,
+          869
+        ],
+        [
+          609,
+          1155
+        ],
+        [
+          985,
+          932
+        ]
+      ]
+    },
+    "heightReference": "144px grid, 125% player; manually reviewed body or wheelbase contacts; uniform scale only; opened lids and doors excluded from scale",
+    "projectionMode": "native",
+    "sourceRoot": "assets/dungeon/containers-v2/",
+    "contactKind": "ground corners"
+  },
+  {
+    "id": "rice-cooker-cache-v1",
+    "name": "旧电饭煲藏物罐",
+    "tileWidth": 0.17,
+    "unsearched": {
+      "file": "rice-cooker-cache",
+      "contacts": [
+        [
+          318,
+          779
+        ],
+        [
+          627,
+          958
+        ],
+        [
+          909,
+          779
+        ]
+      ]
+    },
+    "searched": {
+      "file": "rice-cooker-cache-searched",
+      "contacts": [
+        [
+          291,
+          936
+        ],
+        [
+          623,
+          1115
+        ],
+        [
+          936,
+          936
+        ]
+      ]
+    },
+    "contactKind": "round silhouette",
+    "heightReference": "144px grid, 125% player; manually reviewed body or wheelbase contacts; uniform scale only; opened lids and doors excluded from scale",
+    "projectionMode": "native",
+    "sourceRoot": "assets/dungeon/containers-v2/"
+  },
+  {
+    "id": "pressure-pot-cache-v1",
+    "name": "旧压力锅储物罐",
+    "tileWidth": 0.23,
+    "unsearched": {
+      "file": "pressure-pot-cache",
+      "contacts": [
+        [
+          251,
+          829
+        ],
+        [
+          614,
+          1003
+        ],
+        [
+          949,
+          829
+        ]
+      ]
+    },
+    "searched": {
+      "file": "pressure-pot-cache-searched",
+      "contacts": [
+        [
+          242,
+          990
+        ],
+        [
+          600,
+          1151
+        ],
+        [
+          941,
+          990
+        ]
+      ]
+    },
+    "contactKind": "round silhouette",
+    "heightReference": "144px grid, 125% player; manually reviewed body or wheelbase contacts; uniform scale only; opened lids and doors excluded from scale",
+    "projectionMode": "native",
+    "sourceRoot": "assets/dungeon/containers-v2/"
+  },
+  {
+    "id": "computer-tower-cabinet-v1",
+    "name": "旧机箱杂物柜",
+    "tileWidth": 0.3,
+    "unsearched": {
+      "file": "computer-tower-cabinet",
+      "contacts": [
+        [
+          259,
+          646
+        ],
+        [
+          781,
+          977
+        ],
+        [
+          1179,
+          771
+        ]
+      ]
+    },
+    "searched": {
+      "file": "computer-tower-cabinet-searched",
+      "contacts": [
+        [
+          383,
+          652
+        ],
+        [
+          900,
+          977
+        ],
+        [
+          1288,
+          771
+        ]
+      ]
+    },
+    "projectionMode": "native",
+    "heightReference": "144px grid, 125% player; manually reviewed body or wheelbase contacts; uniform scale only; opened lids and doors excluded from scale",
+    "sourceRoot": "assets/dungeon/containers-v2/",
+    "contactKind": "ground corners"
+  },
+  {
+    "id": "wheelie-bin-cache-v1",
+    "name": "带轮垃圾桶货筒",
+    "tileWidth": 0.34,
+    "unsearched": {
+      "file": "wheelie-bin-cache",
+      "contacts": [
+        [
+          264,
+          923
+        ],
+        [
+          555,
+          1111
+        ],
+        [
+          900,
+          990
+        ]
+      ]
+    },
+    "searched": {
+      "file": "wheelie-bin-cache-searched",
+      "contacts": [
+        [
+          255,
+          1012
+        ],
+        [
+          555,
+          1200
+        ],
+        [
+          900,
+          1079
+        ]
+      ]
+    },
+    "heightReference": "144px grid, 125% player; manually reviewed body or wheelbase contacts; uniform scale only; opened lids and doors excluded from scale",
+    "projectionMode": "native",
+    "sourceRoot": "assets/dungeon/containers-v2/",
+    "contactKind": "ground corners"
+  },
+  {
+    "id": "postbox-cache-v1",
+    "name": "旧邮筒藏物柜",
+    "tileWidth": 0.31,
+    "unsearched": {
+      "file": "postbox-cache",
+      "contacts": [
+        [
+          251,
+          869
+        ],
+        [
+          502,
+          1061
+        ],
+        [
+          994,
+          918
+        ]
+      ]
+    },
+    "searched": {
+      "file": "postbox-cache-searched",
+      "contacts": [
+        [
+          242,
+          869
+        ],
+        [
+          488,
+          1061
+        ],
+        [
+          981,
+          918
+        ]
+      ]
+    },
+    "heightReference": "144px grid, 125% player; manually reviewed body or wheelbase contacts; uniform scale only; opened lids and doors excluded from scale",
+    "projectionMode": "native",
+    "sourceRoot": "assets/dungeon/containers-v2/",
+    "contactKind": "ground corners"
+  },
+  {
+    "id": "factory-locker-cache-v1",
+    "name": "旧更衣柜",
+    "tileWidth": 0.28,
+    "unsearched": {
+      "file": "factory-locker-cache",
+      "contacts": [
+        [
+          385,
+          1008
+        ],
+        [
+          596,
+          1124
+        ],
+        [
+          784,
+          1030
+        ]
+      ]
+    },
+    "searched": {
+      "file": "factory-locker-cache-searched",
+      "contacts": [
+        [
+          372,
+          1008
+        ],
+        [
+          582,
+          1124
+        ],
+        [
+          775,
+          1030
+        ]
+      ]
+    },
+    "heightReference": "144px grid, 125% player; manually reviewed body or wheelbase contacts; uniform scale only; opened lids and doors excluded from scale",
+    "projectionMode": "native",
+    "sourceRoot": "assets/dungeon/containers-v2/",
+    "contactKind": "ground corners"
+  },
+  {
+    "id": "vending-machine-cupboard-v1",
+    "name": "旧售货机货柜",
+    "tileWidth": 0.38,
+    "unsearched": {
+      "file": "vending-machine-cupboard",
+      "contacts": [
+        [
+          331,
+          972
+        ],
+        [
+          667,
+          1169
+        ],
+        [
+          896,
+          1035
+        ]
+      ]
+    },
+    "searched": {
+      "file": "vending-machine-cupboard-searched",
+      "contacts": [
+        [
+          322,
+          972
+        ],
+        [
+          658,
+          1169
+        ],
+        [
+          887,
+          1035
+        ]
+      ]
+    },
+    "heightReference": "144px grid, 125% player; manually reviewed body or wheelbase contacts; uniform scale only; opened lids and doors excluded from scale",
+    "projectionMode": "native",
+    "sourceRoot": "assets/dungeon/containers-v2/",
+    "contactKind": "ground corners"
+  },
+  {
+    "id": "pram-cargo-basket-v1",
+    "name": "旧婴儿车货篮",
+    "tileWidth": 0.42,
+    "unsearched": {
+      "file": "pram-cargo-basket",
+      "contacts": [
+        [
+          179,
+          967
+        ],
+        [
+          475,
+          1147
+        ],
+        [
+          949,
+          963
+        ]
+      ]
+    },
+    "searched": {
+      "file": "pram-cargo-basket-searched",
+      "contacts": [
+        [
+          179,
+          967
+        ],
+        [
+          475,
+          1147
+        ],
+        [
+          949,
+          963
+        ]
+      ]
+    },
+    "heightReference": "144px grid, 125% player; manually reviewed body or wheelbase contacts; uniform scale only; opened lids and doors excluded from scale",
+    "projectionMode": "native",
+    "sourceRoot": "assets/dungeon/containers-v2/",
+    "contactKind": "ground corners"
+  },
+  {
+    "id": "wire-cage-trolley-v1",
+    "name": "铁网周转货笼",
+    "tileWidth": 0.48,
+    "unsearched": {
+      "file": "wire-cage-trolley",
+      "contacts": [
+        [
+          251,
+          891
+        ],
+        [
+          623,
+          1115
+        ],
+        [
+          981,
+          909
+        ]
+      ]
+    },
+    "searched": {
+      "file": "wire-cage-trolley-searched",
+      "contacts": [
+        [
+          242,
+          891
+        ],
+        [
+          614,
+          1115
+        ],
+        [
+          972,
+          909
+        ]
+      ]
+    },
+    "heightReference": "144px grid, 125% player; manually reviewed body or wheelbase contacts; uniform scale only; opened lids and doors excluded from scale",
+    "projectionMode": "native",
+    "sourceRoot": "assets/dungeon/containers-v2/",
+    "contactKind": "ground corners"
+  },
+  {
+    "id": "stacked-plastic-crates-v1",
+    "name": "叠放周转筐",
+    "tileWidth": 0.4,
+    "unsearched": {
+      "file": "stacked-plastic-crates",
+      "contacts": [
+        [
+          206,
+          842
+        ],
+        [
+          614,
+          1115
+        ],
+        [
+          981,
+          864
+        ]
+      ]
+    },
+    "searched": {
+      "file": "stacked-plastic-crates-searched",
+      "contacts": [
+        [
+          206,
+          842
+        ],
+        [
+          614,
+          1115
+        ],
+        [
+          981,
+          864
+        ]
+      ]
+    },
+    "heightReference": "144px grid, 125% player; manually reviewed body or wheelbase contacts; uniform scale only; opened lids and doors excluded from scale",
+    "projectionMode": "native",
+    "sourceRoot": "assets/dungeon/containers-v2/",
+    "contactKind": "ground corners"
+  },
+  {
+    "id": "sideways-oil-drum-cabinet-v1",
+    "name": "横置铁桶柜",
+    "tileWidth": 0.46,
+    "unsearched": {
+      "file": "sideways-oil-drum-cabinet",
+      "contacts": [
+        [
+          188,
+          936
+        ],
+        [
+          546,
+          1093
+        ],
+        [
+          1044,
+          824
+        ]
+      ]
+    },
+    "searched": {
+      "file": "sideways-oil-drum-cabinet-searched",
+      "contacts": [
+        [
+          188,
+          936
+        ],
+        [
+          546,
+          1093
+        ],
+        [
+          1044,
+          824
+        ]
+      ]
+    },
+    "heightReference": "144px grid, 125% player; manually reviewed body or wheelbase contacts; uniform scale only; opened lids and doors excluded from scale",
+    "projectionMode": "native",
+    "sourceRoot": "assets/dungeon/containers-v2/",
+    "contactKind": "ground corners"
+  },
+  {
+    "id": "cable-spool-shelf-v1",
+    "name": "电缆卷盘货架",
+    "tileWidth": 0.46,
+    "unsearched": {
+      "file": "cable-spool-shelf",
+      "contacts": [
+        [
+          210,
+          900
+        ],
+        [
+          596,
+          1075
+        ],
+        [
+          958,
+          900
+        ]
+      ]
+    },
+    "searched": {
+      "file": "cable-spool-shelf-searched",
+      "contacts": [
+        [
+          210,
+          900
+        ],
+        [
+          596,
+          1075
+        ],
+        [
+          958,
+          900
+        ]
+      ]
+    },
+    "contactKind": "round silhouette",
+    "heightReference": "144px grid, 125% player; manually reviewed body or wheelbase contacts; uniform scale only; opened lids and doors excluded from scale",
+    "projectionMode": "native",
+    "sourceRoot": "assets/dungeon/containers-v2/"
+  },
+  {
+    "id": "milk-churn-storage-v1",
+    "name": "旧奶罐",
+    "tileWidth": 0.21,
+    "unsearched": {
+      "file": "milk-churn-storage",
+      "contacts": [
+        [
+          385,
+          869
+        ],
+        [
+          627,
+          976
+        ],
+        [
+          864,
+          869
+        ]
+      ]
+    },
+    "searched": {
+      "file": "milk-churn-storage-searched",
+      "contacts": [
+        [
+          345,
+          914
+        ],
+        [
+          600,
+          1030
+        ],
+        [
+          860,
+          914
+        ]
+      ]
+    },
+    "contactKind": "round silhouette",
+    "heightReference": "144px grid, 125% player; manually reviewed body or wheelbase contacts; uniform scale only; opened lids and doors excluded from scale",
+    "projectionMode": "native",
+    "sourceRoot": "assets/dungeon/containers-v2/"
+  },
+  {
+    "id": "motorcycle-topbox-cache-v1",
+    "name": "旧摩托尾箱",
+    "tileWidth": 0.32,
+    "unsearched": {
+      "file": "motorcycle-topbox-cache",
+      "contacts": [
+        [
+          187,
+          801
+        ],
+        [
+          661,
+          1045
+        ],
+        [
+          1064,
+          853
+        ]
+      ]
+    },
+    "searched": {
+      "file": "motorcycle-topbox-cache-searched",
+      "contacts": [
+        [
+          178,
+          876
+        ],
+        [
+          642,
+          1110
+        ],
+        [
+          1021,
+          932
+        ]
+      ]
+    },
+    "heightReference": "144px grid, 125% player; manually reviewed body or wheelbase contacts; uniform scale only; opened lids and doors excluded from scale",
+    "projectionMode": "native",
+    "sourceRoot": "assets/dungeon/containers-v2/",
+    "contactKind": "ground corners"
+  },
+  {
+    "id": "tire-storage-basket-v1",
+    "name": "轮胎储物筐",
+    "tileWidth": 0.45,
+    "unsearched": {
+      "file": "tire-storage-basket",
+      "contacts": [
+        [
+          175,
+          851
+        ],
+        [
+          618,
+          1039
+        ],
+        [
+          1079,
+          851
+        ]
+      ]
+    },
+    "searched": {
+      "file": "tire-storage-basket-searched",
+      "contacts": [
+        [
+          175,
+          851
+        ],
+        [
+          618,
+          1039
+        ],
+        [
+          1079,
+          851
+        ]
+      ]
+    },
+    "contactKind": "round silhouette",
+    "heightReference": "144px grid, 125% player; manually reviewed body or wheelbase contacts; uniform scale only; opened lids and doors excluded from scale",
+    "projectionMode": "native",
+    "sourceRoot": "assets/dungeon/containers-v2/"
+  },
+  {
+    "id": "aluminum-flight-case-v1",
+    "name": "旧器材航空箱",
+    "tileWidth": 0.4,
+    "unsearched": {
+      "file": "aluminum-flight-case",
+      "contacts": [
+        [
+          134,
+          793
+        ],
+        [
+          640,
+          1102
+        ],
+        [
+          1044,
+          815
+        ]
+      ]
+    },
+    "searched": {
+      "file": "aluminum-flight-case-searched",
+      "contacts": [
+        [
+          125,
+          878
+        ],
+        [
+          631,
+          1200
+        ],
+        [
+          1035,
+          914
+        ]
+      ]
+    },
+    "heightReference": "144px grid, 125% player; manually reviewed body or wheelbase contacts; uniform scale only; opened lids and doors excluded from scale",
+    "projectionMode": "native",
+    "sourceRoot": "assets/dungeon/containers-v2/",
+    "contactKind": "ground corners"
+  },
+  {
+    "id": "marine-buoy-cache-v1",
+    "name": "浮球藏物罐",
+    "tileWidth": 0.35,
+    "unsearched": {
+      "file": "marine-buoy-cache",
+      "contacts": [
+        [
+          291,
+          837
+        ],
+        [
+          672,
+          1030
+        ],
+        [
+          994,
+          837
+        ]
+      ]
+    },
+    "searched": {
+      "file": "marine-buoy-cache-searched",
+      "contacts": [
+        [
+          278,
+          981
+        ],
+        [
+          649,
+          1173
+        ],
+        [
+          985,
+          981
+        ]
+      ]
+    },
+    "contactKind": "round silhouette",
+    "heightReference": "144px grid, 125% player; manually reviewed body or wheelbase contacts; uniform scale only; opened lids and doors excluded from scale",
+    "projectionMode": "native",
+    "sourceRoot": "assets/dungeon/containers-v2/"
+  }
+]

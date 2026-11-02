@@ -588,6 +588,31 @@
         "fn_before": "衣身、袖子和裤腿接在一起，各处的剪裁不尽相同。",
         "fn": "由不同款式的衣服部件组合而成的衣裤。"
       }
+    },
+    "sewing_rubber_sheet": {
+      "kind": "component",
+      "category": "material",
+      "sub_category": "rubber",
+      "material": "rubber",
+      "tags": "material;craft;dungeon_only",
+      "weight_kg": 0.2,
+      "stack_limit": 100,
+      "pocketable": true,
+      "spoilage_ticks": 0,
+      "price_class": "material",
+      "volatility": "mid",
+      "region_restrict": 0,
+      "base_value": 80,
+      "source": "dungeon;scavenging",
+      "production_lines": "sewing",
+      "info_module_set_id": "",
+      "runtime_status": "registered",
+      "identity": {
+        "sn": "橡胶片料",
+        "placeholder_name": "柔韧的深色片料",
+        "fn_before": "深色厚片边沿有切痕，也许能垫东西",
+        "fn": "裁成片的橡胶，边缘厚薄齐整，掰弯后会慢慢回弹。"
+      }
     }
   },
   "information_modules": {

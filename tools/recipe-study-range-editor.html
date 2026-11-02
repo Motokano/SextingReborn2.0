@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>资料台 · 配方范围编辑器</title>
+  <link rel="stylesheet" href="/tools/recipe-study-range-editor.css">
+  <script type="module" src="/tools/recipe-study-range-editor.mjs"></script>
+</head>
+<body>
+  <header class="masthead">
+    <div class="brand-mark" aria-hidden="true">册</div>
+    <div><p class="eyebrow">地牢内容配置</p><h1>资料台配方范围</h1></div>
+    <span class="scope" id="scope-title">按地牢配置 · 新出征生效</span>
+  </header>
+  <main>
+    <section class="overview" id="range-overview" aria-label="范围概览">
+      <div class="intro"><img src="/assets/dungeon/recipe-study-point-v1/available.png" alt="旧工艺资料台"><div><h2 id="dungeon-title">旧工艺资料台</h2><p id="dungeon-state">每处授予范围内的 <strong>1 项未学配方</strong></p><span class="muted" id="source-summary">正在读取制作目录…</span></div></div>
+      <div class="metric"><strong id="selected-count">—</strong><span>已选范围 / <span id="research-count">—</span> 项可研究</span><div class="meter"><span id="selection-meter"></span></div></div>
+      <fieldset class="settings" disabled><legend>投放设置</legend><label class="toggle"><input type="checkbox" id="enabled">启用资料台</label><label class="count-label">整次出现率 <input id="chance" type="number" min="0" max="100" step="0.1" aria-label="整次出征出现率">%</label><p class="muted">整次最多 1 间 · 楼层随机</p></fieldset>
+    </section>
+    <section id="allocation-overview" class="allocation-overview" hidden aria-label="分配总览">
+      <div><p class="eyebrow">跨地牢检查</p><h2>配方分配总览</h2><p class="muted">统计全部地牢所选范围，包含未保存修改；关闭投放或尚未接入地图的配置会单独标注。</p></div>
+      <div class="allocation-stat"><strong id="assigned-count">0</strong><span>已分配</span></div><div class="allocation-stat"><strong id="unassigned-count">0</strong><span>未分配</span></div><div class="allocation-stat"><strong id="shared-count">0</strong><span>多个地牢共用</span></div>
+    </section>
+    <form id="create-form" class="create-form" hidden>
+      <fieldset id="create-fields"><h2>新增地牢配置</h2><div class="create-fields"><label>地牢名称<input id="new-name" maxlength="40" required placeholder="例如：废弃工坊"></label><label>初始范围<select id="copy-from"><option value="">空范围 · 默认关闭投放</option></select></label><button type="submit" class="primary">创建配置</button><button type="button" id="cancel-create">取消</button></div><p class="muted">复制使用该地牢已保存的范围。新建配置不会生成地图，接入对应地牢后才会投放。</p><p id="create-status" role="status"></p></fieldset>
+    </form>
+    <p id="override-note" class="notice" hidden></p>
+    <div class="workspace" id="workspace" aria-busy="true">
+      <aside class="sidebar"><nav class="dungeon-nav" aria-label="地牢选择"><p class="section-label">地牢配置</p><div id="dungeons"></div><button id="new-dungeon" disabled>＋ 新增地牢配置</button><button id="allocation-button" disabled aria-pressed="false">配方分配总览</button></nav><nav class="categories" aria-label="配方分类"><p class="section-label">配方分类</p><div id="categories"></div><div class="legend"><span class="dot"></span>已选 / 可选研究配方</div></nav></aside>
+      <section class="catalog" aria-label="配方选择">
+        <div class="catalog-heading"><h2 id="category-title">全部配方</h2><span id="result-count" class="muted"></span></div>
+        <label class="search"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="搜索配方名称、材料或 ID" aria-label="搜索配方名称、材料或 ID" disabled></label>
+        <div class="filters" id="recipe-filters" role="group" aria-label="配方状态筛选">
+          <button data-filter="all" aria-pressed="true" disabled>全部</button><button data-filter="research" aria-pressed="false" disabled>可研究</button><button data-filter="selected" aria-pressed="false" disabled>已选</button><button data-filter="unselected" aria-pressed="false" disabled>未选</button><button data-filter="readonly" aria-pressed="false" disabled>仅查看</button>
+        </div>
+        <div class="filters" id="assignment-filters" role="group" aria-label="分配状态筛选" hidden><button data-assignment="all" aria-pressed="true">全部研究配方</button><button data-assignment="unassigned" aria-pressed="false">未分配</button><button data-assignment="shared" aria-pressed="false">多处共用</button></div>
+        <div class="bulk"><span id="visible-summary" class="muted">正在加载…</span><div id="bulk-actions"><button id="select-visible" disabled>选中当前结果</button><button id="clear-visible" disabled>移出当前结果</button></div></div>
+        <div id="recipes" class="recipe-list"></div>
+        <p id="empty" class="empty" hidden>没有符合条件的配方</p>
+      </section>
+      <aside class="detail" aria-label="配方详情"><p class="section-label">配方详情</p><div id="detail"><p class="muted">点击配方查看用料和制作条件</p></div></aside>
+    </div>
+  </main>
+  <footer class="save-bar">
+    <div class="save-info"><strong id="change-summary">读取中</strong><span id="status" role="status" aria-live="polite">正在连接本地配置</span></div>
+    <div class="save-actions"><button id="reload">重新读取</button><button id="undo" disabled>撤销当前修改</button><button id="export" disabled>导出当前范围</button><button class="primary" id="save" disabled>保存当前地牢</button></div>
+  </footer>
+</body>
+</html>

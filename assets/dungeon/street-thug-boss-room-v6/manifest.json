@@ -1,0 +1,621 @@
+{
+  "version": 1,
+  "status": "approved-fixed-room-runtime",
+  "referenceTileWidth": 144,
+  "styleReferences": [
+    "reference/street-thugs-v1/tier-1.png",
+    "assets/map/isometric/interactive-devices-v1/bed.png",
+    "assets/map/isometric/interactive-devices-v1/pharmacy.png",
+    "assets/map/isometric/interactive-devices-v1/warehouse.png"
+  ],
+  "props": [
+    {
+      "id": "dining",
+      "src": "factory-desk.png",
+      "crop": [
+        47,
+        162,
+        1157,
+        969
+      ],
+      "width": 144,
+      "footprint": [
+        1,
+        1
+      ],
+      "probe": [
+        [
+          87,
+          583
+        ],
+        [
+          87,
+          779
+        ]
+      ],
+      "nativeFront": [
+        0,
+        1
+      ],
+      "anchor": [
+        626,
+        778
+      ],
+      "bodyWidth": 1078,
+      "groundSlopes": [
+        0.608534322820037,
+        -0.6122448979591837
+      ],
+      "contacts": {
+        "left": [
+          87,
+          779
+        ],
+        "near": [
+          626,
+          1107
+        ],
+        "right": [
+          1165,
+          777
+        ]
+      }
+    },
+    {
+      "id": "chair",
+      "src": "vinyl-armchair.png",
+      "crop": [
+        261,
+        150,
+        761,
+        946
+      ],
+      "width": 86.39999999999999,
+      "footprint": [
+        0.6,
+        0.6
+      ],
+      "probe": [
+        [
+          648,
+          938
+        ],
+        [
+          648,
+          1080
+        ]
+      ],
+      "nativeFront": [
+        0,
+        1
+      ],
+      "anchor": [
+        644,
+        862
+      ],
+      "bodyWidth": 626,
+      "groundSlopes": [
+        0.7003154574132492,
+        -0.6925566343042071
+      ],
+      "contacts": {
+        "left": [
+          331,
+          858
+        ],
+        "near": [
+          648,
+          1080
+        ],
+        "right": [
+          957,
+          866
+        ]
+      }
+    },
+    {
+      "id": "sleeping",
+      "src": "steel-cot.png",
+      "crop": [
+        73,
+        119,
+        1146,
+        1023
+      ],
+      "width": 216,
+      "footprint": [
+        1,
+        2
+      ],
+      "probe": [
+        [
+          101,
+          758
+        ],
+        [
+          101,
+          866
+        ]
+      ],
+      "nativeFront": [
+        1,
+        0
+      ],
+      "anchor": [
+        617.5,
+        759
+      ],
+      "bodyWidth": 1033,
+      "groundSlopes": [
+        0.703601108033241,
+        -0.6964285714285714
+      ],
+      "contacts": {
+        "left": [
+          101,
+          866
+        ],
+        "near": [
+          462,
+          1120
+        ],
+        "right": [
+          1134,
+          652
+        ]
+      }
+    },
+    {
+      "id": "sideboard",
+      "src": "metal-sideboard.png",
+      "crop": [
+        142,
+        348,
+        972,
+        837
+      ],
+      "width": 144,
+      "footprint": [
+        1,
+        1
+      ],
+      "probe": [
+        [
+          620,
+          956
+        ],
+        [
+          620,
+          1162
+        ]
+      ],
+      "nativeFront": [
+        0,
+        1
+      ],
+      "anchor": [
+        630,
+        909
+      ],
+      "bodyWidth": 870,
+      "groundSlopes": [
+        0.6,
+        -0.5640449438202247
+      ],
+      "contacts": {
+        "left": [
+          195,
+          907
+        ],
+        "near": [
+          620,
+          1162
+        ],
+        "right": [
+          1065,
+          911
+        ]
+      }
+    },
+    {
+      "id": "fan",
+      "src": "stopped-fan.png",
+      "crop": [
+        339,
+        265,
+        551,
+        812
+      ],
+      "width": 18,
+      "footprint": [
+        0.125,
+        0.125
+      ],
+      "probe": null,
+      "nativeFront": [
+        0,
+        1
+      ],
+      "anchor": [
+        650.5,
+        952.5
+      ],
+      "bodyWidth": 429,
+      "groundSlopes": [
+        0.49065420560747663,
+        -0.5116279069767442
+      ],
+      "contacts": {
+        "left": [
+          436,
+          955
+        ],
+        "near": [
+          650,
+          1060
+        ],
+        "right": [
+          865,
+          950
+        ]
+      }
+    },
+    {
+      "id": "cargo",
+      "src": "transit-rack.png",
+      "crop": [
+        70,
+        115,
+        1149,
+        1082
+      ],
+      "width": 216,
+      "footprint": [
+        1,
+        2
+      ],
+      "probe": [
+        [
+          456,
+          872
+        ],
+        [
+          456,
+          1185
+        ]
+      ],
+      "nativeFront": [
+        1,
+        0
+      ],
+      "anchor": [
+        642.5,
+        830.5
+      ],
+      "bodyWidth": 1059,
+      "groundSlopes": [
+        0.6997084548104956,
+        -0.6550279329608939
+      ],
+      "contacts": {
+        "left": [
+          113,
+          945
+        ],
+        "near": [
+          456,
+          1185
+        ],
+        "right": [
+          1172,
+          716
+        ]
+      }
+    },
+    {
+      "id": "mat",
+      "src": "worn-mat.png",
+      "crop": [
+        52,
+        237,
+        1151,
+        817
+      ],
+      "width": 216,
+      "footprint": [
+        2,
+        1
+      ],
+      "probe": null,
+      "nativeFront": null,
+      "anchor": [
+        622.5,
+        642
+      ],
+      "bodyWidth": 1119,
+      "groundSlopes": [
+        0.7099337748344371,
+        -0.6538461538461539
+      ],
+      "contacts": {
+        "left": [
+          63,
+          493
+        ],
+        "near": [
+          818,
+          1029
+        ],
+        "right": [
+          1182,
+          791
+        ]
+      }
+    },
+    {
+      "id": "rubble",
+      "src": "corner-rubble.png",
+      "crop": [
+        209,
+        329,
+        855,
+        661
+      ],
+      "width": 129.6,
+      "footprint": [
+        0.9,
+        0.9
+      ],
+      "probe": null,
+      "nativeFront": null,
+      "anchor": [
+        636,
+        780
+      ],
+      "bodyWidth": 849
+    }
+  ],
+  "containers": [
+    {
+      "id": "den-private",
+      "width": 132.48000000000002,
+      "footprint": [
+        0.92,
+        0.92
+      ],
+      "nativeFront": [
+        0,
+        1
+      ],
+      "unsearched": {
+        "id": "den-private",
+        "src": "private-cache.png",
+        "crop": [
+          147,
+          352,
+          961,
+          757
+        ],
+        "width": 132.48000000000002,
+        "footprint": [
+          0.92,
+          0.92
+        ],
+        "probe": [
+          [
+            625,
+            896
+          ],
+          [
+            625,
+            1085
+          ]
+        ],
+        "nativeFront": [
+          0,
+          1
+        ],
+        "anchor": [
+          621,
+          850
+        ],
+        "bodyWidth": 858,
+        "groundSlopes": [
+          0.5427251732101617,
+          -0.5529411764705883
+        ],
+        "contacts": {
+          "left": [
+            192,
+            850
+          ],
+          "near": [
+            625,
+            1085
+          ],
+          "right": [
+            1050,
+            850
+          ]
+        }
+      },
+      "searched": {
+        "id": "den-private-searched",
+        "src": "private-cache-searched.png",
+        "crop": [
+          168,
+          215,
+          977,
+          981
+        ],
+        "width": 132.48000000000002,
+        "footprint": [
+          0.92,
+          0.92
+        ],
+        "probe": [
+          [
+            609,
+            1000
+          ],
+          [
+            609,
+            1180
+          ]
+        ],
+        "nativeFront": [
+          0,
+          1
+        ],
+        "anchor": [
+          614.5,
+          946.5
+        ],
+        "bodyWidth": 807,
+        "groundSlopes": [
+          0.5804020100502513,
+          -0.5770171149144254
+        ],
+        "contacts": {
+          "left": [
+            211,
+            949
+          ],
+          "near": [
+            609,
+            1180
+          ],
+          "right": [
+            1018,
+            944
+          ]
+        }
+      }
+    },
+    {
+      "id": "den-basket",
+      "width": 115.2,
+      "footprint": [
+        0.9,
+        0.7
+      ],
+      "nativeFront": [
+        1,
+        0
+      ],
+      "unsearched": {
+        "id": "den-basket",
+        "src": "stolen-basket.png",
+        "crop": [
+          139,
+          213,
+          987,
+          860
+        ],
+        "width": 115.2,
+        "footprint": [
+          0.9,
+          0.7
+        ],
+        "probe": [
+          [
+            688,
+            760
+          ],
+          [
+            688,
+            1050
+          ]
+        ],
+        "nativeFront": [
+          1,
+          0
+        ],
+        "anchor": [
+          628.5,
+          801
+        ],
+        "bodyWidth": 897,
+        "groundSlopes": [
+          0.547244094488189,
+          -0.5655526992287918
+        ],
+        "contacts": {
+          "left": [
+            180,
+            772
+          ],
+          "near": [
+            688,
+            1050
+          ],
+          "right": [
+            1077,
+            830
+          ]
+        }
+      },
+      "searched": {
+        "id": "den-basket-searched",
+        "src": "stolen-basket-searched.png",
+        "crop": [
+          140,
+          213,
+          986,
+          860
+        ],
+        "width": 115.2,
+        "footprint": [
+          0.9,
+          0.7
+        ],
+        "probe": [
+          [
+            688,
+            760
+          ],
+          [
+            688,
+            1050
+          ]
+        ],
+        "nativeFront": [
+          1,
+          0
+        ],
+        "anchor": [
+          628.5,
+          801
+        ],
+        "bodyWidth": 897,
+        "groundSlopes": [
+          0.547244094488189,
+          -0.5655526992287918
+        ],
+        "contacts": {
+          "left": [
+            180,
+            772
+          ],
+          "near": [
+            688,
+            1050
+          ],
+          "right": [
+            1077,
+            830
+          ]
+        }
+      }
+    }
+  ],
+  "textures": {
+    "wall": "painted-plaster.png",
+    "floor": "painted-concrete.png"
+  },
+  "note": "Approved 2026-10-30. Fixed room interior, placement and art shared by formal floor-four generation and review. The room is translated only; no rotation or mirroring. Source PNGs and measured ground contacts retained. Local geometry follows room-template.json and the user default-layout.json.",
+  "narrativeSources": [
+    "docs/design/30-story-outline-blackout.md",
+    "docs/design/45-battery-economy.md"
+  ]
+}

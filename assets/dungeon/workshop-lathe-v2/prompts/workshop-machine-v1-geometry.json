@@ -1,0 +1,14 @@
+{
+  "mode": "built-in image_gen",
+  "useCase": "sketch-to-render",
+  "transparent_background": true,
+  "references": [
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/dungeon-grid-scene-v1/lathe-geometry.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/street-thug-boss-room-v6/factory-desk.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/street-thug-boss-room-v6/private-cache.png"
+  ],
+  "prompt": "Use case: sketch-to-render. Turn the BLOCKOUT IN IMAGE 1 into a finished painted game sprite of an old manual metalworking lathe. This is a strict geometry-guided redraw, NOT a free new composition.\nIMAGE 1 is the mandatory geometry. Preserve its EXACT camera, steep diagonal bed orientation, all four pedestal ground corners, TWO-BY-ONE footprint proportions, bed height, headstock envelope and two supporting cabinet positions. Ground slopes are +0.7071 and -0.7071; verticals upright. Do not lengthen, flatten or rotate the blockout. The blockout itself has no textures and is only the structural guide. Remove its ground rectangle and beige page.\nIMAGES 2 and 3 specify the final hand-painted art style: lively dark variable-weight outlines, broad painted color planes, upper-left light, warm highlights, readable volumes, selective scuffs and repairs, no photo or glossy 3D render. Match their simplified internal detail and restrained wear. Muted teal painted iron, a cream replacement access panel on one cabinet, dull steel rails and dark small handwheels. A modern, used but maintained salvage-settlement machine.\nAdd actual LATHE details while staying tightly inside the blockout geometry: compact headstock at upper-left with a three-jaw chuck pointing diagonally toward bottom-right, two parallel steel ways on the long bed, compact carriage/tool post at center, small matching tailstock at lower-right with its center aligned to the chuck. Lead screw on near side, modest apron, small usable handwheels, short handles, small red/green buttons. The two support cabinets are simple weight-bearing pedestals with small flush feet; no giant extra base slabs. Open space underneath the middle of the bed. No giant exposed electric motor or dangling oversized plug. The blockout proportions are the priority over adding mechanics.\nOutput ONE complete finished lathe on real transparent background, tightly framed with safe margins, preferably square canvas. NO floor, mat, plinth, shadow, glow/halo, surrounding objects, people, writing, UI or guide lines. Do NOT include any furniture from images 2 or 3. Their style only.",
+  "source": "C:/Users/haoxian.huang/.codex/generated_images/01a17b42-6e6e-7e22-a6af-27970fdf58ae/exec-60040612-1e26-4e4e-8162-8c7554775bf7.png",
+  "status": "registered-current",
+  "appliedFile": "workshop-machine-v1.png"
+}

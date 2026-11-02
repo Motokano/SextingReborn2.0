@@ -99,6 +99,8 @@
         var map = getMap();
         if (!map) return false;
         if (x < 0 || x >= map.width || y < 0 || y >= map.height) return false;
+        if (map.dungeon && global.DungeonRuntime) return global.DungeonRuntime.walkable(x, y);
+        if (global.DungeonCheckpoint && global.DungeonCheckpoint.blocks(x, y)) return false;
         if (isDisabled(map, x, y)) return false;
         if (isBlocked(map, x, y)) return false;
         if (isCookingStationCell(x, y)) return false;
@@ -487,6 +489,8 @@
         if (!map) return false;
         if (nx === state.x && ny === state.y) return false;
         if (!isAdjacent(nx, ny)) return false;
+        if (global.DungeonRuntime && !global.DungeonRuntime.canStep(nx, ny)) return false;
+        if (global.DungeonCheckpoint && !global.DungeonCheckpoint.canStep(state, nx, ny)) return false;
         nx = clamp(nx, 0, map.width - 1);
         ny = clamp(ny, 0, map.height - 1);
         if (!isWalkable(nx, ny)) return false;

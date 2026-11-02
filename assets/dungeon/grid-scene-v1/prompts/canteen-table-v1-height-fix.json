@@ -1,0 +1,10 @@
+{
+  "prompt": "Edit this game furniture sprite to correct human proportions. Lower tabletop to 50 percent of its current VERTICAL height above feet. Shorten all legs accordingly; keep tabletop thickness,width,depth,camera EXACTLY. Stool/low dining height. IMPORTANT preserve original CANVAS dimensions and exact existing foot contact positions. Do not shrink or resize the whole image: preserve bottom footprint and shorten only upright structural members. Surface top horizontal slopes stay identical. Keep dark painted contours, broad painted shading, original muted colors and localized repairs/dirty wear. True transparent background and gaps; no shadow, halo, floor or base. One single sprite.",
+  "references": [
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/grid-scene-v1/canteen-table-v1.png"
+  ],
+  "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-77c690b3-cff2-4d04-8af2-43a38519a832.png",
+  "tool": "built-in image_gen",
+  "status": "registered-current",
+  "appliedFile": "canteen-table-v1.png"
+}

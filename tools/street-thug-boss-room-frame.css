@@ -1,0 +1,7 @@
+/* Hide unrelated game panels before boot, not after their first paint. */
+body{background:#101a16!important}
+body>*:not(#map-wrap){display:none!important}
+body.study-reward-preview>:not(#map-wrap).du-modal:not([hidden]){display:block!important}
+#map-wrap{position:fixed!important;inset:0!important}
+#hud-layer,#svelte-hud-root,#player-action-bubble{display:none!important}
+#map-container{height:100%!important;background:#101a16!important}

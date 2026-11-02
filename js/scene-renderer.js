@@ -1075,6 +1075,7 @@
         body.className = 'quick-belt-slot-body';
         if (it && it.item_id) {
             var tpl = IE.getItemTemplate(it.item_id);
+            if(it.dungeon_rarity)slot.dataset.dungeonRarity=it.dungeon_rarity;
             var tier = IE.getItemDisplayTier(it.item_id, char);
             body.textContent = tpl ? IE.getDisplayName(tpl, tier, char).slice(0, 2) : it.item_id.slice(0, 2);
             var name = tpl ? IE.getDisplayName(tpl, tier, char) : it.item_id;
@@ -1204,6 +1205,7 @@
         args.ctx.restore();
     }
     function renderEffects(fxCtx) {
+        if (window.DungeonRuntime && window.DungeonRuntime.active()) { window.DungeonArt.fog(fxCtx); return; }
         // Its destination-out clear radius must only erase the night veil, never
         // attack strokes or damage text already drawn onto this shared canvas.
         renderDayNightVisionOverlay(fxCtx);
@@ -1246,6 +1248,7 @@
 
         var map = E.getMap();
         var st = E.getState();
+        if (map && map.dungeon && window.DungeonRuntime) window.DungeonRuntime.sync();
         var visionProfile = getVisionRevealProfile();
         var facingCfgForVisionMeta = getVisionFacingUiConfig();
         var occlusionUiCfgForMeta = getVisionOcclusionUiConfig();
@@ -1303,6 +1306,7 @@
                 };
             },
             getDynamicMetaAt: function (gx, gy) {
+                if (window.DungeonRuntime && window.DungeonRuntime.active()) return window.DungeonRuntime.dynamicMeta(gx, gy);
                 var ctxDyn = getCtx();
                 var adjacent = E.isAdjacent(gx, gy);
                 var dist = chebyshevDistance(gx, gy, st.x, st.y);
@@ -1462,7 +1466,11 @@
                 }
                 var ddx = gx - st.x;
                 var ddy = gy - st.y;
-                if ((!ddx && !ddy)) return;
+                if ((!ddx && !ddy)) { if (window.SceneApp && window.SceneApp.openGroundItems) window.SceneApp.openGroundItems(); return; }
+                if (window.DungeonCheckpoint && window.DungeonCheckpoint.blocks(gx, gy)) {
+                    window.DungeonCheckpoint.approach(gx, gy);
+                    return;
+                }
                 if ((Math.abs(ddx) > 1 || Math.abs(ddy) > 1) && !(E.getEnemyAt && E.getEnemyAt(gx,gy))) return;
                 var npcId = (typeof E.getInteractNpcIdAt === 'function')
                     ? E.getInteractNpcIdAt(gx, gy)
@@ -1928,7 +1936,8 @@
         hideItemTooltip: hideItemTooltip,
         buildItemTooltipHtml: buildItemTooltipHtml,
         formatItemAttributes: formatItemAttributes,
-        renderEntityDirectionIndicator: renderEntityDirectionIndicator
+        renderEntityDirectionIndicator: renderEntityDirectionIndicator,
+        getDungeonVision: function () { var p=getVisionRevealProfile(),f=getVisionFacingUiConfig(); return {profile:{visual:p.visualRadius,identify:p.identifyRadius,detail:p.detailRadius,adjacent:p.adjacentDetailRadius},facing:{frontAngle:f.frontHalfAngleDeg,sideAngle:f.sideHalfAngleDeg,front:f.frontMul,side:f.sideMul,back:f.backMul}}; }
     };
     window.VisionDebug = {
         on: function () { return window.SceneRenderer.setVisionDebugEnabled(true); },

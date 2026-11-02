@@ -1,0 +1,11 @@
+{
+  "id": "canteen-food-crate-partial",
+  "prompt": "Edit the supplied transparent game sprite into its partial state. Remove one cabbage and one onion and one tin; leave about half original provisions. Keep same red crate and cloth sacks perfectly unchanged. CRITICAL: retain exact original canvas size, object scale, base/body position, ground contacts, camera, paint palette, broad hand-painted shading, dark outlines and repair marks. Do not recompose or zoom. Change only specified contents or state. True alpha transparency throughout empty pixels and gaps. No background, ground, pedestal, cast shadow, glow, labels or text. One isolated sprite.",
+  "references": [
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/grid-scene-v1/canteen-food-crate.png"
+  ],
+  "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-5d8eb91c-6ec7-403a-a8ab-5a1330d72311.png",
+  "tool": "built-in image_gen",
+  "status": "registered-current",
+  "appliedFile": "canteen-food-crate-partial.png"
+}

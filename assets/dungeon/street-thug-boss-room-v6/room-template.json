@@ -1,0 +1,19 @@
+{
+  "id":"street-thug-den-v6","version":1,"floor":4,
+  "bounds":[3,3,9,12],"apron":[2,2,10,13],"door":[7,12],"doorMaterial":"iron","boss":[7,6],"clear":[6,6,8,9],
+  "architecture":{"wall":1.2,"door":0.9,"column":1.08,"partition":0.36},
+  "objects":[
+    {"uid":"den-sleeping","footprintOffsets":[[0,-1],[0,0]],"offsetY":-0.5,"nativeFront":[1,0],"front":[1,0],"approach":[5,5]},
+    {"uid":"den-dining","front":[0,1],"approach":[4,8]},
+    {"uid":"den-chair","front":[0,1]},
+    {"uid":"den-sideboard","front":[0,1],"approach":[5,9],"sideAccess":true},
+    {"uid":"den-fan","front":[0,1],"approach":[5,5]},
+    {"uid":"den-cargo","footprintOffsets":[[0,-1],[0,0]],"offsetY":-0.5,"nativeFront":[1,0],"front":[1,0],"approach":[5,10]},
+    {"uid":"den-mat","footprintOffsets":[[-1,0],[0,0]],"offsetX":-0.5,"solid":false},
+    {"uid":"den-lowwall","shape":"lowwall"},
+    {"uid":"den-column","shape":"column","opaque":true},
+    {"uid":"den-rubble"},
+    {"uid":"den-private","container":true,"name":"头目私藏箱","profile":"personal","front":[0,1],"approach":[7,5]},
+    {"uid":"den-basket","container":true,"name":"赃物袋筐","profile":"storage","nativeFront":[1,0],"front":[1,0],"approach":[8,5],"sideAccess":true}
+  ]
+}

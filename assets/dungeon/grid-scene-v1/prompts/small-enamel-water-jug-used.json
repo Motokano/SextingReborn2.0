@@ -1,0 +1,11 @@
+{
+  "id": "small-enamel-water-jug-used",
+  "prompt": "Edit the supplied transparent game sprite into its used state. Empty kettle: lid hinged/tilted open attached at back, dark empty interior. Preserve original kettle body handle spout position and canvas framing exactly. CRITICAL: retain exact original canvas size, object scale, base/body position, ground contacts, camera, paint palette, broad hand-painted shading, dark outlines and repair marks. Do not recompose or zoom. Change only specified contents or state. True alpha transparency throughout empty pixels and gaps. No background, ground, pedestal, cast shadow, glow, labels or text. One isolated sprite.",
+  "references": [
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/grid-scene-v1/small-enamel-water-jug.png"
+  ],
+  "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-baed62ce-8b33-427d-8748-fd8a7ee5ef23.png",
+  "tool": "built-in image_gen",
+  "status": "registered-current",
+  "appliedFile": "small-enamel-water-jug-used.png"
+}

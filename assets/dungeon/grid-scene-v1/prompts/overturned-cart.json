@@ -1,0 +1,17 @@
+{
+  "id": "overturned-cart",
+  "name": "翻倒的货车",
+  "width": 0.96,
+  "prompt": "Create exactly ONE transparent game prop sprite. References 1/2 are fixed style: strong dark hand-drawn contours, broad painted light and shade masses, readable forms with some brush texture; do NOT copy their pedestal. Reference 3 and 5 are approved final furniture style and localized wear. Reference 4 is the floor projection: orthographic, camera elevation45°, ground axes +/-0.7071, vertical edges vertical, tile144x101.82. Plan ground footprint BEFORE illustration; bottom contact corners must follow the template. Small top-down 3/4 view, two clear faces. Full object, generous transparent margins, NO floor/platform/pedestal/text/cast shadow. Upper-left light, restrained worn teal/ochre/cream/charcoal palette, modern industrial salvage society with repair/reuse, not medieval treasure nor nuclear wasteland. Readable at actual 144px grid scale, shape detail not photographic noise. A small overturned industrial handcart, not a motor vehicle. Old gray steel chassis tilted sideways, two uneven wheels, a couple of battered brown parcels still held in its cargo tray by a frayed strap. Low silhouette, all wheels and packages confined to a single .95x.85 tile, vertical height30px at tile144. The cart's rectangle ground projection follows the grid despite its broken wheel. Filled unsearched state. Absolutely NO halo, NO surrounding glow, NO semi-transparent smoky background. Outside the hard object silhouette must be fully transparent.",
+  "references": [
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/street-thugs-v1/tier-1.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/map/isometric/interactive-devices-v1/warehouse.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/street-thug-boss-room-v6/private-cache.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/street-thug-boss-room-v5/cache-geometry.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/street-thug-boss-room-v6/transit-rack.png"
+  ],
+  "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-ee58bb7e-018a-47dc-a5c6-529e4bca087d.png",
+  "tool": "built-in image_gen",
+  "status": "registered-current",
+  "appliedFile": "overturned-cart.png"
+}

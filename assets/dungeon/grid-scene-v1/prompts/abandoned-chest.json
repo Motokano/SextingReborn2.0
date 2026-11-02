@@ -1,0 +1,10 @@
+{
+  "id": "abandoned-chest",
+  "name": "遗留箱子",
+  "prompt": null,
+  "promptRecordNote": "第一张生成图的逐字提示词未完整留存；不以事后重写的描述冒充原提示词。风格规范与后续搜空编辑记录仍可追溯。",
+  "source": "C:/Users/haoxian.huang/.codex/generated_images/01a17b42-6e6e-7e22-a6af-27970fdf58ae/exec-a77d02ed-a43d-4209-a5e3-738b68918e6b.png",
+  "tool": "built-in image_gen",
+  "status": "registered-current",
+  "appliedFile": "abandoned-chest.png"
+}

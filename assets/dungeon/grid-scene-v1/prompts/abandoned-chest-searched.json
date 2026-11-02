@@ -1,0 +1,14 @@
+{
+  "id": "abandoned-chest-searched",
+  "prompt": "Edit the first image into the SEARCHED / EMPTY state of this exact game chest. Keep exact same camera, square ground footprint, chest body silhouette, corner metal straps, rope handle, material colors, dark contours and brush-shaded style. Keep the base corners and contact position and body size identical; do NOT scale the body to fit the taller open lid. Open only the curved lid on its far hinge to about 100 degrees, show an empty dark wooden interior with one rumpled scrap of lining. Latch disengaged. No treasure. Preserve transparent background, no ground or base, no text, no extra objects. Leave room above the existing body for the lid. Other images are style anchors.",
+  "references": [
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/grid-scene-v1/abandoned-chest.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/street-thugs-v1/tier-1.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/map/isometric/interactive-devices-v1/warehouse.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/street-thug-boss-room-v6/private-cache.png"
+  ],
+  "tool": "built-in image_gen",
+  "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-b6ce9d54-d429-4689-953e-f3254c2a3288.png",
+  "status": "registered-current",
+  "appliedFile": "abandoned-chest-searched.png"
+}

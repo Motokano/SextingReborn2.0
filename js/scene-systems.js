@@ -68,6 +68,11 @@
                 default: return;
             }
             e.preventDefault();
+            if (e.shiftKey && window.DungeonRuntime && window.DungeonRuntime.active() && ctx.actions && ctx.actions.turnToward) {
+                ctx.actions.turnToward(dx, dy);
+                window.DungeonRuntime.refresh();
+                return;
+            }
             var st = E.getState();
             if (ctx.actions && typeof ctx.actions.tryIntentMove === 'function') {
                 ctx.actions.tryIntentMove(st.x + dx, st.y + dy, dx, dy, 'keyboard');

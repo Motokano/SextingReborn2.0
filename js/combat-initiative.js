@@ -11,7 +11,7 @@
         var bs = global.BuffSystem;
         var mult = bs && bs.getBattleMoveSpeedMultiplier ? Number(bs.getBattleMoveSpeedMultiplier(owner)) || 1 : 1;
         var delta = bs && bs.getBattleMoveSpeedDeltaPercent ? Number(bs.getBattleMoveSpeedDeltaPercent(owner)) || 0 : 0;
-        var extra = Number(base) * delta / 100;
+        var extra = Number(global.CombatEnemies?.speedBuffBase?.(owner,base) ?? base) * delta / 100;
         if (owner === 'player' && global.CharacterAttributes && global.CharacterAttributes.getCombatSpeed) {
             extra = global.CharacterAttributes.getCombatSpeed(delta) - global.CharacterAttributes.getCombatSpeed();
         }

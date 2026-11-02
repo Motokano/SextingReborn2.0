@@ -1,0 +1,15 @@
+{
+  "id": "reused-fridge",
+  "prompt": "Create exactly ONE transparent game prop sprite. References 1/2 are fixed style: strong dark hand-drawn contours, broad painted light and shade masses, readable forms with some brush texture; do NOT copy their pedestal. Reference 3 and 5 are approved final furniture style and localized wear. Reference 4 is the floor projection: orthographic, camera elevation45°, ground axes +/-0.7071, vertical edges vertical, tile144x101.82. Plan ground footprint BEFORE illustration; bottom contact corners must follow the template. Small top-down 3/4 view, two clear faces. Full object, generous transparent margins, NO floor/platform/pedestal/text/cast shadow. Upper-left light, restrained worn teal/ochre/cream/charcoal palette, modern industrial salvage society with repair/reuse, not medieval treasure nor nuclear wasteland. Readable at actual 144px grid scale, shape detail not photographic noise. Subject: an old unplugged compact refrigerator reused as a storage cupboard, CLOSED. Cream enamel with muted teal door, a riveted patch and replacement wooden handle. No glow, no electricity, no brands. Squared lower body exactly 0.8x0.8 tile, vertical body height 65px at tile144px, two little feet anchored to geometric bottom corners, door front faces down-left. Not a tower or oversized cabinet. Flat broad painted wear patches near handle and feet, strong outlined silhouette.",
+  "references": [
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/street-thugs-v1/tier-1.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/map/isometric/interactive-devices-v1/warehouse.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/street-thug-boss-room-v6/private-cache.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/street-thug-boss-room-v5/cache-geometry.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/street-thug-boss-room-v6/transit-rack.png"
+  ],
+  "tool": "built-in image_gen",
+  "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-979e24c7-efa2-4cdc-b9a3-1b357196dd1b.png",
+  "status": "registered-current",
+  "appliedFile": "reused-fridge.png"
+}

@@ -1,0 +1,10 @@
+{
+  "prompt": "Edit this exact game prop, retaining the original 1536x1024 transparent canvas and the exact ground footprint / four foot contact coordinates. It is currently vastly too tall beside the human game pawns. REDESIGN all UPRIGHT structure to about 30 percent of its existing vertical height above the ground: shorten the large left motor housing into a very squat, low box, lower the lathe bed to a low waist-high work surface, drastically shorten structural leg posts. Make the handwheels, chuck and handles proportionally smaller to fit the low structure. Keep the long and broad horizontal footprint, ground-contact feet and all horizontal axis slopes UNCHANGED. Do not merely resize the whole sprite. Do not shift the feet. The entire device must now be a low wide industrial machine, maximum physical upright height about180 source pixels above the rear ground point, with much empty transparent space at top. Maintain the existing hand-painted deep outlines, broad shading, teal paint and patched cream panels, localized worn edges. One single game prop. Transparent background including all gaps, no halo, no shadow, no platform, no floor.",
+  "references": [
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/grid-scene-v1/workshop-machine-v1.png"
+  ],
+  "source": "C:/Users/haoxian.huang/.codex/generated_images/01a17b42-6e6e-7e22-a6af-27970fdf58ae/exec-f55dcc41-6cc9-4fe9-a369-efd1162706fe.png",
+  "tool": "built-in image_gen",
+  "status": "registered-current",
+  "appliedFile": "workshop-machine-v1.png"
+}

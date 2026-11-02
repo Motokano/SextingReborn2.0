@@ -1,0 +1,152 @@
+settlemaker
+Copyright (C) 2025-2026 barrulus
+
+This program is free software: you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 3 as published
+by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License along
+with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+SPDX-License-Identifier: GPL-3.0-only
+
+
+UPSTREAM WORK
+-------------
+
+settlemaker is a TypeScript reimplementation of the Medieval Fantasy City
+Generator by watabou (Oleg Dolya):
+
+    TownGeneratorOS (Haxe)
+    https://github.com/watabou/TownGeneratorOS
+    Licensed GPL-3.0
+
+    Medieval Fantasy City Generator
+    https://watabou.itch.io/medieval-fantasy-city-generator
+
+The generation core is a derivative work of TownGeneratorOS and is
+therefore licensed GPL-3.0 as well.  Upstream publishes no explicit
+"or (at your option) any later version" grant, so settlemaker is
+GPL-3.0-only rather than GPL-3.0-or-later.
+
+Files carrying directly ported algorithms mark the provenance inline
+("Port of watabou's ..."):
+
+    src/geom/geom-utils.ts        convexHull, obb, pierce
+    src/generator/model.ts        buildFarms and the generation pipeline
+    src/wards/farm.ts             splitField, round, getHousing
+    src/generator/generation-params.ts
+    src/wards/*                   ward layout and alley subdivision
+    src/geom/voronoi.ts           Voronoi/Delaunay construction
+    src/geom/polygon.ts           polygon operations
+
+
+INTERFACING WORKS (not part of this program)
+--------------------------------------------
+
+Azgaar's Fantasy Map Generator
+    https://github.com/Azgaar/Fantasy-Map-Generator
+    MIT License, Copyright 2017-2024 Max Haniyeu (Azgaar)
+
+FMG consumes settlemaker at arm's length over the URL API documented in
+docs/url-api.md -- two separate programs exchanging data over a URL, not
+a combined work.  Neither license reaches into the other.
+
+
+SYMBOL LIBRARY
+--------------
+
+The SVG symbol collections under symbols/village, symbols/city,
+symbols/landscape, symbols/greens, symbols/infrastructure and symbols/markers
+are original artwork,
+licensed SEPARATELY from this program:
+
+    CC-BY-4.0, with a Rendered Output Exception
+    symbols/LICENSE
+    Per-symbol authorship: symbols/CREDITS
+
+Nothing in the GPL places that artwork under GPL terms, and nothing in
+the CC licence places any part of this program under CC terms.
+
+The exception waives attribution for rendered output: maps drawn with
+the symbols carry no obligation to anyone, because attribution cannot
+survive rasterisation and compositing into a larger map.  Attribution
+applies only to redistributing the symbol library itself as artwork.
+
+The separate Copperline example artwork under symbols/copperline and its
+portable skin in docs/examples/copperline.skin.json are GPL-3.0-only, as
+documented in symbols/copperline/README.md. The CC rendered-output exception
+above does not apply to Copperline.
+
+
+WATER POLYGON GEOMETRY DEPENDENCIES
+-----------------------------------
+
+polygon-clipping
+The MIT License (MIT)
+
+Copyright (c) 2018 Mike Fogel <mike@fogel.ca> - covers everything not specially attributed to others below.
+
+Copyright (c) 2016 Alexander Milevski <info@w8r.name> - covers all portions originally part of github:w8r/martinez, from which this project was forked on Febuary 2, 2018.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
+splaytree
+
+The MIT License (MIT)
+
+Copyright (c) 2019 Alexander Milevski <info@w8r.name>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software is furnished to do so,
+subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
+robust-predicates
+This is free and unencumbered software released into the public domain.
+
+Anyone is free to copy, modify, publish, use, compile, sell, or
+distribute this software, either in source code form or as a compiled
+binary, for any purpose, commercial or non-commercial, and by any
+means.
+
+In jurisdictions that recognize copyright laws, the author or authors
+of this software dedicate any and all copyright interest in the
+software to the public domain. We make this dedication for the benefit
+of the public at large and to the detriment of our heirs and
+successors. We intend this dedication to be an overt act of
+relinquishment in perpetuity of all present and future rights to this
+software under copyright law.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+
+For more information, please refer to <http://unlicense.org>

@@ -51,7 +51,12 @@
         var re = rE || {};
         var eid = opts.enemyId != null ? String(opts.enemyId) : '';
         var facing = opts.facingDir != null ? opts.facingDir : 4;
+        if (re.notExecuted && re.skipReason === 'limb_destroyed' && global.GameLog) {
+            global.GameLog.log(ui('combat.log.enemy_attack_disabled', {enemyId:ui('enemy.name.'+eid.replace(/\./g,'_'))}), 'combat');
+        }
         return {
+            notExecuted:!!re.notExecuted,
+            skipReason:re.skipReason,
             eventIdSuffix: eid + '_' + String(re.moveId || 'counter') + (simDry ? '_sim' : ''),
             hitRollSuccess: !!re.hitRollSuccess,
             hitPart: re.hitPart || 'chest',
@@ -66,11 +71,17 @@
             rawDamage: isFinite(re.rawDamage) ? re.rawDamage : 0,
             typedDamage: re.typedDamage,
             moveTemplate: re.moveTemplate,
+            resourceResult: re,
+            actionConditionBonus: re.actionConditionBonus,
+            targetUnloadMultiplier: re.targetUnloadMultiplier,
             forceZeroDamageByResourceInsufficient: false,
             simultaneousDryRun: !!simDry,
             attacker: {
                 kind: 'enemy',
                 enemyId: eid,
+                ownerId:re.enemyOwnerId,
+                mapId:re.enemyMapId,
+                index:re.enemyIndex,
                 postEffectIds: global.CombatEnemies && global.CombatEnemies.getById ? (global.CombatEnemies.getById(eid) || {}).counter_post_effect_ids || [] : [],
                 facingDir: facing,
                 pos: { x: opts.ex, y: opts.ey }
@@ -128,9 +139,10 @@
             }
             // 2) 死亡落地：drain 死亡队列 → 移除地图实例 + 死亡日志 + 电池掉落（k89 运行时接线）
             if (typeof window.CombatEnemies.drainEnemyKillQueue !== 'function') return;
-            var kills = window.CombatEnemies.drainEnemyKillQueue();
-            if (!kills || !kills.length) return;
             var mapK = (E && typeof E.getMap === 'function') ? E.getMap() : null;
+            if(!mapK)return;
+            var kills = window.CombatEnemies.drainEnemyKillQueue(mapK.map_id);
+            if (!kills || !kills.length) return;
             var deadPos = []; // { enemyId, x, y } —— 移除前记录坐标，供掉落到尸体格
             if (mapK && Array.isArray(mapK.enemies)) {
                 var deadIdx = [];
@@ -147,6 +159,7 @@
                 for (var rm = 0; rm < deadIdx.length; rm++) {
                     var ri = deadIdx[rm];
                     var recGone = mapK.enemies[ri] || {};
+                    if (mapK.dungeon && global.DungeonRuntime) global.DungeonRuntime.killed(recGone);
                     if (window.CombatEngagement && typeof window.CombatEngagement.disengageEnemy === 'function') {
                         window.CombatEngagement.disengageEnemy({ mapId: mapK.map_id, index: ri, enemyId: recGone.enemy_id, record: recGone, reason: 'enemy_killed' });
                     }
@@ -159,7 +172,7 @@
                     }
                 }
             }
-            settleEnemyBatteryDrops(kills, mapK, deadPos);
+            if (!mapK.dungeon) settleEnemyBatteryDrops(kills, mapK, deadPos);
             var kl, kName;
             for (kl = 0; kl < kills.length; kl++) {
                 kName = kills[kl].enemyId;
@@ -248,15 +261,16 @@
         }
     }
 
-    /** 计算「本动作已反击」标记键（mapId|i{index}），与 AI 去重口径一致；找不到实例返回 null。 */
-    function enemyCounterAttackFlagKey(enemyId) {
+    /** 使用稳定实例身份记录本动作已占用的反击机会；找不到实例返回 null。 */
+    function enemyCounterAttackFlagKey(enemyId, index) {
+        if (Number.isInteger(index) && index >= 0) return global.CombatEnemies.getOwnerId(enemyId,E.getMap().map_id,index);
         try {
             var stNow = (E && typeof E.getState === 'function') ? E.getState() : null;
             var mapNow = (E && typeof E.getMap === 'function') ? E.getMap() : null;
             if (!stNow || !mapNow || !Array.isArray(mapNow.enemies)) return null;
             for (var i = 0; i < mapNow.enemies.length; i++) {
                 if (mapNow.enemies[i] && mapNow.enemies[i].enemy_id === enemyId) {
-                    return String(mapNow.map_id || '') + '|i' + i;
+                    return global.CombatEnemies.getOwnerId(enemyId,mapNow.map_id,i);
                 }
             }
         } catch (e) { /* ignore */ }
@@ -274,6 +288,7 @@
         var map = (E && typeof E.getMap === 'function') ? E.getMap() : null;
         if (!map) return;
         if (!Array.isArray(map.enemies) || !map.enemies.length) {
+            enemyCounterAttackFlags = {};
             if (window.CombatEngagement && typeof window.CombatEngagement.syncFromAi === 'function') {
                 window.CombatEngagement.syncFromAi(map, function () { return false; }, { reason: 'no_enemies' });
             }
@@ -289,6 +304,7 @@
         enemyCounterAttackFlags = {};
         var mapIdStr = String(map.map_id || '');
         var plan;
+        if(window.CombatEnemies.beginWorldTurn)window.CombatEnemies.beginWorldTurn(getWorldTotalTicks());
         try {
             plan = window.CombatEnemies.updateEnemyAI({
                 map: map,
@@ -308,38 +324,48 @@
                     return false;
                 },
                 didActThisTick: function (index) {
-                    return !!flags[mapIdStr + '|i' + (index | 0)];
+                    return !!flags[enemyCounterAttackFlagKey((map.enemies[index]||{}).enemy_id,index)];
                 }
             });
-        } catch (eAi) {
-            return;
-        }
-        if (window.CombatEngagement && typeof window.CombatEngagement.syncFromAi === 'function') {
-            window.CombatEngagement.syncFromAi(map, function (index) {
-                return window.CombatEnemies.isEnemyAggro && window.CombatEnemies.isEnemyAggro(map.map_id, index);
-            }, { reason: 'ai_aggro_changed' });
-        }
-        var m, mv, rec, atk;
-        for (m = 0; m < plan.moves.length; m++) {
-            mv = plan.moves[m];
-            rec = map.enemies[mv.index];
-            if (!rec) continue;
-            rec.x = mv.toX;
-            rec.y = mv.toY;
-            if (window.CombatEnemies.setFacingDir && window.CombatEnemies.dirFromDelta) {
-                var ddx = mv.toX - mv.fromX;
-                var ddy = mv.toY - mv.fromY;
-                window.CombatEnemies.setFacingDir(mv.enemyId, map.map_id, mv.toX, mv.toY, window.CombatEnemies.dirFromDelta(ddx, ddy));
+            if (window.CombatEngagement && typeof window.CombatEngagement.syncFromAi === 'function') {
+                window.CombatEngagement.syncFromAi(map, function (index) {
+                    return window.CombatEnemies.isEnemyAggro && window.CombatEnemies.isEnemyAggro(map.map_id, index);
+                }, { reason: 'ai_aggro_changed' });
             }
-            if (window.SceneCtx && typeof window.SceneCtx.pushDirtyCell === 'function') {
-                window.SceneCtx.pushDirtyCell(mv.fromX, mv.fromY);
-                window.SceneCtx.pushDirtyCell(mv.toX, mv.toY);
+            var m, mv, rec, atk;
+            for (m = 0; m < plan.moves.length; m++) {
+                mv = plan.moves[m];
+                rec = map.enemies[mv.index];
+                if (!rec) continue;
+                rec.x = mv.toX;
+                rec.y = mv.toY;
+                if(mv.dashPath)window.SceneAnimation?.emit('combat:dash',{mapId:map.map_id,actor:{kind:'enemy',key:'enemy:'+mv.index,index:mv.index,enemyId:mv.enemyId,uid:rec.dungeonUid,ownerId:window.CombatEnemies.getOwnerId(mv.enemyId,map.map_id,mv.index),x:rec.x,y:rec.y},target:{kind:'player',key:'player'},path:mv.dashPath});
+                if (window.CombatEnemies.setFacingDir && window.CombatEnemies.dirFromDelta) {
+                    var ddx = mv.toX - mv.fromX;
+                    var ddy = mv.toY - mv.fromY;
+                    window.CombatEnemies.setFacingDir(mv.enemyId, map.map_id, mv.toX, mv.toY, window.CombatEnemies.dirFromDelta(ddx, ddy));
+                }
+                if (window.SceneCtx && typeof window.SceneCtx.pushDirtyCell === 'function') {
+                    window.SceneCtx.pushDirtyCell(mv.fromX, mv.fromY);
+                    window.SceneCtx.pushDirtyCell(mv.toX, mv.toY);
+                }
             }
+            for (m = 0; m < plan.attacks.length; m++) {
+                atk = plan.attacks[m];
+                try { runEnemyAttackOnPlayer(atk.enemyId, atk.x, atk.y); }
+                catch (eAtk) { if (window.console && typeof window.console.error === 'function') window.console.error('[AI attack failed]', atk, eAtk); }
+            }
+        } finally {
+            if(window.CombatEnemies.endWorldTurn)window.CombatEnemies.endWorldTurn();
         }
-        for (m = 0; m < plan.attacks.length; m++) {
-            atk = plan.attacks[m];
-            try { runEnemyAttackOnPlayer(atk.enemyId, atk.x, atk.y); }
-            catch (eAtk) { if (window.console && typeof window.console.error === 'function') window.console.error('[AI attack failed]', atk, eAtk); }
+        if(window.CombatEnemies.drainEnemyLimbRecoveryQueue) {
+            window.CombatEnemies.drainEnemyLimbRecoveryQueue().forEach(function(recovery){
+                var rec=map.enemies[recovery.index];
+                if(recovery.mapId!==map.map_id || !rec || !global.DungeonRuntime || !global.DungeonRuntime.active())return;
+                if(!global.DungeonRuntime.dynamicMeta(rec.x,rec.y).enemyId)return;
+                recovery.parts.forEach(function(part){if(global.GameLog)global.GameLog.log(ui('combat.log.enemy_limb_recovered',{
+                    enemyId:ui('enemy.name.'+recovery.enemyId.replace(/\./g,'_')),part:ui('body.part.'+part)}),'system');});
+            });
         }
     }
 
@@ -371,6 +397,7 @@
             enemyMapId: stP.mapId != null ? stP.mapId : null,
             enemyIndex: enemyIndex
         });
+        if(rE.notExecuted)return;
         var atkCtx = buildEnemyCounterAtkCtx(rE, false, {
             enemyId: enemyId,
             facingDir: facingDir,
@@ -527,6 +554,7 @@
         flushDisplacements: flushDisplacements,
         setUiDeps: setUiDeps,
         markCounterAttackFlag: markCounterAttackFlag,
+        resetTransientState: function () { enemyCounterAttackFlags = {}; displacementQueue = []; },
         buildEnemyCounterAtkCtx: buildEnemyCounterAtkCtx,
         findEnemyInstanceIndex: findEnemyInstanceIndex,
         settleEnemyKills: settleEnemyKills,

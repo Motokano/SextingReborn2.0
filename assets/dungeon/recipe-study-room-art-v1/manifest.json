@@ -1,0 +1,287 @@
+{
+  "version": 1,
+  "date": "2026-11-02",
+  "tool": "built-in image_gen",
+  "status": "approved-runtime",
+  "referenceTileWidth": 144,
+  "referenceTileHeight": 101.82337649086284,
+  "playerDisplayScale": 1.25,
+  "transform": "uniform scale and ground anchor only",
+  "shadow": "separate render layer",
+  "measurementNote": "Foot centers and probes are manually estimated; source alpha and native projection remain untouched. Hidden rear contacts are envelope estimates. Approved placement and blocking are shared by the formal generator and isolated review.",
+  "assets": [
+    {
+      "id": "archive-shelf",
+      "name": "旧铁档案架",
+      "src": "assets/dungeon/recipe-study-room-art-v1/archive-shelf.png",
+      "size": [
+        1254,
+        1254
+      ],
+      "crop": [
+        249,
+        47,
+        798,
+        1171
+      ],
+      "anchor": [
+        648,
+        953
+      ],
+      "groundContacts": [
+        [
+          474,
+          735
+        ],
+        [
+          997,
+          1033
+        ],
+        [
+          772,
+          1171
+        ],
+        [
+          299,
+          874
+        ]
+      ],
+      "bodyGroundWidth": 698,
+      "scaleAt144": 0.108,
+      "bodyGroundWidthAt144": 75.384,
+      "heightProbe": [
+        [
+          771,
+          502
+        ],
+        [
+          772,
+          1171
+        ]
+      ],
+      "physicalHeightProbeAt144": 72.252,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "nativeFront": [
+        0,
+        1
+      ],
+      "fixedFacing": true,
+      "projectionMode": "native",
+      "offset": [
+        0,
+        0
+      ],
+      "sha256": "ab548b5e01a95f35768b8ffbfcce5b200162f84cc026ee120075d8098d30a541",
+      "originalSource": "C:/Users/haoxian.huang/.codex/generated_images/01a199e0-bec6-7310-851c-5de06cae4c7b/exec-7412b75b-164a-4812-bd3f-a63e88af6091.png",
+      "copiedWithoutModification": true,
+      "references": [
+        {
+          "path": "reference/recipe-study-room-art-v1/archive-shelf-geometry.png",
+          "role": "geometry edit target",
+          "sha256": "3c1cc122648a57d2c373fbbffef5a86fb505686689f51a79b6d0d8820d022552"
+        },
+        {
+          "path": "reference/street-thugs-v1/tier-1.png",
+          "role": "approved contour and painted volume reference",
+          "sha256": "49712c9e0bcdcfd57c81a901916c55107e324ccae93ca91aaa4b0e43fb811817"
+        },
+        {
+          "path": "assets/map/isometric/interactive-devices-v1/toolbench.png",
+          "role": "approved material reference, ignore base",
+          "sha256": "18557a8513ec9311a92fa7fa8d1ef580f0617864c761e5e17363149926b20d05"
+        },
+        {
+          "path": "assets/dungeon/street-thug-boss-room-v6/transit-rack.png",
+          "role": "approved furnishing reference",
+          "sha256": "6dacdcad242945095b32d308f0e70c7156ec7766867bfdb3d3ae232efb3c1b7a"
+        }
+      ],
+      "prompt": "assets/dungeon/recipe-study-room-art-v1/prompt-archive-shelf.txt"
+    },
+    {
+      "id": "drawing-rolls",
+      "name": "旧图筒架",
+      "src": "assets/dungeon/recipe-study-room-art-v1/drawing-rolls.png",
+      "size": [
+        1254,
+        1254
+      ],
+      "crop": [
+        203,
+        134,
+        893,
+        1021
+      ],
+      "anchor": [
+        650,
+        880
+      ],
+      "groundContacts": [
+        [
+          515,
+          633
+        ],
+        [
+          1059,
+          941
+        ],
+        [
+          801,
+          1128
+        ],
+        [
+          240,
+          794
+        ]
+      ],
+      "bodyGroundWidth": 819,
+      "scaleAt144": 0.075,
+      "bodyGroundWidthAt144": 61.425,
+      "heightProbe": [
+        [
+          530,
+          154
+        ],
+        [
+          530,
+          744
+        ]
+      ],
+      "physicalHeightProbeAt144": 44.25,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "nativeFront": [
+        0,
+        1
+      ],
+      "fixedFacing": true,
+      "projectionMode": "native",
+      "offset": [
+        2,
+        0
+      ],
+      "sha256": "e5415fbaa5cbfa66571fa0e8af9d522604cc662ab40bf7a1ea0120b4e8b142f9",
+      "originalSource": "C:/Users/haoxian.huang/.codex/generated_images/01a199e0-bec6-7310-851c-5de06cae4c7b/exec-85503a17-9f9c-4311-9778-d46b9caf7ac6.png",
+      "copiedWithoutModification": true,
+      "references": [
+        {
+          "path": "reference/recipe-study-room-art-v1/drawing-rolls-geometry.png",
+          "role": "geometry edit target",
+          "sha256": "052b4f794f019eb1458e63d2c21e745bc51060c5551036c7c8465dcc822765d6"
+        },
+        {
+          "path": "reference/street-thugs-v1/tier-1.png",
+          "role": "approved contour and painted volume reference",
+          "sha256": "49712c9e0bcdcfd57c81a901916c55107e324ccae93ca91aaa4b0e43fb811817"
+        },
+        {
+          "path": "assets/map/isometric/interactive-devices-v1/toolbench.png",
+          "role": "approved material reference, ignore base",
+          "sha256": "18557a8513ec9311a92fa7fa8d1ef580f0617864c761e5e17363149926b20d05"
+        },
+        {
+          "path": "assets/dungeon/street-thug-boss-room-v6/transit-rack.png",
+          "role": "approved furnishing reference",
+          "sha256": "6dacdcad242945095b32d308f0e70c7156ec7766867bfdb3d3ae232efb3c1b7a"
+        }
+      ],
+      "prompt": "assets/dungeon/recipe-study-room-art-v1/prompt-drawing-rolls.txt"
+    },
+    {
+      "id": "patched-stool",
+      "name": "补面矮凳",
+      "src": "assets/dungeon/recipe-study-room-art-v1/patched-stool.png",
+      "size": [
+        1254,
+        1254
+      ],
+      "crop": [
+        311,
+        350,
+        631,
+        685
+      ],
+      "anchor": [
+        626,
+        858
+      ],
+      "groundContacts": [
+        [
+          620,
+          714
+        ],
+        [
+          882,
+          856
+        ],
+        [
+          632,
+          1003
+        ],
+        [
+          371,
+          851
+        ]
+      ],
+      "bodyGroundWidth": 511,
+      "scaleAt144": 0.1,
+      "bodyGroundWidthAt144": 51.1,
+      "heightProbe": [
+        [
+          632,
+          750
+        ],
+        [
+          632,
+          1003
+        ]
+      ],
+      "physicalHeightProbeAt144": 25.3,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "nativeFront": [
+        0,
+        1
+      ],
+      "fixedFacing": true,
+      "projectionMode": "native",
+      "offset": [
+        0,
+        1
+      ],
+      "sha256": "a9bba2e3f1a5e1e73eed5744d67ef55b72df70189a7c0b016373eded971a6377",
+      "originalSource": "C:/Users/haoxian.huang/.codex/generated_images/01a199e0-bec6-7310-851c-5de06cae4c7b/exec-b21a3560-bdc9-420e-8dcf-14d2ac48e82e.png",
+      "copiedWithoutModification": true,
+      "references": [
+        {
+          "path": "reference/recipe-study-room-art-v1/patched-stool-geometry.png",
+          "role": "geometry edit target",
+          "sha256": "afa75ea14cdebda342bbfe97ed75068cbebd173de38e1141fad129154902b325"
+        },
+        {
+          "path": "reference/street-thugs-v1/tier-1.png",
+          "role": "approved contour and painted volume reference",
+          "sha256": "49712c9e0bcdcfd57c81a901916c55107e324ccae93ca91aaa4b0e43fb811817"
+        },
+        {
+          "path": "assets/map/isometric/interactive-devices-v1/toolbench.png",
+          "role": "approved material reference, ignore base",
+          "sha256": "18557a8513ec9311a92fa7fa8d1ef580f0617864c761e5e17363149926b20d05"
+        },
+        {
+          "path": "assets/dungeon/street-thug-boss-room-v6/factory-desk.png",
+          "role": "approved furnishing reference",
+          "sha256": "ee785470c31df9beea26a120dd639c2dca03d657904dc555e1bbe57ec273982e"
+        }
+      ],
+      "prompt": "assets/dungeon/recipe-study-room-art-v1/prompt-patched-stool.txt"
+    }
+  ]
+}

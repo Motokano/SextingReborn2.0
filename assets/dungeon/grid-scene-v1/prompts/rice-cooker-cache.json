@@ -1,0 +1,17 @@
+{
+  "id": "rice-cooker-cache",
+  "name": "旧电饭煲藏物罐",
+  "width": 0.4,
+  "prompt": "Create exactly ONE transparent game prop sprite. References 1/2 are fixed style: strong dark hand-drawn contours, broad painted light and shade masses, readable forms with some brush texture; do NOT copy their pedestal. Reference 3 and 5 are approved final furniture style and localized wear. Reference 4 is the floor projection: orthographic, camera elevation45°, ground axes +/-0.7071, vertical edges vertical, tile144x101.82. Plan ground footprint BEFORE illustration; bottom contact corners must follow the template. Small top-down 3/4 view, two clear faces. Full object, generous transparent margins, NO floor/platform/pedestal/text/cast shadow. Upper-left light, restrained worn teal/ochre/cream/charcoal palette, modern industrial salvage society with repair/reuse, not medieval treasure nor nuclear wasteland. Readable at actual 144px grid scale, shape detail not photographic noise. A small unplugged old rice cooker used as a hidden storage pot, cream enamel cylinder, faded dark red band, simple closed hinged lid with black handle. Broken cable coiled tight against body, one chipped edge. Round footprint diameter.38tile, vertical height20px at tile144. This must remain a tiny household pot next to a person, not a huge tank. No glow/electricity. Closed unsearched. Outside the hard silhouette must be fully transparent: no halo, glow, smoky backdrop or drop shadow.",
+  "references": [
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/street-thugs-v1/tier-1.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/map/isometric/interactive-devices-v1/warehouse.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/street-thug-boss-room-v6/private-cache.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/street-thug-boss-room-v5/cache-geometry.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/street-thug-boss-room-v6/transit-rack.png"
+  ],
+  "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-0afd72f5-2463-4770-a3f2-16016708337e.png",
+  "tool": "built-in image_gen",
+  "status": "registered-current",
+  "appliedFile": "rice-cooker-cache.png"
+}

@@ -1,0 +1,12 @@
+{
+  "date": "2026-11-02",
+  "userStatement": "接入正式房间然后提交",
+  "scope": "三件陈设及已展示的资料室摆放定稿，接入正式房间并提交",
+  "files": [
+    {"path": "assets/dungeon/recipe-study-room-art-v1/archive-shelf.png", "sha256": "ab548b5e01a95f35768b8ffbfcce5b200162f84cc026ee120075d8098d30a541"},
+    {"path": "assets/dungeon/recipe-study-room-art-v1/drawing-rolls.png", "sha256": "e5415fbaa5cbfa66571fa0e8af9d522604cc662ab40bf7a1ea0120b4e8b142f9"},
+    {"path": "assets/dungeon/recipe-study-room-art-v1/patched-stool.png", "sha256": "a9bba2e3f1a5e1e73eed5744d67ef55b72df70189a7c0b016373eded971a6377"}
+  ],
+  "preserve": "透明原图、接地锚点、0.108／0.075／0.10等比倍率、原生朝向、独立阴影、144px棋格和125%人物",
+  "placement": {"archive-shelf": [0, 0], "drawing-rolls": [2, 0], "patched-stool": [0, 1]}
+}

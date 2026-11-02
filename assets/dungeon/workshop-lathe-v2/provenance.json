@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "generatedCurrent": 1,
+  "retainedCandidates": 0,
+  "reusedCurrent": 0,
+  "assets": [
+    {
+      "file": "workshop-machine-v1.png",
+      "selected": true,
+      "sha256": "d7993cdd85d6cca91e7b2ef01146a1ab108dd641e3decaf3104daef961026748",
+      "source": "C:/Users/haoxian.huang/.codex/generated_images/01a17b42-6e6e-7e22-a6af-27970fdf58ae/exec-60040612-1e26-4e4e-8162-8c7554775bf7.png",
+      "promptRecord": "prompts/workshop-machine-v1-geometry.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    }
+  ]
+}

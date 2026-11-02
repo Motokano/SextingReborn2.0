@@ -1,0 +1,66 @@
+{
+  "format": "street-thug-boss-room-layout",
+  "version": 1,
+  "objects": [
+    {
+      "uid": "den-sleeping",
+      "x": 4,
+      "y": 5
+    },
+    {
+      "uid": "den-dining",
+      "x": 4,
+      "y": 7
+    },
+    {
+      "uid": "den-chair",
+      "x": 6,
+      "y": 4
+    },
+    {
+      "uid": "den-sideboard",
+      "x": 4,
+      "y": 9
+    },
+    {
+      "uid": "den-fan",
+      "x": 5,
+      "y": 4
+    },
+    {
+      "uid": "den-cargo",
+      "x": 4,
+      "y": 11
+    },
+    {
+      "uid": "den-mat",
+      "x": 7,
+      "y": 11
+    },
+    {
+      "uid": "den-lowwall",
+      "x": 4,
+      "y": 6
+    },
+    {
+      "uid": "den-column",
+      "x": 5,
+      "y": 6
+    },
+    {
+      "uid": "den-rubble",
+      "x": 8,
+      "y": 11
+    },
+    {
+      "uid": "den-private",
+      "x": 7,
+      "y": 4
+    },
+    {
+      "uid": "den-basket",
+      "x": 8,
+      "y": 4
+    }
+  ]
+}

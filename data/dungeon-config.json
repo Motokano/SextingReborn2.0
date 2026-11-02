@@ -1,0 +1,659 @@
+{
+  "version": 1,
+  "id": "village_ruins",
+  "name": "村外废墟",
+  "maxFloor": 4,
+  "entryMaps": [
+    "M0_Field_02",
+    "M0_JinmuTown_01",
+    "M0_JInmuTown_01"
+  ],
+  "enemyId": "enemy.street_thug",
+  "boss": {
+    "floor": 4,
+    "enemyId": "enemy.street_thug_boss",
+    "spawnChance": 0.6,
+    "loot": {
+      "corpse": {
+        "inheritSharedPool": true,
+        "extraDrops": []
+      },
+      "containers": {
+        "den-private": {
+          "inheritSharedPool": true,
+          "extraDrops": []
+        },
+        "den-basket": {
+          "inheritSharedPool": true,
+          "extraDrops": []
+        }
+      }
+    }
+  },
+  "content": {
+    "version": 16,
+    "rooms": {
+      "emptyChance": 0.2,
+      "doorlessChance": 0.3
+    },
+    "ruins": {
+      "largeRoomArea": 49,
+      "smallWalllessChance": 0.15,
+      "largeDoorlessChance": 0.08,
+      "largeDamagedChance": 0.05,
+      "breachMin": 2,
+      "breachMax": 4
+    },
+    "poi": {
+      "outdoorContainersMin": 1,
+      "outdoorContainersMax": 3,
+      "maxRoomContainers": 3,
+      "nearRoomDistance": 2,
+      "outdoorRecoveryChance": 0.12,
+      "maxOutdoorRecovery": 1
+    },
+    "resourceRooms": {
+      "minRatio": 0.1,
+      "maxRatio": 0.2
+    },
+    "insight": {
+      "chance": 0.05,
+      "weights": {
+        "desk": 1,
+        "stump": 1
+      },
+      "rewards": {
+        "desk": 500,
+        "stump": 1000
+      }
+    },
+    "outposts": {
+      "enabled": true,
+      "minCount": 1,
+      "maxCount": 2,
+      "minArea": 49,
+      "maxArea": 104,
+      "targetArea": 72,
+      "largeArea": 70,
+      "lootEnemies": 3,
+      "largeEnemies": 4,
+      "restEnemies": 3,
+      "minRestEnemies": 2,
+      "lootPoints": 2,
+      "largeLootPoints": 3,
+      "restChance": 0.3,
+      "reserveEnemies": 2,
+      "entrySteps": 3,
+      "pointDoorBuffer": 3,
+      "minEnemySpacing": 2,
+      "maxEnemySpacing": 6,
+      "pointSpacing": 2,
+      "pointClusterRadius": 5,
+      "freeRatio": 0.6,
+      "pointAccess": 2,
+      "layoutAttempts": 1800
+    },
+    "outpostDecor": {
+      "enabled": true,
+      "minFurniture": 3,
+      "maxFurniture": 5,
+      "minMats": 1,
+      "maxMats": 2,
+      "cellsPerFurniture": 18,
+      "wallBand": 1,
+      "doorBuffer": 3,
+      "pointBuffer": 2,
+      "enemyBuffer": 2,
+      "groupRadius": 3,
+      "groupSpacing": 4,
+      "groupSize": 3,
+      "floor": {
+        "enabled": true,
+        "textureSpan": 4,
+        "largeArea": 70,
+        "accentRatio": 0.28,
+        "weights": {
+          "timber": 1,
+          "concrete": 1,
+          "industrial": 1
+        }
+      },
+      "barriers": {
+        "enabled": true,
+        "piles": true,
+        "minGroups": 1,
+        "maxGroups": 3,
+        "largeArea": 70,
+        "minLength": 2,
+        "maxLength": 4,
+        "wallClearance": 1,
+        "groupSpacing": 3,
+        "doorBuffer": 4,
+        "enemyBuffer": 1
+      },
+      "partitions": {
+        "enabled": true,
+        "maxBands": 2,
+        "gapWidth": 2,
+        "maxGapWidth": 4,
+        "doorBuffer": 3,
+        "minCells": 4,
+        "maxBlockedRatio": 0.32,
+        "minExtraSteps": 3,
+        "minRouteRatio": 1.3
+      }
+    },
+    "workshop": {
+      "enabled": true,
+      "chance": 0.45,
+      "maxPerFloor": 1,
+      "minArea": 64,
+      "maxArea": 104,
+      "minEnemies": 3,
+      "maxEnemies": 4,
+      "largeArea": 80,
+      "lootPoints": 2,
+      "aisleWidth": 2,
+      "doorBuffer": 3,
+      "layoutAttempts": 1800,
+      "terrain": {
+        "enabled": true,
+        "minBands": 2,
+        "maxBands": 2,
+        "gapWidth": 2,
+        "maxGapWidth": 3,
+        "minBandCells": 4,
+        "maxBlockedRatio": 0.32,
+        "minExtraSteps": 3,
+        "minRouteRatio": 1.35,
+        "maxCoreCandidates": 18,
+        "maxPlans": 24
+      }
+    },
+    "clinic": {
+      "enabled": true,
+      "chance": 0.45,
+      "maxPerFloor": 1,
+      "minArea": 70,
+      "maxArea": 100,
+      "minEnemies": 3,
+      "maxEnemies": 4,
+      "largeArea": 84,
+      "doorBuffer": 3,
+      "freeRatio": 0.6,
+      "maxBlockedRatio": 0.3,
+      "maxCandidates": 90,
+      "layoutAttempts": 1600
+    },
+    "canteen": {
+      "enabled": true,
+      "chance": 0.55,
+      "maxPerFloor": 1,
+      "minArea": 80,
+      "maxArea": 100,
+      "minEnemies": 3,
+      "maxEnemies": 4,
+      "largeArea": 90,
+      "minLoot": 1,
+      "maxLoot": 2,
+      "foodPoints": 2,
+      "tableDoorBuffer": 2,
+      "doorBuffer": 3,
+      "freeRatio": 0.6,
+      "maxBlockedRatio": 0.32,
+      "minExtraSteps": 2,
+      "maxCandidates": 80,
+      "layoutAttempts": 2400
+    },
+    "containers": {
+      "enabled": true,
+      "content": {
+        "primary": 3,
+        "related": 2,
+        "other": 1,
+        "forbidden": 0
+      },
+      "placement": {
+        "canteen": {
+          "food": 6,
+          "personal": 0,
+          "tools": 0,
+          "storage": 2,
+          "freight": 0,
+          "salvage": 0
+        },
+        "workshop": {
+          "food": 0,
+          "personal": 1,
+          "tools": 6,
+          "storage": 3,
+          "freight": 0,
+          "salvage": 1
+        },
+        "clinic": {
+          "food": 3,
+          "personal": 2,
+          "tools": 3,
+          "storage": 0,
+          "freight": 0,
+          "salvage": 0
+        },
+        "loot": {
+          "food": 1,
+          "personal": 2,
+          "tools": 2,
+          "storage": 5,
+          "freight": 1,
+          "salvage": 1
+        },
+        "recovery": {
+          "food": 2,
+          "personal": 3,
+          "tools": 1,
+          "storage": 3,
+          "freight": 0,
+          "salvage": 1
+        },
+        "residential": {
+          "food": 2,
+          "personal": 4,
+          "tools": 1,
+          "storage": 3,
+          "freight": 0,
+          "salvage": 1
+        },
+        "street": {
+          "food": 1,
+          "personal": 2,
+          "tools": 1,
+          "storage": 4,
+          "freight": 4,
+          "salvage": 3
+        },
+        "woodland": {
+          "food": 1,
+          "personal": 3,
+          "tools": 1,
+          "storage": 2,
+          "freight": 1,
+          "salvage": 4
+        }
+      },
+      "themeBoosts": {
+        "canteen": {
+          "food": 2,
+          "household": 1,
+          "personal": 1,
+          "repair": 1,
+          "electronics": 1,
+          "materials": 1,
+          "medical": 1,
+          "misc": 1
+        },
+        "workshop": {
+          "food": 1,
+          "household": 1,
+          "personal": 1,
+          "repair": 2,
+          "electronics": 1,
+          "materials": 1,
+          "medical": 1,
+          "misc": 1
+        },
+        "clinic": {
+          "food": 1,
+          "household": 1,
+          "personal": 1,
+          "repair": 1,
+          "electronics": 1,
+          "materials": 1,
+          "medical": 2,
+          "misc": 1
+        },
+        "loot": {
+          "food": 1,
+          "household": 1,
+          "personal": 1,
+          "repair": 1,
+          "electronics": 1,
+          "materials": 1,
+          "medical": 1,
+          "misc": 1
+        },
+        "recovery": {
+          "food": 1,
+          "household": 1,
+          "personal": 1,
+          "repair": 1,
+          "electronics": 1,
+          "materials": 1,
+          "medical": 1,
+          "misc": 1
+        },
+        "residential": {
+          "food": 1,
+          "household": 1,
+          "personal": 1,
+          "repair": 1,
+          "electronics": 1,
+          "materials": 1,
+          "medical": 1,
+          "misc": 1
+        },
+        "street": {
+          "food": 1,
+          "household": 1,
+          "personal": 1,
+          "repair": 1,
+          "electronics": 1,
+          "materials": 1,
+          "medical": 1,
+          "misc": 1
+        },
+        "woodland": {
+          "food": 1,
+          "household": 1,
+          "personal": 1,
+          "repair": 1,
+          "electronics": 1,
+          "materials": 1,
+          "medical": 1,
+          "misc": 1
+        }
+      }
+    },
+    "foodCrates": {
+      "previewItems": {
+        "resource:herb_shiitake": {
+          "category": "food",
+          "stock": 1
+        },
+        "resource:herb_chili_wild": {
+          "category": "food",
+          "stock": 1
+        },
+        "household_porcelain": {
+          "category": "household",
+          "stock": 1
+        },
+        "old_battery": {
+          "category": "electronics",
+          "stock": 1
+        }
+      }
+    },
+    "largeRooms": {
+      "enabled": true,
+      "minArea": 49,
+      "maxArea": 200,
+      "states": {
+        "full": 40,
+        "light": 40,
+        "abandoned": 20
+      },
+      "themes": {
+        "loot": 2,
+        "recovery": 1,
+        "workshop": 2,
+        "clinic": 2,
+        "canteen": 2
+      },
+      "reserveEnemies": 2,
+      "reserveOutdoorContainers": 4,
+      "light": {
+        "minEnemies": 0,
+        "maxEnemies": 2,
+        "minContainers": 1,
+        "maxContainers": 2
+      }
+    }
+  },
+  "door": {
+    "reductionPerLevel": 0.003,
+    "maxLevel": 100,
+    "materials": {
+      "wood": {
+        "name": "木门",
+        "base": 8,
+        "skill": "logging"
+      },
+      "iron": {
+        "name": "铁门",
+        "base": 12,
+        "skill": "mining"
+      }
+    }
+  },
+  "harvest": {
+    "tickMs": 1500,
+    "skillMaxLevel": 100,
+    "skillMaxReduction": 0.3,
+    "toolReduction": 0,
+    "profiles": {
+      "food": {
+        "cost": 4,
+        "uses": [
+          6,
+          10
+        ]
+      },
+      "herb": {
+        "cost": 4,
+        "uses": [
+          3,
+          5
+        ]
+      },
+      "root": {
+        "cost": 6,
+        "uses": [
+          3,
+          5
+        ]
+      },
+      "salt": {
+        "cost": 6,
+        "uses": [
+          4,
+          6
+        ]
+      },
+      "clay": {
+        "cost": 12,
+        "uses": [
+          2,
+          3
+        ]
+      },
+      "ore": {
+        "cost": 16,
+        "uses": [
+          1,
+          2
+        ]
+      },
+      "shrub": {
+        "cost": 4,
+        "uses": [
+          3,
+          5
+        ]
+      },
+      "deadwood": {
+        "cost": 6,
+        "uses": [
+          3,
+          5
+        ]
+      },
+      "timber": {
+        "cost": 12,
+        "uses": [
+          2,
+          3
+        ]
+      },
+      "rare": {
+        "cost": 4,
+        "uses": [
+          1,
+          3
+        ]
+      }
+    }
+  },
+  "reward": {
+    "door": 10,
+    "kill": 5,
+    "point": 5
+  },
+  "recovery": {
+    "water": {
+      "uses": 2,
+      "ticks": 1,
+      "amount": 30,
+      "action": "饮水"
+    },
+    "stove": {
+      "uses": 1,
+      "ticks": 2,
+      "amount": 40,
+      "digestionTicks": 25,
+      "action": "进食"
+    },
+    "medical": {
+      "uses": 1,
+      "ticks": 4,
+      "ratio": 0.2,
+      "action": "治疗"
+    },
+    "rest": {
+      "uses": 1,
+      "ticks": 8,
+      "amount": 20,
+      "action": "休息"
+    },
+    "campfire": {
+      "kind": "stove",
+      "uses": 1,
+      "ticks": 2,
+      "amount": 20,
+      "digestionTicks": 13,
+      "digestionRate": 1.6,
+      "action": "进食"
+    },
+    "kettle": {
+      "kind": "water",
+      "uses": 2,
+      "ticks": 1,
+      "amount": 15,
+      "action": "饮水"
+    }
+  },
+  "search": {
+    "tickMs": 1500,
+    "container": {
+      "emptyChance": 0.4,
+      "weights": [
+        0.6,
+        0.3,
+        0.1
+      ],
+      "openingTicks": 1,
+      "emptyReductionPerLevel": 0.002
+    },
+    "corpse": {
+      "emptyChance": 0.2,
+      "weights": [
+        0.3,
+        0.45,
+        0.2,
+        0.05
+      ]
+    },
+    "rarities": {
+      "common": {
+        "name": "常见",
+        "ticks": 1,
+        "color": "#DDE6D7"
+      },
+      "uncommon": {
+        "name": "较少见",
+        "ticks": 2,
+        "color": "#72D8B5"
+      },
+      "rare": {
+        "name": "稀有",
+        "ticks": 3,
+        "color": "#BE99FF"
+      },
+      "exceptional": {
+        "name": "极稀有",
+        "ticks": 5,
+        "color": "#FFCC73"
+      },
+      "legendary": {
+        "name": "传说",
+        "ticks": 8,
+        "color": "#FF5158"
+      }
+    },
+    "commission": 0.3,
+    "revealPauseMs": 420,
+    "pickupMs": 550,
+    "bagOpeningMs": 800,
+    "bagRevealMs": 700
+  },
+  "pool": {
+    "version": 1,
+    "batches": [
+      {
+        "id": "sewing-accessory-supplies-v1",
+        "items": [
+          {
+            "item_id": "sewing_straw",
+            "stock": 60,
+            "category": "materials",
+            "rarity": "common"
+          },
+          {
+            "item_id": "sewing_rubber_sheet",
+            "stock": 120,
+            "category": "materials",
+            "rarity": "common"
+          },
+          {
+            "item_id": "sewing_shoe_nails",
+            "stock": 40,
+            "category": "repair",
+            "rarity": "uncommon"
+          },
+          {
+            "item_id": "sewing_toe_cap",
+            "stock": 24,
+            "category": "repair",
+            "rarity": "uncommon"
+          }
+        ]
+      }
+    ]
+  },
+  "tickets": [],
+  "clues": [],
+  "insuranceEnabled": false,
+  "themesEnabled": false,
+  "skillIds": {
+    "gathering": "life_gathering",
+    "mining": "life_mining",
+    "logging": "life_logging",
+    "search": "survival_search"
+  },
+  "tools": {},
+  "enemy": {
+    "lossTicks": 3,
+    "healPerTick": 8
+  },
+  "entryNpcId": "npc.checkpoint.ruins",
+  "populationSource": "data/street-thug-spawn.json",
+  "recipeStudyRangesSource": "data/dungeon-recipe-ranges.json"
+}

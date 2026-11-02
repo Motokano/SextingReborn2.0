@@ -1,0 +1,16 @@
+{
+  "id": "wall-peeling-workshop",
+  "name": "旧厂房墙",
+  "prompt": "Create ONE square opaque seamless material texture filling every pixel. Reference 1 and 2 are approved final hand-painted environment materials; match broad brush-shaped masses and restrained contrast. Other refs guide painted contours and volume but DO NOT draw any prop or character. Factory wall surface, upper two-thirds aged beige plaster, lower third dull teal paint with irregular peeling boundary and a little rust drip from an old removed fixture; no actual fixtures, text or graffiti. Orthographic flat material swatch; NO isometric diamond, camera perspective, pedestal, lighting gradient, border, transparent area, text, rendered room, object shadow, photoreal micro-noise or PBR specular. Large readable painted shapes; visible but subdued wear, not neat showroom. Edges should tile or mirror smoothly.",
+  "references": [
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/street-thug-boss-room-v6/painted-plaster.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/street-thug-boss-room-v6/painted-concrete.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/street-thugs-v1/tier-1.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/map/isometric/interactive-devices-v1/warehouse.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/street-thug-boss-room-v6/private-cache.png"
+  ],
+  "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-a3bea14e-fd9f-4a8f-ac65-e1a074cb9d6a.png",
+  "tool": "built-in image_gen",
+  "status": "registered-current",
+  "appliedFile": "wall-peeling-workshop.png"
+}

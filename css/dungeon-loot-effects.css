@@ -1,0 +1,146 @@
+/* 已揭晓的物品与背包共用色彩；背包只保留静态淡光晕。 */
+:is(.loot-row,.allocation-row,.bag-slot.filled){--loot-glow:221,230,215}
+:is(.loot-row,.allocation-row,.bag-slot.filled)[data-rarity=uncommon]{--loot-glow:114,216,181}
+:is(.loot-row,.allocation-row,.bag-slot.filled)[data-rarity=rare]{--loot-glow:190,153,255}
+:is(.loot-row,.allocation-row,.bag-slot.filled)[data-rarity=exceptional]{--loot-glow:255,204,115}
+:is(.loot-row,.allocation-row,.bag-slot.filled)[data-rarity=legendary]{--loot-glow:255,81,88}
+:is(.loot-row,.allocation-row){--reveal-duration:700;--reveal-x:24px;--bloom-strength:.18;isolation:isolate;position:relative}
+:is(.loot-row,.allocation-row)[data-rarity=uncommon]{--reveal-duration:1800;--bloom-strength:.38;border-color:rgba(var(--loot-glow),.3);background:linear-gradient(105deg,rgba(var(--loot-glow),.08),transparent 75%)}
+:is(.loot-row,.allocation-row)[data-rarity=rare]{--reveal-duration:2800;--bloom-strength:.58;border-color:rgba(var(--loot-glow),.4);background:linear-gradient(105deg,rgba(var(--loot-glow),.13),transparent 85%)}
+:is(.loot-row,.allocation-row)[data-rarity=exceptional]{--reveal-duration:4000;--bloom-strength:.75;border-color:rgba(var(--loot-glow),.5);background:linear-gradient(105deg,rgba(var(--loot-glow),.17),rgba(var(--loot-glow),.035))}
+:is(.loot-row,.allocation-row)[data-rarity=legendary]{--reveal-duration:4800;--bloom-strength:.85;border-color:rgba(var(--loot-glow),.68);background:linear-gradient(105deg,rgba(var(--loot-glow),.2),rgba(var(--loot-glow),.045))}
+:is(.loot-row,.allocation-row):not([data-rarity=common]) .item-art{color:rgb(var(--loot-glow));background:radial-gradient(ellipse,rgba(var(--loot-glow),.13),#131b164d 80%)}
+:is(.loot-row,.allocation-row)[data-rarity=rare] .item-art svg,:is(.loot-row,.allocation-row)[data-rarity=exceptional] .item-art svg{filter:drop-shadow(0 0 4px rgba(var(--loot-glow),.4))}
+:is(.loot-row,.allocation-row)>:not(.loot-flare){position:relative;z-index:2}
+:is(.loot-row,.allocation-row).loot-discovered{animation:loot-arrive .38s cubic-bezier(.16,1,.3,1),loot-edge calc(var(--reveal-duration)*1ms) ease-out}
+.loot-flare{position:absolute;inset:0;border-radius:inherit;overflow:hidden;pointer-events:none;z-index:1}
+.loot-flare i{position:absolute;display:block;pointer-events:none;opacity:0}
+.reveal-bloom{inset:0;background:radial-gradient(ellipse 120px 75px at var(--reveal-x) 50%,rgba(var(--loot-glow),var(--bloom-strength)),transparent 90%);animation:loot-bloom calc(var(--reveal-duration)*1ms) ease-out}
+.reveal-sweep{inset:-60% -35%;background:linear-gradient(110deg,transparent 42%,rgba(var(--loot-glow),.08) 46%,rgba(var(--loot-glow),.36) 50%,rgba(var(--loot-glow),.08) 54%,transparent 58%);animation:loot-sweep 1.25s cubic-bezier(.15,.6,.25,1) 120ms}
+.reveal-ring{left:var(--reveal-x);top:50%;width:30px;height:30px;margin:-15px;border:1px solid rgba(var(--loot-glow),.9);border-radius:50%;box-shadow:0 0 10px rgba(var(--loot-glow),.5),inset 0 0 7px rgba(var(--loot-glow),.18);animation:loot-ring 1.4s cubic-bezier(.16,.7,.24,1) 90ms}
+.reveal-ring.echo{animation-delay:240ms;animation-duration:1.75s}
+.reveal-ring.final{animation-delay:490ms;animation-duration:2.1s}
+.reveal-spark{left:var(--reveal-x);top:50%;width:3px;height:3px;border-radius:50%;background:#fff6e6;box-shadow:0 0 5px 2px rgba(var(--loot-glow),.65);animation:loot-spark 1.55s cubic-bezier(.12,.6,.24,1) var(--lag)}
+.reveal-core{left:var(--reveal-x);top:50%;width:58px;height:58px;margin:-29px;background:radial-gradient(circle,#fff8e4b3 0,rgba(var(--loot-glow),.5) 16%,rgba(var(--loot-glow),.15) 36%,transparent 67%);animation:loot-core .7s ease-out 50ms}
+.reveal-rays{left:var(--reveal-x);top:50%;width:200px;height:200px;margin:-100px;background:repeating-conic-gradient(from 10deg,transparent 0deg 18deg,rgba(var(--loot-glow),.5) 19deg 20deg,transparent 23deg 30deg);mask-image:radial-gradient(circle,transparent 13%,#000 20%,#0008 38%,transparent 68%);animation:loot-rays 2.1s ease-out 100ms}
+.reveal-orbit{left:var(--reveal-x);top:50%;width:43px;height:43px;margin:-21.5px;border:1px solid rgba(var(--loot-glow),.65);border-radius:50%;border-left-color:transparent;border-right-color:transparent;box-shadow:0 0 7px rgba(var(--loot-glow),.2);animation:loot-orbit 1.7s ease-out 90ms}
+.reveal-lens{left:0;right:0;top:50%;height:1px;background:linear-gradient(90deg,transparent,rgba(var(--loot-glow),.5) 8%,#fff5dcbb 14%,rgba(var(--loot-glow),.24) 48%,transparent 85%);box-shadow:0 0 8px 1px rgba(var(--loot-glow),.35);transform-origin:var(--reveal-x) 50%;animation:loot-lens 1.5s ease-out 120ms}
+.reveal-trace{top:0;left:0;width:35%;height:1px;background:linear-gradient(90deg,transparent,rgba(var(--loot-glow),.6),#fff6de);box-shadow:0 0 5px rgba(var(--loot-glow),.8);animation:loot-trace 1.6s ease-out 170ms}
+.reveal-trace.lower{top:auto;bottom:0;left:auto;right:0;transform:rotate(180deg);animation-name:loot-trace-reverse}
+.reveal-mote{left:var(--mx);top:var(--my);width:3px;height:3px;background:rgb(var(--loot-glow));box-shadow:0 0 5px rgba(var(--loot-glow),.5);animation:loot-mote 1.7s ease-out var(--lag)}
+:is(.loot-row,.allocation-row)[data-rarity=common] .loot-flare i:not(.reveal-bloom):not(.reveal-core){display:none}
+:is(.loot-row,.allocation-row)[data-rarity=uncommon] :is(.reveal-rays,.reveal-ring.final,.reveal-lens){display:none}
+:is(.loot-row,.allocation-row)[data-rarity=uncommon] .reveal-spark{animation-duration:1.25s}
+:is(.loot-row,.allocation-row)[data-rarity=uncommon] .reveal-mote{animation-duration:1s}
+:is(.loot-row,.allocation-row)[data-rarity=uncommon] .reveal-ring.echo{animation-duration:1.25s}
+:is(.loot-row,.allocation-row)[data-rarity=uncommon] .reveal-orbit{animation-duration:1.45s}
+:is(.loot-row,.allocation-row)[data-rarity=uncommon] .reveal-trace{animation-duration:1.4s}
+:is(.loot-row,.allocation-row)[data-rarity=rare] .reveal-ring.final{display:none}
+:is(.loot-row,.allocation-row)[data-rarity=rare] .reveal-ring.echo{border-radius:4px;animation-name:loot-facet}
+:is(.loot-row,.allocation-row)[data-rarity=rare] .reveal-rays{background:repeating-conic-gradient(from 22deg,transparent 0deg 40deg,rgba(var(--loot-glow),.4) 42deg 44deg,transparent 45deg 60deg)}
+:is(.loot-row,.allocation-row)[data-rarity=rare] .reveal-spark{width:5px;height:8px;clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%);background:linear-gradient(#f8eeff,rgb(var(--loot-glow)))}
+:is(.loot-row,.allocation-row)[data-rarity=exceptional] .reveal-rays{width:270px;height:270px;margin:-135px;animation-duration:2.9s;background:repeating-conic-gradient(from -8deg,transparent 0deg 12deg,#ffe9b07a 13deg 15deg,transparent 19deg 24deg)}
+:is(.loot-row,.allocation-row)[data-rarity=exceptional] .reveal-bloom{background:radial-gradient(ellipse 160px 90px at var(--reveal-x) 50%,rgba(var(--loot-glow),.65),rgba(240,152,55,.18) 55%,transparent 85%)}
+:is(.loot-row,.allocation-row)[data-rarity=exceptional] .reveal-sweep{animation-duration:1.7s;background:linear-gradient(110deg,transparent 41%,rgba(var(--loot-glow),.08) 46%,#ffedbc88 50%,rgba(var(--loot-glow),.08) 54%,transparent 59%)}
+:is(.loot-row,.allocation-row)[data-rarity=exceptional] .reveal-ring{width:36px;height:36px;margin:-18px;border-color:#ffe6a9}
+:is(.loot-row,.allocation-row)[data-rarity=exceptional] .reveal-ring.echo{border-width:2px}
+:is(.loot-row,.allocation-row)[data-rarity=exceptional] .reveal-orbit{width:49px;height:49px;margin:-24.5px;border-style:double;border-width:3px;animation-duration:2.6s}
+:is(.loot-row,.allocation-row)[data-rarity=exceptional] .reveal-spark{width:8px;height:8px;margin:-4px;clip-path:polygon(50% 0,61% 38%,100% 50%,61% 62%,50% 100%,39% 62%,0 50%,39% 38%);animation-duration:2.3s}
+:is(.loot-row,.allocation-row)[data-rarity=exceptional] .reveal-mote{width:5px;height:5px;background:#ffe7a9;clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%);animation-duration:2.25s}
+:is(.loot-row,.allocation-row)[data-rarity=exceptional] .reveal-trace{height:2px;animation-duration:2.1s}
+:is(.loot-row,.allocation-row)[data-rarity=exceptional] .reveal-lens{animation-duration:2.4s}
+:is(.loot-row,.allocation-row)[data-rarity=legendary] .item-art svg{filter:drop-shadow(0 0 5px rgba(var(--loot-glow),.55))}
+:is(.loot-row,.allocation-row)[data-rarity=legendary] .reveal-bloom{background:radial-gradient(ellipse 200px 110px at var(--reveal-x) 50%,#ffc2bc88,rgba(var(--loot-glow),.6) 23%,transparent 83%)}
+:is(.loot-row,.allocation-row)[data-rarity=legendary] .reveal-rays{width:320px;height:320px;margin:-160px;animation-duration:3.5s;background:repeating-conic-gradient(from 0deg,transparent 0deg 9deg,#ff6569bb 10deg 14deg,transparent 18deg 24deg)}
+:is(.loot-row,.allocation-row)[data-rarity=legendary] .reveal-spark{width:6px;height:10px;background:linear-gradient(#ffe2dc,#ff5158);clip-path:polygon(50% 0,100% 65%,50% 100%,0 65%);animation-duration:3.3s}
+:is(.loot-row,.allocation-row)[data-rarity=legendary] .reveal-mote{width:4px;height:6px;background:#ff7b79;animation-duration:3.5s}
+:is(.loot-row,.allocation-row)[data-rarity=legendary] .reveal-orbit{border-width:2px;width:56px;height:56px;margin:-28px;animation-duration:3.1s}
+:is(.loot-row,.allocation-row)[data-rarity=legendary] .reveal-ring.final{animation-delay:1.2s;animation-duration:2.8s;border-width:2px}
+:is(.loot-row,.allocation-row)[data-rarity=legendary] .reveal-lens{animation-duration:3.2s;background:linear-gradient(90deg,transparent,#ffb2a7cc 14%,#ff51588c 48%,transparent 90%)}
+:is(.loot-row,.allocation-row).loot-discovered:not([data-rarity=common]) .item-art svg{animation:loot-icon calc(var(--reveal-duration)*1ms) ease-out}
+@keyframes loot-arrive{from{opacity:.4;transform:translateY(4px)}to{opacity:1;transform:none}}
+@keyframes loot-edge{0%{box-shadow:inset 0 0 0 1px rgba(var(--loot-glow),.05)}12%{box-shadow:inset 0 0 24px rgba(var(--loot-glow),.22),inset 0 0 0 1px rgba(var(--loot-glow),.9)}45%{box-shadow:inset 0 0 16px rgba(var(--loot-glow),.1),inset 0 0 0 1px rgba(var(--loot-glow),.5)}100%{box-shadow:inset 0 0 0 1px rgba(var(--loot-glow),0)}}
+@keyframes loot-bloom{0%{opacity:0}9%{opacity:1}38%{opacity:.55}100%{opacity:0}}
+@keyframes loot-sweep{0%{opacity:0;transform:translateX(-65%)}18%{opacity:1}70%{opacity:.7}100%{opacity:0;transform:translateX(65%)}}
+@keyframes loot-ring{0%{opacity:0;transform:scale(.3)}13%{opacity:.9}100%{opacity:0;transform:scale(3.7)}}
+@keyframes loot-spark{0%{opacity:0;transform:translate(0,0) rotate(var(--spin)) scale(.15)}12%{opacity:1}60%{opacity:.8}100%{opacity:0;transform:translate(var(--dx),var(--dy)) rotate(calc(var(--spin) + 55deg)) scale(.15)}}
+@keyframes loot-icon{0%{transform:scale(.84);filter:drop-shadow(0 0 0 rgba(var(--loot-glow),0))}10%{transform:scale(1.23);filter:drop-shadow(0 0 9px rgba(var(--loot-glow),.95))}27%{transform:scale(1.04);filter:drop-shadow(0 0 6px rgba(var(--loot-glow),.7))}100%{transform:scale(1);filter:drop-shadow(0 0 3px rgba(var(--loot-glow),.25))}}
+@keyframes loot-core{0%{opacity:0;transform:scale(.15)}18%{opacity:.85;transform:scale(.8)}100%{opacity:0;transform:scale(1.7)}}
+@keyframes loot-rays{0%{opacity:0;transform:rotate(-25deg) scale(.25)}13%{opacity:1;transform:rotate(-10deg) scale(.8)}100%{opacity:0;transform:rotate(48deg) scale(1.1)}}
+@keyframes loot-orbit{0%{opacity:0;transform:rotate(-80deg) scale(.35)}15%{opacity:.95}100%{opacity:0;transform:rotate(140deg) scale(1.5)}}
+@keyframes loot-lens{0%{opacity:0;transform:scaleX(.1)}12%{opacity:.8}65%{opacity:.25}100%{opacity:0;transform:scaleX(1)}}
+@keyframes loot-trace{0%{opacity:0;transform:translateX(-100%)}15%,60%{opacity:1}100%{opacity:0;transform:translateX(300%)}}
+@keyframes loot-trace-reverse{0%{opacity:0;transform:rotate(180deg) translateX(-100%)}15%,60%{opacity:1}100%{opacity:0;transform:rotate(180deg) translateX(300%)}}
+@keyframes loot-mote{0%{opacity:0;transform:translateY(5px) rotate(var(--spin)) scale(.2)}20%{opacity:.8;transform:translateY(0) rotate(var(--spin)) scale(1)}100%{opacity:0;transform:translateY(var(--lift)) rotate(calc(var(--spin) + 70deg)) scale(.25)}}
+@keyframes loot-facet{0%{opacity:0;transform:rotate(45deg) scale(.25)}15%{opacity:.8}100%{opacity:0;transform:rotate(95deg) scale(2.6)}}
+/* One reveal can light the small window, without covering the map or intercepting clicks. */
+:is(.loot-window,.recovery-window):has(.loot-discovered[data-rarity=rare]){border-color:#d6aaffbb;box-shadow:0 18px 50px #08100bb3,0 0 42px #be99ff38,inset 0 0 24px #be99ff12}
+:is(.loot-window,.recovery-window):has(.loot-discovered[data-rarity=exceptional]){border-color:#ffe3a2;box-shadow:0 18px 50px #08100bb3,0 0 65px #ffbf5a55,0 0 18px #ffcc7355,inset 0 0 38px #ffe4a922}
+:is(.loot-window,.recovery-window):has(.loot-discovered[data-rarity=legendary]){border-color:#ff8185;box-shadow:0 18px 50px #08100bb3,0 0 78px #f42d465c,0 0 22px #ff51586b,inset 0 0 42px #ff515826}
+:is(.loot-row,.allocation-row).loot-discovered .item-name,:is(.loot-row,.allocation-row).loot-discovered .allocation-item-name{text-shadow:0 1px 3px #07110b,0 0 5px #07110b80}
+.bag-slot.filled[data-rarity]{--bag-glow:.12;--bag-edge:.28;--bag-icon:.2;background:radial-gradient(ellipse at 50% 46%,rgba(var(--loot-glow),var(--bag-glow)),transparent 73%),linear-gradient(145deg,#30382b80,#1d261db3);border-color:rgba(var(--loot-glow),var(--bag-edge));box-shadow:inset 0 0 10px rgba(var(--loot-glow),.04),0 0 5px rgba(var(--loot-glow),.06);color:rgba(var(--loot-glow),.85)}
+.bag-slot.filled[data-rarity=common]{--bag-glow:.045;--bag-edge:.18;--bag-icon:.06}
+.bag-slot.filled[data-rarity=rare]{--bag-glow:.15;--bag-edge:.32;--bag-icon:.25}
+.bag-slot.filled[data-rarity=exceptional]{--bag-glow:.17;--bag-edge:.36;--bag-icon:.3}
+.bag-slot.filled[data-rarity=legendary]{--bag-glow:.18;--bag-edge:.4;--bag-icon:.32}
+.bag-slot.filled[data-rarity] svg{filter:drop-shadow(0 0 3px rgba(var(--loot-glow),var(--bag-icon)))}
+.bag-slot.filled[data-rarity].received{animation:bag-stow .55s ease-out}
+@keyframes bag-stow{from{box-shadow:inset 0 0 14px rgba(var(--loot-glow),.24),0 0 5px rgba(var(--loot-glow),.15)}to{box-shadow:inset 0 0 10px rgba(var(--loot-glow),.04),0 0 5px rgba(var(--loot-glow),.06)}}
+@media(max-width:600px){:is(.loot-row,.allocation-row){--reveal-x:20px}}
+@media(prefers-reduced-motion:reduce){.loot-flare{display:none}:is(.loot-row,.allocation-row).loot-discovered{box-shadow:inset 0 0 14px rgba(var(--loot-glow),.14)}}
+
+/* Projected reward light escapes item/list clipping. It never receives input. */
+.loot-burst{position:fixed;inset:0;z-index:80;pointer-events:none;overflow:hidden;contain:strict}
+.loot-burst *{pointer-events:none}
+.burst-origin{position:absolute;left:var(--origin-x);top:var(--origin-y);width:0;height:0;--field:210px;--ring:100px;--beam:180px}
+.loot-burst[data-rarity=rare] .burst-origin{--field:330px;--ring:160px;--beam:240px}
+.loot-burst[data-rarity=exceptional] .burst-origin{--field:460px;--ring:240px;--beam:320px}
+.loot-burst[data-rarity=legendary] .burst-origin{--field:540px;--ring:280px;--beam:370px}
+.burst-origin i{display:block;position:absolute;opacity:0}
+.burst-aura{width:var(--field);height:var(--field);left:calc(var(--field)/-2);top:calc(var(--field)/-2);background:radial-gradient(circle,rgba(var(--loot-glow),.5),rgba(var(--loot-glow),.2) 16%,rgba(var(--loot-glow),.07) 36%,transparent 69%);animation:burst-aura var(--burst-duration) ease-out}
+.burst-corona{width:var(--field);height:var(--field);left:calc(var(--field)/-2);top:calc(var(--field)/-2);background:repeating-conic-gradient(from 6deg,transparent 0deg 12deg,rgba(var(--loot-glow),.65) 13deg 17deg,transparent 20deg 30deg);mask-image:radial-gradient(circle,transparent 8%,#000c 20%,#0005 42%,transparent 67%);animation:burst-corona var(--burst-duration) cubic-bezier(.15,.55,.3,1)}
+.burst-beam{width:58px;height:var(--beam);left:-29px;bottom:-24px;transform-origin:50% calc(100% - 24px);background:linear-gradient(0deg,transparent,rgba(var(--loot-glow),.5) 12%,rgba(var(--loot-glow),.16) 54%,transparent),linear-gradient(90deg,transparent,rgba(var(--loot-glow),.2) 28%,#fff6ddc0 50%,rgba(var(--loot-glow),.2) 72%,transparent);mask-image:linear-gradient(0deg,#000 20%,#0009 60%,transparent);clip-path:polygon(22% 100%,0 0,100% 0,78% 100%);animation:burst-beam var(--burst-duration) cubic-bezier(.18,.7,.2,1)}
+.burst-beam.thin{width:4px;left:-2px;height:calc(var(--beam)*.88);background:linear-gradient(0deg,transparent,#fffbed 16%,rgba(var(--loot-glow),.9) 45%,transparent);clip-path:none;filter:drop-shadow(0 0 6px rgb(var(--loot-glow)));animation-delay:100ms;animation-duration:calc(var(--burst-duration) - 150ms)}
+.burst-shockwave{width:var(--ring);height:var(--ring);left:calc(var(--ring)/-2);top:calc(var(--ring)/-2);border:2px solid rgba(var(--loot-glow),.9);border-radius:50%;box-shadow:0 0 12px rgba(var(--loot-glow),.65),inset 0 0 12px rgba(var(--loot-glow),.35);animation:burst-ring calc(var(--burst-duration)*.65) cubic-bezier(.1,.65,.2,1) 60ms}
+.burst-shockwave.second{border-width:1px;animation-delay:240ms;animation-duration:calc(var(--burst-duration)*.72)}
+.burst-shockwave.third{border-style:dashed;animation-delay:460ms;animation-duration:calc(var(--burst-duration)*.77)}
+.burst-star{width:124px;height:124px;left:-62px;top:-62px;background:linear-gradient(90deg,transparent,#fffef2,transparent);clip-path:polygon(50% 0,54% 43%,100% 50%,54% 57%,50% 100%,46% 57%,0 50%,46% 43%);filter:drop-shadow(0 0 7px rgb(var(--loot-glow)));animation:burst-star 1.4s ease-out 100ms}
+.burst-particle{width:var(--size);height:calc(var(--size)*1.5);left:calc(var(--size)/-2);top:calc(var(--size)/-2);background:linear-gradient(#fffbed,rgb(var(--loot-glow)));box-shadow:0 0 7px 2px rgba(var(--loot-glow),.7);border-radius:1px;animation:burst-particle calc(var(--burst-duration) - 600ms) cubic-bezier(.12,.5,.23,1) var(--delay)}
+.burst-streak{left:0;top:-1px;width:calc(var(--ring)*.65);height:2px;transform-origin:0 50%;background:linear-gradient(90deg,transparent,rgba(var(--loot-glow),.1) 25%,rgba(var(--loot-glow),.8) 70%,#fff4d9);box-shadow:0 0 5px rgba(var(--loot-glow),.55);animation:burst-streak calc(var(--burst-duration)*.6) ease-out var(--delay)}
+.loot-burst[data-rarity=uncommon] :is(.burst-beam,.burst-corona,.burst-shockwave.third,.burst-star){display:none}
+.loot-burst[data-rarity=rare] .burst-shockwave{border-radius:12%;transform:rotate(45deg);animation-name:burst-facet}
+.loot-burst[data-rarity=rare] .burst-shockwave.third{display:none}
+.loot-burst[data-rarity=rare] .burst-particle{clip-path:polygon(50% 0,100% 40%,50% 100%,0 40%);width:calc(var(--size)*1.4);height:calc(var(--size)*2.3)}
+.loot-burst[data-rarity=rare] .burst-corona{background:repeating-conic-gradient(from 18deg,transparent 0deg 40deg,rgba(var(--loot-glow),.8) 42deg 47deg,transparent 50deg 60deg)}
+.loot-burst[data-rarity=exceptional] .burst-particle{width:calc(var(--size)*1.7);height:calc(var(--size)*1.7);clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%)}
+.loot-burst[data-rarity=exceptional] .burst-star{width:184px;height:184px;left:-92px;top:-92px;animation-duration:2.1s}
+.loot-burst[data-rarity=exceptional] .burst-corona{background:repeating-conic-gradient(from -6deg,transparent 0deg 9deg,#ffe6a0b0 11deg 15deg,transparent 19deg 24deg)}
+.loot-burst[data-rarity=legendary] .burst-aura{background:radial-gradient(circle,#ffb8b3a6,rgba(var(--loot-glow),.38) 15%,#f42d461a 42%,transparent 70%)}
+.loot-burst[data-rarity=legendary] .burst-corona{background:repeating-conic-gradient(from -12deg,transparent 0deg 8deg,#ff676cd9 9deg 13deg,transparent 18deg 24deg)}
+.loot-burst[data-rarity=legendary] .burst-beam:not(.thin){width:96px;left:-48px;background:linear-gradient(0deg,transparent,#ff5158ba 12%,#ed263c44 65%,transparent),linear-gradient(90deg,transparent,#ff51589c 22%,#ffe8e3d9 50%,#ff51589c 78%,transparent)}
+.loot-burst[data-rarity=legendary] .burst-beam.thin{width:7px;left:-3.5px;background:linear-gradient(0deg,transparent,#ffe3db 15%,#ff5158 60%,transparent)}
+.loot-burst[data-rarity=legendary] .burst-star{width:204px;height:204px;left:-102px;top:-102px;animation-duration:2.3s;background:radial-gradient(circle,#fff3e6,#ff9690 40%,transparent 72%)}
+.loot-burst[data-rarity=legendary] .burst-shockwave{border-color:#ff898b;border-width:2px;box-shadow:0 0 16px #ff51589c,inset 0 0 16px #ff515847}
+.loot-burst[data-rarity=legendary] .burst-shockwave.third{animation-delay:1.15s;animation-duration:3.3s;border-style:double;border-width:3px}
+.loot-burst[data-rarity=legendary] .burst-particle{width:var(--size);height:calc(var(--size)*2);background:linear-gradient(#ffd6c9,#ff5158 48%,#a41533);clip-path:polygon(50% 0,100% 68%,65% 100%,0 74%)}
+.loot-burst[data-rarity=legendary] .burst-streak{height:3px;background:linear-gradient(90deg,transparent,rgba(var(--loot-glow),.2) 30%,#ff777bcc 76%,#ffccbf)}
+.burst-sigil{width:204px;height:204px;left:-102px;top:-102px;border:1px solid #ffb4b29c;border-radius:50%;background:repeating-conic-gradient(from 0deg,#ffb4b2 0deg 2deg,transparent 2deg 14deg,#ff5158d9 14deg 17deg,transparent 17deg 30deg);mask-image:radial-gradient(circle,transparent 61%,#000 62%,#000 70%,transparent 71%);animation:burst-sigil 4.2s ease-out .25s}
+.burst-sigil.inner{width:148px;height:148px;left:-74px;top:-74px;border-radius:12%;background:repeating-conic-gradient(#ffc6b6 0deg 2deg,transparent 2deg 45deg);animation-name:burst-sigil-reverse}
+.burst-crown{width:180px;height:180px;left:-90px;top:-90px;border:2px solid #ffc5b2b3;border-radius:14%;box-shadow:0 0 16px #ff5158a6,inset 0 0 18px #ff51584d;animation:burst-crown 3.3s ease-out 1.15s}
+@keyframes burst-sigil{0%{opacity:0;transform:scale(.2) rotate(-35deg)}18%{opacity:.95;transform:scale(.85) rotate(0)}55%{opacity:.8}100%{opacity:0;transform:scale(1.13) rotate(80deg)}}
+@keyframes burst-sigil-reverse{0%{opacity:0;transform:scale(.2) rotate(50deg)}18%{opacity:.95;transform:scale(.85) rotate(15deg)}55%{opacity:.8}100%{opacity:0;transform:scale(1.13) rotate(-75deg)}}
+@keyframes burst-crown{0%{opacity:0;transform:rotate(45deg) scale(.1)}16%{opacity:.95}55%{opacity:.5}100%{opacity:0;transform:rotate(90deg) scale(1.4)}}
+@keyframes burst-aura{0%{opacity:0;transform:scale(.2)}9%{opacity:1;transform:scale(.85)}25%{opacity:.85;transform:scale(1)}65%{opacity:.35}100%{opacity:0;transform:scale(1.16)}}
+@keyframes burst-corona{0%{opacity:0;transform:rotate(-20deg) scale(.2)}10%{opacity:.95;transform:rotate(-10deg) scale(.8)}36%{opacity:.65}100%{opacity:0;transform:rotate(26deg) scale(1.2)}}
+@keyframes burst-beam{0%{opacity:0;transform:scale(.3,.05)}8%{opacity:1;transform:scale(.9,.95)}22%{opacity:.8;transform:scale(1,1)}60%{opacity:.35}100%{opacity:0;transform:scale(.4,1.1)}}
+@keyframes burst-ring{0%{opacity:0;transform:scale(.08)}12%{opacity:1}50%{opacity:.6}100%{opacity:0;transform:scale(1.25)}}
+@keyframes burst-facet{0%{opacity:0;transform:rotate(20deg) scale(.08)}12%{opacity:1}50%{opacity:.65}100%{opacity:0;transform:rotate(70deg) scale(1.15)}}
+@keyframes burst-star{0%{opacity:0;transform:scale(.05) rotate(-15deg)}14%{opacity:1;transform:scale(1) rotate(0)}45%{opacity:.65}100%{opacity:0;transform:scale(.4) rotate(22deg)}}
+@keyframes burst-particle{0%{opacity:0;transform:translate(0,0) rotate(var(--turn)) scale(.1)}12%{opacity:1}60%{opacity:.9}100%{opacity:0;transform:translate(var(--px),var(--py)) rotate(calc(var(--turn) + 120deg)) scale(.2)}}
+@keyframes burst-streak{0%{opacity:0;transform:rotate(var(--angle)) scaleX(.04)}15%{opacity:.9;transform:rotate(var(--angle)) scaleX(.65)}100%{opacity:0;transform:rotate(var(--angle)) scaleX(1.15)}}
+.reveal-sound-button{flex:0 0 28px;width:28px;height:28px;padding:5px;color:#bbc6ad}
+.reveal-sound-button svg{width:18px;height:18px;display:block}
+.reveal-sound-button[aria-pressed=false]{color:#7c8978}
+.reveal-sound-button:focus-visible{outline:1px solid #d6c197;outline-offset:2px}
+@media(max-width:600px){.burst-origin{transform:scale(.8)}.loot-burst[data-rarity=exceptional] .burst-origin{transform:scale(.75)}.loot-burst[data-rarity=legendary] .burst-origin{transform:scale(.68)}}
+@media(prefers-reduced-motion:reduce){.loot-burst{display:none}}

@@ -1,0 +1,50 @@
+[
+  {
+    "state": "archive-shelf",
+    "source": "assets/dungeon/recipe-study-room-art-v1/archive-shelf.png",
+    "width": 1254,
+    "height": 1254,
+    "alphaBounds": [
+      255,
+      53,
+      1041,
+      1212
+    ],
+    "transparent": 945969,
+    "opaque": 1775,
+    "partial": 624772,
+    "sha256": "ab548b5e01a95f35768b8ffbfcce5b200162f84cc026ee120075d8098d30a541"
+  },
+  {
+    "state": "drawing-rolls",
+    "source": "assets/dungeon/recipe-study-room-art-v1/drawing-rolls.png",
+    "width": 1254,
+    "height": 1254,
+    "alphaBounds": [
+      209,
+      140,
+      1090,
+      1149
+    ],
+    "transparent": 1037538,
+    "opaque": 945,
+    "partial": 534033,
+    "sha256": "e5415fbaa5cbfa66571fa0e8af9d522604cc662ab40bf7a1ea0120b4e8b142f9"
+  },
+  {
+    "state": "patched-stool",
+    "source": "assets/dungeon/recipe-study-room-art-v1/patched-stool.png",
+    "width": 1254,
+    "height": 1254,
+    "alphaBounds": [
+      317,
+      356,
+      936,
+      1029
+    ],
+    "transparent": 1312761,
+    "opaque": 998,
+    "partial": 258757,
+    "sha256": "a9bba2e3f1a5e1e73eed5744d67ef55b72df70189a7c0b016373eded971a6377"
+  }
+]

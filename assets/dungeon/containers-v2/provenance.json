@@ -1,0 +1,584 @@
+{
+  "version": 1,
+  "generatedCurrent": 62,
+  "retainedCandidates": 2,
+  "reusedCurrent": 0,
+  "assets": [
+    {
+      "file": "abandoned-cargo-searched.png",
+      "selected": true,
+      "sha256": "0e16f5eeab664b471ff4f3d0a054c6231eaf3e9b0da24a099c3ded35e584ee72",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-98336127-d028-41d6-bc0a-c7232240d45b.png",
+      "promptRecord": "prompts/abandoned-cargo-searched.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "abandoned-cargo.png",
+      "selected": true,
+      "sha256": "510f804312704ebfb8c8b6ac81cfc2121c75cb5960cf934f0c6c3db7fef63c84",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-c12c7428-98c7-4382-9ece-666d8edc5714.png",
+      "promptRecord": "prompts/abandoned-cargo.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "abandoned-chest-searched.png",
+      "selected": true,
+      "sha256": "503b589bad24edf616056624b9179e2a053044bb0a42991355ff10a8947971da",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-b7aeefbb-b6f5-4c0b-98e4-3862356f2d9c.png",
+      "promptRecord": "prompts/abandoned-chest-searched.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "abandoned-chest.png",
+      "selected": true,
+      "sha256": "7b73a1e314c6fa92f9dc24b41d27ddb755b50b1276eddc06fa3d7ea724f80ec8",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-4be1b9ca-48b5-4ef5-bd2c-c1ef2fccbe97.png",
+      "promptRecord": "prompts/abandoned-chest.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "aluminum-flight-case-searched.png",
+      "selected": true,
+      "sha256": "56ae1c79e3705ceaef4e5ce616fe21d56050d83b18c977526386f51eee43d39a",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-cb7c7fd1-4be6-4e18-ab7c-62f3648d8514.png",
+      "promptRecord": "prompts/aluminum-flight-case-searched.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "aluminum-flight-case.png",
+      "selected": true,
+      "sha256": "83cf597fd2dd85073a4aac2ab7526175417f086776f64d35a68f4ec4990c7308",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-081da2ed-836d-4806-b7b7-fd18f5e8d25e.png",
+      "promptRecord": "prompts/aluminum-flight-case.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "cable-spool-shelf-searched.png",
+      "selected": true,
+      "sha256": "fdc18d9c3e60d50272658459305602cb00089251640c308628cce76fa61c2765",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-9548cd13-be59-4271-9f49-6c0a1dc8bd82.png",
+      "promptRecord": "prompts/cable-spool-shelf-searched.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "cable-spool-shelf.png",
+      "selected": true,
+      "sha256": "1594777296c458b2cc627896dbb7d700acc689f81612d3fb041d2b829ff6f2db",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-3aa630f7-86b4-4310-b408-0aa122d62799.png",
+      "promptRecord": "prompts/cable-spool-shelf.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "collapsed-shelf-searched.png",
+      "selected": true,
+      "sha256": "c8d0e351649221f4ba1ab87a8f555159575a2a6b9e70754bc681cc5cddd59b2f",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-e26f0d51-573f-4107-b252-f39fd9e18325.png",
+      "promptRecord": "prompts/collapsed-shelf-searched.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "collapsed-shelf.png",
+      "selected": true,
+      "sha256": "433810ac469a8e92d293d91e6a35b9241118ac34c48030e92ee10219124b7fec",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-d533a6b2-1557-43b2-bc97-a5c33494341e.png",
+      "promptRecord": "prompts/collapsed-shelf.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "computer-tower-cabinet-searched.png",
+      "selected": true,
+      "sha256": "5dca105fe22e34db4dbad2178a5375b9b6c8585f47da780a89cc4c7737a92b8a",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-37cad6bf-40aa-46c0-84dc-0ded9066285a.png",
+      "promptRecord": "prompts/computer-tower-cabinet-searched.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "computer-tower-cabinet.png",
+      "selected": true,
+      "sha256": "887fdb9acfd1b4093141aaa779496ea29c2b57b098e48098ddb23762f093e166",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-5c1566a4-72f8-48ff-bf84-05ce83a1cd05.png",
+      "promptRecord": "prompts/computer-tower-cabinet.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "damaged-barrel-searched.png",
+      "selected": true,
+      "sha256": "a45e604f5fa6579d7b5bef1539a42cc072220df1ce9feefdbe3b60808f841807",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-82d15066-f171-424b-b50d-ab9e3ab3c2f4.png",
+      "promptRecord": "prompts/damaged-barrel-searched.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "damaged-barrel.png",
+      "selected": true,
+      "sha256": "52456aed49fd267d85bf2138716f51cb2d1637e4cc382961dc79200173c20032",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-f9677eac-f5e3-428c-a86a-01cd8212d51e.png",
+      "promptRecord": "prompts/damaged-barrel.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "discarded-toolbox-clean.png",
+      "selected": true,
+      "sha256": "244d131032593b904b20e6d294e56321e99face47290242a1cff13d5d0bad1da",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-04090da6-bc00-4266-9cab-41de581f4858.png",
+      "promptRecord": "prompts/discarded-toolbox-clean.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "discarded-toolbox-searched.png",
+      "selected": true,
+      "sha256": "96cda33a93a6daf4f23ce3de1cf0034ef0f6e55a4bb887b2490ad8733ac30748",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-8ae17aa9-a4a4-4c29-b590-ef3da27fd745.png",
+      "promptRecord": "prompts/discarded-toolbox-searched.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "discarded-toolbox.png",
+      "selected": false,
+      "sha256": "78085cfe62930055d516ba441d7bc95021e16e426472f20857447463aa916832",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-656257dc-12dd-4f1b-a5ef-feefca364348.png",
+      "promptRecord": "prompts/discarded-toolbox.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "factory-locker-cache-searched.png",
+      "selected": true,
+      "sha256": "388a8fa4639bef541e65bf1dd702150e7d7749840cb7c00e301f50959283f0b6",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-c104c824-f3c5-49af-9d31-c732dd5884e5.png",
+      "promptRecord": "prompts/factory-locker-cache-searched.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "factory-locker-cache.png",
+      "selected": true,
+      "sha256": "5d0e66642d10bc7f17f2d8fd8e10577ce931c83e4b19b4dc3505a28c0e711233",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-15d4b95d-9ec8-40c8-9808-8d5cd97bab2d.png",
+      "promptRecord": "prompts/factory-locker-cache.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "lost-backpack-searched.png",
+      "selected": true,
+      "sha256": "821dad19459f13c169b5c61fc3c5c59232c8746aed1f7fddc3e8547afe496896",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-13346471-1247-4e5d-869f-11c44f63b878.png",
+      "promptRecord": "prompts/lost-backpack-searched.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "lost-backpack.png",
+      "selected": true,
+      "sha256": "fc5f5a78c8e06d10aab79ffdb9d9097809cc9c4fdcf938e6464df192429a94ce",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-1a167a4e-88d4-4650-bdcb-d22f5fe15ca3.png",
+      "promptRecord": "prompts/lost-backpack.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "marine-buoy-cache-searched.png",
+      "selected": true,
+      "sha256": "df8c893b8b2fc3769dc11a763a7310e57376d210a7ca4c15680a47e2c16b01aa",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-f42d8d71-602d-4abc-82b1-e35b0c1baf4b.png",
+      "promptRecord": "prompts/marine-buoy-cache-searched.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "marine-buoy-cache.png",
+      "selected": true,
+      "sha256": "0f41ca60ac379584061a9976ca5ca350aecf8792961e2bab5d1b629f43b060e4",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-77b0c71b-1ad9-497d-bb1e-783265f2ba47.png",
+      "promptRecord": "prompts/marine-buoy-cache.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "milk-churn-storage-searched.png",
+      "selected": true,
+      "sha256": "039738c7d7640cbde8bbe68424a14cb97871d0a4ca97223f694ed0c5c6b2ad4c",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-b0156753-157a-4709-ae07-10d6a6ee2e6c.png",
+      "promptRecord": "prompts/milk-churn-storage-searched.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "milk-churn-storage.png",
+      "selected": true,
+      "sha256": "fb10f4f38de94ca39447feeac2326a255bf0229b05bcbfea4b1209981d184a98",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-c029c21f-513d-4e38-b921-a9214ffd5b57.png",
+      "promptRecord": "prompts/milk-churn-storage.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "motorcycle-topbox-cache-searched.png",
+      "selected": true,
+      "sha256": "9886f60a9eb735087e4c6aca9acc074f66fa40b79024cf1373ae0466975475ab",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-da618df0-e850-410d-82b9-61b663863561.png",
+      "promptRecord": "prompts/motorcycle-topbox-cache-searched.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "motorcycle-topbox-cache.png",
+      "selected": true,
+      "sha256": "2ce13e893dae073f335ffcf4f8d94f075a4e2d746c3ae6d7dc7cd45c18a5715a",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-893cdb04-0a33-424b-845b-6a20d85bbc8d.png",
+      "promptRecord": "prompts/motorcycle-topbox-cache.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "overturned-cart-searched.png",
+      "selected": true,
+      "sha256": "a6d36d8c16733bde794c8c5942d647c4cb73c262d2c441a865a068a7a27e7d4b",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-08705e2d-d0e8-4917-b127-b2c55bf28b92.png",
+      "promptRecord": "prompts/overturned-cart-searched.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "overturned-cart.png",
+      "selected": true,
+      "sha256": "c0ffc2ccc8afafe99fe7c9d5294ae439fab99939454d109dbe2f17a39e277738",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-69e09a8f-9d03-4763-a63c-7549f05e6572.png",
+      "promptRecord": "prompts/overturned-cart.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "patched-bulk-sack-searched.png",
+      "selected": true,
+      "sha256": "a80911d6c84a501e2d683fa965b454dd86e85ea17318c89a2175fdab41af6f8d",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-137347db-8f10-40d6-88b7-fcf5f03e90b9.png",
+      "promptRecord": "prompts/patched-bulk-sack-searched.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "patched-bulk-sack.png",
+      "selected": true,
+      "sha256": "1d7bff496841a63f838a9d4efc71174f0aba909c25b34c6a119b8ccb9a8c3c5b",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-f023070d-2247-4447-910e-f0955c299483.png",
+      "promptRecord": "prompts/patched-bulk-sack.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "patched-suitcase-searched.png",
+      "selected": true,
+      "sha256": "5fc638ad1f7ace2963257c31173768dc621aeca34e8eec2742fe6278450a0983",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-c1942966-1fe6-484d-8345-7b8e563eb871.png",
+      "promptRecord": "prompts/patched-suitcase-searched.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "patched-suitcase.png",
+      "selected": true,
+      "sha256": "ac868797dba07bf9006c5306f157412f3a20de8584da6e1bd93dc28b820eded7",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-cd58cc69-08ac-4125-8ec0-3ee37de98dc4.png",
+      "promptRecord": "prompts/patched-suitcase.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "postbox-cache-searched.png",
+      "selected": true,
+      "sha256": "c85d2914e236cba55feb3efa6e64450b8a66f9b4cbee764db016c1c244e6e2c5",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-fb0a4814-9a28-4a92-b485-39da68946858.png",
+      "promptRecord": "prompts/postbox-cache-searched.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "postbox-cache.png",
+      "selected": true,
+      "sha256": "72ddb8f39d9ba5edd08b32c03ac302df0a4dc088d89fa358d44256dfcd6593b1",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-73164b55-0fcd-49e7-91ad-42f8698284a1.png",
+      "promptRecord": "prompts/postbox-cache.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "pram-cargo-basket-searched.png",
+      "selected": true,
+      "sha256": "b9057d75c195d3005f1fd3f73ed9cc5437699fd51b6bbbd495b0ddd889ef9893",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-14c8ecbb-b61c-477e-90f1-7346a4164ed7.png",
+      "promptRecord": "prompts/pram-cargo-basket-searched.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "pram-cargo-basket.png",
+      "selected": true,
+      "sha256": "42d5c487d48e3dc3fdb4351ab033d6504ff7cca31cb90d92a2f8f2068ecdfd21",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-684b0ef9-9b18-4583-a7a9-606d7e442574.png",
+      "promptRecord": "prompts/pram-cargo-basket.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "pressure-pot-cache-searched.png",
+      "selected": true,
+      "sha256": "8bc746f4ef27c53f84b74131f30eea1b09eda8d71924ba8d909db9651091057f",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-82d794f9-0afa-4414-8b86-9aabd30ec78b.png",
+      "promptRecord": "prompts/pressure-pot-cache-searched.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "pressure-pot-cache.png",
+      "selected": true,
+      "sha256": "6ada099bd52e6a6f659a25d154dd9a29a2ed6986ebfb5a5c928aa6a20063ea0c",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-f2ccbcea-98e5-4788-ab16-3be5cd65e0aa.png",
+      "promptRecord": "prompts/pressure-pot-cache.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "repaired-cooler-searched.png",
+      "selected": true,
+      "sha256": "32c87a906557e7794906e577814f0ba8684eebcd8182c01785a28e44b23dfa7a",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-62fc5f26-e38d-4f12-851f-250251ca36ca.png",
+      "promptRecord": "prompts/repaired-cooler-searched.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "repaired-cooler.png",
+      "selected": true,
+      "sha256": "39da064cb69b74370b69579f26d14f6b981d1e50a24177e17aac03612f7b338d",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-d0a092a7-c3f5-4071-adb1-606b142d258c.png",
+      "promptRecord": "prompts/repaired-cooler.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "reused-fridge-searched-right.png",
+      "selected": true,
+      "sha256": "52e9862b132f98f2822fed14c67e7fdb671c175e1934a39cb83a487ceac767d7",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-6b414d32-418a-4399-ad3c-c4a12392719a.png",
+      "promptRecord": "prompts/reused-fridge-searched-right.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "reused-fridge-searched.png",
+      "selected": false,
+      "sha256": "e23314ffc15f82fce1b6ee9c45a92a5b7391f4bfe77d71a238f9efa53c7eba08",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-3a537cd4-926a-432e-ba23-e49164d05654.png",
+      "promptRecord": "prompts/reused-fridge-searched.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "reused-fridge.png",
+      "selected": true,
+      "sha256": "af68b489b49c15cba7876d6591598ff5baf8621c857fbfc53cf91ea2ebe7dd09",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-4b7b3bd9-de5a-4bbf-9c1f-4d07c8b25145.png",
+      "promptRecord": "prompts/reused-fridge.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "reused-plastic-drum-searched.png",
+      "selected": true,
+      "sha256": "20477a092abf5b7b650b5b1cb39c8ee0258e1d383adc7ad38f802aa95eb38451",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-42bd38b2-2f58-4690-aa13-f1b97d917351.png",
+      "promptRecord": "prompts/reused-plastic-drum-searched.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "reused-plastic-drum.png",
+      "selected": true,
+      "sha256": "8427a81bfbab11ecea99d502e61859522f342f594678ec13cc2e47de9eb547cb",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-0e8a7c48-3ae0-4b14-8e16-3f74aa1e3983.png",
+      "promptRecord": "prompts/reused-plastic-drum.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "reused-washer-drum-searched.png",
+      "selected": true,
+      "sha256": "9df978d150e47e307c1970a64540500993d60da2cce3c42cc166d9805494f1a0",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-44186aa1-b032-48a0-8d9c-ca52977aefbe.png",
+      "promptRecord": "prompts/reused-washer-drum-searched.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "reused-washer-drum.png",
+      "selected": true,
+      "sha256": "c1c0ecf82152593f81ace93236204750e8019a0a564667f6d0ddf8967d2473ab",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-7d8c0d57-bc30-471f-9b06-89fe33a80d91.png",
+      "promptRecord": "prompts/reused-washer-drum.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "rice-cooker-cache-searched.png",
+      "selected": true,
+      "sha256": "ba11d103ac433b3ebb9f29df491d2838e53ed6c4b052a8bba3928e234995030f",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-4b91c01b-d543-442b-8a02-0798711a337f.png",
+      "promptRecord": "prompts/rice-cooker-cache-searched.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "rice-cooker-cache.png",
+      "selected": true,
+      "sha256": "5ddc0e68df8e0e2e9d6d58613523b26c454922130b401b8a826091e39f220a46",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-f5a674a3-f1d0-4b9a-b37a-2d6bc20c4642.png",
+      "promptRecord": "prompts/rice-cooker-cache.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "salvaged-shopping-cart-searched.png",
+      "selected": true,
+      "sha256": "37a505344ebc5abff57764fe858fe64ebab8012bc245b5ea7f290a32c04da168",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-89db840a-b1a0-4011-8ad2-ccbe21e21e78.png",
+      "promptRecord": "prompts/salvaged-shopping-cart-searched.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "salvaged-shopping-cart.png",
+      "selected": true,
+      "sha256": "5fa02eef0b8b467922f8f31de765b7f78a8ca42521ffc454c278b91e297f8677",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-6c6b2ca8-8481-4256-ac3b-636c782a30f3.png",
+      "promptRecord": "prompts/salvaged-shopping-cart.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "sideways-oil-drum-cabinet-searched.png",
+      "selected": true,
+      "sha256": "46f70df42549d7fdb39794431df95ab6752792f9a89f62b767f3b45605b6a644",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-48b72752-e44d-4f36-8504-a7f9b563a2c6.png",
+      "promptRecord": "prompts/sideways-oil-drum-cabinet-searched.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "sideways-oil-drum-cabinet.png",
+      "selected": true,
+      "sha256": "e7365aee89b12d6297a16427189270ece37e9d1402b70d3987de634bbbcfe065",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-69f8a9f5-c758-4a51-b4ee-9692d64a202f.png",
+      "promptRecord": "prompts/sideways-oil-drum-cabinet.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "stacked-plastic-crates-searched.png",
+      "selected": true,
+      "sha256": "3257c220ffdc2b3b4adf8bb60a6ed5c4e2d5dfcb9a213810958cf6eadd49e1f1",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-533564cd-3afc-48b2-93ff-0dc58da2f874.png",
+      "promptRecord": "prompts/stacked-plastic-crates-searched.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "stacked-plastic-crates.png",
+      "selected": true,
+      "sha256": "3887508db5c9f469ce6584fd1a5479828fc49deca97e42e0cd205fef2944251b",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-b11eb788-8382-495c-9653-b14bb67cbb10.png",
+      "promptRecord": "prompts/stacked-plastic-crates.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "tire-storage-basket-searched.png",
+      "selected": true,
+      "sha256": "f309937ac4019f1275d9c1d53a2e4c88e6e567c5a586b4bb498e86de16bfe4a0",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-062cecda-d189-4005-9467-272e03f7b4d4.png",
+      "promptRecord": "prompts/tire-storage-basket-searched.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "tire-storage-basket.png",
+      "selected": true,
+      "sha256": "576349631aadd5fee225245c6ec1e3e2d8423d3cdec06a678bcfb5cea9939729",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-6e121590-7c59-408a-8423-6912db42333c.png",
+      "promptRecord": "prompts/tire-storage-basket.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "vending-machine-cupboard-searched.png",
+      "selected": true,
+      "sha256": "256444330cfefc4bfc82cc26282e941f79b437739ba94e4a6c9860c463e2e1c0",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-ad393589-ef28-4c5c-b248-763c38c0b505.png",
+      "promptRecord": "prompts/vending-machine-cupboard-searched.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "vending-machine-cupboard.png",
+      "selected": true,
+      "sha256": "5b0de9e83190c02680389ffac6a4b2c13b6125ab4d0d821630a88da091c8bbe2",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-b29bb451-149f-4b64-b0ea-dc4e6b8f66d7.png",
+      "promptRecord": "prompts/vending-machine-cupboard.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "wheelie-bin-cache-searched.png",
+      "selected": true,
+      "sha256": "783b2459962f84ec3354d0eb64f383868e835c320ce978f023811f8f95f7efb1",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-9714557c-519e-4435-abf1-16190542b8ad.png",
+      "promptRecord": "prompts/wheelie-bin-cache-searched.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "wheelie-bin-cache.png",
+      "selected": true,
+      "sha256": "db40494c5a7ebaf7395af84a24505660ec0694051c8d7e2f35625857a3d27410",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-56cf43a5-03c7-43d3-9370-22b3113d0c60.png",
+      "promptRecord": "prompts/wheelie-bin-cache.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "wire-cage-trolley-searched.png",
+      "selected": true,
+      "sha256": "7a0949b09b460a93f224e6572a52ccaca67ee2babee0423c3d8faea16c420f94",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-343ad317-f52c-4f0a-9e82-21033520aa81.png",
+      "promptRecord": "prompts/wire-cage-trolley-searched.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    },
+    {
+      "file": "wire-cage-trolley.png",
+      "selected": true,
+      "sha256": "765fa4249fd1bea20c0e0a0e013430bb5695f3036a31b28be796e7dd68f07615",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-c33c80bd-d6b3-4817-a845-fb8bf0c87106.png",
+      "promptRecord": "prompts/wire-cage-trolley.json",
+      "mode": "built-in image_gen",
+      "exactPromptAvailable": true
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "id": "reused-plastic-drum",
+  "name": "蓝塑料储物桶",
+  "width": 0.72,
+  "prompt": "Create exactly ONE transparent game prop sprite. References 1/2 are fixed style: strong dark hand-drawn contours, broad painted light and shade masses, readable forms with some brush texture; do NOT copy their pedestal. Reference 3 and 5 are approved final furniture style and localized wear. Reference 4 is the floor projection: orthographic, camera elevation45°, ground axes +/-0.7071, vertical edges vertical, tile144x101.82. Plan ground footprint BEFORE illustration; bottom contact corners must follow the template. Small top-down 3/4 view, two clear faces. Full object, generous transparent margins, NO floor/platform/pedestal/text/cast shadow. Upper-left light, restrained worn teal/ochre/cream/charcoal palette, modern industrial salvage society with repair/reuse, not medieval treasure nor nuclear wasteland. Readable at actual 144px grid scale, shape detail not photographic noise. One squat reused blue plastic storage drum, broad dark screw cap closed, faded body with a cream tape repair and molded handles. Round base diameter.70tile, height40px at tile144. Not a metal oil barrel. Top and bottom ellipses ground ratio.707, broad painted light/shade, few directional scratches, closed unsearched. Outside the hard silhouette must be fully transparent: no halo, glow, smoky backdrop or drop shadow.",
+  "references": [
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/street-thugs-v1/tier-1.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/map/isometric/interactive-devices-v1/warehouse.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/street-thug-boss-room-v6/private-cache.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/street-thug-boss-room-v5/cache-geometry.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/street-thug-boss-room-v6/transit-rack.png"
+  ],
+  "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-d690f1e0-d26d-4306-809c-e7a44c745c22.png",
+  "tool": "built-in image_gen",
+  "status": "registered-current",
+  "appliedFile": "reused-plastic-drum.png"
+}

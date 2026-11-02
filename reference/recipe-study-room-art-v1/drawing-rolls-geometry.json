@@ -1,0 +1,30 @@
+{
+  "id": "drawing-rolls",
+  "tileWidth": 144,
+  "tileHeight": 101.82337649086284,
+  "physicalFootprint": [
+    0.55,
+    0.45
+  ],
+  "physicalHeightAt144": 36,
+  "nativeFront": [
+    0,
+    1
+  ],
+  "factor": 6.0,
+  "origin": [
+    512.0,
+    760.0
+  ],
+  "groundCorners": [
+    490.4,
+    607.26495,
+    728.0,
+    775.2735,
+    533.6,
+    912.73505,
+    296.0,
+    744.7265
+  ],
+  "status": "pre-generation geometry reference only"
+}

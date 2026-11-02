@@ -1,0 +1,11 @@
+{
+  "id": "discarded-toolbox",
+  "prompt": "Background/alpha cleanup ONLY of this exact sprite. Keep all solid object pixels in exactly the same positions and canvas dimensions. Remove the broad tinted glow, gray haze and random colored fringe OUTSIDE the solid object, including between the shopping-cart wires and around wheels. All air gaps must be fully transparent. Keep antialiased dark contour edges tight, with no luminous fringe. Do not change the actual object's geometry, colors, state, scale, composition, drawing or details. No ground shadow, no backdrop.",
+  "references": [
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/grid-scene-v1/discarded-toolbox.png"
+  ],
+  "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-c2cadf11-14d4-43c1-80d3-f18536609700.png",
+  "tool": "built-in image_gen",
+  "status": "registered-current",
+  "appliedFile": "discarded-toolbox.png"
+}

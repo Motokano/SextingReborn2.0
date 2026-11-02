@@ -308,6 +308,7 @@
 
     global.Gathering = {
         GATHERING_MAX_PROFICIENCY: GATHERING_MAX_PROFICIENCY,
+        addDungeonProficiency:function(skill){if(skill==='gathering')addGatheringProficiencyDelta(1);},
         MAX_INVENTORY_SLOTS: MAX_INVENTORY_SLOTS,
         setConfig: setConfig,
         getCharacterState: getCharacterState,

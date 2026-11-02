@@ -8,7 +8,7 @@
     function actorSnapshot(actor) {
         var a = actor || {}, p = a.pos || {};
         if (!Number.isFinite(p.x) || !Number.isFinite(p.y)) return null;
-        return { kind:a.kind, enemyId:a.enemyId || null, index:a.index, x:p.x, y:p.y,
+        return { kind:a.kind, enemyId:a.enemyId || null, ownerId:a.ownerId || null, index:a.index, x:p.x, y:p.y,
             key:a.kind === 'player' ? 'player' : 'enemy:' + (a.index != null ? a.index : (a.enemyId + ':' + p.x + ':' + p.y)) };
     }
     function capture(ctx) {
@@ -40,10 +40,19 @@
                 damageType:s.damageType || ctx.damageType || 'blunt',
                 powerFactor:Number.isFinite(s.fxPowerFactor) ? s.fxPowerFactor : 1 };
         });
-        bus.emit('combat:resolved', { actionId:snap.actionId, mapId:snap.mapId, groupId:snap.groupId,
+        var burst=ctx.resourceResult && ctx.resourceResult.breathBurst;
+        var breath=burst && burst.visualId==='basic_breath' ? {id:'basic_breath',remainingAfter:Math.max(0,(Number(burst.remainingAttacks)||1)-1)} : null;
+        bus.emit('combat:resolved', { actionId:snap.actionId, mapId:snap.mapId, groupId:snap.groupId, breath:breath,
             simultaneous:snap.simultaneous, baseSegments:Number(ctx.moveTemplate&&ctx.moveTemplate.hit_segments)||(ctx.moveId==='slap_combo'?2:1),
-            attacker:Object.assign({},snap.attacker), defender:Object.assign({},snap.defender),
+            attacker:Object.assign({},snap.attacker,{ownerId:ctx.resourceResult?.bossReservation?.ownerId || snap.attacker.ownerId}), defender:Object.assign({},snap.defender),
             segments:segments });
     }
-    global.CombatFxEvents = { capture:capture, publish:publish, nextGroupId:nextGroupId };
+    function breathTransition(phase,actor,mapId) {
+        var state=global.GameEngine?.getState(),map=global.GameEngine?.getMap();
+        if(!state||!map||mapId!=null&&mapId!==state.mapId)return;
+        var pos=actor.kind==='player'?state:map.enemies?.[actor.index];
+        var a=actorSnapshot(Object.assign({},actor,{pos:pos}));if(!a)return;
+        global.SceneAnimation?.emit('combat:breath-state',{phase:phase,id:'basic_breath',mapId:state.mapId,actor:a});
+    }
+    global.CombatFxEvents = { capture:capture, publish:publish, nextGroupId:nextGroupId, breathTransition:breathTransition };
 })(typeof window !== 'undefined' ? window : globalThis);

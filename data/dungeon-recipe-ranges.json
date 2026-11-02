@@ -1,0 +1,23 @@
+{
+  "version": 2,
+  "dungeons": [
+    {
+      "id": "village_ruins",
+      "name": "村外废墟",
+      "recipeStudy": {
+        "enabled": true,
+        "recipeIds": [
+          "manufacturing.tool_repair_hammer",
+          "manufacturing.tool_repair_whetstone",
+          "manufacturing.supply_flint_fire",
+          "manufacturing.tool_flask_bamboo_water",
+          "manufacturing.tool_steamer_bamboo_cooking",
+          "manufacturing.tool_fermentation_jar_cooking",
+          "manufacturing.soil_amend_yellow_cotton",
+          "existing_hunting.consumable_hunting_snare"
+        ],
+        "chance": 0.03
+      }
+    }
+  ]
+}

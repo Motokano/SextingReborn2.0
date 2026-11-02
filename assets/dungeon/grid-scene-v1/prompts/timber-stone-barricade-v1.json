@@ -1,0 +1,22 @@
+{
+  "id": "timber-stone-barricade-v1",
+  "name": "拼装挡路架",
+  "footprint": [
+    2,
+    1
+  ],
+  "width": 1.42,
+  "subject": "Two-cell long waist-high barricade built from mismatched steel rail and old planks braced between two concrete blocks. Ground footprint two tiles long along descending-right axis, one tile deep, broad side toward lower-left. Vertical supports upright; braced and used, not neat ornamental fencing.",
+  "prompt": "Create exactly ONE transparent game prop sprite. References 1/2 are fixed style: strong dark hand-drawn contours, broad painted light and shade masses, readable forms with some brush texture; do NOT copy their pedestal. Reference 3 and 5 are approved final furniture style and localized wear. Reference 4 is the floor projection: orthographic, camera elevation45°, ground axes +/-0.7071, vertical edges vertical, tile144x101.82. Plan ground footprint BEFORE illustration; bottom contact corners must follow the template. Small top-down 3/4 view, two clear faces. Full object, generous transparent margins, NO floor/platform/pedestal/text/cast shadow. Upper-left light, restrained worn teal/ochre/cream/charcoal palette, modern industrial salvage society with repair/reuse, not medieval treasure nor nuclear wasteland. Readable at actual 144px grid scale, shape detail not photographic noise.  Subject: Two-cell long waist-high barricade built from mismatched steel rail and old planks braced between two concrete blocks. Ground footprint two tiles long along descending-right axis, one tile deep, broad side toward lower-left. Vertical supports upright; braced and used, not neat ornamental fencing. IMPORTANT bottom plan 2x1 grid cells. Fourth reference is the ground projection guide (for long props it is the 2x1 mat guide, use only its plane, not rug material). Keep the vertical size believable relative to a 1.7m person. One prop only, no surrounding room or floor, retain transparent spaces between legs.",
+  "references": [
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/street-thugs-v1/tier-1.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/map/isometric/interactive-devices-v1/warehouse.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/street-thug-boss-room-v6/private-cache.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/street-thug-boss-room-v5/mat-geometry.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/street-thug-boss-room-v6/transit-rack.png"
+  ],
+  "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-e9e87eb7-3ce9-475a-8ae0-2f613168ea16.png",
+  "tool": "built-in image_gen",
+  "status": "registered-current",
+  "appliedFile": "timber-stone-barricade-v1.png"
+}

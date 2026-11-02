@@ -1,0 +1,30 @@
+{
+  "id": "archive-shelf",
+  "tileWidth": 144,
+  "tileHeight": 101.82337649086284,
+  "physicalFootprint": [
+    0.7,
+    0.44
+  ],
+  "physicalHeightAt144": 72,
+  "nativeFront": [
+    0,
+    1
+  ],
+  "factor": 6.0,
+  "origin": [
+    512.0,
+    760.0
+  ],
+  "groundCorners": [
+    455.84,
+    585.882,
+    758.24,
+    799.7111,
+    568.16,
+    934.118,
+    265.76,
+    720.2889
+  ],
+  "status": "pre-generation geometry reference only"
+}

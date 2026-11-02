@@ -473,7 +473,8 @@
         if (!isFinite(Vdef) || Vdef < 0) Vdef = 10;
         if (weaponAction && global.CombatInitiative && !opts.speedsResolved) {
             Vatk = global.CombatInitiative.effectiveSpeed('player', Vatk);
-            Vdef = global.CombatInitiative.effectiveSpeed(String(opts.enemyId || ''), Vdef);
+            var defenderOwner=global.CombatEnemies && global.CombatEnemies.getOwnerId ? global.CombatEnemies.getOwnerId(opts.enemyId,opts.enemyMapId,opts.targetIndex) : String(opts.enemyId||'');
+            Vdef = global.CombatInitiative.effectiveSpeed(defenderOwner, Vdef);
         }
 
         var P = CA && typeof CA.getHitRate === 'function' ? CA.getHitRate(Vatk, Vdef) : 0.8;
@@ -802,7 +803,7 @@
     }
 
     /**
-     * 敌人还击玩家：命中用敌速攻、玩家速防；伤害来自 combat-enemies 模板 attack_damage_min/max（缺省 6～14）。
+     * 敌人还击玩家：命中用敌速攻、玩家速防；只执行已配置且身体资格合法的动作。
      */
     function outsideRange(opts, range, playerAttacks) {
         if (!global.GameEngine) return false;
@@ -817,23 +818,35 @@
         var CE = global.CombatEnemies;
         var CA = global.CharacterAttributes;
         var tpl = CE && typeof CE.getById === 'function' ? CE.getById(enemyId) : null;
+        var owner = CE && CE.getOwnerId ? CE.getOwnerId(enemyId,opts.enemyMapId,opts.enemyIndex) : String(enemyId);
+        if(tpl && (tpl.boss||tpl.thug) && !Object.prototype.hasOwnProperty.call(opts,'plannedAction')) CE.prepareBossOpportunity(enemyId,opts.enemyMapId,opts.enemyIndex,true,false);
+        // An explicitly planned action cannot be replaced after a faster strike disables it.
+        var action = Object.prototype.hasOwnProperty.call(opts,'plannedAction') ? opts.plannedAction
+            : CE && CE.pickEnemyAction ? CE.pickEnemyAction(enemyId,opts.enemyMapId,opts.enemyIndex) : null;
+        var eligibility = CE && CE.actionStatus ? CE.actionStatus(enemyId,opts.enemyMapId,opts.enemyIndex,action) : {ok:!!action,damageMultiplier:1};
+        if (!eligibility.ok) return {notExecuted:true,skipReason:eligibility.reason||'no_action',rawDamage:0,hitRollSuccess:false,blockTargetEffects:true,
+            enemyOwnerId:owner,enemyMapId:opts.enemyMapId,enemyIndex:opts.enemyIndex};
         var Vatk = opts.attackerSpeed != null ? Number(opts.attackerSpeed) : (tpl && tpl.speed != null ? Number(tpl.speed) : 10);
         if (!isFinite(Vatk) || Vatk < 1) Vatk = 10;
         var Vdef = opts.defenderSpeed != null ? opts.defenderSpeed : CA && typeof CA.getCombatSpeed === 'function' ? CA.getCombatSpeed() : 1;
         if (!isFinite(Vdef) || Vdef < 1) Vdef = 1;
-        if (global.ModularWeaponCombat && global.ModularWeaponCombat.equipped() && global.CombatInitiative && !opts.speedsResolved) {
-            Vatk = global.CombatInitiative.effectiveSpeed(String(enemyId), Vatk);
+        if ((tpl && (tpl.boss||tpl.thug) || global.ModularWeaponCombat && global.ModularWeaponCombat.equipped()) && global.CombatInitiative && !opts.speedsResolved) {
+            Vatk = global.CombatInitiative.effectiveSpeed(owner, Vatk);
             Vdef = global.CombatInitiative.effectiveSpeed('player', Vdef);
         }
         var P = CA && typeof CA.getHitRate === 'function' ? CA.getHitRate(Vatk, Vdef) : 0.8;
         // 眼花类（hit_chance_delta_percent）：按敌方自身非增益 Buff 修正其命中率（11-skills 8.3.6 扩展#1）
         if (global.BuffSystem && typeof global.BuffSystem.getHitChanceDeltaPercent === 'function') {
-            var hcDelta = Number(global.BuffSystem.getHitChanceDeltaPercent(String(enemyId))) || 0;
+            var hcDelta = Number(global.BuffSystem.getHitChanceDeltaPercent(owner)) || 0;
             if (isFinite(hcDelta) && hcDelta !== 0) {
                 P = Math.min(0.99, Math.max(0, P + hcDelta / 100));
             }
         }
-        var action = CE && typeof CE.pickEnemyAction === 'function' ? CE.pickEnemyAction(enemyId, opts.enemyMapId, opts.enemyIndex) : null;
+        var bossReservation = tpl && (tpl.boss||tpl.thug) ? CE.quoteBossAction(enemyId,opts.enemyMapId,opts.enemyIndex,action) : null;
+        if(bossReservation && bossReservation.burst && !outsideRange(opts,2,false) && outsideRange(opts,1,false)) {
+            if(!global.CombatEnemyBoss.approach(global.CombatEnemyBoss.context(enemyId,opts.enemyMapId,opts.enemyIndex),true,true))
+                return {notExecuted:true,skipReason:'charge_blocked',rawDamage:0,hitRollSuccess:false};
+        }
         var distanceMiss = outsideRange(opts, Math.max(1, Number(action && (action.attack_range || action.range) || tpl && tpl.attack_range) || 1), false);
         var hitRollSuccess = !distanceMiss && Math.random() < P;
         // 来源标识：区分「玩家攻击」与「敌人还击」（攻方=敌人）
@@ -860,7 +873,7 @@
             dmgMin = dmgMax;
             dmgMax = tmp;
         }
-        // 敌人攻击动作（10-enemies）：有 actions 且气力可负担时按动作结算；否则回退 attack_damage_* 通用还击
+        // 伤害按合法动作结算；旧模板伤害字段仅兼容动作未写威力的历史数据。
         var damageType = normalizeDamageType((tpl && tpl.attack_damage_type) ? String(tpl.attack_damage_type) : 'blunt');
         var mvId = null;
         // 实例键（enemyMapId/enemyIndex）用于肢体损毁联动：动作装备肢体已损毁则不可用（10-enemies）
@@ -883,12 +896,14 @@
             damageType = normalizeDamageType(action.damage_type ? String(action.damage_type) : 'blunt');
             hitPart = CE && typeof CE.sampleHitPartForAction === 'function'
                 ? CE.sampleHitPartForAction(action) : 'chest';
-            limbId = action.limb || 'rhand';
+            limbId = CE && CE.actionLimbs ? CE.actionLimbs(enemyId,eMapId,eIndex,action)[0] : action.limb;
             mvId = action.id || mvId;
-            qiSpent = CE && typeof CE.consumeEnemyQi === 'function'
-                ? CE.consumeEnemyQi(enemyId, action.qi_cost) : 0;
+            qiSpent = bossReservation ? bossReservation.qi : CE && typeof CE.consumeEnemyQi === 'function'
+                ? CE.consumeEnemyQi(enemyId, action.qi_cost,eMapId,eIndex) : 0;
         }
-        var rawDamage = hitRollSuccess ? Math.floor(dmgMin + Math.random() * (dmgMax - dmgMin + 1)) : 0;
+        if (CE && CE.commitAction) CE.commitAction(enemyId,eMapId,eIndex,action);
+        if(bossReservation && !opts.deferResourceSpend)CE.commitBossAction(bossReservation);
+        var rawDamage = hitRollSuccess ? (bossReservation ? dmgMin * (bossReservation.burst?1.8:1) : Math.floor(dmgMin + Math.random() * (dmgMax - dmgMin + 1))) * eligibility.damageMultiplier : 0;
         var typedDamage = createEmptyTypedDamage();
         typedDamage[damageType] = rawDamage;
         var skId = global.CombatInitiative && typeof global.CombatInitiative.getEnemyAttackSkillId === 'function'
@@ -899,12 +914,15 @@
         }
 
         return {
+            enemyOwnerId:owner,
+            enemyMapId:opts.enemyMapId,
+            enemyIndex:opts.enemyIndex,
             rawDamage: rawDamage,
             typedDamage: typedDamage,
             hitRollSuccess: hitRollSuccess,
             hitPart: hitPart,
             damageType: damageType,
-            skillId: skId,
+            skillId: bossReservation ? action.skill_id : skId,
             moveId: mvId,
             limbId: limbId,
             powerLevel: 10,
@@ -913,11 +931,15 @@
             qiIntended: 0,
             qiSpent: qiSpent,
             diqiIntended: 0,
-            diqiSpent: 0,
+            diqiSpent: bossReservation ? bossReservation.diqi : 0,
+            bossReservation: bossReservation,
+            actionConditionBonus: bossReservation ? bossReservation.probe*.05 : 0,
+            targetUnloadMultiplier: bossReservation && mvId==='collar_knee' ? .5 : 1,
+            breathBurst: bossReservation && bossReservation.burst ? {knockback_cells:1,damage_multiplier:1.8,visualId:'basic_breath',remainingAttacks:bossReservation.burstRemainingBefore} : null,
             forceZeroDamageByResourceInsufficient: false,
             proficiencyDelta: 0,
             moveTemplate: action,
-            deferredResourceSpend: false,
+            deferredResourceSpend: !!bossReservation && !!opts.deferResourceSpend,
             qiIntendedForCommit: 0,
             diqiIntendedForCommit: 0
         };
@@ -927,6 +949,7 @@
     function applyDeferredResourceSpendFromResolveResult(r) {
         if (!r || !r.deferredResourceSpend || r.resourcesCommitted) return;
         r.resourcesCommitted = true;
+        if(r.bossReservation){global.CombatEnemies.commitBossAction(r.bossReservation);return;}
         var Surv = global.Survival;
         var qiIntended = r.qiIntendedForCommit != null ? Number(r.qiIntendedForCommit) : Number(r.qiIntended) || 0;
         var diqiIntended = r.diqiIntendedForCommit != null ? Number(r.diqiIntendedForCommit) : Number(r.diqiIntended) || 0;
@@ -945,6 +968,7 @@
     function finishActionResources(r) {
         if (!r || r.actionResourcesFinished) return;
         r.actionResourcesFinished = true;
+        if(r.bossReservation){global.CombatEnemies.commitBossAction(r.bossReservation);return;}
         if (global.CombatBreath) global.CombatBreath.finish(r.breathBurst);
         if (r.qiRestoreAmt > 0 && global.Survival && global.Survival.addQiLi) global.Survival.addQiLi(r.qiRestoreAmt);
     }

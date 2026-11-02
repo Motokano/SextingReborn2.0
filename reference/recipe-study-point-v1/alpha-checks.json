@@ -1,0 +1,34 @@
+[
+  {
+    "state": "available",
+    "source": "assets/dungeon/recipe-study-point-v1/available.png",
+    "width": 1254,
+    "height": 1254,
+    "alphaBounds": [
+      159,
+      168,
+      1118,
+      1156
+    ],
+    "transparent": 1127807,
+    "opaque": 1050,
+    "partial": 443659,
+    "sha256": "f24a4ac312fc20b74c98557b3ecb32f0529210d85f9a4d2d18b2eb9799c6cb71"
+  },
+  {
+    "state": "used",
+    "source": "assets/dungeon/recipe-study-point-v1/used.png",
+    "width": 1254,
+    "height": 1254,
+    "alphaBounds": [
+      159,
+      168,
+      1119,
+      1158
+    ],
+    "transparent": 1124678,
+    "opaque": 880,
+    "partial": 446958,
+    "sha256": "fce83023477c9ef464a208fe03bbb147c7c68f221d9624e779f7178cfa1469e0"
+  }
+]

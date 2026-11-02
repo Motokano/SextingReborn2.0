@@ -72,7 +72,7 @@
     /** 目标 owner：敌方按 enemyId、玩家按 'player' */
     function defenderOwnerId(ctx) {
         var def = (ctx && ctx.defender) || {};
-        if (def.kind === 'enemy' && def.enemyId != null) return String(def.enemyId);
+        if (def.kind === 'enemy' && def.enemyId != null) return global.CombatEnemies && global.CombatEnemies.ownerOf ? global.CombatEnemies.ownerOf(def) : String(def.enemyId);
         return 'player';
     }
 

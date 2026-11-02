@@ -88,7 +88,13 @@
     "test:forging": "node tools/build-forging-runtime.mjs --check && node tools/test-forging-runtime.mjs && node tools/test-forging-integration.mjs",
     "prototype:manufacturing": "node tools/serve-live.mjs 8023",
     "prototype:water-flask": "node tools/serve-live.mjs 8024",
-    "prototype:water-flask:logic": "node tools/water-flask-prototype-cli.mjs"
+    "prototype:water-flask:logic": "node tools/water-flask-prototype-cli.mjs",
+    "test:recipe-study-room": "node tools/test-recipe-study-room.mjs",
+    "editor:recipe-study": "node tools/recipe-study-range-server.mjs",
+    "test:recipe-study-editor": "node --test tools/test-recipe-study-range-editor.mjs",
+    "test:dungeon-recipe-ranges": "node tools/test-dungeon-recipe-ranges.mjs",
+    "build:manufacturing-knowledge": "node tools/build-manufacturing-knowledge.mjs",
+    "test:recipe-study": "node tools/build-manufacturing-knowledge.mjs --check && node tools/test-recipe-study-point.mjs && node tools/test-recipe-study-point.mjs --svelte"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "6.2.4",

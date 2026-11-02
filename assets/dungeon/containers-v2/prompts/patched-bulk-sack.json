@@ -1,0 +1,15 @@
+{
+  "file": "patched-bulk-sack",
+  "state": "unsearched",
+  "prompt": "Use case: stylized-concept. Make ONE production-ready transparent game sprite, a completely NEW drawing of a patched bulk storage sack, CLOSED / UNSEARCHED. Image 1 is the mandatory hand-painted cartoon STYLE anchor only: clean strong dark contours, broad simple light/shadow masses, restrained detail. Images 2 and 3 are APPROVED furniture style, finish and material references. Image 4 is ONLY the exact orthographic geometry reference: 45-degree elevated camera, ground axes slope +0.7071 and -0.7071, upright verticals, NO perspective convergence. Do not draw the reference character, pedestal, rack, chest or geometric block. Subject: squat, broad, heavy off-white canvas bulk sack; a nearly square footprint, all four sides have real depth; four short tan lifting loops; two clearly shaped contrasting repairs (one muted teal canvas patch and one ochre patch); thick rope cinches the top closed. Keep one large bulge per side and 3-5 purposeful cloth folds. LOCAL wear only at lower corners and tied mouth. Worn reusable object from a society with modern industrial remnants and scarcity, not nuclear rubble. Critical rendering style: match the thick clean illustrated edges and large matte painted planes of the approved references; NO photographic canvas grain, faceted low-poly noise, hairline stitching, dense scratches, shiny 3D render or beige grunge filter. Clear volume at only 90 pixels wide in game. Footprint about 0.65 by 0.65 grid cells, body knee-to-waist high beside the existing small pawn, NOT tall and thin. Native angle must already follow the grid; no later stretch. Compose centered with complete bottom and comfortable margins. Genuine transparent RGBA background, no floor, no cast shadow, no platform/base, no grid, no text, no other props.",
+  "references": [
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/street-thugs-v1/tier-1.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/street-thug-boss-room-v6/private-cache.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/street-thug-boss-room-v6/transit-rack.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/street-thug-boss-room-v5/cache-geometry.png"
+  ],
+  "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-f023070d-2247-4447-910e-f0955c299483.png",
+  "tool": "built-in image_gen",
+  "status": "registered-current",
+  "appliedFile": "patched-bulk-sack.png"
+}

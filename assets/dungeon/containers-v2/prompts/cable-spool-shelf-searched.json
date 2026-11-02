@@ -1,0 +1,13 @@
+{
+  "file": "cable-spool-shelf-searched",
+  "state": "searched",
+  "prompt": "Use case: precise-object-edit. Image 1 is the NEW container sprite to edit, image 2 the approved cartoon style anchor only. Produce its EMPTY / SEARCHED state. Preserve exactly image 1's canvas size, base body dimensions, ground contact coordinates, camera, color blocks, thick contour quality, hardware and repairs. Never reframe, shrink the box to fit its opened lid, rotate the whole object or distort its proportions. Change only lid/door/contents as specified: Remove tin and parcel; same spool, boards, central column, dimensions, base and angle, now empty. Match the same broad matte painted planes and simple readable contours. Do not introduce fine texture, dense scratches, extra objects or new supporting parts. True RGBA transparency in all empty/background pixels and gaps; no backdrop, floor, glow, cast shadow, pedestal, grid, text.",
+  "references": [
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/containers-v2/cable-spool-shelf.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/street-thugs-v1/tier-1.png"
+  ],
+  "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-9548cd13-be59-4271-9f49-6c0a1dc8bd82.png",
+  "tool": "built-in image_gen",
+  "status": "registered-current",
+  "appliedFile": "cable-spool-shelf-searched.png"
+}

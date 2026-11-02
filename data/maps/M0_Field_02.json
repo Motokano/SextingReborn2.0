@@ -1,4 +1,5 @@
 {
+  "npcs": [{"npc_id":"npc.checkpoint.ruins","x":8,"y":7}],
   "map_id": "M0_Field_02",
   "name": "前往金木镇的路",
   "width": 16,

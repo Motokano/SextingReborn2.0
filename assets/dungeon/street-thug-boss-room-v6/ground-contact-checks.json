@@ -1,0 +1,105 @@
+{
+  "referenceTileWidth": 144,
+  "note": "Measured visible contacts only; hidden rear foot and all contour edges are not asserted exact.",
+  "contacts": [
+    {
+      "id": "dining",
+      "errorsPx": {
+        "left": 3.0550701115473693e-15,
+        "near": 0,
+        "right": 3.0550701115473693e-15
+      },
+      "maxErrorPx": 3.0550701115473693e-15
+    },
+    {
+      "id": "chair",
+      "errorsPx": {
+        "left": 0.3903771622652946,
+        "near": 0.5520766773162938,
+        "right": 0.3903771622652946
+      },
+      "maxErrorPx": 0.5520766773162938
+    },
+    {
+      "id": "sleeping",
+      "errorsPx": {
+        "left": 2.464263709846641,
+        "near": 3.484995159728946,
+        "right": 2.464263709846641
+      },
+      "maxErrorPx": 3.484995159728946
+    },
+    {
+      "id": "sideboard",
+      "errorsPx": {
+        "left": 1.1703836378260108,
+        "near": 1.6551724137931034,
+        "right": 1.1703836378260108
+      },
+      "maxErrorPx": 1.6551724137931034
+    },
+    {
+      "id": "fan",
+      "errorsPx": {
+        "left": 0.014834407996921201,
+        "near": 0.02097902097902098,
+        "right": 0.014834407996921201
+      },
+      "maxErrorPx": 0.02097902097902098
+    },
+    {
+      "id": "cargo",
+      "errorsPx": {
+        "left": 1.4422574573776465,
+        "near": 2.039660056657219,
+        "right": 1.4422574573776465
+      },
+      "maxErrorPx": 2.039660056657219
+    },
+    {
+      "id": "mat",
+      "errorsPx": {
+        "left": 1.228432156055991,
+        "near": 1.7372654155495937,
+        "right": 1.228432156055991
+      },
+      "maxErrorPx": 1.7372654155495937
+    },
+    {
+      "id": "den-private",
+      "errorsPx": {
+        "left": 0.43672497142934563,
+        "near": 0.6176223776223777,
+        "right": 0.43672497142934563
+      },
+      "maxErrorPx": 0.6176223776223777
+    },
+    {
+      "id": "den-private-searched",
+      "errorsPx": {
+        "left": 0.638446449868354,
+        "near": 0.9028996282527884,
+        "right": 0.638446449868354
+      },
+      "maxErrorPx": 0.9028996282527884
+    },
+    {
+      "id": "den-basket",
+      "errorsPx": {
+        "left": 0.31216754219607434,
+        "near": 0.44147157190635244,
+        "right": 0.31216754219607434
+      },
+      "maxErrorPx": 0.44147157190635244
+    },
+    {
+      "id": "den-basket-searched",
+      "errorsPx": {
+        "left": 0.31216754219607434,
+        "near": 0.44147157190635244,
+        "right": 0.31216754219607434
+      },
+      "maxErrorPx": 0.44147157190635244
+    }
+  ]
+}

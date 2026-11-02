@@ -1,0 +1,11 @@
+{
+  "id": "first-aid-trolley-used",
+  "prompt": "Edit the supplied transparent game sprite into its used state. Medical supplies consumed: remove gauze stacks and closed medicines, leave empty metal tray, one empty uncapped bottle, opened gray metal box below and loose used cloth. Keep frame and wheels exactly. CRITICAL: retain exact original canvas size, object scale, base/body position, ground contacts, camera, paint palette, broad hand-painted shading, dark outlines and repair marks. Do not recompose or zoom. Change only specified contents or state. True alpha transparency throughout empty pixels and gaps. No background, ground, pedestal, cast shadow, glow, labels or text. One isolated sprite.",
+  "references": [
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/grid-scene-v1/first-aid-trolley.png"
+  ],
+  "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-c061820c-9813-4b07-96e2-5e47342c175a.png",
+  "tool": "built-in image_gen",
+  "status": "registered-current",
+  "appliedFile": "first-aid-trolley-used.png"
+}

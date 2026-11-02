@@ -1,0 +1,13 @@
+{
+  "file": "factory-locker-cache-searched",
+  "state": "searched",
+  "prompt": "Use case: precise-object-edit. Image 1 is the NEW container sprite to edit, image 2 the approved cartoon style anchor only. Produce its EMPTY / SEARCHED state. Preserve exactly image 1's canvas size, base body dimensions, ground contact coordinates, camera, color blocks, thick contour quality, hardware and repairs. Never reframe, shrink the box to fit its opened lid, rotate the whole object or distort its proportions. Change only lid/door/contents as specified: Open the same tall door, reveal two empty shelves and one simple coat hook. Preserve body, short feet, base, dimensions, handle and angle. Match the same broad matte painted planes and simple readable contours. Do not introduce fine texture, dense scratches, extra objects or new supporting parts. True RGBA transparency in all empty/background pixels and gaps; no backdrop, floor, glow, cast shadow, pedestal, grid, text. IMPORTANT: existing hinge edge is screen-right of the front opening. Open the door toward screen right on those exact hinges, never move hinges to the left.",
+  "references": [
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/containers-v2/factory-locker-cache.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/street-thugs-v1/tier-1.png"
+  ],
+  "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-c104c824-f3c5-49af-9d31-c732dd5884e5.png",
+  "tool": "built-in image_gen",
+  "status": "registered-current",
+  "appliedFile": "factory-locker-cache-searched.png"
+}

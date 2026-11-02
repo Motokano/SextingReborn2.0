@@ -1,0 +1,62 @@
+{
+  "date": "2026-11-02",
+  "tool": "built-in image_gen",
+  "status": "candidate-not-user-approved",
+  "references": [
+    {
+      "path": "reference/recipe-study-point-v1/geometry.png",
+      "role": "geometry edit target",
+      "sha256": "8def798ebd1a9b8a7c538556314f8c024beece64ff3d9dbe063872ebb3dc2f50"
+    },
+    {
+      "path": "reference/street-thugs-v1/tier-1.png",
+      "role": "approved style reference",
+      "sha256": "49712c9e0bcdcfd57c81a901916c55107e324ccae93ca91aaa4b0e43fb811817"
+    },
+    {
+      "path": "assets/map/isometric/interactive-devices-v1/toolbench.png",
+      "role": "approved style reference",
+      "sha256": "18557a8513ec9311a92fa7fa8d1ef580f0617864c761e5e17363149926b20d05"
+    },
+    {
+      "path": "assets/dungeon/street-thug-boss-room-v6/factory-desk.png",
+      "role": "approved style reference",
+      "sha256": "ee785470c31df9beea26a120dd639c2dca03d657904dc555e1bbe57ec273982e"
+    }
+  ],
+  "outputs": [
+    {
+      "state": "available",
+      "originalSource": "C:/Users/haoxian.huang/.codex/generated_images/01a199e0-bec6-7310-851c-5de06cae4c7b/exec-c395b1aa-faca-4907-8581-f4483faaceb4.png",
+      "projectSource": "assets/dungeon/recipe-study-point-v1/available.png",
+      "sha256": "f24a4ac312fc20b74c98557b3ecb32f0529210d85f9a4d2d18b2eb9799c6cb71",
+      "prompt": "assets/dungeon/recipe-study-point-v1/prompt-available.txt",
+      "inputPaths": [
+        "reference/recipe-study-point-v1/geometry.png",
+        "reference/street-thugs-v1/tier-1.png",
+        "assets/map/isometric/interactive-devices-v1/toolbench.png",
+        "assets/dungeon/street-thug-boss-room-v6/factory-desk.png"
+      ],
+      "copiedWithoutModification": true
+    },
+    {
+      "state": "used",
+      "originalSource": "C:/Users/haoxian.huang/.codex/generated_images/01a199e0-bec6-7310-851c-5de06cae4c7b/exec-62cc99ee-73e7-44d2-b46c-f1ec1101cd79.png",
+      "projectSource": "assets/dungeon/recipe-study-point-v1/used.png",
+      "sha256": "fce83023477c9ef464a208fe03bbb147c7c68f221d9624e779f7178cfa1469e0",
+      "prompt": "assets/dungeon/recipe-study-point-v1/prompt-used.txt",
+      "inputPaths": [
+        "assets/dungeon/recipe-study-point-v1/available.png",
+        "reference/street-thugs-v1/tier-1.png",
+        "assets/map/isometric/interactive-devices-v1/toolbench.png",
+        "assets/dungeon/street-thug-boss-room-v6/factory-desk.png"
+      ],
+      "copiedWithoutModification": true
+    }
+  ],
+  "notes": [
+    "Used state is an image_gen edit of available; minor generated pixel differences remain outside folio; not a pixel-identical body claim.",
+    "Both PNGs have equal source dimensions, common crop, anchor, scale and contacts.",
+    "No gameplay, loot, configuration editor, recipe grant or save changes in this art delivery."
+  ]
+}

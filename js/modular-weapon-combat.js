@@ -272,7 +272,7 @@
   if(a.repeatIndex===0&&a.advanceCycle!==false)s.attackCursor=(s.attackOrder.indexOf(a.slot)+1)%order.length;
   const allowed=!ctx.blockTargetEffects&&!ctx.forceZeroDamageByResourceInsufficient;
   if(!allowed)return;
-  const target=ctx.defender?.kind==='enemy'?String(ctx.defender.enemyId):'player';
+  const target=g.CombatEnemies?.ownerOf?g.CombatEnemies.ownerOf(ctx.defender):ctx.defender?.kind==='enemy'?String(ctx.defender.enemyId):'player';
   const hit=segments.some(x=>x.hitRollSuccess),damaged=segments.some(x=>x.hitRollSuccess&&x.finalDamage>0);
   const buff=(id)=>g.BuffSystem?.applyBuff(target,id,SKILL,{tick:tick()});
   const id=a.move.id;

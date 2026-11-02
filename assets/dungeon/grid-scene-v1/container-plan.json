@@ -1,0 +1,170 @@
+[
+  [
+    "overturned-cart",
+    "翻倒的货车",
+    0.96,
+    "A small overturned industrial handcart, not a motor vehicle. Old gray steel chassis tilted sideways, two uneven wheels, a couple of battered brown parcels still held in its cargo tray by a frayed strap. Low silhouette, all wheels and packages confined to a single .95x.85 tile, vertical height30px at tile144. The cart's rectangle ground projection follows the grid despite its broken wheel. Filled unsearched state."
+  ],
+  [
+    "abandoned-cargo",
+    "废弃货堆",
+    0.94,
+    "Compact abandoned goods pile: two mismatched reusable packing crates, one dented blue plastic case and a sagging khaki cloth bundle tied by one old rope. Whole pile fills a square .90x.90 tile, height40px at tile144, coherent ground corners aligned with grid. No separate wooden pallet/plinth or loose objects outside footprint. Still full before searching."
+  ],
+  [
+    "damaged-barrel",
+    "破损木桶",
+    0.68,
+    "One small upright wooden storage barrel with dull iron bands, a split stave repaired with a sheet-metal patch and a rough closed lid. Modern reused cask, no medieval ornaments. Round footprint diameter.65tile, vertical height38px at tile144. Top ellipse ratio0.707. No separate ground or platform, closed unsearched state."
+  ],
+  [
+    "lost-backpack",
+    "遗落背包",
+    0.48,
+    "A small slumped olive canvas hiking backpack with patched fabric, chunky zipper, a tied cloth carry strap and one empty side pocket. Main flap fastened, filled but not oversized. Ground .45x.4tile, vertical height26px at tile144. Modern salvaged practical bag, two or three big fabric folds, isolated no floor. Unsearched."
+  ],
+  [
+    "collapsed-shelf",
+    "倒塌货架",
+    0.96,
+    "A low partially collapsed gray steel store shelf, still holding two small dented tins, one cardboard parcel and a rumpled rag. One side brace bent but the rectangular ground footprint is aligned with grid, .95x.85 tile and height33px at tile144. Not a tall bookcase or a wooden medieval rack. Worn steel, a replacement board, concentrated mess inside footprint. Unsearched full state."
+  ],
+  [
+    "salvaged-shopping-cart",
+    "旧购物车货笼",
+    0.88,
+    "A salvaged supermarket wire shopping trolley, rusty gray tubular frame, dark green repaired handle, small wheels, two bundled parcels and one worn canvas bag inside wire basket. Ground .85x.70tile, height45px at tile144. True hand-painted bold contour style with only enough mesh to read at small size, no photoreal wire noise. No extra floor or base. Full unsearched."
+  ],
+  [
+    "reused-plastic-drum",
+    "蓝塑料储物桶",
+    0.72,
+    "One squat reused blue plastic storage drum, broad dark screw cap closed, faded body with a cream tape repair and molded handles. Round base diameter.70tile, height40px at tile144. Not a metal oil barrel. Top and bottom ellipses ground ratio.707, broad painted light/shade, few directional scratches, closed unsearched."
+  ],
+  [
+    "reused-washer-drum",
+    "洗衣机内胆货篓",
+    0.72,
+    "A washing machine stainless drum repurposed as an open storage basket, small circular perforations simplified to grouped dark marks, rim lined with a frayed olive cloth, two small cloth bundles packed inside. Round footprint diameter.70tile, height28px at tile144, no complete washing machine. Full unsearched, broad gray painted metallic faces, no mirror chrome."
+  ],
+  [
+    "patched-suitcase",
+    "补缀拉杆箱",
+    0.55,
+    "An upright modest travel suitcase, dusty burgundy cloth casing with stitched khaki patch, replacement wheel and short extended pull handle. Zippers closed. Base .5x.4tile, height42px at tile144 including handle. Thick hand-drawn edges, folds only at fabric seams, no modern logo. Unsearched."
+  ],
+  [
+    "repaired-cooler",
+    "修补保温箱",
+    0.68,
+    "One squat cream and faded teal insulated cooler box, closed lid, chunky carry handle, a replacement metal latch and a broad tape patch on corner. Ground .65x.55tile, vertical height23px at tile144. Human hand-carried portable scale, no pedestal. Closed unsearched."
+  ],
+  [
+    "rice-cooker-cache",
+    "旧电饭煲藏物罐",
+    0.4,
+    "A small unplugged old rice cooker used as a hidden storage pot, cream enamel cylinder, faded dark red band, simple closed hinged lid with black handle. Broken cable coiled tight against body, one chipped edge. Round footprint diameter.38tile, vertical height20px at tile144. This must remain a tiny household pot next to a person, not a huge tank. No glow/electricity. Closed unsearched."
+  ],
+  [
+    "pressure-pot-cache",
+    "旧压力锅储物罐",
+    0.46,
+    "Small old aluminum pressure cooker reused as storage, dull painted gray rounded body, black side grips close to body, locked lid with tiny steam valve and one riveted patch. Round body diameter.38tile, total handle width .48tile, height21px at tile144. No cooking flame, steam, electricity. Closed unsearched."
+  ],
+  [
+    "computer-tower-cabinet",
+    "旧机箱杂物柜",
+    0.55,
+    "Old desktop computer tower repurposed into storage, charcoal rectangular steel box, ventilation slits, side panel held shut with wire and a replacement wooden knob. Mainboard removed but NOT visible when closed. No lights, no screen, no logos. Base .5x.45tile, height38px at tile144. Closed unsearched."
+  ],
+  [
+    "wheelie-bin-cache",
+    "带轮垃圾桶货筒",
+    0.67,
+    "An old dark olive wheeled refuse bin repurposed for storing goods, hinged lid closed, two black wheels and molded handle, riveted metal repair near bottom, faded paint. .6x.6tile footprint, height47px at tile144. Neat recognizable silhouette with used surfaces, no garbage spilling outside, no smell cloud. Closed unsearched."
+  ],
+  [
+    "postbox-cache",
+    "旧邮筒藏物柜",
+    0.63,
+    "A low old dark red metal mailbox repurposed as a storage cupboard, rectangular housing with sloped weather cap, empty letter slot, closed lower access door and repaired handle. Ground .60x.55tile, height47px at tile144, NO pole or display pedestal, directly stands on its bottom. No numbers, lettering or symbols. Closed unsearched."
+  ],
+  [
+    "factory-locker-cache",
+    "旧更衣柜",
+    0.67,
+    "A single old steel factory locker, muted teal with chipped cream edge and a replacement handle, three ventilation slits, dented lower door. Closed one-piece door; compact .6x.55tile footprint, body vertical height70px at tile144, grounded feet. NOT huge multi-door wall locker. No labels/text, no powered lighting."
+  ],
+  [
+    "vending-machine-cupboard",
+    "旧售货机货柜",
+    0.9,
+    "One old unplugged vending machine reused as storage cabinet, faded ochre metal frame and charcoal glassless front panel held closed, inset dark shelves dimly visible behind dull panel, patched lower slot, no visible food brands, text, light or power. Square .85x.85tile base and height78px at tile144. Broad readable shapes, a few use marks, closed unsearched."
+  ],
+  [
+    "pram-cargo-basket",
+    "旧婴儿车货篮",
+    0.78,
+    "Old baby pram frame repurposed as cargo basket: worn cream cloth sling, dark gray tubular handle, four small wheels, two wrapped parcels and one tied cloth sack, NO baby, no dolls. Ground .75x.6tile, height42px at tile144. Cloth patches and one replaced wheel, broad shapes, full unsearched."
+  ],
+  [
+    "wire-cage-trolley",
+    "铁网周转货笼",
+    0.91,
+    "Square industrial wire cage on four small caster wheels, one side gate closed with a simple latch, dull blue-gray steel frame, two mismatched old boxes and khaki parcel inside. Ground .9x.9tile, vertical height55px at tile144. Mesh simplified for small game size, heavy contour corners, not photoreal fine wire. Full unsearched."
+  ],
+  [
+    "stacked-plastic-crates",
+    "叠放周转筐",
+    0.82,
+    "Two stacked reused plastic delivery crates, lower faded blue, upper dull red with one repaired corner, upper holds two small fabric parcels and folded canvas. Square .8x.8tile footprint, vertical stack height40px at tile144. Broad slotted shapes align exactly to ground axes; no floor pallet. Full unsearched."
+  ],
+  [
+    "sideways-oil-drum-cabinet",
+    "横置铁桶柜",
+    0.88,
+    "A short oil drum laid horizontally on two tiny directly attached metal feet, repurposed into a cabinet; dull ochre barrel with charcoal hoops, rectangular side hatch closed by an improvised latch, chipped paint by hatch. .85x.65tile footprint, height34px at tile144. Cylinder axis along one grid axis; no platform underneath. Closed unsearched."
+  ],
+  [
+    "cable-spool-shelf",
+    "电缆卷盘货架",
+    0.85,
+    "A wooden cable spool reused as a squat circular storage shelf, dark bolted center, two worn round flanges, open side holding one small tin and a cloth bundle. One replacement board, charcoal metal fittings. Round diameter.85tile footprint, height34px at tile144. Do not add a separate round pedestal; the spool itself is the functional object. Full unsearched."
+  ],
+  [
+    "milk-churn-storage",
+    "旧奶罐",
+    0.48,
+    "A reused small dull aluminum milk churn with two small side loop handles, fitted lid closed, broad dent and cloth tied around lid loop. Round base diameter.42tile, total width.5tile, height33px at tile144. Brushed hand-painted gray, soft highlight blocks not photoreal metal. Closed unsearched."
+  ],
+  [
+    "motorcycle-topbox-cache",
+    "旧摩托尾箱",
+    0.55,
+    "Detached motorcycle rear cargo topbox, faded blue rounded rectangular hard plastic case, black lower half, closed latch, one pale repair patch. Small ground .55x.45tile, height22px at tile144. No motorcycle, no extra stand or platform. Closed unsearched."
+  ],
+  [
+    "tire-storage-basket",
+    "轮胎储物筐",
+    0.7,
+    "An old black vehicle tire reused as a storage basket with a sewn khaki canvas liner and two rope handles. Two small tied packages fill the central hollow. Round diameter.70tile footprint, low height22px at tile144, readable worn tread shapes, not photoreal texture. No floor or platform. Full unsearched."
+  ],
+  [
+    "aluminum-flight-case",
+    "旧器材航空箱",
+    0.7,
+    "Squat rectangular equipment flight case, dull dark gray panels with silver aluminum edges, two black metal latches and one recessed handle, one replaced corner fitting and old cream tape patch. .7x.55tile footprint, height25px at tile144. Closed lid, no logo, no text. Hand-painted broad metal highlights."
+  ],
+  [
+    "marine-buoy-cache",
+    "浮球藏物罐",
+    0.58,
+    "A salvaged orange marine float repurposed as a lidded storage vessel, rounded buoy body with flattened stable bottom, short dark cap closed, one rope loop and a cream repair patch. Round footprint diameter.55tile, height35px at tile144. No water, no base, no floating effects. Closed unsearched."
+  ],
+  [
+    "patched-bulk-sack",
+    "补缀吨袋",
+    0.92,
+    "One squat heavy woven bulk sack, dirty cream with two obvious mismatched canvas patches and four short lifting loops, gathered top tied shut, broad filled body. Square-ish .9x.85tile ground footprint aligned to both axes, height42px at tile144. Large purposeful folds, no fine woven noise, no ground debris, no pallet. Closed full unsearched."
+  ]
+]

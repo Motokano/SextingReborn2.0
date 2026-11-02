@@ -1,0 +1,13 @@
+{
+  "file": "patched-bulk-sack-searched",
+  "state": "searched",
+  "prompt": "Use case: precise-object-edit. Image 1 is the NEW sack sprite to edit. Image 2 is the approved hand-painted style anchor only. Create the EMPTY / SEARCHED state of exactly the same sack: Untie and fold back the cloth mouth into a broad open rim. Show the empty dark cloth interior, with no goods. Keep the same body outline, bulges, loops, patches and bottom. Match image 1 exactly in canvas size, camera, square bottom silhouette, relative coordinates and object scale. Change ONLY the tied cloth mouth and contents. Clear broad shapes, thick clean dark outlines, matte painted shadow planes, minimal stitching and localized wear. Keep all four lifting loops, the teal and ochre patches and bottom corners exactly where they are. Do not shrink, narrow, tilt, recompose or add new folds across the body. Genuine RGBA transparency, no floor, shadow, platform, words or grid.",
+  "references": [
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/containers-v2/patched-bulk-sack.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/street-thugs-v1/tier-1.png"
+  ],
+  "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-137347db-8f10-40d6-88b7-fcf5f03e90b9.png",
+  "tool": "built-in image_gen",
+  "status": "registered-current",
+  "appliedFile": "patched-bulk-sack-searched.png"
+}

@@ -1,0 +1,18 @@
+[
+  {
+    "id": "workshop-machine-v1",
+    "name": "旧车间车床",
+    "category": "decor",
+    "sourceRoot": "assets/dungeon/workshop-lathe-v2/",
+    "projectionMode": "native",
+    "tileWidth": 1.28,
+    "logicalFootprint": [2, 1],
+    "nativeFacing": "long axis +x, operator side +y",
+    "heightReference": "144px格宽：床面实体高度约43px，机头约70px；主角85–90px",
+    "contactKind": "cabinet foot outer ground corners, left / near / right",
+    "normal": {
+      "file": "workshop-machine-v1",
+      "contacts": [[111, 635], [882, 1180], [1108, 1019]]
+    }
+  }
+]

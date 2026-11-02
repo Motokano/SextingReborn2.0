@@ -1,6 +1,118 @@
 {
   "_comment": "战斗用敌人模板。地图 map.enemies[].enemy_id 须与此表键一致。can_attack 供后续敌方回合 AI；limbs_invulnerable 为 true 时不累计部位损毁（测试木桩）。",
   "enemies": {
+    "enemy.street_thug_boss": {
+      "_doc": "74号设计：第四层可选地头头目。技能120，固定消耗，不随底气上限增长。派生数值由CombatEnemyBoss使用共用技能曲线计算。",
+      "boss": {
+        "skill_level": 120,
+        "proficiency_ratio": 0.1,
+        "skills": [
+          "combat_basic_unarmed",
+          "combat_rogue_sanda",
+          "combat_basic_footwork",
+          "combat_basic_breath"
+        ],
+        "innate": {
+          "jingu": 20,
+          "flexibility": 16,
+          "breath": 18,
+          "dexterity": 18,
+          "focus": 12
+        },
+        "trained": {
+          "jingu": 4,
+          "flexibility": 4,
+          "breath": 6,
+          "dexterity": 4,
+          "focus": 4
+        },
+        "diqi_max": 500,
+        "ordinary_diqi_cost": 14,
+        "knee_diqi_cost": 21
+      },
+      "can_attack": true,
+      "action_selection": "street_thug_boss",
+      "body_part_destroy_max": {
+        "head": 60,
+        "chest": 120,
+        "abdomen": 90,
+        "lhand": 48,
+        "rhand": 60,
+        "lfoot": 72,
+        "rfoot": 72
+      },
+      "qi_li_max": 100,
+      "qi_li_initial": 100,
+      "qi_li_regen_per_turn": 0,
+      "armor": {
+        "chest": {
+          "blunt": 0.25,
+          "slash": 0.25,
+          "pierce": 0.25
+        },
+        "abdomen": {
+          "blunt": 0.25,
+          "slash": 0.25,
+          "pierce": 0.25
+        }
+      },
+      "head_armor": {},
+      "shield_remaining": 30,
+      "counter_post_effect_ids": [],
+      "actions": [
+        {
+          "id": "swing_punch",
+          "skill_id": "combat_basic_unarmed",
+          "limb": "rhand",
+          "qi_cost": 25,
+          "diqi_cost": 14
+        },
+        {
+          "id": "poke_eye",
+          "skill_id": "combat_rogue_sanda",
+          "limb": "rhand",
+          "qi_cost": 25,
+          "diqi_cost": 14
+        },
+        {
+          "id": "kick_knee",
+          "skill_id": "combat_rogue_sanda",
+          "limb": "rfoot",
+          "required_limbs": [
+            "lfoot"
+          ],
+          "qi_cost": 25,
+          "diqi_cost": 14
+        },
+        {
+          "id": "shove",
+          "skill_id": "combat_rogue_sanda",
+          "limb": "lhand",
+          "qi_cost": 25,
+          "diqi_cost": 14
+        },
+        {
+          "id": "collar_knee",
+          "name": "扯领膝撞",
+          "skill_id": "combat_rogue_sanda",
+          "limb": "rfoot",
+          "required_limbs": [
+            "lhand",
+            "lfoot"
+          ],
+          "qi_cost": 25,
+          "diqi_cost": 21,
+          "move_power_multiplier": 1.2,
+          "damage_type": "blunt",
+          "hit_segments": 1,
+          "stun_head_hit": 35,
+          "hit_part_weights": {
+            "chest": 0.3,
+            "abdomen": 0.7
+          }
+        }
+      ]
+    },
     "enemy.training_dummy_wooden": {
       "speed": 10,
       "parry_rate": 0,
@@ -18,6 +130,30 @@
       "parry_rate": 0.1,
       "parry_damage_reduce": 0.1,
       "can_attack": true,
+      "body_part_destroy_max": {
+        "head": 50,
+        "chest": 100,
+        "abdomen": 80,
+        "lhand": 100,
+        "rhand": 100,
+        "lfoot": 100,
+        "rfoot": 100
+      },
+      "actions": [
+        {
+          "id": "sparring_punch",
+          "fx_move_id": "jab",
+          "name_key": "enemy.action.thug_punch",
+          "limb": "rhand",
+          "power_min": 4,
+          "power_max": 10,
+          "damage_type": "blunt",
+          "qi_cost": 0,
+          "hit_part_weights": {
+            "chest": 1
+          }
+        }
+      ],
       "attack_damage_min": 4,
       "attack_damage_max": 10,
       "attack_damage_type": "blunt",
@@ -27,7 +163,7 @@
       "shield_remaining": 0
     },
     "enemy.street_thug": {
-      "_doc": "最简单的基础敌对单位（10-enemies 示例）：会还手、无招架、无减伤、无特殊机制。玩家初始战斗速度约 1（身手 10 × 步法基础 1），速度 2 下玩家命中约 46%、地痞命中约 86%，伤害低，前期可打赢；与「流氓散手」同源定位（用同一套脏招：挥拳/踹膝/推搡，均为低配版）。actions[] 为攻击动作列表（10-enemies 敌人动作系统）；未配 actions 或气力不足时回退 attack_damage_* 通用还击。AI：aggro_radius 内主动追击、贴脸攻击（attack_interval_ticks 冷却）、超出 leash_radius 脱战回巢。掉落池待掉落系统接线后补。",
+      "_doc": "基础地痞的既有试用数值，本轮不重新定平衡。72号规则：每条招式依赖配置肢体；无合法招式时不攻击，不回退通用挥拳。七部位、气力和状态按实例保存。野外按仇恨范围追击；地牢视野、回位与疗伤由DungeonRuntime管理。",
       "speed": 2,
       "body_part_destroy_max": {
         "head": 20,
@@ -112,6 +248,279 @@
       "armor": {},
       "head_armor": {},
       "shield_remaining": 0
+    },
+    "enemy.street_thug_tier1": {
+      "name": "街头混混",
+      "thug": {
+        "tier": 1,
+        "skill_level": 60,
+        "proficiency_ratio": 0,
+        "innate": {
+          "jingu": 12,
+          "flexibility": 10,
+          "breath": 10,
+          "dexterity": 11,
+          "focus": 8
+        },
+        "trained": {
+          "jingu": 1,
+          "flexibility": 1,
+          "breath": 1,
+          "dexterity": 1,
+          "focus": 1
+        },
+        "diqi_max": 200,
+        "ordinary_diqi_cost": 6,
+        "diqi_regen": 0.3,
+        "meditation_gain": 13
+      },
+      "can_attack": true,
+      "action_selection": "weighted",
+      "body_part_destroy_max": {
+        "head": 26,
+        "chest": 52,
+        "abdomen": 39,
+        "lhand": 26,
+        "rhand": 26,
+        "lfoot": 31,
+        "rfoot": 31
+      },
+      "qi_li_max": 100,
+      "qi_li_initial": 100,
+      "qi_li_regen_per_turn": 0,
+      "armor": {
+        "chest": {
+          "blunt": 0,
+          "slash": 0,
+          "pierce": 0
+        },
+        "abdomen": {
+          "blunt": 0,
+          "slash": 0,
+          "pierce": 0
+        }
+      },
+      "head_armor": {},
+      "shield_remaining": 0,
+      "counter_post_effect_ids": [],
+      "actions": [
+        {
+          "id": "swing_punch",
+          "limb": "rhand",
+          "skill_id": "combat_basic_unarmed",
+          "selection_weight": 60,
+          "qi_cost": 25,
+          "diqi_cost": 6
+        },
+        {
+          "id": "poke_eye",
+          "limb": "rhand",
+          "skill_id": "combat_rogue_sanda",
+          "selection_weight": 20,
+          "qi_cost": 25,
+          "diqi_cost": 6
+        },
+        {
+          "id": "kick_knee",
+          "limb": "rfoot",
+          "skill_id": "combat_rogue_sanda",
+          "selection_weight": 20,
+          "qi_cost": 25,
+          "diqi_cost": 6,
+          "required_limbs": [
+            "lfoot"
+          ]
+        }
+      ]
+    },
+    "enemy.street_thug_tier2": {
+      "name": "看场打手",
+      "thug": {
+        "tier": 2,
+        "skill_level": 80,
+        "proficiency_ratio": 0.03,
+        "innate": {
+          "jingu": 14,
+          "flexibility": 12,
+          "breath": 12,
+          "dexterity": 13,
+          "focus": 10
+        },
+        "trained": {
+          "jingu": 2,
+          "flexibility": 2,
+          "breath": 2,
+          "dexterity": 2,
+          "focus": 1
+        },
+        "diqi_max": 300,
+        "ordinary_diqi_cost": 8,
+        "diqi_regen": 0.4,
+        "meditation_gain": 20
+      },
+      "can_attack": true,
+      "action_selection": "conditional",
+      "body_part_destroy_max": {
+        "head": 39,
+        "chest": 78,
+        "abdomen": 59,
+        "lhand": 39,
+        "rhand": 39,
+        "lfoot": 47,
+        "rfoot": 47
+      },
+      "qi_li_max": 100,
+      "qi_li_initial": 100,
+      "qi_li_regen_per_turn": 0,
+      "armor": {
+        "chest": {
+          "blunt": 0.15,
+          "slash": 0.15,
+          "pierce": 0.15
+        },
+        "abdomen": {
+          "blunt": 0.15,
+          "slash": 0.15,
+          "pierce": 0.15
+        }
+      },
+      "head_armor": {},
+      "shield_remaining": 10,
+      "counter_post_effect_ids": [],
+      "actions": [
+        {
+          "id": "swing_punch",
+          "limb": "rhand",
+          "skill_id": "combat_basic_unarmed",
+          "selection_weight": 60,
+          "qi_cost": 25,
+          "diqi_cost": 8
+        },
+        {
+          "id": "poke_eye",
+          "limb": "rhand",
+          "skill_id": "combat_rogue_sanda",
+          "selection_weight": 20,
+          "qi_cost": 25,
+          "diqi_cost": 8
+        },
+        {
+          "id": "kick_knee",
+          "limb": "rfoot",
+          "skill_id": "combat_rogue_sanda",
+          "selection_weight": 20,
+          "qi_cost": 25,
+          "diqi_cost": 8,
+          "required_limbs": [
+            "lfoot"
+          ]
+        },
+        {
+          "id": "shove",
+          "limb": "lhand",
+          "skill_id": "combat_rogue_sanda",
+          "selection_weight": 1,
+          "qi_cost": 25,
+          "diqi_cost": 8
+        }
+      ]
+    },
+    "enemy.street_thug_tier3": {
+      "name": "老练狠角色",
+      "thug": {
+        "tier": 3,
+        "skill_level": 100,
+        "proficiency_ratio": 0.05,
+        "innate": {
+          "jingu": 17,
+          "flexibility": 14,
+          "breath": 15,
+          "dexterity": 16,
+          "focus": 12
+        },
+        "trained": {
+          "jingu": 3,
+          "flexibility": 3,
+          "breath": 3,
+          "dexterity": 2,
+          "focus": 2
+        },
+        "diqi_max": 400,
+        "ordinary_diqi_cost": 10,
+        "diqi_regen": 0.5,
+        "meditation_gain": 28,
+        "dash": {
+          "targetRange": 4,
+          "maxPathSteps": 4,
+          "cooldownTicks": 6
+        }
+      },
+      "can_attack": true,
+      "action_selection": "conditional",
+      "body_part_destroy_max": {
+        "head": 45,
+        "chest": 90,
+        "abdomen": 68,
+        "lhand": 45,
+        "rhand": 45,
+        "lfoot": 54,
+        "rfoot": 54
+      },
+      "qi_li_max": 100,
+      "qi_li_initial": 100,
+      "qi_li_regen_per_turn": 0,
+      "armor": {
+        "chest": {
+          "blunt": 0.2,
+          "slash": 0.2,
+          "pierce": 0.2
+        },
+        "abdomen": {
+          "blunt": 0.2,
+          "slash": 0.2,
+          "pierce": 0.2
+        }
+      },
+      "head_armor": {},
+      "shield_remaining": 20,
+      "counter_post_effect_ids": [],
+      "actions": [
+        {
+          "id": "swing_punch",
+          "limb": "rhand",
+          "skill_id": "combat_basic_unarmed",
+          "selection_weight": 60,
+          "qi_cost": 25,
+          "diqi_cost": 10
+        },
+        {
+          "id": "poke_eye",
+          "limb": "rhand",
+          "skill_id": "combat_rogue_sanda",
+          "selection_weight": 20,
+          "qi_cost": 25,
+          "diqi_cost": 10
+        },
+        {
+          "id": "kick_knee",
+          "limb": "rfoot",
+          "skill_id": "combat_rogue_sanda",
+          "selection_weight": 20,
+          "qi_cost": 25,
+          "diqi_cost": 10,
+          "required_limbs": [
+            "lfoot"
+          ]
+        },
+        {
+          "id": "shove",
+          "limb": "lhand",
+          "skill_id": "combat_rogue_sanda",
+          "selection_weight": 1,
+          "qi_cost": 25,
+          "diqi_cost": 10
+        }
+      ]
     }
   }
 }

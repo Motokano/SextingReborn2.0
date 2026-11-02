@@ -1,0 +1,374 @@
+{
+  "version": 2,
+  "status": "integrated-assistant-reviewed-awaiting-user",
+  "tool": "built-in image_gen",
+  "references": [
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/street-thugs-v1/tier-1.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/street-thug-boss-room-v6/private-cache.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/street-thug-boss-room-v6/transit-rack.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/street-thug-boss-room-v5/cache-geometry.png"
+  ],
+  "items": [
+    {
+      "file": "patched-bulk-sack",
+      "id": "patched-bulk-sack-v1",
+      "name": "补缀吨袋",
+      "tileWidth": 0.58,
+      "subject": "Squat broad off-white woven storage sack, four short tan lifting loops, two big contrasting teal and ochre repairs, thick rope cinching the top; only a few large volume-defining folds. Nearly square base.",
+      "searchedEdit": "Untie and fold back the cloth mouth into a broad open rim. Show the empty dark cloth interior, with no goods. Keep the same body outline, bulges, loops, patches and bottom.",
+      "status": "integrated-assistant-reviewed",
+      "unsearched": "patched-bulk-sack",
+      "searched": "patched-bulk-sack-searched"
+    },
+    {
+      "file": "salvaged-shopping-cart",
+      "id": "salvaged-shopping-cart-v1",
+      "name": "旧购物车货笼",
+      "tileWidth": 0.46,
+      "subject": "Sturdy supermarket shopping trolley, dull gray tubular frame, repaired muted green handle, four small robust caster wheels. Broad deep wire basket with only 4-5 widely spaced rails per side, thick enough to read in game. Two canvas parcels inside, no tiny wire mesh. Length along the upper-right/lower-left grid axis, base about .45 by .75 cell.",
+      "searchedEdit": "Remove parcels from the basket. Keep the entire wheelbase, basket rails, handle, scale and position exactly unchanged; only an empty shallow cloth liner remains.",
+      "status": "integrated-assistant-reviewed",
+      "unsearched": "salvaged-shopping-cart",
+      "searched": "salvaged-shopping-cart-searched"
+    },
+    {
+      "file": "abandoned-chest",
+      "id": "abandoned-chest-v1",
+      "name": "遗留箱子",
+      "tileWidth": 0.5,
+      "subject": "Low broad improvised storage chest of 4 thick mismatched boards, muted green iron corner straps, one repaired latch. Closed lid, modern reused packing chest, no medieval gold. Base square with two equal clear faces.",
+      "searchedEdit": "Lift the same rear-hinged lid about 95 degrees and show an empty dark wooden interior. Keep box body, corners, bottom, latch and scale identical.",
+      "status": "integrated-assistant-reviewed",
+      "unsearched": "abandoned-chest",
+      "searched": "abandoned-chest-searched"
+    },
+    {
+      "file": "discarded-toolbox",
+      "id": "discarded-toolbox-v1",
+      "name": "废弃工具箱",
+      "tileWidth": 0.3,
+      "subject": "Small portable red steel toolbox with a charcoal closed lid and chunky folded carry handle, one olive repair plate, chipped corners only. Wide rectangular base, low body, two large clasps.",
+      "searchedEdit": "Lift the rear-hinged lid; show an empty simple removable tool tray. Keep body position, footprint, handle thickness and all repairs.",
+      "status": "integrated-assistant-reviewed",
+      "unsearched": "discarded-toolbox-clean",
+      "searched": "discarded-toolbox-searched"
+    },
+    {
+      "file": "reused-fridge",
+      "id": "reused-fridge-v1",
+      "name": "旧冰箱储物柜",
+      "tileWidth": 0.34,
+      "subject": "Upright old single-door cream refrigerator repurposed as dry cupboard, muted teal side, one replacement dark handle and one corner sheet-metal repair, no light or electric glow. Modest tall rectangular box, clear painted planes, closed door.",
+      "searchedEdit": "Swing the same front door open enough to reveal two empty shelves. Keep cabinet body, feet, dimensions and viewpoint identical. Door remains attached with believable hinges.",
+      "status": "integrated-assistant-reviewed",
+      "unsearched": "reused-fridge",
+      "searched": "reused-fridge-searched-right"
+    },
+    {
+      "file": "overturned-cart",
+      "id": "overturned-cart-v1",
+      "name": "翻倒的货车",
+      "tileWidth": 0.48,
+      "subject": "Small broken industrial handcart tilted onto one side, thick charcoal steel chassis, two large worn wheels and low cargo tray. Two battered parcels tied into tray by a single broad strap. Compact low stable footprint within one tile, not motor vehicle.",
+      "searchedEdit": "Remove parcels and leave the empty tilted tray and loose broad strap. All wheels, chassis, tilt, ground contacts and dimensions stay fixed.",
+      "status": "integrated-assistant-reviewed",
+      "unsearched": "overturned-cart",
+      "searched": "overturned-cart-searched"
+    },
+    {
+      "file": "abandoned-cargo",
+      "id": "abandoned-cargo-v1",
+      "name": "废弃货堆",
+      "tileWidth": 0.58,
+      "subject": "Compact stack of two worn mismatched packing crates, one blue plastic case and an olive cloth parcel tied with a thick rope. A single coherent square footprint, no pallet or loose pieces outside. Solid broad hand-painted shapes, chest-high overall.",
+      "searchedEdit": "Open the upper crate and blue case, remove loose parcel contents. Retain the same lower crates, stack height, base, alignment and frame; show empty interiors.",
+      "status": "integrated-assistant-reviewed",
+      "unsearched": "abandoned-cargo",
+      "searched": "abandoned-cargo-searched"
+    },
+    {
+      "file": "damaged-barrel",
+      "id": "damaged-barrel-v1",
+      "name": "破损木桶",
+      "tileWidth": 0.35,
+      "subject": "Squat storage cask with just 7-8 broad brown wooden staves, two charcoal iron hoops and one dull steel repair plate. Simple fitted closed wooden lid. Round base and top ellipses with vertical/horizontal ratio .707, no pedestal.",
+      "searchedEdit": "Open lid backwards while retaining it attached at rim; show empty dark wooden interior. Body, hoop positions, diameter and bottom stay identical.",
+      "status": "integrated-assistant-reviewed",
+      "unsearched": "damaged-barrel",
+      "searched": "damaged-barrel-searched"
+    },
+    {
+      "file": "lost-backpack",
+      "id": "lost-backpack-v1",
+      "name": "遗落背包",
+      "tileWidth": 0.22,
+      "subject": "Small olive canvas hiking backpack resting upright on its flat soft bottom, one cream patch, broad flap fastened with chunky strap, rolled shoulder straps close to back. Three purposeful folds, broad depth, not thin slab.",
+      "searchedEdit": "Unbuckle and fold the same flap back; open the mouth to show empty dark lining. Retain main pack size, side pocket, straps, patch and ground contacts.",
+      "status": "integrated-assistant-reviewed",
+      "unsearched": "lost-backpack",
+      "searched": "lost-backpack-searched"
+    },
+    {
+      "file": "collapsed-shelf",
+      "id": "collapsed-shelf-v1",
+      "name": "倒塌货架",
+      "tileWidth": 0.6,
+      "subject": "Low partially collapsed metal store shelf, thick square-section gray frame with one bent upper support and two broad shelves. One battered box, two simple tins and one rag remain in it. Frame grounded stably in a single rectangular grid footprint.",
+      "searchedEdit": "Remove box and tins, leave one rumpled rag on the empty shelf. Same bent frame, shelves, feet, tilt and all contact points.",
+      "status": "integrated-assistant-reviewed",
+      "unsearched": "collapsed-shelf",
+      "searched": "collapsed-shelf-searched"
+    },
+    {
+      "file": "reused-plastic-drum",
+      "id": "reused-plastic-drum-v1",
+      "name": "蓝塑料储物桶",
+      "tileWidth": 0.38,
+      "subject": "Squat broad blue plastic storage drum with big dark fitted lid, two molded side handles, one cream tape repair and a dented lower corner. Matte blue planes, no tiny scratches. Round base, elliptical lid ratio .707.",
+      "searchedEdit": "Lift the same lid backwards to show empty dark-blue interior. Do not move or resize drum, molded handles, repair or bottom.",
+      "status": "integrated-assistant-reviewed",
+      "unsearched": "reused-plastic-drum",
+      "searched": "reused-plastic-drum-searched"
+    },
+    {
+      "file": "reused-washer-drum",
+      "id": "reused-washer-drum-v1",
+      "name": "洗衣机内胆货篓",
+      "tileWidth": 0.42,
+      "subject": "Low broad washing-machine stainless inner drum reused as cargo basket. Dark-gray matte sides, perforations simplified to a few grouped big dots, rolled thick rim with olive cloth liner. Two simple fabric bundles inside. Round footprint and ellipses ratio .707.",
+      "searchedEdit": "Remove the two bundles. Leave the same empty drum and cloth liner, exact diameter, height, ground position and grouped perforations.",
+      "status": "integrated-assistant-reviewed",
+      "unsearched": "reused-washer-drum",
+      "searched": "reused-washer-drum-searched"
+    },
+    {
+      "file": "patched-suitcase",
+      "id": "patched-suitcase-v1",
+      "name": "补缀拉杆箱",
+      "tileWidth": 0.23,
+      "subject": "Upright travel suitcase, dusty burgundy hard canvas casing, big khaki stitched patch with just several bold stitches, one mismatched small wheel, short extended telescoping handle. Closed zipper, thick rounded rectangular body.",
+      "searchedEdit": "Open the front case half on its side hinge to reveal empty lining and two broad elastic straps. Keep rear shell, extended handle, wheels, position and size unchanged.",
+      "status": "integrated-assistant-reviewed",
+      "unsearched": "patched-suitcase",
+      "searched": "patched-suitcase-searched"
+    },
+    {
+      "file": "repaired-cooler",
+      "id": "repaired-cooler-v1",
+      "name": "修补保温箱",
+      "tileWidth": 0.36,
+      "subject": "Small squat portable cream and muted teal insulated cooler, broad closed lid, chunky folded carry handle, one replacement clasp and tape repair. Wide thick rectangular body; hand-carried scale.",
+      "searchedEdit": "Lift the rear-hinged lid; reveal empty deep pale interior. Keep body shape, handle, clasp, repair, bottom and camera unchanged.",
+      "status": "integrated-assistant-reviewed",
+      "unsearched": "repaired-cooler",
+      "searched": "repaired-cooler-searched"
+    },
+    {
+      "file": "rice-cooker-cache",
+      "id": "rice-cooker-cache-v1",
+      "name": "旧电饭煲藏物罐",
+      "tileWidth": 0.17,
+      "subject": "Small unplugged cream enamel rice cooker reused as storage pot, muted dark red lower band, broad closed hinged lid with black knob, a simple disconnected short cable loop close to body. Round body, broad ellipse ratio .707, no glow.",
+      "searchedEdit": "Open the same lid backwards and show the empty dark-gray inner pot. Body, cable, base, colors and dimensions identical.",
+      "status": "integrated-assistant-reviewed",
+      "unsearched": "rice-cooker-cache",
+      "searched": "rice-cooker-cache-searched"
+    },
+    {
+      "file": "pressure-pot-cache",
+      "id": "pressure-pot-cache-v1",
+      "name": "旧压力锅储物罐",
+      "tileWidth": 0.23,
+      "subject": "Small squat dull aluminum pressure cooker reused as storage, two thick black side handles, fitted closed lid with simple valve, one small riveted repair. Broad matte gray shading, no chrome glare. Round body ellipse ratio .707.",
+      "searchedEdit": "Tilt the same lid open resting against rear rim, show empty interior. Preserve pot body, side handles, valve design, base and overall scale.",
+      "status": "integrated-assistant-reviewed",
+      "unsearched": "pressure-pot-cache",
+      "searched": "pressure-pot-cache-searched"
+    },
+    {
+      "file": "computer-tower-cabinet",
+      "id": "computer-tower-cabinet-v1",
+      "name": "旧机箱杂物柜",
+      "tileWidth": 0.3,
+      "subject": "Old charcoal desktop computer tower reused as storage box, chunky dark frame, muted olive removable side panel tied shut with wire and wooden knob, three large vent slots. No computer electronics visible, no glow, no screen. Squat rectangular base.",
+      "searchedEdit": "Open the same side panel outward to reveal an empty shell with one reused shelf; no electronics. Keep chassis, feet, shape, vents, position and scale.",
+      "status": "integrated-assistant-reviewed",
+      "unsearched": "computer-tower-cabinet",
+      "searched": "computer-tower-cabinet-searched"
+    },
+    {
+      "file": "wheelie-bin-cache",
+      "id": "wheelie-bin-cache-v1",
+      "name": "带轮垃圾桶货筒",
+      "tileWidth": 0.34,
+      "subject": "Worn dark olive wheeled refuse bin reused as goods container, broad slightly tapered body, thick closed hinged lid, two large rear wheels and simple push handle. A riveted lower repair and one localized scuff, no garbage outside.",
+      "searchedEdit": "Raise lid backwards, expose empty dark interior. Keep body, wheels, handle, repair and footprint identical.",
+      "status": "integrated-assistant-reviewed",
+      "unsearched": "wheelie-bin-cache",
+      "searched": "wheelie-bin-cache-searched"
+    },
+    {
+      "file": "postbox-cache",
+      "id": "postbox-cache-v1",
+      "name": "旧邮筒藏物柜",
+      "tileWidth": 0.31,
+      "subject": "Low broad dark red metal postbox reused as storage cupboard, simple sloped weather cap, thick mail slot, closed lower access door with replaced latch. No pole, no text, no emblem; base directly on ground.",
+      "searchedEdit": "Swing the lower access door outward; show empty dark cabinet interior. Retain housing, weather cap, slot, base, camera and scale.",
+      "status": "integrated-assistant-reviewed",
+      "unsearched": "postbox-cache",
+      "searched": "postbox-cache-searched"
+    },
+    {
+      "file": "factory-locker-cache",
+      "id": "factory-locker-cache-v1",
+      "name": "旧更衣柜",
+      "tileWidth": 0.28,
+      "subject": "Single tall narrow old steel factory locker with muted teal door and charcoal sides, one cream edge repair, three big ventilation slits and replacement handle. Four short block feet, believable upright volume, closed single door.",
+      "searchedEdit": "Open the same tall door, reveal two empty shelves and one simple coat hook. Preserve body, short feet, base, dimensions, handle and angle.",
+      "status": "integrated-assistant-reviewed",
+      "unsearched": "factory-locker-cache",
+      "searched": "factory-locker-cache-searched"
+    },
+    {
+      "file": "vending-machine-cupboard",
+      "id": "vending-machine-cupboard-v1",
+      "name": "旧售货机货柜",
+      "tileWidth": 0.38,
+      "subject": "Old unplugged vending machine repurposed as cupboard, ochre metal outer case, charcoal front panel with opaque dark window and simple lower pickup slot. Replaced corner fitting, one broad localized scuff. No text, symbols, glow or electricity.",
+      "searchedEdit": "Swing front service panel open, reveal three empty coarse shelves. Preserve case, feet, repairs, base and camera, no electronics or products inside.",
+      "status": "integrated-assistant-reviewed",
+      "unsearched": "vending-machine-cupboard",
+      "searched": "vending-machine-cupboard-searched"
+    },
+    {
+      "file": "pram-cargo-basket",
+      "id": "pram-cargo-basket-v1",
+      "name": "旧婴儿车货篮",
+      "tileWidth": 0.42,
+      "subject": "Old stroller frame reused as cargo basket, thick dark tubular rails, four small solid wheels, cream canvas sling with one teal patch and broad folds, simple push handle. Two tied supply parcels inside, no baby or doll.",
+      "searchedEdit": "Remove parcels, show empty cream canvas sling sagging gently within unchanged frame. Preserve wheels, handle, patch, width and contacts.",
+      "status": "integrated-assistant-reviewed",
+      "unsearched": "pram-cargo-basket",
+      "searched": "pram-cargo-basket-searched"
+    },
+    {
+      "file": "wire-cage-trolley",
+      "id": "wire-cage-trolley-v1",
+      "name": "铁网周转货笼",
+      "tileWidth": 0.48,
+      "subject": "Square industrial rolling wire cage with thick dull blue-gray frame, four chunky casters, 4 widely spaced bars per side and closed front gate with robust latch. Two worn brown boxes and one olive parcel inside. Broad readable silhouette.",
+      "searchedEdit": "Open front gate to one side and remove boxes and parcel. Frame, casters, base, gate attachment and dimensions stay unchanged.",
+      "status": "integrated-assistant-reviewed",
+      "unsearched": "wire-cage-trolley",
+      "searched": "wire-cage-trolley-searched"
+    },
+    {
+      "file": "stacked-plastic-crates",
+      "id": "stacked-plastic-crates-v1",
+      "name": "叠放周转筐",
+      "tileWidth": 0.4,
+      "subject": "Two stacked reused plastic delivery crates, lower faded blue, upper dull red with cream corner repair. Thick rim and a few large rectangular slots, two canvas parcels inside upper crate. Stable square ground footprint.",
+      "searchedEdit": "Remove parcels from upper crate. Keep both stacked crates exactly unchanged, including height, slots, repair and bottom.",
+      "status": "integrated-assistant-reviewed",
+      "unsearched": "stacked-plastic-crates",
+      "searched": "stacked-plastic-crates-searched"
+    },
+    {
+      "file": "sideways-oil-drum-cabinet",
+      "id": "sideways-oil-drum-cabinet-v1",
+      "name": "横置铁桶柜",
+      "tileWidth": 0.46,
+      "subject": "Short old ochre oil drum placed horizontally on two small integrated steel feet, charcoal hoops, a thick rectangular side hatch closed with handmade latch. Cylinder axis along upper-right/lower-left grid axis, broad matte planes, limited localized wear.",
+      "searchedEdit": "Open the same side hatch to reveal empty dark cavity. Keep drum silhouette, hoops, feet, axis and position identical.",
+      "status": "integrated-assistant-reviewed",
+      "unsearched": "sideways-oil-drum-cabinet",
+      "searched": "sideways-oil-drum-cabinet-searched"
+    },
+    {
+      "file": "cable-spool-shelf",
+      "id": "cable-spool-shelf-v1",
+      "name": "电缆卷盘货架",
+      "tileWidth": 0.46,
+      "subject": "Squat wooden cable spool reused as circular shelf, two broad round wood flanges joined by stout central column, charcoal bolts, one replacement plank. One small tin and an olive cloth parcel on side shelf. Round ellipse ratio .707; spool itself is object, no extra pedestal.",
+      "searchedEdit": "Remove tin and parcel; same spool, boards, central column, dimensions, base and angle, now empty.",
+      "status": "integrated-assistant-reviewed",
+      "unsearched": "cable-spool-shelf",
+      "searched": "cable-spool-shelf-searched"
+    },
+    {
+      "file": "milk-churn-storage",
+      "id": "milk-churn-storage-v1",
+      "name": "旧奶罐",
+      "tileWidth": 0.21,
+      "subject": "Small broad matte aluminum milk churn, thick rounded shoulders, two simple side loop handles, fitted closed cap with short cream cloth tie, one large dent. Clean dark contour, few broad gray painted facets, round ellipse ratio .707.",
+      "searchedEdit": "Tip same cap backwards against rim, show empty dark interior; preserve neck, shoulders, handles, cloth tie, base and size.",
+      "status": "integrated-assistant-reviewed",
+      "unsearched": "milk-churn-storage",
+      "searched": "milk-churn-storage-searched"
+    },
+    {
+      "file": "motorcycle-topbox-cache",
+      "id": "motorcycle-topbox-cache-v1",
+      "name": "旧摩托尾箱",
+      "tileWidth": 0.32,
+      "subject": "Detached motorcycle cargo topbox, squat broad rounded rectangular faded blue upper shell, charcoal bottom, one cream repair patch and thick closed latch. No motorcycle or platform. Matte hand-painted volume.",
+      "searchedEdit": "Lift rear-hinged lid open; expose empty charcoal interior. Preserve lower shell, latch, patch on lid, base and scale.",
+      "status": "integrated-assistant-reviewed",
+      "unsearched": "motorcycle-topbox-cache",
+      "searched": "motorcycle-topbox-cache-searched"
+    },
+    {
+      "file": "tire-storage-basket",
+      "id": "tire-storage-basket-v1",
+      "name": "轮胎储物筐",
+      "tileWidth": 0.45,
+      "subject": "Old black car tire laid flat and reused as storage basket, broad rounded tread with a few chunky grooves, tan canvas liner and two thick rope handles. Two small supply parcels fill central hollow. Low round ellipse ratio .707, no floor or pedestal.",
+      "searchedEdit": "Remove parcels to expose empty canvas-lined tire hollow. Keep tire, tread, rope handles, diameter and position exactly unchanged.",
+      "status": "integrated-assistant-reviewed",
+      "unsearched": "tire-storage-basket",
+      "searched": "tire-storage-basket-searched"
+    },
+    {
+      "file": "aluminum-flight-case",
+      "id": "aluminum-flight-case-v1",
+      "name": "旧器材航空箱",
+      "tileWidth": 0.4,
+      "subject": "Broad squat equipment flight case, charcoal panels and thick dull silver aluminum edges, two large black clasps and recessed handle, a replaced corner and old cream tape patch. Closed lid, no text or logo.",
+      "searchedEdit": "Open rear-hinged lid about 100 degrees, reveal empty charcoal foam lining. Box body, bottom, handle, clasps, repairs and scale unchanged.",
+      "status": "integrated-assistant-reviewed",
+      "unsearched": "aluminum-flight-case",
+      "searched": "aluminum-flight-case-searched"
+    },
+    {
+      "file": "marine-buoy-cache",
+      "id": "marine-buoy-cache-v1",
+      "name": "浮球藏物罐",
+      "tileWidth": 0.35,
+      "subject": "Salvaged ochre-orange marine buoy reused as lidded storage vessel, rounded squat body with flattened stable bottom, short thick dark closed cap, one rope loop and broad cream patch. Strong cartoon volume, no water, float effects or extra base.",
+      "searchedEdit": "Lift the same cap backwards against rim to show empty hollow interior. Keep sphere, flat base, rope loop, patch, dimensions and perspective.",
+      "status": "integrated-assistant-reviewed",
+      "unsearched": "marine-buoy-cache",
+      "searched": "marine-buoy-cache-searched"
+    }
+  ],
+  "selectedStateCount": 62,
+  "review": {
+    "date": "2026-10-30",
+    "referenceTileWidth": 144,
+    "pawnScale": 1.25,
+    "allPairedPages": 8,
+    "realMapContainers": [
+      "patched-bulk-sack-v1",
+      "salvaged-shopping-cart-v1"
+    ],
+    "realMapStates": [
+      "unsearched",
+      "searched"
+    ],
+    "tests": [
+      "tools/test-dungeon-grid-scene-art.mjs",
+      "tools/test-dungeon-scene-presentation.mjs"
+    ],
+    "screenshots": "reference/dungeon-grid-scene-v1/qa/containers-v2/"
+  }
+}

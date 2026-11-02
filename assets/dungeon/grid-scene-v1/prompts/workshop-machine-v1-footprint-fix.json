@@ -1,0 +1,10 @@
+{
+  "prompt": "Redraw this exact teal repaired industrial machine to have a BROAD squat 3 by 2 ground footprint, not a long narrow lathe. Keep its hand-painted dark outline cartoon game style, cream replacement panels, chipped teal paint, handwheel, disconnected wire, no text. Strict orthographic 45-degree azimuth, down-looking about35degrees, verticals upright. Make a compact wide multi-purpose machine with a broad rear motor housing, front work bed and large wide structural legs. Ground support rectangle length:depth=3:2 in world space. On image, left base corner to nearest base corner horizontal distance must be 1.5 times nearest to right base corner horizontal distance, NOT3 or4times. Both diagonal ground slopes equal about0.707. Four clear broad feet occupy corners of this 3x2 rectangle. Relatively low, waist-high work bed, shoulder-high housing. No platform or base slab. Isolated single transparent PNG. No floor, no shadow, no background glow; all empty space alpha zero.",
+  "references": [
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/grid-scene-v1/workshop-machine-v1.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/street-thug-boss-room-v6/private-cache.png"
+  ],
+  "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-3449ab60-be3d-4bd2-8877-42ce901f16c2.png",
+  "tool": "built-in image_gen",
+  "status": "superseded-source-retained"
+}

@@ -216,7 +216,7 @@
             !(app.isPlayerActionDisabledByBuff&&app.isPlayerActionDisabledByBuff('craft'))&&!(global.FishingPanel&&global.FishingPanel.isOpen())&&!(global.SceneCtx&&global.SceneCtx.idleActionType));
     }
     function openCrafting(){if(!canOpenCrafting())return false;init();kitsOpen=true;render();card.focus();return true;}
-    function kitKnown(kit){return kit.output!=='consumable_hunting_snare'||H.knows('snare_tightening')&&H.knows('snare_anchor');}
+    function kitKnown(kit){return kit.output!=='consumable_hunting_snare'||global.ManufacturingKnowledge?.knows('existing_hunting.consumable_hunting_snare')||H.knows('snare_tightening')&&H.knows('snare_anchor');}
     function craftName(id){var tpl=inv().getItemTemplate(id);return tpl&&inv().getDisplayName?inv().getDisplayName(tpl,0):name(id);}
     function renderKits() {
         node('small','基地制作',card);node('h2',t('hunting.kits'),card);var shown=0;

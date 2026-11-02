@@ -1,0 +1,12 @@
+{
+  "file": "discarded-toolbox-clean",
+  "state": "unsearched",
+  "prompt": "Use case: background-extraction. Edit image 1 only to remove ALL glow, haze, dark vignette, ground shadow and background outside the solid red toolbox silhouette. Return the exact unchanged illustrated toolbox, same pixel canvas, same scale, geometry, colors and location. Keep transparent gap under handle. Outside object must have alpha 0, genuinely transparent RGBA. No black matte, new shadow, aura or floor. Do not repaint or recompose the box.",
+  "references": [
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/containers-v2/discarded-toolbox.png"
+  ],
+  "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-04090da6-bc00-4266-9cab-41de581f4858.png",
+  "tool": "built-in image_gen",
+  "status": "registered-current",
+  "appliedFile": "discarded-toolbox-clean.png"
+}

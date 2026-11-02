@@ -3,6 +3,8 @@
     var parts = ['head', 'chest', 'abdomen', 'lhand', 'rhand', 'lfoot', 'rfoot'];
     var base = 'assets/map/isometric/player-atlas-v1/';
     var manifestPromise, pages = {}, frames = {};
+    // Approved 125% display; atlas source geometry and injury anchors stay authored.
+    function displayScale() { return global.TileRendererV2.getPawnDisplayScale(); }
     function readMask(attributes) {
         if (!attributes || typeof attributes.getPartDestroy !== 'function' || typeof attributes.getBodyPartDestroyMax !== 'function') return 0;
         return parts.reduce(function (mask, part, bit) {
@@ -28,12 +30,13 @@
         return pages[file];
     }
     function frame(mask) {
-        if (frames[mask]) return Promise.resolve(frames[mask]);
+        var factor = displayScale(), key = mask + '@' + factor;
+        if (frames[key]) return Promise.resolve(frames[key]);
         return loadManifest().then(function (data) {
             var state = data.states[mask];
             if (!state || state.mask !== mask) throw new Error('Invalid pawn atlas mapping');
             return loadPage(state.file).then(function (img) {
-                var crop = state.crop, scale = data.displayBaseWidth / state.baseWidth;
+                var crop = state.crop, scale = data.displayBaseWidth * factor / state.baseWidth;
                 var width = crop[2] * scale, height = crop[3] * scale;
                 // Canvas is a display surface, preserving the source PNGs and their alpha.
                 var canvas = document.createElement('canvas'), resolution = Math.max(3, Math.min(4, global.devicePixelRatio || 1));
@@ -43,8 +46,8 @@
                 ctx.imageSmoothingEnabled = true;
                 ctx.imageSmoothingQuality = 'high';
                 ctx.drawImage(img, crop[0], crop[1], crop[2], crop[3], 0, 0, canvas.width, canvas.height);
-                var shadow = global.TileRendererV2.makeGroundShadow(img, {crop:crop,anchor:[crop[0]+state.anchor[0],crop[1]+state.anchor[1]],width:width}, [data.displayBaseWidth/2,7]);
-                return frames[mask] = {shadow:shadow.toDataURL('image/png'),url:canvas.toDataURL('image/png'),width:width,height:height,x:state.anchor[0]*scale,y:state.anchor[1]*scale,id:state.id};
+                var shadow = global.TileRendererV2.makeGroundShadow(img, {crop:crop,anchor:[crop[0]+state.anchor[0],crop[1]+state.anchor[1]],width:width}, [data.displayBaseWidth*factor/2,7*factor]);
+                return frames[key] = {paint:{image:img,crop:crop,anchor:[crop[0]+state.anchor[0],crop[1]+state.anchor[1]],width:width,shadow:shadow},shadow:shadow.toDataURL('image/png'),url:canvas.toDataURL('image/png'),width:width,height:height,x:state.anchor[0]*scale,y:state.anchor[1]*scale,id:state.id};
             });
         });
     }
@@ -52,12 +55,18 @@
         if (!el) return false;
         if (!Number.isInteger(mask) || mask < 0 || mask > 127) throw new RangeError('Invalid pawn state');
         var id = 'D' + String(mask).padStart(3, '0');
+        var scaleKey = String(displayScale());
+        if (el.getAttribute('data-rig-scale') !== scaleKey) {
+            el.setAttribute('data-rig-scale', scaleKey);
+            el.removeAttribute('data-rig-request');
+            el.removeAttribute('data-rig-error');
+        }
         if (el.getAttribute('data-rig-error') === id) return false;
         if (el.getAttribute('data-rig-request') === id) return true;
         el.setAttribute('data-rig-request', id);
         el.setAttribute('data-texture-src', 'player-atlas-v1');
         frame(mask).then(function (f) {
-            if (el.getAttribute('data-rig-request') !== id) return;
+            if (el.getAttribute('data-rig-request') !== id || el.getAttribute('data-rig-scale') !== scaleKey) return;
             el.style.setProperty('--atlas-image', 'url("' + f.url + '")');
             el.style.setProperty('--atlas-shadow', 'url("' + f.shadow + '")');
             el.style.setProperty('--atlas-shadow-x', (f.x-64) + 'px');
@@ -72,7 +81,7 @@
             el.setAttribute('data-rig-state', id);
             el.removeAttribute('data-rig-error');
         }).catch(function () {
-            if (el.getAttribute('data-rig-request') !== id) return;
+            if (el.getAttribute('data-rig-request') !== id || el.getAttribute('data-rig-scale') !== scaleKey) return;
             el.classList.remove('has-rig-pawn');
             el.classList.remove('has-atlas-pawn');
             el.setAttribute('data-rig-error', id);
@@ -83,5 +92,6 @@
     function update(el) { return renderMask(el, readMask(global.CharacterAttributes)); }
     // Compatibility name for the existing HUD hook. Art now comes only from the approved atlas.
     global.PlayerPawnRig = {update:update,readMask:readMask,renderMask:renderMask,
+        getPaintFrame:function(){var f=frames[readMask(global.CharacterAttributes)+'@'+displayScale()];return f?f.paint:null;},
         getDialoguePortrait:function () { return frame(readMask(global.CharacterAttributes)).then(function (f) { return f.url; }); }};
 })(window);

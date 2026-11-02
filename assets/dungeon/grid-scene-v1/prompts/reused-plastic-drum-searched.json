@@ -1,0 +1,12 @@
+{
+  "id": "reused-plastic-drum-searched",
+  "name": "蓝塑料储物桶",
+  "prompt": "Edit this EXACT existing game sprite into its SEARCHED / EMPTY state. Preserve the original transparent canvas size, camera, position, all lower body pixels, contact points, wheels/feet, silhouette scale, palette, hand-painted style, individual wear marks and repairs. Do not redraw or reposition the container body. Change ONLY the access lid/door/flap (open it on its original hinges, where applicable) and remove stored cargo/supplies so the interior clearly reads empty. For an already open shelf/cart/basket/cargo pile remove the contents but retain all structural boxes, chassis and shelf beams. Keep a little empty lining or crumpled wrapping. Maintain upper-left lighting and strong dark contours. No extra marks, text, pedestal, floor or shadow. Preserve true alpha everywhere outside the sprite, remove any incidental pale glow.",
+  "references": [
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/grid-scene-v1/reused-plastic-drum.png"
+  ],
+  "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-c2368287-357a-4cf7-afe2-8052cb153951.png",
+  "tool": "built-in image_gen",
+  "status": "registered-current",
+  "appliedFile": "reused-plastic-drum-searched.png"
+}

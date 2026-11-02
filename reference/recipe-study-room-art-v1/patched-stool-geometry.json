@@ -1,0 +1,30 @@
+{
+  "id": "patched-stool",
+  "tileWidth": 144,
+  "tileHeight": 101.82337649086284,
+  "physicalFootprint": [
+    0.42,
+    0.42
+  ],
+  "physicalHeightAt144": 24,
+  "nativeFront": [
+    0,
+    1
+  ],
+  "factor": 6.0,
+  "origin": [
+    512.0,
+    760.0
+  ],
+  "groundCorners": [
+    512.0,
+    631.7026,
+    693.44,
+    760.0,
+    512.0,
+    888.2974,
+    330.56,
+    760.0
+  ],
+  "status": "pre-generation geometry reference only"
+}

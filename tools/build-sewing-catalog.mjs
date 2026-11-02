@@ -7,7 +7,13 @@ export function sewingTemplates(texts) {
  for(const [id,e] of Object.entries(texts.entries)) {
   if(id==='silica_leaf')continue;
   const outfit=id.startsWith('sewing_outfit_'),part=id.startsWith('sewing_part_');
-  out[id]={item_id:id,...e.identity,name:e.identity.sn,name_0:e.identity.sn,desc_0:e.identity.fn,weight_kg:weights[id]??(id.startsWith('filling_')?.05:e.kind==='raw'?.3:0),stack_limit:outfit||part||e.kind==='facility'?1:100,category:outfit?'equipment':'material',pocketable:!outfit&&!part&&e.kind!=='facility',info_module_set_id:outfit?'module.equipment_armor':'module.material',source:'sewing',production_lines:'sewing',base_value:0};
+  out[id]={item_id:id,...e.identity,name:e.identity.sn,name_0:e.identity.sn,desc_0:e.identity.fn,weight_kg:e.weight_kg??weights[id]??(id.startsWith('filling_')?.05:e.kind==='raw'?.3:0),stack_limit:outfit||part||e.kind==='facility'?1:100,category:outfit?'equipment':'material',pocketable:!outfit&&!part&&e.kind!=='facility',info_module_set_id:outfit?'module.equipment_armor':'module.material',source:e.source||'sewing',production_lines:'sewing',base_value:0};
+  // Explicit item data in the sewing source takes precedence over legacy defaults.
+  // These are existing item fields; kind/status and recipe knowledge remain metadata.
+  for(const field of ['category','sub_category','material','tags','stack_limit','pocketable','spoilage_ticks','price_class','volatility','region_restrict','base_value','production_lines','info_module_set_id']) {
+   if(Object.hasOwn(e,field))out[id][field]=e[field];
+  }
+  if(!out[id].info_module_set_id)delete out[id].info_module_set_id;
   if(outfit)Object.assign(out[id],{equip_slot:'clothing',module_slots:['chest','abdomen','arm_l','arm_r','leg_l','leg_r'],pocket_slots:0,base_shield:0,enchant_slots:0});
  }
  return out;

@@ -20,6 +20,8 @@
     function getById(enemyId) {
         if (!enemyId) return null;
         var e = table.enemies[enemyId];
+        if (e && e.boss && global.CombatEnemyBoss) global.CombatEnemyBoss.prepare(e);
+        if (e && e.thug && global.CombatEnemyThug) global.CombatEnemyThug.prepare(e);
         return e && typeof e === 'object' ? e : null;
     }
 
@@ -77,6 +79,7 @@
      */
     function mergeIntoDefender(defender) {
         if (!defender || defender.kind !== 'enemy') return defender;
+        defender.ownerId = ownerOf(defender);
         var t = getById(defender.enemyId);
         if (!t) {
             if (defender.speed == null || !isFinite(Number(defender.speed))) defender.speed = 10;
@@ -101,10 +104,12 @@
         return defender;
     }
 
-    // ---- 敌人实例状态（部位损毁 / 死亡；「损毁即血」模型，按 mapId|i{index} 键，与 AI 状态同键体系）----
-    // 敌人无独立 HP：七部位损毁即血量。致命区（头/胸/腹）任一损毁满 = 死亡；或七部位全毁 = 死亡。
-    // 四肢损毁满 = 失能（手毁→该肢动作不可用；腿毁→不能移动）。敌人实例无持久存档：同地图内持续，地图重载/刷新后重建。
+    // Slots follow the map array; ownerId is stable across movement, removal and saves.
     var enemyInstanceStates = {}; // key -> { part_destroy:{...}, maxes:{...}, dead:false }
+    var instanceSequence = 0;
+    var worldTurnTick = null;
+    var mapBaselines = {};
+    var enemyLimbRecoveryQueue = {};
     var enemyKillQueue = {}; // key -> enemyId（等待场景侧 drain 后移除）
     var enemyLimbLossQueue = {}; // key -> { enemyId, parts:[运行时部位键] }（部位被打满瞬间，等待场景侧输出失能日志）
 
@@ -134,15 +139,12 @@
 
     /**
      * 敌人部位损毁上限：优先敌人模板 `body_part_destroy_max`（脆皮化，损毁即血）；
-     * 未配置时回退与主角共用上限（10-enemies 原约定）——未配表敌人（木桩/陪练）保持打不坏。
+     * 缺项使用固定七部位默认值，不读取主角属性；无敌必须显式声明 limbs_invulnerable。
      */
     function computePartMax(pk, tpl) {
         if (tpl && tpl.body_part_destroy_max && typeof tpl.body_part_destroy_max === 'object') {
             var tv = tpl.body_part_destroy_max[pk];
-            if (tv != null && isFinite(Number(tv)) && Number(tv) > 0) return Math.floor(Number(tv));
-        }
-        if (global.CharacterAttributes && typeof global.CharacterAttributes.getBodyPartDestroyMax === 'function') {
-            try { return global.CharacterAttributes.getBodyPartDestroyMax(pk); } catch (e) { /* fallthrough */ }
+            if (tv != null && isFinite(Number(tv)) && Number(tv) > 0) return Math.max(1,Math.floor(Number(tv)));
         }
         if (pk === 'head') return 50;
         if (pk === 'abdomen') return 80;
@@ -151,9 +153,16 @@
 
     function getEnemyInstanceState(mapId, index, enemyId) {
         var key = getEnemyInstanceKey(mapId, index);
+        rememberMap(mapId);
         var st = enemyInstanceStates[key];
+        if (st && enemyId != null && st.enemyId !== String(enemyId)) {
+            clearOwnerBuffs(st.ownerId);
+            delete enemyInstanceStates[key];
+            st = null;
+        }
         if (!st) {
             st = {
+                ownerId: 'enemy-instance:' + (++instanceSequence),
                 enemyId: enemyId != null ? String(enemyId) : null,
                 part_destroy: createEmptyPartDestroy(),
                 maxes: null,
@@ -163,7 +172,12 @@
                 stunned: false,
                 // 疼痛（47 §9.6 / k229，敌我通用）：全局 0-100 整数条；上限 = pain_cap_base + pain_cap_per_avg_destroy×平均损毁%（封顶制）
                 pain_value: 0,
-                pain_no_hit_ticks: 0
+                pain_no_hit_ticks: 0,
+                qi_current: Math.max(0, Math.min(Number((getById(enemyId) || {}).qi_li_max) || 0, Number((getById(enemyId) || {}).qi_li_initial) || 0)),
+                last_turn_tick: null,
+                weapon_mode: 'weapon',
+                weapon_forced_unarmed: false,
+                action_cursors: { unarmed: 0, weapon: 0 }
             };
             enemyInstanceStates[key] = st;
         }
@@ -178,6 +192,7 @@
     /** 敌人眩晕累积（37 §9.2）：命中头基础眩晕值（技能/全局配置）；≥100 → 归 0 + 晕 1 回合 */
     function addEnemyStun(mapId, index, enemyId, amount) {
         var st = getEnemyInstanceState(mapId, index, enemyId);
+        if (st.dead) return { triggered: false, value: st.stun_value || 0 };
         var a = Math.max(0, Math.floor(Number(amount) || 0));
         if (a <= 0) return { triggered: false, value: st.stun_value || 0 };
         st.stun_value = Math.min(100, (st.stun_value || 0) + a);
@@ -192,7 +207,7 @@
 
     function isEnemyStunned(mapId, index) {
         var st = enemyInstanceStates[getEnemyInstanceKey(mapId, index)];
-        return !!(st && st.stunned);
+        return !!(st && (st.stunned || (worldTurnTick != null && st.last_turn_tick === worldTurnTick && st.turn_stunned)));
     }
 
     function getEnemyStunValue(mapId, index) {
@@ -294,6 +309,7 @@
         q = Math.max(0, Math.floor(Number(q) || 0));
         if (q <= 0) return [];
         var st = getEnemyInstanceState(mapId, index, enemyId);
+        if (st.dead) return [];
         var k = normalizeDestroyKey(hitPartId);
         if (PART_ORDER.indexOf(k) < 0) k = 'chest';
         var filled = [];
@@ -327,6 +343,8 @@
             }
         }
         if (appliedTotal > 0) {
+            if ((getById(enemyId)||{}).boss) global.CombatEnemyBoss.state(st).damagedTick=actionTick();
+            if((getById(enemyId)||{}).thug)global.CombatEnemyThug.state(st,getById(enemyId)).damagedTick=actionTick();
             try {
                 // 有实际损毁落地（顶满溢出不计）即重置疼痛衰减计时；疼痛增量按汇率取整后累加
                 st.pain_no_hit_ticks = 0;
@@ -416,7 +434,7 @@
         return '';
     }
 
-    /** 镜像疼痛档位到 BuffSystem（owner = enemyId）：供战斗交换读 battle_move_speed_multiplier / 禁用查询 / HUD chips；档位离开后移除。 */
+    /** Pain effects belong to this individual, never the enemy template. */
     function syncEnemyPainBuff(st) {
         if (!st || !st.enemyId) return '';
         var Buff = global.BuffSystem;
@@ -427,12 +445,12 @@
         for (i = 0; i < ENEMY_PAIN_BUFF_IDS.length; i++) {
             var bid = ENEMY_PAIN_BUFF_IDS[i];
             if (bid === targetId) continue;
-            if (typeof Buff.hasBuffByBuffId !== 'function' || Buff.hasBuffByBuffId(st.enemyId, bid)) {
-                Buff.removeBuffByBuffId(st.enemyId, bid);
+            if (typeof Buff.hasBuffByBuffId !== 'function' || Buff.hasBuffByBuffId(st.ownerId, bid)) {
+                Buff.removeBuffByBuffId(st.ownerId, bid);
             }
         }
         if (targetId) {
-            Buff.applyBuff(st.enemyId, targetId, 'pain_system', { tick: getPainBuffTick() });
+            Buff.applyBuff(st.ownerId, targetId, 'pain_system', { tick: getPainBuffTick() });
         }
         return tierKey;
     }
@@ -476,16 +494,17 @@
     }
 
     /** 取走并清空死亡队列（场景侧在攻击结算后调用：移除地图敌人实例、日志等）。 */
-    function drainEnemyKillQueue() {
+    function drainEnemyKillQueue(mapId) {
         var out = [];
         var key;
         for (key in enemyKillQueue) {
             if (!Object.prototype.hasOwnProperty.call(enemyKillQueue, key)) continue;
-            var m = key.indexOf('|i');
+            var m = key.lastIndexOf('|i');
             if (m < 0) continue;
+            if(mapId != null && key.slice(0,m)!==String(mapId))continue;
             out.push({ key: key, mapId: key.slice(0, m), index: parseInt(key.slice(m + 2), 10) || 0, enemyId: enemyKillQueue[key] });
+            delete enemyKillQueue[key];
         }
-        enemyKillQueue = {};
         return out;
     }
 
@@ -517,6 +536,7 @@
         var mapId = d.mapId != null ? d.mapId : (ctx.mapId != null ? ctx.mapId : null);
         var index = d.index != null ? parseInt(d.index, 10) : -1;
         if (mapId == null || index < 0) return; // 无场景实例键（测试/无 map 上下文）→ 跳过
+        if (getEnemyInstanceState(mapId, index, d.enemyId).dead) return;
         var dmg = Math.max(0, Math.floor(Number(ctx.finalDamage) || 0));
         if (dmg <= 0 || ctx.hitRollSuccess === false) return;
         // 管线约定 hitPart 在 ctx 顶层（buildPlayerAtkCtx）；兼容旧 defender 携带
@@ -535,12 +555,12 @@
             try {
                 if (global.BuffSystem && typeof global.BuffSystem.removeBuffByBuffId === 'function') {
                     for (var pbi = 0; pbi < ENEMY_PAIN_BUFF_IDS.length; pbi++) {
-                        global.BuffSystem.removeBuffByBuffId(String(d.enemyId), ENEMY_PAIN_BUFF_IDS[pbi]);
+                            global.BuffSystem.removeBuffByBuffId(st.ownerId, ENEMY_PAIN_BUFF_IDS[pbi]);
                     }
                 }
             } catch (ePb) { /* ignore */ }
         }
-        if (ctx.collisionDamage) return;
+        if (st.dead || ctx.collisionDamage) return;
         // 眩晕累积（37 §9.2，k13）：命中头大幅累积（抗眩晕比例减免）；技能可显式声明其他部位眩晕
         try {
             var stunGain = 0;
@@ -582,37 +602,21 @@
     }
 
     // ---- 敌人攻击动作系统（10-enemies：攻击动作列表 + 敌人气力条）----
-    // 敌人气力运行时状态按 enemy_id 键；敌人实例无持久存档前为「按类型共享」近似（10-enemies 已知边界）。
-    var enemyQiState = {}; // enemyId -> { current, max }
-
-    function regenEnemyQi(enemyId) {
+    function getEnemyQi(enemyId, mapId, index) {
         var t = getById(enemyId);
-        if (!t) return 0;
-        var max = Number(t.qi_li_max) || 0;
-        var regen = Number(t.qi_li_regen_per_turn) || 0;
-        var st = enemyQiState[enemyId] || (enemyQiState[enemyId] = { current: 0, max: max });
-        st.max = max;
-        if (regen > 0) st.current = Math.min(max, st.current + regen);
-        return st.current;
+        var max = Math.max(0, Number(t && t.qi_li_max) || 0);
+        var st = getEnemyInstanceState(mapId, index, enemyId);
+        st.qi_current = Math.max(0, Math.min(max, Number(st.qi_current) || 0));
+        return { current: st.qi_current, max: max };
     }
 
-    function getEnemyQi(enemyId) {
-        var t = getById(enemyId);
-        var max = t ? (Number(t.qi_li_max) || 0) : 0;
-        var st = enemyQiState[enemyId];
-        if (!st) return { current: 0, max: max };
-        st.max = max;
-        if (st.current > max) st.current = max;
-        return { current: st.current, max: max };
-    }
-
-    function consumeEnemyQi(enemyId, cost) {
+    function consumeEnemyQi(enemyId, cost, mapId, index) {
         cost = parseInt(cost, 10) || 0;
         if (cost <= 0) return 0;
-        var st = enemyQiState[enemyId];
-        if (!st) return 0;
-        var spent = Math.min(st.current, cost);
-        st.current -= spent;
+        var st = getEnemyInstanceState(mapId, index, enemyId);
+        if (st.dead) return 0;
+        var spent = Math.min(getEnemyQi(enemyId, mapId, index).current, cost);
+        st.qi_current -= spent;
         return spent;
     }
 
@@ -656,27 +660,223 @@
     }
 
     /**
-     * 选一次还击动作：先按 qi_li_regen_per_turn 回气，再在「气力可负担」的动作中随机选一条。
-     * 传 mapId/index（实例键）时过滤「装备肢体已损毁」的动作（10-enemies：肢体损毁则该肢动作不可用）。
-     * 无 actions、或全部动作气力不足/肢体已毁时返回 null（调用方回退 attack_damage_* 通用还击）。
+     * 仅从实例当前合法的动作中选择；查询不回气，不消耗行动或推进循环。
+     * 无合法动作返回 null，调用方取消出招；回气统一在世界 tick 处理。
      */
     function pickEnemyAction(enemyId, mapId, index) {
         var t = getById(enemyId);
         if (!t || !Array.isArray(t.actions) || !t.actions.length) return null;
-        regenEnemyQi(enemyId);
-        var qi = getEnemyQi(enemyId);
         var pool = [];
-        var i, a, cost;
+        var i, a;
         for (i = 0; i < t.actions.length; i++) {
             a = t.actions[i] || {};
-            cost = parseInt(a.qi_cost, 10) || 0;
-            if (cost <= qi.current) {
-                if (mapId != null && index != null && index >= 0 && isEnemyPartDestroyed(mapId, index, a.limb, enemyId)) continue;
-                pool.push(a);
-            }
+            if (actionStatus(enemyId, mapId, index, a).ok) pool.push(a);
         }
         if (!pool.length) return null;
+        if (t.boss && global.CombatEnemyBoss) return global.CombatEnemyBoss.choose(pool,getEnemyInstanceState(mapId,index,enemyId),global.CombatEnemyBoss.context(enemyId,mapId,index));
+        if(t.thug)return global.CombatEnemyThug.choose(pool,getEnemyInstanceState(mapId,index,enemyId),global.CombatEnemyBoss.context(enemyId,mapId,index),t);
+        if (t.action_selection === 'cycle') {
+            var st = getEnemyInstanceState(mapId, index, enemyId);
+            var mode = weaponMode(enemyId, mapId, index);
+            var cursor = st.action_cursors[mode] || 0;
+            for (var j = 0; j < t.actions.length; j++) {
+                var candidate = t.actions[(cursor + j) % t.actions.length];
+                if (pool.indexOf(candidate) >= 0) return candidate;
+            }
+        }
         return pool[Math.floor(Math.random() * pool.length)];
+    }
+
+    function copy(value) { return JSON.parse(JSON.stringify(value)); }
+    function rememberMap(mapId) {
+        var maps = global.GameEngine && global.GameEngine.getMaps && global.GameEngine.getMaps();
+        var map = maps && maps[mapId];
+        if (map && !map.dungeon && !mapBaselines[mapId]) mapBaselines[mapId] = copy(map.enemies || []);
+    }
+    function getOwnerId(enemyId, mapId, index) {
+        if (mapId == null || index == null || index < 0) return String(enemyId || '');
+        return getEnemyInstanceState(mapId, index, enemyId).ownerId;
+    }
+    function ownerOf(entity) {
+        if (!entity || entity.kind !== 'enemy') return 'player';
+        return entity.ownerId || getOwnerId(entity.enemyId, entity.mapId, entity.index);
+    }
+    function clearOwnerBuffs(owner) {
+        var bs = global.BuffSystem;
+        if (!owner || !bs || !bs.getState || !bs.removeBuffByBuffId) return;
+        var list = (bs.getState().instancesByOwner || {})[owner] || [];
+        list.slice().forEach(function (buff) { bs.removeBuffByBuffId(owner, buff.buff_id); });
+    }
+    function actionDisabled(enemyId, mapId, index, action) {
+        var bs = global.BuffSystem;
+        return !!(bs && bs.hasActionDisabled && bs.hasActionDisabled(getOwnerId(enemyId, mapId, index), action));
+    }
+    function cannotMove(enemyId, mapId, index) {
+        var st = getEnemyInstanceState(mapId, index, enemyId);
+        return st.dead || isEnemyStunned(mapId, index) || getEnemyPainTierKey(st) === 'agony'
+            || isEnemyPartDestroyed(mapId, index, 'lfoot', enemyId) || isEnemyPartDestroyed(mapId, index, 'rfoot', enemyId)
+            || actionDisabled(enemyId, mapId, index, 'move');
+    }
+    function weaponMode(enemyId, mapId, index) {
+        var t = getById(enemyId) || {}, w = t.weapon, st = getEnemyInstanceState(mapId, index, enemyId);
+        if (!w) return 'unarmed';
+        var hands = w.kind === 'single' ? [w.hand] : ['lhand', 'rhand'];
+        var usable = hands.some(function (p) { return (p === 'lhand' || p === 'rhand') && !isEnemyPartDestroyed(mapId, index, p, enemyId); });
+        if (!usable) { st.weapon_mode = 'unarmed'; st.weapon_forced_unarmed = true; }
+        else if (w.kind === 'single' && st.weapon_forced_unarmed) { st.weapon_mode = 'weapon'; st.weapon_forced_unarmed = false; }
+        return st.weapon_mode;
+    }
+    function actionLimbs(enemyId, mapId, index, action) {
+        if (!action) return [];
+        var t = getById(enemyId) || {}, w = t.weapon;
+        if(action.required_limbs!=null && !Array.isArray(action.required_limbs))return [];
+        if(action.mode==='weapon' && (!w || ['single','two_handed','polearm'].indexOf(w.kind)<0))return [];
+        var limbs = action.mode === 'weapon' && w
+            ? (w.kind === 'single' ? [w.hand] : ['lhand', 'rhand'].filter(function (p) { return !isEnemyPartDestroyed(mapId,index,p,enemyId); }))
+            : [normalizeDestroyKey(action.limb)];
+        return limbs.concat((action.required_limbs || []).map(normalizeDestroyKey)).filter(function(p,i,a){return a.indexOf(p)===i;});
+    }
+    function actionStatus(enemyId, mapId, index, action) {
+        var t = getById(enemyId), st = getEnemyInstanceState(mapId, index, enemyId);
+        function no(reason) { return { ok: false, reason: reason, damageMultiplier: 0 }; }
+        if (!t || t.can_attack === false || st.dead) return no(st.dead ? 'dead' : 'cannot_attack');
+        if (isEnemyStunned(mapId,index) || actionDisabled(enemyId,mapId,index,'attack')) return no('stunned_or_disabled');
+        if (!action || !Array.isArray(t.actions) || t.actions.indexOf(action) < 0) return no('no_action');
+        var mode = weaponMode(enemyId,mapId,index);
+        if ((action.mode || 'unarmed') !== mode) return no('weapon_unavailable');
+        var limbs = actionLimbs(enemyId,mapId,index,action);
+        if (!limbs.length || limbs.some(function(p){return ['lhand','rhand','lfoot','rfoot'].indexOf(p)<0 || isEnemyPartDestroyed(mapId,index,p,enemyId);})) return no('limb_destroyed');
+        if (action.requires_movement && cannotMove(enemyId,mapId,index)) return no('movement_disabled');
+        if (Math.max(0, Number(action.qi_cost) || 0) > getEnemyQi(enemyId,mapId,index).current) return no('insufficient_qi');
+        if(t.boss && global.CombatEnemyBoss){var reason=global.CombatEnemyBoss.status(st,action,global.CombatEnemyBoss.context(enemyId,mapId,index));if(reason)return no(reason);}
+        if(t.thug){var why=global.CombatEnemyThug.status(st,action,global.CombatEnemyBoss.context(enemyId,mapId,index),t);if(why)return no(why);}
+        var w = t.weapon, woundedHand = isEnemyPartDestroyed(mapId,index,'lhand',enemyId) || isEnemyPartDestroyed(mapId,index,'rhand',enemyId);
+        return {ok:true,reason:null,damageMultiplier:mode==='weapon' && w && (w.kind==='two_handed'||w.kind==='polearm') && woundedHand ? .5 : 1};
+    }
+    function commitAction(enemyId,mapId,index,action) {
+        var t = getById(enemyId), st = getEnemyInstanceState(mapId,index,enemyId);
+        if (t && t.action_selection === 'cycle') st.action_cursors[action.mode || 'unarmed'] = (t.actions.indexOf(action)+1) % t.actions.length;
+    }
+    function planAction(enemyId,mapId,index) {
+        prepareBossOpportunity(enemyId,mapId,index,true,false);
+        var action = pickEnemyAction(enemyId,mapId,index);
+        return {action:action,occupiedLimbs:actionLimbs(enemyId,mapId,index,action)};
+    }
+    function parryContext(defender, hitPart) {
+        var id=defender.enemyId, mapId=defender.mapId, index=defender.index;
+        var st=getEnemyInstanceState(mapId,index,id);
+        function skip(reason){return {skip:true,reason:reason,guardLimb:null};}
+        if ((getById(id)||{}).boss && global.CombatEnemyBoss.state(st).meditationTick===actionTick())return skip('meditating');
+        if((getById(id)||{}).thug && global.CombatEnemyThug.state(st,getById(id)).meditationTick===actionTick())return skip('meditating');
+        if(st.dead || isEnemyStunned(mapId,index) || actionDisabled(id,mapId,index,'parry')) return skip('incapacitated');
+        var forbidden=defender.occupiedLimbs || [], p=normalizeDestroyKey(hitPart), limbs=['lhand','rhand','lfoot','rfoot'];
+        if(PART_ORDER.indexOf(p)<0) return skip('unknown_hit_part');
+        var struckLimb=limbs.indexOf(p)>=0;
+        if(struckLimb && isEnemyPartDestroyed(mapId,index,p,id)) return skip('struck_limb_destroyed');
+        var candidates=limbs.filter(function(l){return forbidden.indexOf(l)<0 && !isEnemyPartDestroyed(mapId,index,l,id);});
+        if(struckLimb && forbidden.indexOf(p)<0) candidates=[p];
+        if(!candidates.length) return skip('no_parry_candidate');
+        return {skip:false,reason:null,guardLimb:candidates[Math.floor(Math.random()*candidates.length)]};
+    }
+    function tickEnemy(mapId,index,enemyId,tick) {
+        var st=getEnemyInstanceState(mapId,index,enemyId), t=getById(enemyId)||{};
+        tick=Number(tick);
+        if (!isFinite(tick)) tick=getPainBuffTick();
+        var fresh=st.last_turn_tick !== tick;
+        if(fresh) {
+            st.last_turn_tick=tick;
+            st.turn_stunned=!!st.stunned;
+            st.stunned=false;
+            if(!st.dead) {
+                st.stun_value=Math.max(0,(st.stun_value||0)-1);
+                decayEnemyPain(st);
+                var qi=getEnemyQi(enemyId,mapId,index);
+                st.qi_current=Math.min(qi.max,qi.current+Math.max(0,Number(t.qi_li_regen_per_turn)||0));
+            }
+        }
+        return {skip:st.dead||st.turn_stunned,cannotMove:cannotMove(enemyId,mapId,index),fresh:fresh};
+    }
+    function healInjury(mapId,index,enemyId,amount) {
+        var st=getEnemyInstanceState(mapId,index,enemyId), before=Math.max(0,Math.floor(Number(amount)||0)), left=before, restored=[];
+        if(st.dead) return 0;
+        PART_ORDER.forEach(function(p){
+            var was=st.part_destroy[p]>=st.maxes[p], heal=Math.min(left,st.part_destroy[p]);
+            st.part_destroy[p]-=heal;left-=heal;
+            if(was && st.part_destroy[p]<st.maxes[p]) restored.push(p);
+        });
+        if(restored.length) {
+            var key=getEnemyInstanceKey(mapId,index), old=enemyLimbRecoveryQueue[key];
+            enemyLimbRecoveryQueue[key]={mapId:mapId,index:index,enemyId:enemyId,parts:(old?old.parts:[]).concat(restored)};
+        }
+        syncEnemyPainBuff(st);
+        weaponMode(enemyId,mapId,index);
+        return before-left;
+    }
+    function restoreInstance(mapId,index,enemyId,data) {
+        var key=getEnemyInstanceKey(mapId,index);
+        delete enemyInstanceStates[key];
+        var st=getEnemyInstanceState(mapId,index,enemyId);
+        if(!data || typeof data!=='object') return;
+        if(typeof data.ownerId==='string' && /^enemy-instance:\d+$/.test(data.ownerId)) {
+            st.ownerId=data.ownerId;instanceSequence=Math.max(instanceSequence,Number(data.ownerId.split(':')[1]));
+        }
+        PART_ORDER.forEach(function(p){
+            var max=Number(data.maxes && data.maxes[p]);
+            if(isFinite(max)&&max>0) st.maxes[p]=Math.max(1,Math.floor(max));
+            st.part_destroy[p]=Math.max(0,Math.min(st.maxes[p],Math.floor(Number(data.part_destroy && data.part_destroy[p])||0)));
+        });
+        st.dead=!!data.dead || (!(getById(enemyId)||{}).limbs_invulnerable && isFatallyDestroyed(st));
+        ['stun_value','pain_value'].forEach(function(p){st[p]=Math.max(0,Math.min(100,Number(data[p])||0));});
+        st.stunned=!!data.stunned;st.turn_stunned=!!data.turn_stunned;
+        st.pain_no_hit_ticks=Math.max(0,Number(data.pain_no_hit_ticks)||0);
+        st.qi_current=Math.max(0,Math.min(Number((getById(enemyId)||{}).qi_li_max)||0,Number(data.qi_current)||0));
+        st.last_turn_tick=Number.isFinite(data.last_turn_tick)?data.last_turn_tick:null;
+        if ((getById(enemyId)||{}).boss && global.CombatEnemyBoss) global.CombatEnemyBoss.restore(st,data.boss);
+        if((getById(enemyId)||{}).thug)global.CombatEnemyThug.restore(st,data.thug,getById(enemyId));
+        if(data.shield_remaining!=null) st.shield_remaining=Math.max(0,Number(data.shield_remaining)||0);
+        st.weapon_mode=data.weapon_mode==='unarmed'?'unarmed':'weapon';st.weapon_forced_unarmed=!!data.weapon_forced_unarmed;
+        ['unarmed','weapon'].forEach(function(p){st.action_cursors[p]=Math.max(0,Math.floor(Number(data.action_cursors&&data.action_cursors[p])||0));});
+        if(st.dead) enemyKillQueue[key]=enemyId;
+    }
+    function getPersistentState() {
+        var maps=global.GameEngine && global.GameEngine.getMaps && global.GameEngine.getMaps(), savedMaps={};
+        Object.keys(mapBaselines).forEach(function(id){if(maps && maps[id] && !maps[id].dungeon)savedMaps[id]=copy(maps[id].enemies||[]);});
+        return copy({version:1,instanceSequence:instanceSequence,instances:enemyInstanceStates,ai:enemyAiState,maps:savedMaps,facing:facingByKey});
+    }
+    function setPersistentState(data) {
+        var maps=global.GameEngine && global.GameEngine.getMaps && global.GameEngine.getMaps();
+        Object.keys(mapBaselines).forEach(function(id){if(maps&&maps[id]&&!maps[id].dungeon)maps[id].enemies=copy(mapBaselines[id]);});
+        enemyInstanceStates={};enemyAiState={};enemyKillQueue={};enemyLimbLossQueue={};enemyLimbRecoveryQueue={};worldTurnTick=null;
+        if(global.CombatWorld && global.CombatWorld.resetTransientState)global.CombatWorld.resetTransientState();
+        instanceSequence=Math.max(0,Number(data&&data.instanceSequence)||0);facingByKey=copy(data&&data.facing||{});
+        if(!data)return;
+        Object.keys(data.maps||{}).forEach(function(id){
+            if(maps&&maps[id]&&!maps[id].dungeon&&Array.isArray(data.maps[id])){rememberMap(id);maps[id].enemies=copy(data.maps[id]);}
+        });
+        Object.keys(data.instances||{}).forEach(function(key){
+            var split=key.lastIndexOf('|i');if(split<0)return;
+            var v=data.instances[key];if(!v || !v.enemyId)return;
+            restoreInstance(key.slice(0,split),Number(key.slice(split+2)),v.enemyId,v);
+        });
+        enemyAiState=copy(data.ai||{});
+    }
+    function validateTemplates() {
+        var errors=[];
+        Object.keys(table.enemies).forEach(function(id){
+            var t=getById(id);
+            if(t.can_attack===false)return;
+            if(!Array.isArray(t.actions)||!t.actions.length){errors.push(id+': missing actions');return;}
+            PART_ORDER.forEach(function(p){var max=Number(t.body_part_destroy_max&&t.body_part_destroy_max[p]);if(!Number.isInteger(max)||max<=0)errors.push(id+': invalid part maximum '+p);});
+            if(t.weapon && (['single','two_handed','polearm'].indexOf(t.weapon.kind)<0 || t.weapon.kind==='single' && ['lhand','rhand'].indexOf(t.weapon.hand)<0))errors.push(id+': unsupported weapon dependency');
+            t.actions.forEach(function(a){
+                if(!a || typeof a!=='object'){errors.push(id+': invalid action');return;}
+                if(!a.id || (a.mode!=='weapon' && ['lhand','rhand','lfoot','rfoot'].indexOf(normalizeDestroyKey(a.limb))<0))errors.push(id+': invalid action limb');
+                if(a.mode && a.mode!=='weapon' && a.mode!=='unarmed' || a.mode==='weapon' && !t.weapon)errors.push(id+': invalid action mode');
+                if(a.required_limbs!=null && (!Array.isArray(a.required_limbs)||a.required_limbs.some(function(p){return ['lhand','rhand','lfoot','rfoot'].indexOf(normalizeDestroyKey(p))<0;})))errors.push(id+': invalid required limb');
+                if(!Number.isFinite(a.power_min)||a.power_min<0||!Number.isFinite(a.power_max)||a.power_max<a.power_min)errors.push(id+': invalid action power');
+            });
+        });
+        return errors;
     }
 
     // ---- 敌人 AI（主动追击与攻击；纯逻辑，由 scene-app tick 钩子调用并落地）----
@@ -692,6 +892,7 @@
         if (!map || !Array.isArray(map.enemies)) return false;
         var rec = map.enemies[index | 0];
         if (!rec || !rec.enemy_id) return false;
+        if(map.dungeon && global.DungeonRuntime?.provoke)global.DungeonRuntime.provoke(index);
         var key = enemyAiKey(map.map_id, index);
         var st = enemyAiState[key] || (enemyAiState[key] = {
             lastMoveTick: 0, aggro: false, homeX: rec.x | 0, homeY: rec.y | 0
@@ -702,6 +903,7 @@
     }
 
     function isEnemyAggro(mapId, index) {
+        if (global.DungeonRuntime && global.DungeonRuntime.active()) return global.DungeonRuntime.aggro(index);
         var st = enemyAiState[enemyAiKey(mapId, index)];
         return !!(st && st.aggro);
     }
@@ -709,6 +911,15 @@
     /** enemies[] 删除一项后同步按下标存放的 AI 状态，避免后续实例继承错误仇恨。 */
     function removeEnemyAiStateAt(mapId, removedIndex) {
         var prefix = String(mapId || '') + '|i';
+        var removed=enemyInstanceStates[prefix+removedIndex];
+        if(removed)clearOwnerBuffs(removed.ownerId);
+        [enemyInstanceStates,enemyKillQueue,enemyLimbLossQueue,enemyLimbRecoveryQueue].forEach(function(state){
+            var shifted={};Object.keys(state).forEach(function(k){
+                if(k.indexOf(prefix)!==0)return;
+                var i=Number(k.slice(prefix.length)),v=state[k];delete state[k];
+                if(i!==removedIndex) { if(v&&typeof v==='object'&&v.index!=null)v.index=i>removedIndex?i-1:i;shifted[prefix+(i>removedIndex?i-1:i)]=v; }
+            });Object.assign(state,shifted);
+        });
         var moved = {};
         Object.keys(enemyAiState).forEach(function (key) {
             if (key.indexOf(prefix) !== 0) return;
@@ -788,6 +999,7 @@
      * @returns {{ moves: Array<{index,enemyId,fromX,fromY,toX,toY}>, attacks: Array<{index,enemyId,x,y}> }}
      */
     function updateEnemyAI(o) {
+        if (o && o.map && o.map.dungeon && global.DungeonRuntime) return global.DungeonRuntime.updateAI(o) || {moves:[],attacks:[]};
         var moves = [];
         var attacks = [];
         if (!o || !o.map || !Array.isArray(o.map.enemies)) return { moves: moves, attacks: attacks };
@@ -801,16 +1013,9 @@
             var tpl = getById(eid);
             if (!tpl || tpl.can_attack === false) continue;
             // 眩晕（37 §9.2，k13）：-1/tick 衰减；眩晕中本 tick 无法行动（晕 1 回合，跳过本 tick）
+            var turn=tickEnemy(o.map.map_id,i,eid,tick);
+            if(turn.skip || !turn.fresh)continue;
             var instSt = getEnemyInstanceState(o.map.map_id, i, eid);
-            if (instSt.stunned) {
-                instSt.stunned = false;
-                continue;
-            }
-            if ((instSt.stun_value || 0) > 0) {
-                instSt.stun_value = Math.max(0, Math.floor(instSt.stun_value) - 1);
-            }
-            // 疼痛衰减（47 §9.6 / k229，敌我通用）：未吃有效损毁 grace tick 后每 4 tick −1；镜像 buff 保活/移除
-            try { decayEnemyPain(instSt); } catch (ePainTick) { /* ignore */ }
             var painTierKey = getEnemyPainTierKey(instSt);
             var painAgonyNow = painTierKey === 'agony';
             var ex = n.x | 0, ey = n.y | 0;
@@ -836,7 +1041,7 @@
             try {
                 legsDisabled = isEnemyPartDestroyed(o.map.map_id, i, 'lfoot', eid) || isEnemyPartDestroyed(o.map.map_id, i, 'rfoot', eid);
             } catch (eLeg) { /* ignore */ }
-            if (!legsDisabled && !painAgonyNow && dist > 1 && tick - st.lastMoveTick >= aiMoveInterval(tpl)) {
+            if (!turn.cannotMove && !legsDisabled && !painAgonyNow && dist > 1 && tick - st.lastMoveTick >= aiMoveInterval(tpl)) {
                 var tx = st.aggro ? px : st.homeX;
                 var ty = st.aggro ? py : st.homeY;
                 if (tx === ex && ty === ey) continue;
@@ -851,7 +1056,40 @@
         return { moves: moves, attacks: attacks };
     }
 
+    function actionTick(){return worldTurnTick!=null?worldTurnTick:getPainBuffTick()+1;}
+    function prepareBossOpportunity(id,mapId,index,combat,home,canAttack){
+        if((getById(id)||{}).thug)global.CombatEnemyThug.prepareOpportunity(getEnemyInstanceState(mapId,index,id),global.CombatEnemyBoss.context(id,mapId,index),getById(id),combat,home);
+        if((getById(id)||{}).boss && global.CombatEnemyBoss)global.CombatEnemyBoss.prepareOpportunity(getEnemyInstanceState(mapId,index,id),global.CombatEnemyBoss.context(id,mapId,index),combat,home,canAttack);
+    }
     global.CombatEnemies = {
+        actionTick:actionTick,
+        prepareBossOpportunity:prepareBossOpportunity,
+        bossInfo:function(id,mapId,index){return (getById(id)||{}).boss?copy(global.CombatEnemyBoss.state(getEnemyInstanceState(mapId,index,id))):null;},
+        // Render-only snapshot: never creates instances, heals or advances boss decisions.
+        breathVisualStates:function(mapId){return Object.entries(enemyInstanceStates).filter(function(pair){return pair[0].startsWith(mapId+'|i')&&pair[1].boss;}).map(function(pair){var st=pair[1],b=st.boss;return {key:'enemy:'+Number(pair[0].slice((mapId+'|i').length)),index:Number(pair[0].slice((mapId+'|i').length)),enemyId:st.enemyId,ownerId:st.ownerId,dead:!!st.dead,remaining:b.burstRemaining,warning:b.warningTick!=null&&b.charge>=200};});},
+        thugInfo:function(id,mapId,index){return (getById(id)||{}).thug?copy(global.CombatEnemyThug.state(getEnemyInstanceState(mapId,index,id),getById(id))):null;},
+        tryThugDash:function(id,mapId,index,s,e){return global.CombatEnemyThug.dash(getEnemyInstanceState(mapId,index,id),global.CombatEnemyBoss.context(id,mapId,index),getById(id),s,e);},
+        quoteBossAction:function(id,mapId,index,a){if(getById(id)?.thug)return global.CombatEnemyThug.quote(getEnemyInstanceState(mapId,index,id),a,global.CombatEnemyBoss.context(id,mapId,index),getById(id));return global.CombatEnemyBoss.quote(getEnemyInstanceState(mapId,index,id),a,global.CombatEnemyBoss.context(id,mapId,index));},
+        commitBossAction:function(q){var st=enemyInstanceStates[getEnemyInstanceKey(q.mapId,q.index)];if(st&&st.ownerId===q.ownerId){if(q.policy==='thug')global.CombatEnemyThug.commit(st,q,getById(st.enemyId));else global.CombatEnemyBoss.commit(st,q);}},
+        speedBuffBase:function(owner,base){var st=Object.values(enemyInstanceStates).find(function(s){return s.ownerId===owner;});return st&&((getById(st.enemyId)||{}).boss||(getById(st.enemyId)||{}).thug)?1:base;},
+        dungeonTurnStatus:tickEnemy,
+        getDungeonState:function(mapId,index,enemyId){return JSON.parse(JSON.stringify(getEnemyInstanceState(mapId,index,enemyId)));},
+        restoreDungeonState:restoreInstance,
+        healDungeonInjury:healInjury,
+        getState:getPersistentState,
+        setState:setPersistentState,
+        getOwnerId:getOwnerId,
+        ownerOf:ownerOf,
+        actionStatus:actionStatus,
+        planAction:planAction,
+        actionLimbs:actionLimbs,
+        commitAction:commitAction,
+        parryContext:parryContext,
+        cannotMove:cannotMove,
+        validateTemplates:validateTemplates,
+        beginWorldTurn:function(tick){worldTurnTick=Number(tick);},
+        endWorldTurn:function(){var tick=worldTurnTick;Object.keys(enemyInstanceStates).forEach(function(k){var st=enemyInstanceStates[k];if((getById(st.enemyId)||{}).boss && tick!=null)global.CombatEnemyBoss.endTick(st,tick);if((getById(st.enemyId)||{}).thug&&tick!=null)global.CombatEnemyThug.endTick(st,tick,getById(st.enemyId));});worldTurnTick=null;},
+        drainEnemyLimbRecoveryQueue:function(){var list=Object.keys(enemyLimbRecoveryQueue).map(function(k){return enemyLimbRecoveryQueue[k];});enemyLimbRecoveryQueue={};return list;},
         getShieldRemaining: function (mapId, index, enemyId) {
             var st = getEnemyInstanceState(mapId, index, enemyId);
             if (st.shield_remaining == null) st.shield_remaining = Math.max(0, Number((getById(enemyId) || {}).shield_remaining) || 0);
@@ -871,7 +1109,6 @@
         sampleHitPartForAction: sampleHitPartForAction,
         getEnemyQi: getEnemyQi,
         consumeEnemyQi: consumeEnemyQi,
-        regenEnemyQi: regenEnemyQi,
         isEnemyDead: isEnemyDead,
         isEnemyPartDestroyed: isEnemyPartDestroyed,
         addEnemyStun: addEnemyStun,

@@ -1,0 +1,232 @@
+[
+  {
+    "id": "timber-rack",
+    "name": "旧料架",
+    "footprint": [
+      1,
+      1
+    ],
+    "width": 0.94,
+    "subject": "A squat repaired steel rack holding three uneven lengths of salvaged timber, a rolled tarpaulin and a short pipe; knee to waist height. One square-cell ground footprint; no empty decorative floor."
+  },
+  {
+    "id": "broken-chair",
+    "name": "修补旧椅",
+    "footprint": [
+      1,
+      1
+    ],
+    "width": 0.55,
+    "subject": "One utilitarian worn steel-tube chair, cream chipped paint, dark teal cracked vinyl seat patched with beige fabric tape, one back slat replaced. Still usable, not collapsed. Seat normal human knee height. One-cell footprint with four explicit feet."
+  },
+  {
+    "id": "old-radiator",
+    "name": "旧暖气片",
+    "footprint": [
+      1,
+      1
+    ],
+    "width": 0.67,
+    "subject": "A squat cream cast-iron radiator, six chunky fins, closed valve, rust localized at feet and bottom seams, disconnected but upright. Base ground rectangle long along descending-right grid axis."
+  },
+  {
+    "id": "tire-pair",
+    "name": "旧轮胎堆",
+    "footprint": [
+      1,
+      1
+    ],
+    "width": 0.69,
+    "subject": "Two worn black rubber vehicle tires stacked slightly offset but stable, a folded dirty rag caught on the top rim. Empty, no cargo; chunky sidewall and tread, not countless tiny grooves. Single-cell circular base."
+  },
+  {
+    "id": "sealed-cargo-obstacle-v1",
+    "name": "封存货堆",
+    "footprint": [
+      2,
+      2
+    ],
+    "width": 1.84,
+    "subject": "Large stable 2 by 2 square-tile pile of mismatched sealed crates, two strapped sacks, folded corrugated metal panel. No pallet platform; crate bottoms themselves meet the exact square footprint. Lower parcels occupy most of its two-by-two floor rectangle; irregular useful upper stack waist-high. Strong clear mass, localized grime."
+  },
+  {
+    "id": "collapsed-rubble-obstacle-v1",
+    "name": "塌落砖石",
+    "footprint": [
+      2,
+      2
+    ],
+    "width": 1.85,
+    "subject": "A low 2 by 2 square-tile obstruction mound of a few large broken concrete pieces with exposed red bricks, one bent iron bar and flaking pale plaster. Pieces irregular, large readable planes; no dusty platform, pedestal or continuous ground slab. Mostly knee high."
+  },
+  {
+    "id": "timber-stone-barricade-v1",
+    "name": "拼装挡路架",
+    "footprint": [
+      2,
+      1
+    ],
+    "width": 1.42,
+    "subject": "Two-cell long waist-high barricade built from mismatched steel rail and old planks braced between two concrete blocks. Ground footprint two tiles long along descending-right axis, one tile deep, broad side toward lower-left. Vertical supports upright; braced and used, not neat ornamental fencing."
+  },
+  {
+    "id": "workshop-machine-v1",
+    "name": "旧车间机组",
+    "footprint": [
+      3,
+      2
+    ],
+    "width": 2.35,
+    "subject": "A heavy decommissioned teal industrial lathe/machine group on its own structural feet. Ground footprint exactly THREE tiles along descending-right axis and TWO along ascending-right depth; no diorama base. Waist-height work bed and one shoulder-high motor housing, handwheel, belt guard, greasy repaired seams, beige replacement panel, disconnected cable resting on machine. Strong painted large forms, no fine photoreal noise. Bottom feet span the full 3x2 grid rectangle."
+  },
+  {
+    "id": "workshop-bench-v1",
+    "name": "车间工作台",
+    "footprint": [
+      2,
+      1
+    ],
+    "width": 1.42,
+    "subject": "Two-cell long repaired metal workbench, long axis descends to right; waist height, four square-tube legs, patched wooden work surface with a vise at one end, rag, one spanner, mismatched lower shelf with a tin. Clear empty leg gaps. Bottom footprint 2x1 tiles."
+  },
+  {
+    "id": "canteen-table-v1",
+    "name": "旧食堂长桌",
+    "footprint": [
+      2,
+      1
+    ],
+    "width": 1.42,
+    "subject": "A low two-cell long institutional dining table, long axis descends to right, pale green chipped laminate over metal tube frame. Four explicit feet; tea ring, one enamel bowl and crumpled rag at one end. Most tabletop clear; no chairs bundled. Used affordable modern canteen furniture. 2x1 bottom footprint."
+  },
+  {
+    "id": "canteen-counter-v1",
+    "name": "食堂备餐台",
+    "footprint": [
+      2,
+      1
+    ],
+    "width": 1.42,
+    "subject": "Two-cell long industrial food preparation counter with battered cream enamel front and dark dull stainless top, long axis descends to right. Uneven drawer, repaired teal door, modest basin and old cutting board at opposite ends. Four feet, waist height, clear 2x1 bottom footprint. Localized food spills around basin."
+  },
+  {
+    "id": "clinic-bed-v1",
+    "name": "临时诊疗床",
+    "footprint": [
+      2,
+      1
+    ],
+    "width": 1.4,
+    "subject": "A low narrow steel clinical cot, exactly 2x1 bottom footprint long direction descending-right. Four legs and thin rail headboard, worn cream paint. Uneven thin gray-green mattress with a rumpled off-white sheet pushed to one end, small pillow. Seat-height mattress. Normal human-length bed, no tall cabinet or hospital machinery."
+  },
+  {
+    "id": "clinic-bench-v1",
+    "name": "候诊长凳",
+    "footprint": [
+      2,
+      1
+    ],
+    "width": 1.3,
+    "subject": "Two-cell long low waiting bench, dark green metal frame with three faded mustard vinyl cushion pads, one pad repaired with a cloth patch. Long axis descending-right, four feet, 2x1 ground footprint, knee-height seat. One grubby magazine at far end."
+  },
+  {
+    "id": "old-water-filter",
+    "name": "旧净水桶",
+    "footprint": [
+      1,
+      1
+    ],
+    "width": 0.65,
+    "subject": "A home-built water filter: squat reused translucent amber tank atop a waist-high patched teal metal cabinet, small spigot facing lower-left, chipped enamel cup on cabinet lower shelf. Water visible in tank. Compact square bottom footprint, four feet. Used but maintained, no electric glow."
+  },
+  {
+    "id": "barrel-cooking-stove",
+    "name": "铁桶小灶",
+    "footprint": [
+      1,
+      1
+    ],
+    "width": 0.67,
+    "subject": "A reused steel barrel stove, squat red-orange scratched barrel, front square firebox with modest warm coals and a black saucepan of food on top; a repaired iron grate and small lever. No tall chimney. Compact circular footprint within one square tile. Nothing scattered outside feet."
+  },
+  {
+    "id": "first-aid-trolley",
+    "name": "急救推车",
+    "footprint": [
+      1,
+      1
+    ],
+    "width": 0.65,
+    "subject": "Small square two-tier clinic trolley, four visible caster wheels, dull cream enamel trays with dark green frame, folded gauze, amber bottles, cloth bag, used tape on one rail. Clear modern medical silhouette; no red cross emblem or text. Waist-high upper tray and exact square-wheel contact footprint."
+  },
+  {
+    "id": "car-seat-rest-berth",
+    "name": "车座铺位",
+    "footprint": [
+      1,
+      1
+    ],
+    "width": 0.68,
+    "subject": "A salvaged single automobile seat repurposed into resting chair. Teal vinyl and tan patched cushion, headrest, low homemade four-foot steel bracket. A rumpled beige blanket over one arm and flat pillow. Reclined slightly but all feet on one square-cell floor footprint, human seat proportions."
+  },
+  {
+    "id": "campfire-small-pot",
+    "name": "篝火小锅",
+    "footprint": [
+      1,
+      1
+    ],
+    "width": 0.7,
+    "subject": "A small compact cooking fire: three large stones supporting a short metal trivet and old black pot, few short split sticks under, modest orange flames, food in pot. Worn enamel ladle rests across rim. Do not include a ground slab or puddle, no large glow, no smoke cloud. Broad hand-painted masses, fits within one tile."
+  },
+  {
+    "id": "small-enamel-water-jug",
+    "name": "旧提水壶",
+    "footprint": [
+      1,
+      1
+    ],
+    "width": 0.29,
+    "subject": "Small battered off-white enamel water kettle with dark blue rim, squat body, short spout, wire loop handle wrapped in a small dirty rag. Lid closed, believable hand-carried size. No table, platform, surrounding clutter or shadow."
+  },
+  {
+    "id": "fragment-desk",
+    "name": "残页书桌",
+    "footprint": [
+      1,
+      1
+    ],
+    "width": 0.87,
+    "subject": "Small battered modern steel office desk, single square-cell ground footprint, four legs and a shallow drawer. Chipped teal/cream paint, patched wood top. A few handwritten book leaves laid open (abstract markings, no readable words), stub pencil and battered notebook, one tea stain. Waist-high desktop, patched and lived-in."
+  },
+  {
+    "id": "practice-stump",
+    "name": "练武残桩",
+    "footprint": [
+      1,
+      1
+    ],
+    "width": 0.43,
+    "subject": "A single worn martial training post fixed in a crude iron crossfoot frame, one padded side arm, rope and dirty canvas wrapped round impact area. Shoulder-height post, much narrower than a tile, stable four contact feet. Old industrial training salvage, no magical glow, no pedestal ground."
+  },
+  {
+    "id": "exit-waypost",
+    "name": "撤离路牌",
+    "footprint": [
+      1,
+      1
+    ],
+    "width": 0.48,
+    "subject": "A human-height improvised evacuation waypost: dark green metal square post with a small off-white bent directional arrow sign bolted on top, paint scrubbed and chipped, simple arrow icon only no text. Two short bolted crossfeet at bottom. Tied rag and spare wire, no lantern glow, no decorative base."
+  },
+  {
+    "id": "canteen-food-crate",
+    "name": "食材筐",
+    "footprint": [
+      1,
+      1
+    ],
+    "width": 0.8,
+    "subject": "One low modern red plastic crate with repaired cream corner, uneven reused sacks and a few large visible cabbages, onions and tins packed in it. Practical canteen supply container, square floor footprint with rim along grid axes. Readable chunky shapes, some dirt concentrated near bottom, no overflow onto neighboring squares."
+  }
+]

@@ -1,0 +1,34 @@
+{
+  "referenceTileWidth": 144,
+  "referenceTileHeight": 101.82337649086284,
+  "proposedLogicalFootprint": [
+    1,
+    1
+  ],
+  "physicalFootprint": [
+    0.72,
+    0.72
+  ],
+  "tabletopHeightAt144": 40,
+  "nativeFront": [
+    0,
+    1
+  ],
+  "scale": 6.0,
+  "origin": [
+    512.0,
+    650.0
+  ],
+  "groundCorners": [
+    512.0,
+    430.061,
+    823.04,
+    650.0,
+    512.0,
+    869.938,
+    200.96,
+    650.0
+  ],
+  "status": "pre-generation art guide, not runtime collision",
+  "purpose": "Preserve native projection and equal scaling; never distort generated PNG to fit."
+}

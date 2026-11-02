@@ -1,0 +1,248 @@
+{
+  "corner-rubble": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      212,
+      332,
+      1061,
+      987
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "06703f8bbc84667f287fc8ac982ca1c85e87aa3d8eca3b9815805441435391e8"
+  },
+  "factory-desk": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      50,
+      165,
+      1201,
+      1128
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "ee785470c31df9beea26a120dd639c2dca03d657904dc555e1bbe57ec273982e"
+  },
+  "metal-sideboard": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      145,
+      351,
+      1111,
+      1182
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "411a2f6759bbedf432763fec484588cbd657c151bc80db529a0e94bd97c22e9a"
+  },
+  "painted-concrete": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGB",
+    "bbox": [
+      0,
+      0,
+      1254,
+      1254
+    ],
+    "alphaRange": null,
+    "sha256": "5659c1f2a8f675d184b18b9df62c6a2eecbd8bfe948d379bbb8eb57ce8852e80"
+  },
+  "painted-plaster": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGB",
+    "bbox": [
+      0,
+      0,
+      1254,
+      1254
+    ],
+    "alphaRange": null,
+    "sha256": "97e85c9c6a157b67d5e97236b8f98a0dbc9135e5dc3147141b545d28d047acde"
+  },
+  "private-cache-searched": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      171,
+      218,
+      1142,
+      1193
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "210b6d011972421fbd26fde55f1e6d0eafa1f94b5e3b6b2fd8f3efad67913b3d"
+  },
+  "private-cache": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      150,
+      355,
+      1105,
+      1106
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "2a21fcccc6753854e982482bd34667790dccd4735df66552e7ed7228687c04f3"
+  },
+  "steel-cot": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      76,
+      122,
+      1216,
+      1139
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "f566f41312cc8483ab252ba53e15f04e08517ae08432cbe3e8f5b00ce9fc6a0a"
+  },
+  "stolen-basket-searched": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      143,
+      216,
+      1123,
+      1070
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "05353a2c2d417982ab4e117791720305e5e5111cc0077a80b51f7291e7525f58"
+  },
+  "stolen-basket": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      142,
+      216,
+      1123,
+      1070
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "fe537dd553e56459ceb9f61d6b9eea936be1224d609c2039a6c80452da7ef94e"
+  },
+  "stopped-fan": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      342,
+      268,
+      887,
+      1074
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "aaea704e8e55114759b02782f816a9d87c86f4507eb692a70aeb04331529f60c"
+  },
+  "transit-rack": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      73,
+      118,
+      1216,
+      1194
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "6dacdcad242945095b32d308f0e70c7156ec7766867bfdb3d3ae232efb3c1b7a"
+  },
+  "vinyl-armchair": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      264,
+      153,
+      1019,
+      1093
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "ecc1ff61321506043061099ff2e345e0497ee11308ffb839617d24f1aed435d4"
+  },
+  "worn-mat": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      55,
+      240,
+      1200,
+      1051
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "ecf333dcd2145f877653dec55b5b4169ff4c759435b0f121b8c28b364f2de120"
+  }
+}

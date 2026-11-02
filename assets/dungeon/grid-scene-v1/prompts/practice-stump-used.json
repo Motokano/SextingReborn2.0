@@ -1,0 +1,11 @@
+{
+  "id": "practice-stump-used",
+  "prompt": "Edit the supplied transparent game sprite into its used state. After training: one wrapping flap loosened and hanging lower, small fresh abrasion at padded arm tip. Keep wood post, arm shape, footing and viewpoint exactly. CRITICAL: retain exact original canvas size, object scale, base/body position, ground contacts, camera, paint palette, broad hand-painted shading, dark outlines and repair marks. Do not recompose or zoom. Change only specified contents or state. True alpha transparency throughout empty pixels and gaps. No background, ground, pedestal, cast shadow, glow, labels or text. One isolated sprite.",
+  "references": [
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/grid-scene-v1/practice-stump.png"
+  ],
+  "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-d34a3ba4-1227-4316-89e4-ad071d222498.png",
+  "tool": "built-in image_gen",
+  "status": "registered-current",
+  "appliedFile": "practice-stump-used.png"
+}

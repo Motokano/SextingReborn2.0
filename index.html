@@ -3595,6 +3595,9 @@
 <link rel="stylesheet" href="css/toolbench-panel.css">
     <link rel="stylesheet" href="css/game-theme.css">
     <link rel="stylesheet" href="css/game-theme-systems.css">
+    <link rel="stylesheet" href="css/dungeon.css">
+    <link rel="stylesheet" href="css/npc-menu.css?v=shared-panel-stove-20261027">
+    <link rel="stylesheet" href="css/dungeon-loot-effects.css">
 </head>
 <body id="moss-hud-theme" class="ui-refined ui-layout moss-game ui-polished ui-material-study ui-reference-study" data-variant="C">
     <div id="item-tooltip"></div>
@@ -4493,6 +4496,8 @@
     <script src="js/combat-fx-events.js"></script>
     <script src="js/combat-pipeline.js"></script>
     <script src="js/convert-rules.js"></script>
+    <script src="js/combat-enemy-boss.js"></script>
+    <script src="js/combat-enemy-thug.js"></script>
     <script src="js/combat-enemies.js"></script>
     <script src="js/combat-engagement.js"></script>
     <script src="js/combat-melee-resolve.js"></script>
@@ -4523,6 +4528,8 @@
     <script src="js/combat-fx-paint.js"></script>
     <script src="js/combat-fx-presentation.js"></script>
     <script src="js/combat-fx-runtime.js"></script>
+    <script src="js/combat-fx-dash.js"></script>
+    <script src="js/combat-fx-dash-runtime.js"></script>
     <script src="js/core/map-projection.js"></script>
     <script src="js/core/base-hideout-art.js?v=hideout-facilities-20261101"></script>
     <script src="js/core/tile-renderer-v2.js?v=hideout-facilities-20261101"></script>
@@ -4580,6 +4587,69 @@
     <script src="assets/ui/svelte-hud.js"></script>
     <script src="assets/ui/combat-loadout.js"></script>
     <script src="js/ui-moss-game.js"></script>
+    <script src="js/dungeon/vendor/settlemaker.js"></script>
+    <script src="js/dungeon/engine.js"></script>
+    <script src="js/dungeon/enemies.js"></script>
+    <script src="js/dungeon/population.js"></script>
+    <script src="js/manufacturing-knowledge-catalog.js"></script>
+    <script src="js/manufacturing-knowledge.js"></script>
+    <script src="js/dungeon/recipe-study.js"></script>
+    <script src="js/dungeon/recipe-ranges.js"></script>
+    <script src="js/dungeon/content-config.js"></script>
+    <script src="js/dungeon/resources.js"></script>
+    <script src="js/dungeon/resource-art.js"></script>
+    <script src="js/dungeon/loot-catalog.js"></script>
+    <script src="js/dungeon/loot.js"></script>
+    <script src="js/dungeon/recovery-bounds.js"></script>
+    <script src="js/dungeon/poi-art.js"></script>
+    <script src="js/dungeon/grid-scene-catalog.js"></script>
+    <script src="js/dungeon/grid-scene-art.js"></script>
+    <script src="js/dungeon/container-profiles.js"></script>
+<script src="js/dungeon/workshop-terrain.js"></script>
+<script src="js/dungeon/workshop.js"></script>
+<script src="js/dungeon/clinic.js"></script>
+<script src="js/dungeon/canteen.js"></script>
+<script src="js/dungeon/outposts.js"></script>
+<script src="js/dungeon/large-room-states.js"></script>
+<script src="js/dungeon/outpost-decor.js"></script>
+<script src="js/dungeon/mixed-rooms.js"></script>
+    <script src="js/dungeon/poi-placement.js"></script>
+    <script src="js/dungeon/recovery-placement.js"></script>
+    <script src="js/dungeon/wanderers.js"></script>
+    <script src="js/dungeon/container-search.js"></script>
+    <script src="js/dungeon/recovery.js"></script>
+    <script src="js/dungeon/encounter.js"></script>
+    <script src="js/dungeon/insight.js"></script>
+    <script src="js/dungeon/exploration.js"></script>
+    <script src="js/dungeon/exit-pawn.js"></script>
+    <script src="js/dungeon/icons.js"></script>
+    <script src="js/dungeon/item-icons.js"></script>
+    <script src="js/dungeon/ui-icons.js"></script>
+    <script src="js/dungeon/loot-audio.js"></script>
+    <script src="js/dungeon/loot-effects.js"></script>
+    <script src="js/dungeon/expedition.js"></script>
+    <script src="js/dungeon/harvest.js"></script>
+    <script src="js/dungeon/woodland.js"></script>
+<script src="js/dungeon/room-layout.js"></script>
+    <script src="js/dungeon/harvest-catalog.js"></script>
+    <script src="js/dungeon/harvest-pawns.js"></script>
+    <script src="js/dungeon/seed.js"></script>
+<script src="js/dungeon/boss-room-data.js"></script>
+<script src="js/dungeon/boss-room-template.js"></script>
+    <script src="js/dungeon/boss-rewards.js"></script>
+    <script src="js/dungeon/boss.js"></script>
+<script src="js/dungeon/runtime.js"></script>
+    <script src="js/dungeon/checkpoint.js"></script>
+    <script src="js/dungeon/canteen-art.js"></script>
+<script src="js/dungeon/scene-surfaces.js"></script>
+<script src="js/dungeon/scene-architecture.js"></script>
+<script src="js/dungeon/module-art.js"></script>
+<script src="js/dungeon/boss-room-architecture.js"></script>
+<script src="js/dungeon/boss-room-art.js"></script>
+<script src="js/dungeon/corpse-art.js"></script>
+<script src="js/dungeon/art.js"></script>
+    <script src="js/dungeon/minimap.js"></script>
+    <script src="js/dungeon/panel.js"></script>
     <script src="js/bootstrap.js"></script>
     <script src="js/debug-hash-router.js"></script>
 

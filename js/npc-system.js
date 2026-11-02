@@ -943,7 +943,7 @@
     }
     function closeMenu() { menuEpoch++; menuState.open = false; publishMenu(); }
     function isMenuOpen() {
-        return menuState.open;
+        return menuState.open || !!(global.DungeonPanel && global.DungeonPanel.isEntryOpen());
     }
 
     function openMenu(npcId) {
@@ -981,6 +981,7 @@
                 log('NPC 当前不在场（' + t + '）：' + npcId, 'warn');
                 return;
             }
+            if (global.DungeonCheckpoint && global.DungeonCheckpoint.isKeeper(npcId)) { global.DungeonCheckpoint.open(def); return; }
             var isFacility = !!def.bathroom;
             menuState = { open: true, title: def.displayTitle || def.name || 'NPC', compact: isFacility, hint: isFacility ? '' : tUi('npc.menu.close_hint', '需要靠近才能操作。'), buttons: [] };
             function addButton(button) { menuState.buttons.push(button); publishMenu(); }

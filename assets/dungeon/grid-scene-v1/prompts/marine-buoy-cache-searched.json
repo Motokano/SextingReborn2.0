@@ -1,0 +1,12 @@
+{
+  "id": "marine-buoy-cache-searched",
+  "name": "浮球藏物罐",
+  "prompt": "Edit this exact game prop to SEARCHED EMPTY state. Preserve canvas size, body position and scale, bottom contact points, camera projection, feet, all original repairs and brush style. Change only the existing lid/door/flap by opening it and show the empty inside (a little empty liner allowed). For open baskets/carts remove all stored items without changing the structural frame. Do not change camera, reconstruct the lower body, or move the sprite to fit the open door. True transparent alpha, no ground, no shadow, no outline glow, no backdrop, no text. Keep all original body geometry.",
+  "references": [
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/grid-scene-v1/marine-buoy-cache.png"
+  ],
+  "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-b9816e3b-43d6-486d-a7c8-e1dec0415dd9.png",
+  "tool": "built-in image_gen",
+  "status": "registered-current",
+  "appliedFile": "marine-buoy-cache-searched.png"
+}

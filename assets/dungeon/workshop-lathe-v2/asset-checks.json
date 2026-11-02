@@ -1,0 +1,9 @@
+{
+  "workshop-machine-v1": {
+    "size": [1254, 1254],
+    "mode": "RGBA",
+    "bbox": [90, 58, 1164, 1208],
+    "alphaRange": [0, 255],
+    "sha256": "d7993cdd85d6cca91e7b2ef01146a1ab108dd641e3decaf3104daef961026748"
+  }
+}

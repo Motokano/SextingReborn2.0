@@ -1,0 +1,10 @@
+{
+  "prompt": "Edit this game furniture sprite to correct human proportions. Lower the tabletop and whole lower shelving to 52 percent of their current VERTICAL height above the feet, keeping long and depth dimensions EXACTLY. Shorter legs, same table width and depth; vise and tools remain ordinary original size. IMPORTANT preserve original CANVAS dimensions and exact existing foot contact positions. Do not shrink or resize the whole image: preserve bottom footprint and shorten only upright structural members. Surface top horizontal slopes stay identical. Keep dark painted contours, broad painted shading, original muted colors and localized repairs/dirty wear. True transparent background and gaps; no shadow, halo, floor or base. One single sprite.",
+  "references": [
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/grid-scene-v1/workshop-bench-v1.png"
+  ],
+  "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-c12c3b01-7a4e-4996-bb00-ff245fb766d4.png",
+  "tool": "built-in image_gen",
+  "status": "registered-current",
+  "appliedFile": "workshop-bench-v1.png"
+}

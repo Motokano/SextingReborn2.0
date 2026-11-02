@@ -1,0 +1,1154 @@
+{
+  "abandoned-cargo-searched": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      170,
+      70,
+      1178,
+      1188
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "0e16f5eeab664b471ff4f3d0a054c6231eaf3e9b0da24a099c3ded35e584ee72"
+  },
+  "abandoned-cargo": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      170,
+      233,
+      1090,
+      1112
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "510f804312704ebfb8c8b6ac81cfc2121c75cb5960cf934f0c6c3db7fef63c84"
+  },
+  "abandoned-chest-searched": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      137,
+      33,
+      1141,
+      1202
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "503b589bad24edf616056624b9179e2a053044bb0a42991355ff10a8947971da"
+  },
+  "abandoned-chest": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      138,
+      244,
+      1117,
+      1086
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "7b73a1e314c6fa92f9dc24b41d27ddb755b50b1276eddc06fa3d7ea724f80ec8"
+  },
+  "aluminum-flight-case-searched": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      113,
+      40,
+      1182,
+      1221
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "56ae1c79e3705ceaef4e5ce616fe21d56050d83b18c977526386f51eee43d39a"
+  },
+  "aluminum-flight-case": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      110,
+      218,
+      1147,
+      1127
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "83cf597fd2dd85073a4aac2ab7526175417f086776f64d35a68f4ec4990c7308"
+  },
+  "cable-spool-shelf-searched": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      232,
+      158,
+      1018,
+      1098
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "fdc18d9c3e60d50272658459305602cb00089251640c308628cce76fa61c2765"
+  },
+  "cable-spool-shelf": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      232,
+      159,
+      1017,
+      1098
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "1594777296c458b2cc627896dbb7d700acc689f81612d3fb041d2b829ff6f2db"
+  },
+  "collapsed-shelf-searched": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      140,
+      127,
+      1134,
+      1162
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "c8d0e351649221f4ba1ab87a8f555159575a2a6b9e70754bc681cc5cddd59b2f"
+  },
+  "collapsed-shelf": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      140,
+      126,
+      1134,
+      1160
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "433810ac469a8e92d293d91e6a35b9241118ac34c48030e92ee10219124b7fec"
+  },
+  "computer-tower-cabinet-searched": {
+    "size": [
+      1448,
+      1086
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      89,
+      79,
+      1346,
+      1013
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "5dca105fe22e34db4dbad2178a5375b9b6c8585f47da780a89cc4c7737a92b8a"
+  },
+  "computer-tower-cabinet": {
+    "size": [
+      1448,
+      1086
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      232,
+      74,
+      1219,
+      1013
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "887fdb9acfd1b4093141aaa779496ea29c2b57b098e48098ddb23762f093e166"
+  },
+  "damaged-barrel-searched": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      265,
+      15,
+      1101,
+      1182
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "a45e604f5fa6579d7b5bef1539a42cc072220df1ce9feefdbe3b60808f841807"
+  },
+  "damaged-barrel": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      265,
+      215,
+      1002,
+      1055
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "52456aed49fd267d85bf2138716f51cb2d1637e4cc382961dc79200173c20032"
+  },
+  "discarded-toolbox-clean": {
+    "size": [
+      1536,
+      1024
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      231,
+      161,
+      1294,
+      977
+    ],
+    "alphaRange": [
+      0,
+      254
+    ],
+    "sha256": "244d131032593b904b20e6d294e56321e99face47290242a1cff13d5d0bad1da"
+  },
+  "discarded-toolbox-searched": {
+    "size": [
+      1536,
+      1024
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      232,
+      10,
+      1327,
+      999
+    ],
+    "alphaRange": [
+      0,
+      254
+    ],
+    "sha256": "96cda33a93a6daf4f23ce3de1cf0034ef0f6e55a4bb887b2490ad8733ac30748"
+  },
+  "discarded-toolbox": {
+    "size": [
+      1536,
+      1024
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      228,
+      160,
+      1295,
+      979
+    ],
+    "alphaRange": [
+      0,
+      254
+    ],
+    "sha256": "78085cfe62930055d516ba441d7bc95021e16e426472f20857447463aa916832"
+  },
+  "factory-locker-cache-searched": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      391,
+      96,
+      888,
+      1169
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "388a8fa4639bef541e65bf1dd702150e7d7749840cb7c00e301f50959283f0b6"
+  },
+  "factory-locker-cache": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      391,
+      96,
+      865,
+      1169
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "5d0e66642d10bc7f17f2d8fd8e10577ce931c83e4b19b4dc3505a28c0e711233"
+  },
+  "lost-backpack-searched": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      234,
+      120,
+      1051,
+      1130
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "821dad19459f13c169b5c61fc3c5c59232c8746aed1f7fddc3e8547afe496896"
+  },
+  "lost-backpack": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      231,
+      131,
+      1046,
+      1121
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "fc5f5a78c8e06d10aab79ffdb9d9097809cc9c4fdcf938e6464df192429a94ce"
+  },
+  "marine-buoy-cache-searched": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      196,
+      33,
+      1129,
+      1213
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "df8c893b8b2fc3769dc11a763a7310e57376d210a7ca4c15680a47e2c16b01aa"
+  },
+  "marine-buoy-cache": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      199,
+      226,
+      1059,
+      1069
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "0f41ca60ac379584061a9976ca5ca350aecf8792961e2bab5d1b629f43b060e4"
+  },
+  "milk-churn-storage-searched": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      312,
+      121,
+      945,
+      1072
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "039738c7d7640cbde8bbe68424a14cb97871d0a4ca97223f694ed0c5c6b2ad4c"
+  },
+  "milk-churn-storage": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      335,
+      276,
+      919,
+      1018
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "fb10f4f38de94ca39447feeac2326a255bf0229b05bcbfea4b1209981d184a98"
+  },
+  "motorcycle-topbox-cache-searched": {
+    "size": [
+      1312,
+      1199
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      174,
+      58,
+      1174,
+      1156
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "9886f60a9eb735087e4c6aca9acc074f66fa40b79024cf1373ae0466975475ab"
+  },
+  "motorcycle-topbox-cache": {
+    "size": [
+      1312,
+      1199
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      162,
+      190,
+      1161,
+      1083
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "2ce13e893dae073f335ffcf4f8d94f075a4e2d746c3ae6d7dc7cd45c18a5715a"
+  },
+  "overturned-cart-searched": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      119,
+      144,
+      1201,
+      1115
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "a6d36d8c16733bde794c8c5942d647c4cb73c262d2c441a865a068a7a27e7d4b"
+  },
+  "overturned-cart": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      120,
+      144,
+      1200,
+      1112
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "c0ffc2ccc8afafe99fe7c9d5294ae439fab99939454d109dbe2f17a39e277738"
+  },
+  "patched-bulk-sack-searched": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      135,
+      156,
+      1125,
+      1161
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "a80911d6c84a501e2d683fa965b454dd86e85ea17318c89a2175fdab41af6f8d"
+  },
+  "patched-bulk-sack": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      135,
+      156,
+      1124,
+      1159
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "1d7bff496841a63f838a9d4efc71174f0aba909c25b34c6a119b8ccb9a8c3c5b"
+  },
+  "patched-suitcase-searched": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      117,
+      70,
+      1113,
+      1183
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "5fc638ad1f7ace2963257c31173768dc621aeca34e8eec2742fe6278450a0983"
+  },
+  "patched-suitcase": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      319,
+      71,
+      941,
+      1181
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "ac868797dba07bf9006c5306f157412f3a20de8584da6e1bd93dc28b820eded7"
+  },
+  "postbox-cache-searched": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      187,
+      166,
+      1143,
+      1105
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "c85d2914e236cba55feb3efa6e64450b8a66f9b4cbee764db016c1c244e6e2c5"
+  },
+  "postbox-cache": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      186,
+      166,
+      1066,
+      1103
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "72ddb8f39d9ba5edd08b32c03ac302df0a4dc088d89fa358d44256dfcd6593b1"
+  },
+  "pram-cargo-basket-searched": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      136,
+      103,
+      1174,
+      1172
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "b9057d75c195d3005f1fd3f73ed9cc5437699fd51b6bbbd495b0ddd889ef9893"
+  },
+  "pram-cargo-basket": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      136,
+      103,
+      1173,
+      1171
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "42d5c487d48e3dc3fdb4351ab033d6504ff7cca31cb90d92a2f8f2068ecdfd21"
+  },
+  "pressure-pot-cache-searched": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      130,
+      45,
+      1126,
+      1192
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "8bc746f4ef27c53f84b74131f30eea1b09eda8d71924ba8d909db9651091057f"
+  },
+  "pressure-pot-cache": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      130,
+      249,
+      1126,
+      1043
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "6ada099bd52e6a6f659a25d154dd9a29a2ed6986ebfb5a5c928aa6a20063ea0c"
+  },
+  "repaired-cooler-searched": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      178,
+      59,
+      1140,
+      1184
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "32c87a906557e7794906e577814f0ba8684eebcd8182c01785a28e44b23dfa7a"
+  },
+  "repaired-cooler": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      176,
+      207,
+      1078,
+      1099
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "39da064cb69b74370b69579f26d14f6b981d1e50a24177e17aac03612f7b338d"
+  },
+  "reused-fridge-searched-right": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      327,
+      51,
+      1091,
+      1245
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "52e9862b132f98f2822fed14c67e7fdb671c175e1934a39cb83a487ceac767d7"
+  },
+  "reused-fridge-searched": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      195,
+      74,
+      1057,
+      1195
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "e23314ffc15f82fce1b6ee9c45a92a5b7391f4bfe77d71a238f9efa53c7eba08"
+  },
+  "reused-fridge": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      316,
+      73,
+      941,
+      1200
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "af68b489b49c15cba7876d6591598ff5baf8621c857fbfc53cf91ea2ebe7dd09"
+  },
+  "reused-plastic-drum-searched": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      277,
+      53,
+      1052,
+      1138
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "20477a092abf5b7b650b5b1cb39c8ee0258e1d383adc7ad38f802aa95eb38451"
+  },
+  "reused-plastic-drum": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      264,
+      219,
+      989,
+      1103
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "8427a81bfbab11ecea99d502e61859522f342f594678ec13cc2e47de9eb547cb"
+  },
+  "reused-washer-drum-searched": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      211,
+      237,
+      1045,
+      1023
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "9df978d150e47e307c1970a64540500993d60da2cce3c42cc166d9805494f1a0"
+  },
+  "reused-washer-drum": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      211,
+      237,
+      1045,
+      1023
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "c1c0ecf82152593f81ace93236204750e8019a0a564667f6d0ddf8967d2473ab"
+  },
+  "rice-cooker-cache-searched": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      280,
+      16,
+      1123,
+      1156
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "ba11d103ac433b3ebb9f29df491d2838e53ed6c4b052a8bba3928e234995030f"
+  },
+  "rice-cooker-cache": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      294,
+      283,
+      1068,
+      994
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "5ddc0e68df8e0e2e9d6d58613523b26c454922130b401b8a826091e39f220a46"
+  },
+  "salvaged-shopping-cart-searched": {
+    "size": [
+      1312,
+      1199
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      174,
+      79,
+      1216,
+      1134
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "37a505344ebc5abff57764fe858fe64ebab8012bc245b5ea7f290a32c04da168"
+  },
+  "salvaged-shopping-cart": {
+    "size": [
+      1312,
+      1199
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      174,
+      80,
+      1216,
+      1134
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "5fa02eef0b8b467922f8f31de765b7f78a8ca42521ffc454c278b91e297f8677"
+  },
+  "sideways-oil-drum-cabinet-searched": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      124,
+      80,
+      1151,
+      1124
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "46f70df42549d7fdb39794431df95ab6752792f9a89f62b767f3b45605b6a644"
+  },
+  "sideways-oil-drum-cabinet": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      124,
+      200,
+      1149,
+      1123
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "e7365aee89b12d6297a16427189270ece37e9d1402b70d3987de634bbbcfe065"
+  },
+  "stacked-plastic-crates-searched": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      192,
+      155,
+      1068,
+      1161
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "3257c220ffdc2b3b4adf8bb60a6ed5c4e2d5dfcb9a213810958cf6eadd49e1f1"
+  },
+  "stacked-plastic-crates": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      192,
+      155,
+      1067,
+      1160
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "3887508db5c9f469ce6584fd1a5479828fc49deca97e42e0cd205fef2944251b"
+  },
+  "tire-storage-basket-searched": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      121,
+      251,
+      1133,
+      1064
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "f309937ac4019f1275d9c1d53a2e4c88e6e567c5a586b4bb498e86de16bfe4a0"
+  },
+  "tire-storage-basket": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      122,
+      251,
+      1133,
+      1064
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "576349631aadd5fee225245c6ec1e3e2d8423d3cdec06a678bcfb5cea9939729"
+  },
+  "vending-machine-cupboard-searched": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      92,
+      59,
+      952,
+      1196
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "256444330cfefc4bfc82cc26282e941f79b437739ba94e4a6c9860c463e2e1c0"
+  },
+  "vending-machine-cupboard": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      300,
+      58,
+      953,
+      1194
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "5b0de9e83190c02680389ffac6a4b2c13b6125ab4d0d821630a88da091c8bbe2"
+  },
+  "wheelie-bin-cache-searched": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      209,
+      16,
+      1098,
+      1224
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "783b2459962f84ec3354d0eb64f383868e835c320ce978f023811f8f95f7efb1"
+  },
+  "wheelie-bin-cache": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      207,
+      166,
+      1062,
+      1136
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "db40494c5a7ebaf7395af84a24505660ec0694051c8d7e2f35625857a3d27410"
+  },
+  "wire-cage-trolley-searched": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      188,
+      103,
+      1188,
+      1163
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "7a0949b09b460a93f224e6572a52ccaca67ee2babee0423c3d8faea16c420f94"
+  },
+  "wire-cage-trolley": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      189,
+      105,
+      1067,
+      1160
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "765fa4249fd1bea20c0e0a0e013430bb5695f3036a31b28be796e7dd68f07615"
+  }
+}

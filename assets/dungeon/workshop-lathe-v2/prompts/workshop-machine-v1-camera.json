@@ -1,0 +1,12 @@
+{
+  "mode": "built-in image_gen",
+  "useCase": "precise-object-edit",
+  "transparent_background": true,
+  "references": [
+    "C:/Users/haoxian.huang/.codex/generated_images/01a17b42-6e6e-7e22-a6af-27970fdf58ae/exec-f713e8ce-9f99-4dce-b71e-ea9d5140f0c6.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/street-thug-boss-room-v5/mat-geometry.png"
+  ],
+  "prompt": "Correct the camera and length-to-depth proportions of this single lathe sprite. Preserve its painted outlines, teal/cream worn finish, raised bed and two end cabinet stands. Output a new SQUARE transparent image with just the machine.\nThe current lathe in image 1 has the WRONG camera: its long rails slope only about 0.43 and the machine is excessively long and narrow. Re-render it at the EXACT camera of the 2:1 rectangle in image 2. Both ground directions and all bed edges MUST slope +0.7071 or -0.7071, with upright verticals. The long axis descends steeply toward the bottom-right, like the long edge of image 2. Do not merely stretch image 1. Reconstruct the whole 3D shape at this steeper overhead orthographic camera and shorten the bed somewhat so the footprint ratio is TWO TO ONE, not four or five to one.\nFor a 1536 square canvas, the rectangular ground contact envelope should be approximately: left (190,610), front/bottom (990,1176), right (1390,893), back (590,327). These guide coordinates are invisible construction only. The lathe pedestal feet must lie on this rectangle; cabinets and rails follow its two directions. The working bed is roughly 250 pixels vertically above its corresponding feet; highest headstock is roughly 400 pixels vertically above its corresponding feet. The supporting cabinets must have adequate front-to-back depth, not thin matchsticks, but small feet. Compact headstock and chuck, smaller than image 1 by about 20 percent relative to the bed. Bed remains raised to waist height with open space underneath. Same recognizable lathe parts, physically plausible chuck/center alignment.\nKeep the crisp expressive hand-painted room-prop style and localized scuffs. Only one complete lathe, no reference mat, no floor, no baseplate, no background, no shadow, no text, no humans. Real transparency. Give complete sprite generous margins.",
+  "source": "C:/Users/haoxian.huang/.codex/generated_images/01a17b42-6e6e-7e22-a6af-27970fdf58ae/exec-794eca20-1ea7-4b68-878c-8d2799f952ea.png",
+  "status": "superseded-source-retained"
+}

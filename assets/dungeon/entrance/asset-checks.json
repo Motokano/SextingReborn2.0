@@ -1,0 +1,25 @@
+{
+  "size": [
+    1312,
+    1199
+  ],
+  "mode": "RGBA",
+  "ground_center": [658.5, 936],
+  "ground_alignment": "Base contact ellipse center aligns with tile center; body and ground shadow share placement.",
+  "alpha_extrema": [
+    0,
+    255
+  ],
+  "visible_bounds": [
+    186,
+    88,
+    1131,
+    1140
+  ],
+  "crop": [
+    186,
+    88,
+    945,
+    1052
+  ]
+}

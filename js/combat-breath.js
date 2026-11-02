@@ -14,7 +14,8 @@
         if (!c || !inCombat() || stacks(c.effect_buff) <= 0) return null;
         var tpl = g.BuffSystem.getTemplate(c.effect_buff);
         var effect = tpl && (tpl.effects || []).filter(function(e){return e.type === 'breath_attack';})[0];
-        return effect ? Object.assign({}, c, effect.params) : null;
+        var basic = g.InventoryEquipment.getCombatState().hubs.breath === 'combat_basic_breath';
+        return effect ? Object.assign({}, c, effect.params, {visualId:basic ? 'basic_breath' : null, remainingAttacks:stacks(c.effect_buff)}) : null;
     }
     function clear() {
         if (g.BuffSystem) g.BuffSystem.removeBuffsByJudgmentTag('player', 'breath');
@@ -34,6 +35,7 @@
         if (!g.BuffSystem.setBuffStacks('player', c.effect_buff, c.attacks)) return false;
         g.BuffSystem.removeBuffByBuffId('player', c.counter_buff);
         if (c.fill_qi && g.Survival) g.Survival.addQiLi(g.Survival.getQiLiMax());
+        if (active().visualId) g.CombatFxEvents?.breathTransition('activate', {kind:'player'});
         return true;
     }
     function finish(snapshot) {

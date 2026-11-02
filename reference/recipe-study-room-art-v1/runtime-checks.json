@@ -1,0 +1,84 @@
+{
+  "date": "2026-11-02",
+  "status": "passed",
+  "parent": "975c6b37c8a43b87a779667da02cb0046247471b",
+  "validation": "Complete checkout exported from a private Git index; isolated game storage and temporary editor fixtures. No player save or live editor draft was read or written.",
+  "snapshots": {
+    "initial": "fecec5ec15447a7613b99db16ece6f1d1ebb216e",
+    "dependencyComplete": "e2ff5e2bea3532880b99c5bf31eb59f484bba21d"
+  },
+  "checks": [
+    {
+      "command": "node tools/test-recipe-study-point.mjs",
+      "snapshot": "initial",
+      "result": "pass: actual classic UI buttons, one recipe OR triple book-desk potential, shared once-only flag, one tick, cancellation/interruption, both failed-save rollbacks, reward receipts, save/reload, gain multiplier, death and legacy compatibility"
+    },
+    {
+      "command": "node tools/test-recipe-study-point.mjs --svelte",
+      "snapshot": "initial",
+      "result": "pass: same reward and persistence coverage through Svelte UI"
+    },
+    {
+      "command": "node tools/test-recipe-study-room.mjs",
+      "snapshot": "initial",
+      "result": "pass: 100000 draws yielded 3.041%; at most one room across four floors, generation retry keeps plan, three solid furnishings, eight free cells, accessible desk/door, idempotence and save/reload"
+    },
+    {
+      "command": "node tools/test-dungeon-grid-scene-art.mjs",
+      "snapshot": "initial",
+      "result": "pass: 60 objects / 103 sprite states, actual render branches, original uniform scales, no shear, registered images and 9 materials present"
+    },
+    {
+      "command": "node tools/test-dungeon-recipe-ranges.mjs",
+      "snapshot": "initial",
+      "result": "pass: per-dungeon loader, scope isolation, saved identity and locked next-floor range"
+    },
+    {
+      "command": "node tools/test-recipe-study-range-editor.mjs",
+      "snapshot": "dependencyComplete",
+      "result": "12/12 pass: 65 rows, filtering, drafts, independent save/undo, scope copy, chance editing, conflicts, failed replacement, local HTTP API"
+    },
+    {
+      "command": "node tools/build-manufacturing-knowledge.mjs --check",
+      "snapshot": "dependencyComplete",
+      "result": "pass: 63 recipes / 41 research recipes; accepts Windows checkout line endings"
+    },
+    {
+      "command": "node tools/dungeon/test-generation.mjs",
+      "snapshot": "dependencyComplete",
+      "result": "pass: 16 forced-study maps across four floors and 24 additional floor-four maps; boss room retains independent exit route, including doorless overrides"
+    },
+    {
+      "command": "node tools/dungeon/test.mjs",
+      "snapshot": "dependencyComplete",
+      "result": "pass: fresh boot, entry, harvesting, container stock/reveal, real inventory, survival recovery, save restore, cross-floor exploration and once-only settlement"
+    },
+    {
+      "check": "entry references",
+      "snapshot": "dependencyComplete",
+      "result": "210 local script/style/asset references exist"
+    },
+    {
+      "check": "required ingredient build consistency",
+      "snapshot": "dependencyComplete",
+      "result": "sewing_rubber_sheet source reproduces both items.json and modular item catalog records"
+    },
+    {
+      "check": "designer range",
+      "result": "village_ruins saved eight recipe IDs and 0.03 chance preserved exactly"
+    },
+    {
+      "check": "approved original artwork",
+      "result": "all three SHA256 values match approval.json"
+    },
+    {
+      "check": "browser",
+      "result": "formal generation displayed the three furnishings with the existing desk and 125% player; no preview injection",
+      "image": "reference/recipe-study-room-art-v1/room-runtime.png",
+      "seed": "study-room-v1-61",
+      "floor": 1
+    }
+  ],
+  "commitScope": "Study room, recipe/potential reward, per-dungeon editor and required previously untracked dungeon runtime/rendering dependencies. Shared files are partially staged; unrelated backpack, facility and other changes remain in the working tree.",
+  "finalVerification": "The final staged executable game/UI/data blobs are compared with the dependency-complete tested snapshot before commit. Subsequent changes are verification documentation, screenshots and an existing regression entry."
+}

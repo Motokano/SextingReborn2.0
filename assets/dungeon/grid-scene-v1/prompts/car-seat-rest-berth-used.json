@@ -1,0 +1,11 @@
+{
+  "id": "car-seat-rest-berth-used",
+  "prompt": "Edit the supplied transparent game sprite into its used state. After someone rested: blanket crumpled across lower seat, pillow slightly dented and shifted; keep chair frame, upholstery, headrest and feet exactly. No person. CRITICAL: retain exact original canvas size, object scale, base/body position, ground contacts, camera, paint palette, broad hand-painted shading, dark outlines and repair marks. Do not recompose or zoom. Change only specified contents or state. True alpha transparency throughout empty pixels and gaps. No background, ground, pedestal, cast shadow, glow, labels or text. One isolated sprite.",
+  "references": [
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/grid-scene-v1/car-seat-rest-berth.png"
+  ],
+  "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-19db58f7-5d10-4c57-be72-2cf0436f8f6c.png",
+  "tool": "built-in image_gen",
+  "status": "registered-current",
+  "appliedFile": "car-seat-rest-berth-used.png"
+}

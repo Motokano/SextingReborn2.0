@@ -6,6 +6,10 @@
 
     function nowMs() { return (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now(); }
     function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+    function getPawnDisplayScale() {
+        var value = Number(global.PawnDisplayScale);
+        return Number.isFinite(value) && value >= .5 && value <= 2 ? value : 1.25;
+    }
     function createCanvas(id, host) {
         var c = document.createElement('canvas');
         c.id = id;
@@ -87,9 +91,11 @@
         var pawnPaints = [];
         var scene = { map: null, st: null, dynamicMetaAt: null };
         var projection = null;
+        var cameraProjection = null, cameraMapId = null;
         var staticMapKey = '', staticDataKey = '', staticSizeKey = '';
         var lastInput = null;
         var effectsRenderer = typeof opts.effectsRenderer === 'function' ? opts.effectsRenderer : null;
+        var groundEffectsRenderer = typeof opts.groundEffectsRenderer === 'function' ? opts.groundEffectsRenderer : null;
         var animationLoopId = null, animationLoopEnabled = false;
         var presentationNow = nowMs(), hadPawnMotion = false;
         var presentationCombatNow=presentationNow;
@@ -102,6 +108,7 @@
         };
         // Small vector ground materials are cached on the static layer, below fog and entities.
         var groundMaterials = {};
+        var baseArt = global.BaseHideoutArt, baseSubscribed = false;
         ['stone', 'rock', 'moss'].forEach(function (kind) {
             var image = new Image();
             image.onload = function () {
@@ -146,15 +153,25 @@
         var pawnSpecs = Object.assign({}, deviceSpecs, {
             groundBackpack: {crop:[227,61,1034,1052],anchor:[618,938],groundCenter:[618,938],groundContacts:[[500,780],[980,949],[736,1094],[257,925]],width:1034*32/723,label:'背包',hideLabel:true},
             groundItems: {crop:[277,226,941,584],anchor:[746,641],groundCenter:[746,641],groundContacts:[[557,481],[896,491],[1171,692],[1008,752],[866,790],[560,736],[319,640]],width:941*40/925,label:'散落物品',hideLabel:true},
+            checkpoint: {crop:[186,88,945,1052],anchor:[658.5,1140],groundCenter:[658.5,936],width:92.16,label:'检查站',hideLabel:true},
             linManager: {crop:[276,44,666,1208],anchor:[607.5,1251],width:46,label:'林经理'},
-            streetThug: {crop:[230,38,757,1216],anchor:[609.5,1253],width:46,label:'地痞'}
+            streetThug: {crop:[230,38,757,1216],anchor:[609.5,1253],width:46,label:'地痞'},
+            streetThugTier2: {crop:[245,36,705,1228],anchor:[600,1263],width:46,label:'看场打手'},
+            streetThugVeteran: {crop:[226,66,752,1168],anchor:[602,1234],width:46,label:'老练狠角色'},
+            streetThugBoss: {crop:[240,40,715,1200],anchor:[597.5,1238],width:46,label:'地头头目'}
         });
+        spriteSources.checkpoint = 'assets/dungeon/entrance/ruins-entry-checkpoint-v5.png';
         spriteSources.groundBackpack = 'assets/map/isometric/ground-backpack-v1/closed.png';
         deviceFootprints.groundBackpack = [16,6];
         spriteSources.groundItems = 'assets/map/isometric/ground-items-v1/pile.png';
         deviceFootprints.groundItems = [10,4];
+        deviceFootprints.checkpoint = [46.08,(pawnSpecs.checkpoint.anchor[1]-pawnSpecs.checkpoint.groundCenter[1])*pawnSpecs.checkpoint.width/pawnSpecs.checkpoint.crop[2]];
         spriteSources.streetThug = 'assets/map/isometric/street-thug-v1/standing.png';
         deviceFootprints.streetThug = [23,7];
+        spriteSources.streetThugTier2='assets/map/isometric/street-thug-tier2-v1/standing.png';deviceFootprints.streetThugTier2=[23,7];
+        spriteSources.streetThugVeteran='assets/map/isometric/street-thug-veteran-v1/standing.png';deviceFootprints.streetThugVeteran=[23,7];
+        spriteSources.streetThugBoss = 'assets/map/isometric/street-thug-boss-v1/standing.png';
+        deviceFootprints.streetThugBoss = [23,7];
         spriteSources.linManager = 'assets/npc/npc_supervisor_manager/standing-mailbag-v2.png';
         deviceFootprints.linManager = [23,7];
         // Only these base facilities have an unfinished appearance. Completion
@@ -197,8 +214,10 @@
         global.TileRendererV2.getSpeakerPawn = function (entityId) {
             var key = entityId === 'npc.station.manufacturing_base' ? 'manufacturing' : entityId === 'npc.station.forging_base' ? 'forging' : entityId === 'npc.station.sewing_base' ? 'sewing' : entityId === 'npc.station.observation_base' ? 'toolbench' :
                 entityId === 'npc.station.bed_base' ? deviceAppearanceKey('bed', entityId) : entityId === 'npc.station.warehouse_base' ? deviceAppearanceKey('warehouse', entityId) :
+                entityId === 'npc.station.bathroom_base' ? 'bathroom' :
+                entityId === 'npc.checkpoint.ruins' ? 'checkpoint' :
                 entityId === 'npc.supervisor.manager' ? 'linManager' :
-                entityId === 'enemy.street_thug' ? 'streetThug' : 'npc';
+                entityId === 'enemy.street_thug_tier2' ? 'streetThugTier2' : entityId === 'enemy.street_thug_tier3' ? 'streetThugVeteran' : (entityId === 'enemy.street_thug'||entityId === 'enemy.street_thug_tier1') ? 'streetThug' : entityId === 'enemy.street_thug_boss' ? 'streetThugBoss' : 'npc';
             Object.keys(deviceStates).some(function (device) {
                 if (entityId !== 'npc.station.' + deviceStates[device].npc + '_base') return false;
                 key = deviceAppearanceKey(device, entityId);
@@ -220,6 +239,7 @@
                 var spec = pawnSpecs[key];
                 if (spec) {
                     cached.shadow = makeGroundShadow(image, spec, deviceFootprints[key]);
+                    cached.displayScale = 1;
                 }
                 cached.ready = true;
                 if (lastInput) render(lastInput);
@@ -250,13 +270,22 @@
             return null;
         }
 
-        function drawCalibratedPawn(ctx, key, cx, cy, label) {
+        function drawCalibratedPawn(ctx, key, cx, cy, label, actorKey) {
             var spec = pawnSpecs[key], image = getSprite(key);
+            var character = key === 'streetThug' || key === 'streetThugTier2' || key === 'streetThugVeteran' || key === 'streetThugBoss' || key === 'linManager';
+            var factor = character ? getPawnDisplayScale() : 1;
+            if (factor !== 1) spec = Object.assign({}, spec, {width:spec.width * factor});
+            if (image && spriteCache[key].displayScale !== factor) {
+                spriteCache[key].shadow = makeGroundShadow(image, spec, deviceFootprints[key].map(function(value){return value * factor;}));
+                spriteCache[key].displayScale = factor;
+            }
             var unit = projection.tileWidth / 144;
             var crop = spec.crop, scale = spec.width * unit / crop[2];
             var width = crop[2] * scale, height = crop[3] * scale;
             var x = (crop[0] - spec.anchor[0]) * scale;
             var y = (crop[1] - spec.anchor[1]) * scale;
+            // Larger bases align their ground ellipse with the tile center.
+            // Keep the existing 8px foot placement for other calibrated pawns.
             var footX = spec.groundCenter ? cx + (spec.anchor[0] - spec.groundCenter[0]) * scale : cx;
             var footY = spec.groundCenter ? cy + (spec.anchor[1] - spec.groundCenter[1]) * scale : cy + 8 * unit;
             if (spec.offset) {
@@ -272,7 +301,7 @@
                 ctx.restore();
                 ctx.drawImage(image, crop[0], crop[1], crop[2], crop[3], x, y, width, height);
                 ctx.restore();
-                pawnPaints.push({image:image,crop:crop,anchor:spec.anchor,width:spec.width,shadow:spriteCache[key].shadow,scale:unit,cx:cx,cy:cy,actorKey:null});
+                pawnPaints.push({image:image,crop:crop,anchor:spec.anchor,width:spec.width,shadow:spriteCache[key].shadow,scale:unit,cx:cx,cy:cy,actorKey:actorKey||null});
                 if (!spec.hideLabel) drawSpriteLabel(ctx, label || spec.label, cx, footY + y - 4 * unit);
             } else {
                 // Keep a recognizable device label during loading or failure, never a person.
@@ -284,6 +313,12 @@
             var image = getSprite(key);
             if (!image || !image.naturalWidth || !image.naturalHeight) return false;
             var scale = Math.min(maxWidth / image.naturalWidth, maxHeight / image.naturalHeight);
+            if (key === 'npc' || key === 'enemy') {
+                var factor = getPawnDisplayScale();
+                // Keep the generic NPC's visible base at its original foot point.
+                if (key === 'npc') footY += (image.naturalHeight - 1121) * scale * (factor - 1);
+                scale *= factor; maxWidth *= factor;
+            }
             var width = image.naturalWidth * scale;
             var height = image.naturalHeight * scale;
             ctx.save();
@@ -344,7 +379,7 @@
             w = Math.max(1, Math.ceil(w)); h = Math.max(1, Math.ceil(h));
             [staticCanvas, dynamicCanvas, fxCanvas].forEach(function (c) { if (c.width !== w) c.width = w; if (c.height !== h) c.height = h; });
             var atPlayer=scene.dynamicMetaAt(scene.st.x,scene.st.y);
-            var raised=projection.isIsometric&&(atPlayer.groundCount>0);
+            var raised=projection.isIsometric&&(atPlayer.groundCount>0||scene.map.dungeon||(baseArt&&baseArt.inFrontOfPlayer&&scene.map.map_id===baseArt.config.outdoor));
             var fw=raised?w:1,fh=raised?h:1;
             if(foregroundCanvas.width!==fw)foregroundCanvas.width=fw;
             if(foregroundCanvas.height!==fh)foregroundCanvas.height=fh;
@@ -390,6 +425,8 @@
             if(fill){ctx.fillStyle=fill;ctx.fill();} if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=width||1;ctx.stroke();}
         }
         function drawStaticCell(gx, gy, m) {
+            if (baseArt && baseArt.floor(staticCtx,scene.map,gx,gy,m,projection)) return;
+            if (scene.map.dungeon && global.DungeonArt) { global.DungeonArt.terrain(staticCtx,gx,gy,projection); return; }
             var ctx = staticCtx, points = projection.cellPolygon(gx, gy);
             var kind = m.gathering || m.agricultureStation ? 'moss' : (m.walkable ? 'stone' : 'rock');
             var material = groundMaterials[kind];
@@ -413,6 +450,8 @@
             paintCell(ctx,gx,gy,variation>0?'rgba(216,207,170,'+variation+')':'rgba(10,24,18,'+(-variation)+')',strokeForCell(m),1,.5);
         }
         function drawExteriorWalls(map){
+            if (baseArt && baseArt.supports(map)) { baseArt.edge(staticCtx,map,projection); return; }
+            if(map.dungeon)return;
             if(!projection.isIsometric||!(projection.thickness>0))return;
             var d=projection.thickness,gx,gy,p;
             staticCtx.save();
@@ -434,6 +473,7 @@
             if(label){var lab=String(label).trim();if(lab.length>6)lab=lab.slice(0,6);ctx.font='bold 12px "Microsoft YaHei","PingFang SC",sans-serif';ctx.textAlign='center';ctx.textBaseline='bottom';ctx.lineWidth=3;ctx.strokeStyle='rgba(18,14,12,.9)';ctx.strokeText(lab,cx,hy-12*s);ctx.fillStyle='#f3e9d9';ctx.fillText(lab,cx,hy-12*s);}ctx.restore();
         }
         function drawOverlay(gx,gy,m){
+            if(scene.map.dungeon&&m.terrainVisible===false)return;
             if(m.adjacent&&!m.leapTarget)paintCell(dynamicCtx,gx,gy,'rgba(217,212,173,.055)',null,0,2);
             if(m.leapTarget)paintCell(dynamicCtx,gx,gy,'rgba(139,181,177,.14)','rgba(139,181,177,.82)',2,2);
             if(m.player)paintCell(dynamicCtx,gx,gy,'rgba(197,176,131,.10)','rgba(215,193,145,.95)',2,2);
@@ -448,44 +488,62 @@
             if(loose>0)drawCalibratedPawn(ctx,'groundItems',c.x+(bags?-36:m.player?36:0)*unit,c.y+(bags||m.player?18:0)*unit);
         }
         function drawEntity(gx,gy,m){
+            var entityCtx=dynamicCtx;
+            if(scene.map.dungeon&&projection.isIsometric){
+                var here=projection.cellCenter(gx,gy),player=projection.cellCenter(scene.st.x,scene.st.y);
+                if(here.y>player.y||(here.y===player.y&&here.x>player.x))entityCtx=foregroundCtx;
+            }
+            var baseObjectDrawn = false;
+            if (baseArt && baseArt.supports(scene.map)) {
+                var inFront=baseArt.inFrontOfPlayer&&baseArt.inFrontOfPlayer(scene.map,gx,gy,projection,scene.st);
+                baseArt.wall(entityCtx,scene.map,gx,gy,m,projection,inFront);
+                baseObjectDrawn = baseArt.object(entityCtx,scene.map,gx,gy,m,projection,inFront);
+                if(inFront)baseArt.foreground(foregroundCtx,scene.map,gx,gy,m,projection,scene.st);
+            }
+            if(scene.map.dungeon && global.DungeonArt)global.DungeonArt.object(entityCtx,gx,gy,projection);
             var c=projection.cellCenter(gx,gy), lift=projection.isIsometric?18:0;
             if(m.enemy&&global.CombatFxRuntime){
                 var motion=global.CombatFxRuntime.getPawnOffsetAt(gx,gy,'enemy',{nowMs:presentationNow,combatNowMs:presentationCombatNow,cellPx:cellPx,projection:projection,cellCenter:projection.cellCenter});
                 c.x+=motion.x;c.y+=motion.y;
             }
             var deviceKey = deviceKeyForMeta(m);
-            dynamicCtx.textAlign='center';dynamicCtx.textBaseline='middle';
-            if(m.unknownPresence){dynamicCtx.fillStyle='rgba(245,222,179,.95)';dynamicCtx.font='bold 20px sans-serif';dynamicCtx.fillText('?',c.x,c.y-lift);}
+            entityCtx.textAlign='center';entityCtx.textBaseline='middle';
+            if(m.unknownPresence){entityCtx.fillStyle='rgba(245,222,179,.95)';entityCtx.font='bold 20px sans-serif';entityCtx.fillText('?',c.x,c.y-lift);}
             else if(projection.isIsometric && deviceKey && !m.enemy && (!m.npc || String(m.npcId || '').indexOf('npc.station.') === 0)) {
-                drawCalibratedPawn(dynamicCtx, deviceAppearanceKey(deviceKey, m.npcId), c.x, c.y, m.npcLabel);
+                drawCalibratedPawn(entityCtx, deviceAppearanceKey(deviceKey, m.npcId), c.x, c.y, m.npcLabel);
             }
-            else if(m.npc && m.npcId==='npc.supervisor.manager' && projection.isIsometric){drawCalibratedPawn(dynamicCtx,'linManager',c.x,c.y,m.npcLabel);}
+            else if(m.npc && m.npcId==='npc.checkpoint.ruins' && projection.isIsometric){drawCalibratedPawn(entityCtx,'checkpoint',c.x,c.y,m.npcLabel);}
+            else if(m.npc && m.npcId==='npc.supervisor.manager' && projection.isIsometric){drawCalibratedPawn(entityCtx,'linManager',c.x,c.y,m.npcLabel);}
             else if(m.npc){
                 if(projection.isIsometric){
-                    if(!drawSprite(dynamicCtx,'npc',c.x,c.y,58,74)) drawPawn(dynamicCtx,c.x,c.y,'#a992d7','#261e34','');
-                    drawSpriteLabel(dynamicCtx,m.npcLabel||'',c.x,c.y-77);
-                }else{dynamicCtx.fillStyle='rgba(210,190,255,.95)';dynamicCtx.font='bold 13px sans-serif';dynamicCtx.fillText(m.npcLabel||'•',c.x,c.y);}
+                    if(!drawSprite(entityCtx,'npc',c.x,c.y,58,74)) drawPawn(entityCtx,c.x,c.y,'#a992d7','#261e34','');
+                    drawSpriteLabel(entityCtx,m.npcLabel||'',c.x,c.y-77*getPawnDisplayScale());
+                }else{entityCtx.fillStyle='rgba(210,190,255,.95)';entityCtx.font='bold 13px sans-serif';entityCtx.fillText(m.npcLabel||'•',c.x,c.y);}
             }
             else if(m.enemy){
-                if(projection.isIsometric){
-                    if(m.enemyId==='enemy.street_thug') drawCalibratedPawn(dynamicCtx,'streetThug',c.x,c.y,'地痞');
-                    else if(m.enemyId==='enemy.training_dummy_wooden'||!drawSprite(dynamicCtx,'enemy',c.x,c.y,64,78)) drawPawn(dynamicCtx,c.x,c.y,m.enemyId==='enemy.training_dummy_wooden'?'#8b5a2b':'#c65353','#351b1b','');
-                }else{dynamicCtx.fillStyle=m.enemyId==='enemy.training_dummy_wooden'?'#8b5a2b':'#f87171';dynamicCtx.beginPath();dynamicCtx.arc(c.x,c.y,8,0,Math.PI*2);dynamicCtx.fill();}
+                if(baseObjectDrawn) { /* The visible base training dummy uses its dedicated equipment sprite. */ }
+                else if(projection.isIsometric){
+                    if(m.enemyId==='enemy.street_thug_boss') drawCalibratedPawn(entityCtx,'streetThugBoss',c.x,c.y,'地头头目','enemy:'+(scene.map.enemies||[]).findIndex(function(e){return e.x===gx&&e.y===gy;}));
+                    else if(/^enemy\.street_thug_tier[123]$/.test(m.enemyId))drawCalibratedPawn(entityCtx,m.enemyId.endsWith('3')?'streetThugVeteran':m.enemyId.endsWith('2')?'streetThugTier2':'streetThug',c.x,c.y,global.CombatEnemies?.getById(m.enemyId)?.name,'enemy:'+(scene.map.enemies||[]).findIndex(function(e){return e.x===gx&&e.y===gy;}));
+                    else if(m.enemyId==='enemy.street_thug') drawCalibratedPawn(entityCtx,'streetThug',c.x,c.y,'地痞');
+                    else if(m.enemyId==='enemy.training_dummy_wooden'||!drawSprite(entityCtx,'enemy',c.x,c.y,64,78)) drawPawn(entityCtx,c.x,c.y,m.enemyId==='enemy.training_dummy_wooden'?'#8b5a2b':'#c65353','#351b1b','');
+                }else{entityCtx.fillStyle=m.enemyId==='enemy.training_dummy_wooden'?'#8b5a2b':'#f87171';entityCtx.beginPath();entityCtx.arc(c.x,c.y,8,0,Math.PI*2);entityCtx.fill();}
             }
             else if(deviceKey){
                 var lab={stove:'灶',pharmacy:'药',barrel:'肥',farm:'农',ranch:'牧',bed:'床',warehouse:'仓',toolbench:'工具台'}[deviceKey];
-                dynamicCtx.fillStyle=m.agricultureStation?'#4ade80':(m.livestockStation?'#fb923c':(m.warehouseStation?'#d3a060':'#f59e5b'));
-                dynamicCtx.font='bold 20px "Microsoft YaHei",sans-serif';dynamicCtx.fillText(lab,c.x,c.y-(projection.isIsometric?9:0));
+                entityCtx.fillStyle=m.agricultureStation?'#4ade80':(m.livestockStation?'#fb923c':(m.warehouseStation?'#d3a060':'#f59e5b'));
+                entityCtx.font='bold 20px "Microsoft YaHei",sans-serif';entityCtx.fillText(lab,c.x,c.y-(projection.isIsometric?9:0));
             }
-            if(m.portal&&m.portal.label){var pl=String(m.portal.label).trim();if(pl.length>6)pl=pl.slice(0,6);dynamicCtx.fillStyle='#7dd3fc';dynamicCtx.font='bold 12px sans-serif';dynamicCtx.fillText(pl,c.x,c.y+(projection.isIsometric?12:0));}
-            if(!m.player)drawGroundItems(dynamicCtx,gx,gy,m);
-            if((!projection.isIsometric&&m.groundCount>0)||m.groundUnknown){dynamicCtx.fillStyle='#d4a373';dynamicCtx.font='14px sans-serif';dynamicCtx.fillText(m.groundCount>0?'📦':'?',c.x+projection.tileWidth*.27,c.y+projection.tileHeight*.17);}
+            if(m.portal&&m.portal.label&&m.terrainVisible!==false){var pl=String(m.portal.label).trim();if(pl.length>6)pl=pl.slice(0,6);var artPortal=baseArt&&baseArt.supports(scene.map),labelY=c.y+(projection.isIsometric?(artPortal?projection.tileHeight*.43:12):0);entityCtx.save();entityCtx.fillStyle=artPortal?'#eee0b7':'#7dd3fc';entityCtx.font='bold '+(artPortal?11:12)+'px sans-serif';if(artPortal){entityCtx.strokeStyle='#252e24';entityCtx.lineWidth=3;entityCtx.strokeText(pl,c.x,labelY);}entityCtx.fillText(pl,c.x,labelY);entityCtx.restore();}
+            if(!m.player)drawGroundItems(entityCtx,gx,gy,m);
+            if((!projection.isIsometric&&m.groundCount>0)||m.groundUnknown){entityCtx.fillStyle='#d4a373';entityCtx.font='14px sans-serif';entityCtx.fillText(m.groundCount>0?'📦':'?',c.x+projection.tileWidth*.27,c.y+projection.tileHeight*.17);}
         }
         function ensureStatic(nextScene){
-            var map=nextScene.map,key=(map.map_id||'map')+':'+map.width+'x'+map.height+':'+(map.version||0)+':'+projection.mode,data=nextScene.staticDataKey||'',size=staticCanvas.width+'x'+staticCanvas.height;
-            if(staticMapKey===key&&staticDataKey===data&&staticSizeKey===size)return;
+            var map=nextScene.map,key=(map.map_id||'map')+':'+map.width+'x'+map.height+':'+(map.version||0)+':'+projection.mode+':'+(projection.cropKey||''),data=nextScene.staticDataKey||'',size=staticCanvas.width+'x'+staticCanvas.height;
+            if(!map.dungeon&&staticMapKey===key&&staticDataKey===data&&staticSizeKey===size)return;
             staticMapKey=key;staticDataKey=data;staticSizeKey=size;staticCtx.clearRect(0,0,staticCanvas.width,staticCanvas.height);
             var metaAt=nextScene.staticMetaAt||nextScene.dynamicMetaAt||function(){return{};};
+            if(map.dungeon){staticCtx.fillStyle='#101a16';staticCtx.fillRect(0,0,staticCanvas.width,staticCanvas.height);var vr=visibleRange(nextScene);for(var y=vr.minY;y<=vr.maxY;y++)for(var x=vr.minX;x<=vr.maxX;x++)drawStaticCell(x,y,{});return;}
             for(var sum=0;sum<=map.width+map.height-2;sum++)for(var gx=0;gx<map.width;gx++){var gy=sum-gx;if(gy>=0&&gy<map.height)drawStaticCell(gx,gy,metaAt(gx,gy));}
             drawExteriorWalls(map);
         }
@@ -495,27 +553,48 @@
             var hw=Math.ceil((vp.width||1042)/cellPx/2)+2,hh=Math.ceil((vp.height||638)/cellPx/2)+2;return{minX:clamp(st.x-hw,0,map.width-1),maxX:clamp(st.x+hw,0,map.width-1),minY:clamp(st.y-hh,0,map.height-1),maxY:clamp(st.y+hh,0,map.height-1)};
         }
         function drawFullDynamic(nextScene){
-            pawnPaints=[];foregroundCtx.clearRect(0,0,foregroundCanvas.width,foregroundCanvas.height);
+            pawnPaints=[];
+            foregroundCtx.clearRect(0,0,foregroundCanvas.width,foregroundCanvas.height);
             dynamicCtx.clearRect(0,0,dynamicCanvas.width,dynamicCanvas.height);var vr=visibleRange(nextScene),cells=[];
-            for(var gy=vr.minY;gy<=vr.maxY;gy++)for(var gx=vr.minX;gx<=vr.maxX;gx++){var m=scene.dynamicMetaAt(gx,gy);cells.push({x:gx,y:gy,m:m});drawOverlay(gx,gy,m);}
+            var buildingCells=baseArt&&baseArt.visibleBuildingCells?baseArt.visibleBuildingCells(scene.map,scene.dynamicMetaAt):null;
+            if(usesGroundPass())groundEffectsRenderer(makeFrame(dynamicCtx,presentationNow));
+            for(var gy=vr.minY;gy<=vr.maxY;gy++)for(var gx=vr.minX;gx<=vr.maxX;gx++){
+                var m=scene.dynamicMetaAt(gx,gy);
+                if(buildingCells)m=Object.assign({},m,{buildingVisible:buildingCells.has(gx+','+gy)});
+                cells.push({x:gx,y:gy,m:m});drawOverlay(gx,gy,m);
+            }
+            if(scene.map.dungeon)global.DungeonArt.ground(dynamicCtx,projection);
             cells.sort(function(a,b){var ca=projection.cellCenter(a.x,a.y),cb=projection.cellCenter(b.x,b.y);return ca.y-cb.y||ca.x-cb.x;});for(var i=0;i<cells.length;i++)drawEntity(cells[i].x,cells[i].y,cells[i].m);
+            if(baseArt&&baseArt.revealPlayer)baseArt.revealPlayer(foregroundCtx,scene.map,projection,scene.st);
+            // Same-cell belongings sit beside the pawn, above the architecture cutaway.
             var underPlayer=scene.dynamicMetaAt(scene.st.x,scene.st.y);
             if(underPlayer.player)drawGroundItems(foregroundCtx,scene.st.x,scene.st.y,underPlayer);
+            // The same courtyard ambient tint covers both sides of the DOM pawn.
+            // source-atop preserves the cutaway and cannot paint unseen geometry.
+            if(nextScene.environmentShade&&baseArt&&baseArt.usesGroundVisibility&&baseArt.usesGroundVisibility(scene.map)){
+                foregroundCtx.save();foregroundCtx.globalCompositeOperation='source-atop';foregroundCtx.fillStyle=nextScene.environmentShade;
+                foregroundCtx.fillRect(0,0,foregroundCanvas.width,foregroundCanvas.height);foregroundCtx.restore();
+            }
         }
         function render(nextScene){
             presentationNow=typeof opts.getAnimationTime==='function'?opts.getAnimationTime(nowMs()):nowMs();
             presentationCombatNow=useCombatClock?global.CombatFxRuntime.getPlaybackTime():presentationNow;
             lastInput=nextScene;scene.map=nextScene.map;scene.st=nextScene.st;scene.dynamicMetaAt=nextScene.dynamicMetaAt||nextScene.metaAt;
             if(!scene.map||!scene.st||typeof scene.dynamicMetaAt!=='function')return;
-            projection=makeProjection(scene.map);resize(projection.widthPx,projection.heightPx);ensureStatic(nextScene);
+            if(baseArt && baseArt.supports(scene.map) && !baseSubscribed){baseSubscribed=true;baseArt.load(function(){staticMapKey='';if(lastInput)render(lastInput);});}
+            projection=makeProjection(scene.map);if(scene.map.dungeon)projection=global.DungeonArt.viewport(projection,scene.st,nextScene.viewport);resize(projection.widthPx,projection.heightPx);ensureStatic(nextScene);
             var dirty=Array.isArray(nextScene.dirtyCells)?nextScene.dirtyCells:null;
             if(!projection.isIsometric&&dirty&&dirty.length){var seen={};for(var i=0;i<dirty.length;i++){var d=dirty[i];if(!d||d.x==null||d.y==null)continue;var gx=d.x|0,gy=d.y|0,k=gx+','+gy;if(seen[k]||gx<0||gy<0||gx>=scene.map.width||gy>=scene.map.height)continue;seen[k]=1;dynamicCtx.clearRect(gx*cellPx-2,gy*cellPx-2,cellPx+4,cellPx+4);var m=scene.dynamicMetaAt(gx,gy);drawOverlay(gx,gy,m);drawEntity(gx,gy,m);}}else drawFullDynamic(nextScene);
             renderFxLayer(presentationNow);
         }
+        function usesGroundPass(){return !!(groundEffectsRenderer&&projection&&projection.isIsometric&&baseArt&&baseArt.usesGroundVisibility&&baseArt.usesGroundVisibility(scene.map));}
+        function makeFrame(ctx,ts){
+            return {ctx:ctx,nowMs:ts,combatNowMs:useCombatClock?global.CombatFxRuntime.getPlaybackTime():ts,pawnPaints:pawnPaints,dynamicMetaAt:scene.dynamicMetaAt,groundVisibilityHandled:usesGroundPass(),map:scene.map,state:scene.st,cellPx:cellPx,cellToPx:projection.cellToPx,cellCenter:projection.cellCenter,cellPolygon:projection.cellPolygon,projection:projection,mapWidthPx:projection.widthPx,mapHeightPx:projection.heightPx};
+        }
         function renderFxLayer(ts){
             fxCtx.clearRect(0,0,fxCanvas.width,fxCanvas.height);combatCtx.clearRect(0,0,combatCanvas.width,combatCanvas.height);
             if(!scene.map||!scene.st||!projection)return;
-            var frame={pawnPaints:pawnPaints,dynamicMetaAt:scene.dynamicMetaAt,ctx:fxCtx,nowMs:ts,combatNowMs:useCombatClock?global.CombatFxRuntime.getPlaybackTime():ts,map:scene.map,state:scene.st,cellPx:cellPx,cellToPx:projection.cellToPx,cellCenter:projection.cellCenter,cellPolygon:projection.cellPolygon,projection:projection,mapWidthPx:projection.widthPx,mapHeightPx:projection.heightPx};
+            var frame=makeFrame(fxCtx,ts);
             try{if(effectsRenderer)effectsRenderer(frame);if(combatEffectsRenderer)combatEffectsRenderer(Object.assign({},frame,{ctx:combatCtx}));}catch(e){}
         }
         function tick(ts){
@@ -532,17 +611,49 @@
         function start(){if(animationLoopEnabled)return;animationLoopEnabled=true;animationLoopId=requestAnimationFrame(tick);}
         function stop(){animationLoopEnabled=false;if(animationLoopId){cancelAnimationFrame(animationLoopId);animationLoopId=null;}}
         function hitTest(clientX,clientY){if(!scene.map||!projection)return null;var rect=mapGridEl.getBoundingClientRect(),h=projection.pick(clientX-rect.left,clientY-rect.top);if(!h||h.x<0||h.y<0||h.x>=scene.map.width||h.y>=scene.map.height)return null;return h;}
-        function setHoverCursor(x,y,turnOnly){var h=hitTest(x,y);if(!h||!scene.dynamicMetaAt){mapGridEl.style.cursor='default';return;}var m=scene.dynamicMetaAt(h.x,h.y);mapGridEl.style.cursor=((turnOnly&&m.adjacent)||m.leapTarget||(m.adjacent&&(m.walkable||m.npc||m.enemy)))?'pointer':'default';}
-        function invalidate(){foregroundCtx.clearRect(0,0,foregroundCanvas.width,foregroundCanvas.height);staticMapKey='';staticDataKey='';staticSizeKey='';staticCtx.clearRect(0,0,staticCanvas.width,staticCanvas.height);dynamicCtx.clearRect(0,0,dynamicCanvas.width,dynamicCanvas.height);fxCtx.clearRect(0,0,fxCanvas.width,fxCanvas.height);combatCtx.clearRect(0,0,combatCanvas.width,combatCanvas.height);}
+        function setHoverCursor(x,y,turnOnly){var h=hitTest(x,y);if(!h||!scene.dynamicMetaAt){mapGridEl.style.cursor='default';return;}var m=scene.dynamicMetaAt(h.x,h.y);mapGridEl.style.cursor=((turnOnly&&m.adjacent)||m.leapTarget||(m.player&&m.groundCount>0)||(m.adjacent&&(m.walkable||m.npc||m.enemy)))?'pointer':'default';}
+        function invalidate(){staticMapKey='';staticDataKey='';staticSizeKey='';staticCtx.clearRect(0,0,staticCanvas.width,staticCanvas.height);dynamicCtx.clearRect(0,0,dynamicCanvas.width,dynamicCanvas.height);fxCtx.clearRect(0,0,fxCanvas.width,fxCanvas.height);foregroundCtx.clearRect(0,0,foregroundCanvas.width,foregroundCanvas.height);combatCtx.clearRect(0,0,combatCanvas.width,combatCanvas.height);}
         function setCamera(x,y){
-            if(opts.combatHost){
+            var detached=opts.combatHost && opts.combatHost!==mapGridEl;
+            // Sibling surfaces must follow the same CSS easing, not just its endpoint.
+            // Read before changing any transform so all transitions start in one frame.
+            if(detached){
                 var transition=typeof global.getComputedStyle==='function'?global.getComputedStyle(mapGridEl).transition:(mapGridEl.style.transition||'none');
-                combatCanvas.style.transition=transition;foregroundCanvas.style.transition=transition;
+                combatCanvas.style.transition=transition;
+                foregroundCanvas.style.transition=transition;
             }
-            mapGridEl.style.transform='translate('+x+'px, '+y+'px)';
-            if(opts.combatHost){combatCanvas.style.transform=mapGridEl.style.transform;foregroundCanvas.style.transform=mapGridEl.style.transform;}
+            // A cropped dungeon redraws in a new local coordinate system on each
+            // step. Rebase the current *visible* camera before easing to its target;
+            // otherwise the target stays constant and the entire world teleports.
+            // Use the last committed projection, also when several renders occur
+            // before a camera update or a second step interrupts the first.
+            if(cameraProjection && projection && cameraProjection.cropKey != null && projection.cropKey != null &&
+                cameraMapId === scene.map.map_id && cameraProjection.mode === projection.mode){
+                var oldOrigin=cameraProjection.cellCenter(0,0),newOrigin=projection.cellCenter(0,0);
+                var dx=oldOrigin.x-newOrigin.x,dy=oldOrigin.y-newOrigin.y;
+                if(Math.abs(dx)>.001 || Math.abs(dy)>.001){
+                    var current=typeof global.getComputedStyle==='function'?global.getComputedStyle(mapGridEl).transform:mapGridEl.style.transform;
+                    var values=String(current||'').match(/matrix(3d)?\(([^)]+)\)/);
+                    var parts=values?values[2].split(',').map(Number):null;
+                    var visibleX=parts?parts[values[1]?12:4]:0,visibleY=parts?parts[values[1]?13:5]:0;
+                    // The fallback also supports non-layout test hosts.
+                    if(!parts){var translate=String(current||'').match(/translate\(\s*([-\d.]+)px,\s*([-\d.]+)px\)/);if(translate){visibleX=Number(translate[1]);visibleY=Number(translate[2]);}}
+                    var surfaces=detached?[mapGridEl,combatCanvas,foregroundCanvas]:[mapGridEl];
+                    var transitions=surfaces.map(function(el){return el.style.transition;});
+                    var rebased='translate('+(visibleX+dx)+'px, '+(visibleY+dy)+'px)';
+                    surfaces.forEach(function(el){el.style.transition='none';el.style.transform=rebased;});
+                    // Commit the compensated starting pose without presenting an
+                    // intermediate frame, then resume the existing 150ms easing.
+                    surfaces.forEach(function(el){el.getBoundingClientRect();});
+                    surfaces.forEach(function(el,i){el.style.transition=transitions[i];});
+                }
+            }
+            var transform='translate('+x+'px, '+y+'px)';
+            mapGridEl.style.transform=transform;
+            if(detached){combatCanvas.style.transform=transform;foregroundCanvas.style.transform=transform;}
+            cameraProjection=projection;cameraMapId=scene.map&&scene.map.map_id;
         }
-        return {render:render,hitTest:hitTest,setCamera:setCamera,getCellCenter:function(x,y){return projection?projection.cellCenter(x,y):{x:(x+.5)*cellPx,y:(y+.5)*cellPx};},getProjection:function(){return projection;},setHoverCursor:setHoverCursor,setCombatEffectsRenderer:function(fn){combatEffectsRenderer=typeof fn==='function'?fn:null;},setEffectsRenderer:function(fn){effectsRenderer=typeof fn==='function'?fn:null;},startAnimationLoop:start,stopAnimationLoop:stop,renderFxLayer:function(ts){renderFxLayer(ts!=null?ts:nowMs());},invalidateStatic:invalidate};
+        return {render:render,hitTest:hitTest,setCamera:setCamera,getCellCenter:function(x,y){return projection?projection.cellCenter(x,y):{x:(x+.5)*cellPx,y:(y+.5)*cellPx};},getProjection:function(){return projection;},setHoverCursor:setHoverCursor,setCombatEffectsRenderer:function(fn){combatEffectsRenderer=typeof fn==='function'?fn:null;},setGroundEffectsRenderer:function(fn){groundEffectsRenderer=typeof fn==='function'?fn:null;},setEffectsRenderer:function(fn){effectsRenderer=typeof fn==='function'?fn:null;},startAnimationLoop:start,stopAnimationLoop:stop,renderFxLayer:function(ts){renderFxLayer(ts!=null?ts:nowMs());},invalidateStatic:invalidate};
     }
-    global.TileRendererV2={create:create,clamp:clamp,makeGroundShadow:makeGroundShadow};
+    global.TileRendererV2={create:create,clamp:clamp,makeGroundShadow:makeGroundShadow,getPawnDisplayScale:getPawnDisplayScale};
 })(typeof window !== 'undefined' ? window : this);

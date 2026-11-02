@@ -974,6 +974,7 @@
             }
         }
         if (appliedTotal > 0) {
+            if (global.DungeonRuntime) global.DungeonRuntime.receiveHit();
             noteDestroyDamage();
             try {
                 if (global && global.Survival && typeof global.Survival.addPainFromDestroy === 'function') {

@@ -8,7 +8,11 @@
     var config = { pipelines: {}, effect_type_catalog: {} };
     var customHandlers = {};
 
-    function ownerOf(def) { return def && def.kind === 'enemy' ? String(def.enemyId) : 'player'; }
+    function ownerOf(def) { return global.CombatEnemies && global.CombatEnemies.ownerOf ? global.CombatEnemies.ownerOf(def) : def && def.kind === 'enemy' ? String(def.enemyId) : 'player'; }
+    function enemyDefenderDead(ctx) {
+        var d=ctx && ctx.defender, ce=global.CombatEnemies;
+        return !!(d && d.kind==='enemy' && d.mapId!=null && d.index!=null && ce && ce.isEnemyDead && ce.isEnemyDead(d.mapId,d.index));
+    }
     function moveFor(ctx) {
         if (ctx.moveTemplate) return ctx.moveTemplate;
         var sk = global.CombatSkills && global.CombatSkills.getSkill(ctx.skillId);
@@ -266,7 +270,7 @@
         var src = 'move_' + String(ctx.moveId || '') + '_' + String(ctx.eventIdSuffix || '');
         var atk = ctx.attacker || {};
         var actorOwner = 'player';
-        if (atk.kind === 'enemy' && atk.enemyId != null) actorOwner = String(atk.enemyId);
+        if (atk.kind === 'enemy' && atk.enemyId != null) actorOwner = ownerOf(atk);
         else if (atk.kind === 'player') actorOwner = 'player';
         if (isSimultaneousDryRun(ctx)) {
             ctx.pendingBuffApplies = ctx.pendingBuffApplies || [];
@@ -276,7 +280,7 @@
             if (move.on_hit_roll_success_apply_buff_target && !ctx.blockTargetEffects) {
                 var defDry = ctx.defender || {};
                 var targetOwnerDry = 'player';
-                if (defDry.kind === 'enemy' && defDry.enemyId != null) targetOwnerDry = String(defDry.enemyId);
+                if (defDry.kind === 'enemy' && defDry.enemyId != null) targetOwnerDry = ownerOf(defDry);
                 else if (defDry.kind === 'player') targetOwnerDry = 'player';
                 ctx.pendingBuffApplies.push({ owner: targetOwnerDry, buffId: move.on_hit_roll_success_apply_buff_target, src: src, evCtx: evCtx });
             }
@@ -288,7 +292,7 @@
         if (move.on_hit_roll_success_apply_buff_target && !ctx.blockTargetEffects) {
             var def = ctx.defender || {};
             var targetOwner = 'player';
-            if (def.kind === 'enemy' && def.enemyId != null) targetOwner = String(def.enemyId);
+            if (def.kind === 'enemy' && def.enemyId != null) targetOwner = ownerOf(def);
             else if (def.kind === 'player') targetOwner = 'player';
             BS.applyBuff(targetOwner, move.on_hit_roll_success_apply_buff_target, src, evCtx);
         }
@@ -328,6 +332,16 @@
 
     function phaseParryEnemySimple(ctx, phase) {
         var d = ctx.defender || {};
+        if (!ctx.hitRollSuccess) return ctx;
+        if (global.CombatEnemies && global.CombatEnemies.parryContext && d.mapId != null && d.index >= 0) {
+            var guard=global.CombatEnemies.parryContext(d,ctx.hitPart);
+            ctx.guardLimb=guard.guardLimb;
+            if(guard.skip) {
+                ctx.parryPhaseSkipped=true;ctx.skipReason=guard.reason;
+                ctx.parrySucceeded=false;ctx.damageAfterParry=ctx.rawDamage;
+                return ctx;
+            }
+        }
         var rate = typeof d.parry_rate === 'number' ? d.parry_rate : (parseFloat(d.parry_rate) || 0);
         var red = typeof d.parry_damage_reduce === 'number' ? d.parry_damage_reduce : (parseFloat(d.parry_damage_reduce) || 0);
         var caps = getParryCaps();
@@ -336,14 +350,14 @@
         // 招架修正（失衡类）：读取防方 owner 的修正（11-skills 8.3.6 扩展#2；修正「失衡」对敌无效的既有缺口）
         if (d.kind === 'enemy' && d.enemyId != null
             && global.BuffSystem && typeof global.BuffSystem.getParryChanceDeltaPercent === 'function') {
-            var pDelta = Number(global.BuffSystem.getParryChanceDeltaPercent(String(d.enemyId))) || 0;
+            var pDelta = Number(global.BuffSystem.getParryChanceDeltaPercent(ownerOf(d))) || 0;
             if (isFinite(pDelta) && pDelta !== 0) rate = clamp(rate + pDelta / 100, 0, caps.chance);
         }
         if (!ctx.hitRollSuccess) return ctx;
         if (global.ModularWeaponCombat) {
             var wm = global.ModularWeaponCombat.targetDefense(ctx.weaponAction || ctx.resourceResult && ctx.resourceResult.weaponAction);
             rate = clamp(rate + wm.chance, 0, caps.chance);
-            red = clamp(red + wm.unload + global.ModularWeaponCombat.unloadBonus(String(d.enemyId)), 0, caps.shunt);
+            red = clamp(red + wm.unload + global.ModularWeaponCombat.unloadBonus(ownerOf(d)), 0, caps.shunt);
         }
         if (rate <= 0) {
             ctx.parrySucceeded = false;
@@ -472,6 +486,8 @@
         var pReduce = clamp(baseR * flexM, 0, caps.shunt);
         if (global.BuffSystem && typeof global.BuffSystem.getParryChanceDeltaPercent === 'function') {
             var deltaPct = global.BuffSystem.getParryChanceDeltaPercent('player') || 0;
+            var bossQuote=ctx.resourceResult && ctx.resourceResult.bossReservation;
+            if(bossQuote && !bossQuote.committed && bossQuote.moveId==='collar_knee' && bossQuote.offBalanceBefore>0)deltaPct+=5;
             pChance = clamp(pChance + deltaPct / 100, 0, caps.chance);
         }
         // 步法招架侧固定效果（k17，11 §8.3.4 / 39 §6.4）：挂载步法技能的招架率/卸力加成 × 鞋 footwork_coef（左右取更差）
@@ -487,6 +503,8 @@
             pChance = clamp(pChance + gb.chance, 0, caps.chance);
             pReduce = clamp(pReduce + gb.unload + global.ModularWeaponCombat.unloadBonus('player'), 0, caps.shunt);
         }
+        // Knee consumes one imbalance stack before this roll, including a deferred simultaneous strike.
+        if(ctx.targetUnloadMultiplier!=null)pReduce*=ctx.targetUnloadMultiplier;
         ctx.parryChance = pChance;
         ctx.unloadRatio = pReduce;
         if (rnd() < pChance) {
@@ -882,7 +900,7 @@
         if (dmg > 0 && global.BuffSystem && typeof global.BuffSystem.getBattleFinalDamageTakenMultiplier === 'function') {
             var defOwnerId = null;
             if (def.kind === 'player') defOwnerId = 'player';
-            else if (def.kind === 'enemy' && def.enemyId != null) defOwnerId = String(def.enemyId);
+            else if (def.kind === 'enemy' && def.enemyId != null) defOwnerId = ownerOf(def);
             if (defOwnerId) {
                 var finalTakenMul = ctx.takenMultiplierSnapshot;
                 if (isFinite(finalTakenMul) && finalTakenMul >= 0) dmg = dmg * finalTakenMul;
@@ -930,6 +948,7 @@
         }
         if (ctx && ctx.simultaneousCommitted) return;
         if (!ctx || !ctx.simultaneousPendingDamage) return;
+        if(enemyDefenderDead(ctx)){ctx.simultaneousCommitted=true;return;}
         var p = ctx.simultaneousPendingDamage;
         ctx.simultaneousCommitted = true;
         var sub = p.ctxRef || ctx;
@@ -1021,6 +1040,8 @@
     };
 
     function runPipeline(pipelineName, ctx) {
+        if (!ctx || ctx.notExecuted) return ctx;
+        if(enemyDefenderDead(ctx)){ctx.notExecuted=true;ctx.skipReason='dead';return ctx;}
         var pipe = config.pipelines && config.pipelines[pipelineName];
         if (!pipe || !pipe.phases) return ctx;
         ctx.pipelineName = pipelineName;
@@ -1048,6 +1069,7 @@
         var mergedPending = [];
         var si;
         for (si = 0; si < segs.length; si++) {
+            if(!ctx.simultaneousDryRun && enemyDefenderDead(ctx))break;
             var s = segs[si] || {};
             var sCtx = Object.assign({}, ctx, {
                 hitRollSuccess: !!s.hitRollSuccess,

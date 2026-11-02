@@ -3168,6 +3168,7 @@
             try { tickAgricultureAfterWorldTick(); } catch (eAg) { /* ignore */ }
             try { tickLivestockAfterWorldTick(); } catch (eLs) { /* ignore */ }
             try { CombatWorld.tickEnemiesAfterWorldTick(); } catch (eEn) { /* ignore */ }
+            if (window.DungeonRuntime) window.DungeonRuntime.afterTick();
             if (CombatWorld.flushDisplacements) CombatWorld.flushDisplacements();
             try { CombatWorld.tickPlayerStunDecay(); } catch (eStunD) { /* ignore */ }
             // 制药：成瘾衰减/阶段压制刷新 + 毒性代谢 + 致死倒计时（47 §4/§9.2，k242/k240）
@@ -3702,6 +3703,7 @@
                 var node = document.createElement('div');
                 var selected = picked && picked.index === row.index && picked.source === row.source;
                 node.className = 'bp-item-row' + (selected ? ' selected' : '');
+                if(row.item.dungeon_rarity)node.dataset.dungeonRarity=row.item.dungeon_rarity;
                 node.innerHTML =
                     '<div class="bp-item-tier"></div>' +
                     '<div class="bp-item-main">' +
@@ -7687,7 +7689,7 @@
             window.LivestockState.setUiDeps({ recalcCharacterStats: recalcCharacterStatsFromIE });
         }
         registerUiWindows();
-        return loadConfig().then(function () {
+        return Promise.all([loadConfig(), window.DungeonRuntime ? window.DungeonRuntime.ready : null]).then(function () {
             setupCombatEngagementFeedback();
             // i18n 已就绪（UIText.setDict 已完成）后再进行地图合并渲染
             if (window.SaveSystem && typeof window.SaveSystem.init === 'function') {
@@ -7861,6 +7863,10 @@
                     if (window.CombatEnemies && typeof window.CombatEnemies.mergeIntoDefender === 'function') {
                         window.CombatEnemies.mergeIntoDefender(defenderBase);
                     }
+                    var enemyActionPlan = window.CombatEnemies.planAction(enemyId,defenderBase.mapId,defenderBase.index);
+                    defenderBase.occupiedLimbs = enemyActionPlan.occupiedLimbs;
+                    // The enemy's exchange opportunity is spent even if its planned move is later disabled.
+                    CombatWorld.markCounterAttackFlag(CombatWorld.enemyCounterAttackFlagKey(enemyId,defenderBase.index));
                     if (defenderBase.speed != null && isFinite(Number(defenderBase.speed))) defSpeed = Number(defenderBase.speed);
 
                     var limbUse = intent.limbId;
@@ -7929,7 +7935,7 @@
                         initPlan = window.CombatInitiative.resolvePlayerInitiatedExchange({
                             playerSpeed: plSpeed,
                             enemySpeed: defSpeed,
-                            enemyOwnerId: enemyId != null ? String(enemyId) : null,
+                            enemyOwnerId: defenderBase.ownerId,
                             attackerPostEffectIds: postIds,
                             defenderPostEffectIds: defPostIds,
                             skillId: skUse,
@@ -7938,7 +7944,7 @@
                     }
                     var CP = window.CombatPipeline;
                     var CMR = window.CombatMeleeResolve;
-                    var canEnemyCounter = defenderBase.can_attack !== false;
+                    var canEnemyCounter = defenderBase.can_attack !== false && !!enemyActionPlan.action;
                     var useSimultaneous = initPlan.mode === 'simultaneous' && canEnemyCounter
                         && CP && typeof CP.flushPendingBuffApplies === 'function'
                         && typeof CP.finalizeSimultaneousStrike === 'function'
@@ -8020,7 +8026,7 @@
                     var modularExchange = !!intent.weaponId || !!metaPlan.entry || Meta.bindings().length > 0;
                     function commitMain() { Meta.prepareMain(intent); Meta.consume(metaPlan); if (intent.metaSource) Meta.beginTriggered(metaPlan); Meta.advance(intent); }
                     function resolveMain(extra) {
-                        return CMR.resolvePlayerVsEnemyAttack(Object.assign({targetIndex:defenderBase.index,enemyId:enemyId,
+                        return CMR.resolvePlayerVsEnemyAttack(Object.assign({targetIndex:defenderBase.index,enemyId:enemyId,enemyMapId:defenderBase.mapId,
                             skillId:skUse,moveId:mvUse,limbId:limbUse,powerLevel:_slotPwr,attackerSpeed:initPlan.playerSpeed,
                             defenderSpeed:initPlan.enemySpeed,speedsResolved:true,weaponIntent:intent.weaponId?intent:null,
                             metaSource:intent.metaSource,costWaivers:intent.costWaivers}, extra || {}));
@@ -8033,7 +8039,7 @@
                         if (!extra) return;
                         Meta.beginTriggered(metaPlan);
                         var extraPosts=extra.weaponId?[]:window.CombatInitiative.getPlayerPostEffectIds({limbId:extra.limbId,formTags:getFormTagsForMove(extra.skillId,extra.moveId)});
-                        var extraResolve=CMR.resolvePlayerVsEnemyAttack({targetIndex:defenderBase.index,enemyId:enemyId,skillId:extra.skillId,moveId:extra.moveId,
+                        var extraResolve=CMR.resolvePlayerVsEnemyAttack({targetIndex:defenderBase.index,enemyId:enemyId,enemyMapId:defenderBase.mapId,skillId:extra.skillId,moveId:extra.moveId,
                             limbId:extra.limbId,powerLevel:extra.powerLevel,weaponIntent:extra.weaponId?extra:null,attackerSpeed:initPlan.playerSpeed,
                             defenderSpeed:initPlan.enemySpeed,speedsResolved:true,metaSource:extra.metaSource,costWaivers:extra.costWaivers});
                         if (extraResolve.notExecuted) return;
@@ -8057,13 +8063,15 @@
                         }
                     }
                     function enemyWeaponExchangeRepeats() {
-                        if (!modularExchange) return;
+                        if (!modularExchange || !rEnemyCounter || rEnemyCounter.notExecuted) return;
                         var count = Math.min(4, Math.max(1, Math.floor(initPlan.enemySpeed / initPlan.playerSpeed)));
                         for (var repeat = 1; repeat < count; repeat++) {
                             if (window.Survival.getState().isDead || window.CombatEnemies.isEnemyStunned(defenderBase.mapId, defenderBase.index)
                                 || window.CombatEnemies.isEnemyDead(defenderBase.mapId, defenderBase.index)) break;
                             var next = CMR.resolveEnemyVsPlayerAttack({enemyId:enemyId,attackerSpeed:initPlan.enemySpeed,defenderSpeed:initPlan.playerSpeed,speedsResolved:true,
                                 enemyMapId:defenderBase.mapId,enemyIndex:defenderBase.index});
+                            if(next.notExecuted)break;
+                            defenderBase.occupiedLimbs=Array.from(new Set(defenderBase.occupiedLimbs.concat(window.CombatEnemies.actionLimbs(enemyId,defenderBase.mapId,defenderBase.index,next.moveTemplate))));
                             CP.runPipeline('melee_hit_player_defender', CombatWorld.buildEnemyCounterAtkCtx(next,false,{enemyId:enemyId,facingDir:defenderFacingDir,ex:ctxMeta.x,ey:ctxMeta.y,px:ctxMeta.fromX,py:ctxMeta.fromY}));
                         }
                     }
@@ -8078,6 +8086,8 @@
                         if (!enemyStunnedNow) {
                             rEnemyCounter = CMR.resolveEnemyVsPlayerAttack({
                                 enemyId: enemyId,
+                                plannedAction: enemyActionPlan.action,
+                                deferResourceSpend: true,
                                 attackerSpeed: defSpeed,
                                 enemyMapId: defenderBase.mapId,
                                 enemyIndex: defenderBase.index
@@ -8099,6 +8109,7 @@
                         }
                         if (typeof CMR.applyDeferredResourceSpendFromResolveResult === 'function') {
                             CMR.applyDeferredResourceSpendFromResolveResult(r);
+                            CMR.applyDeferredResourceSpendFromResolveResult(rEnemyCounter);
                         }
                         if (typeof CP.finalizeSimultaneousStrike === 'function') {
                             CP.finalizeSimultaneousStrike(atkCtx);
@@ -8108,13 +8119,14 @@
                         }
                         runAppend();
                         {
-                            var _ckSim = CombatWorld.enemyCounterAttackFlagKey(enemyId);
+                            var _ckSim = CombatWorld.enemyCounterAttackFlagKey(enemyId, defenderBase.index);
                             if (_ckSim) window.CombatWorld.markCounterAttackFlag(_ckSim);
                         }
                     } else if (enemyActsFirst && CMR && typeof CMR.resolveEnemyVsPlayerAttack === 'function' && typeof CMR.resolvePlayerVsEnemyAttack === 'function') {
                         if (!enemyStunnedNow) {
                             rEnemyCounter = CMR.resolveEnemyVsPlayerAttack({
                                 enemyId: enemyId,
+                                plannedAction: enemyActionPlan.action,
                                 attackerSpeed: defSpeed,
                                 enemyMapId: defenderBase.mapId,
                                 enemyIndex: defenderBase.index
@@ -8123,7 +8135,7 @@
                             CP.runPipeline('melee_hit_player_defender', atkCtxEnemy);
                             enemyWeaponExchangeRepeats();
                             {
-                                var _ckEf = CombatWorld.enemyCounterAttackFlagKey(enemyId);
+                                var _ckEf = CombatWorld.enemyCounterAttackFlagKey(enemyId, defenderBase.index);
                                 if (_ckEf) window.CombatWorld.markCounterAttackFlag(_ckEf);
                             }
                             if (window.GameLog && atkCtxEnemy.finalDamage != null && typeof window.GameLog.log === 'function') {
@@ -8179,6 +8191,7 @@
                         if (canEnemyCounter && !enemyDeadNow && !enemyStunnedNow && CMR && typeof CMR.resolveEnemyVsPlayerAttack === 'function') {
                             rEnemyCounter = CMR.resolveEnemyVsPlayerAttack({
                                 enemyId: enemyId,
+                                plannedAction: enemyActionPlan.action,
                                 attackerSpeed: defSpeed,
                                 enemyMapId: defenderBase.mapId,
                                 enemyIndex: defenderBase.index
@@ -8187,7 +8200,7 @@
                             CP.runPipeline('melee_hit_player_defender', atkCtxEnemy);
                             enemyWeaponExchangeRepeats();
                             {
-                                var _ckNm = CombatWorld.enemyCounterAttackFlagKey(enemyId);
+                                var _ckNm = CombatWorld.enemyCounterAttackFlagKey(enemyId, defenderBase.index);
                                 if (_ckNm) window.CombatWorld.markCounterAttackFlag(_ckNm);
                             }
                             if (window.GameLog && atkCtxEnemy.finalDamage != null && typeof window.GameLog.log === 'function') {
@@ -8247,10 +8260,14 @@
             window.SceneCtx.actions.interactNpc = function (npcId) {
                 if (guardPlayerComaBlocked()) return;
                 if (guardPlayerActionBlocked(ACTION_TYPES.NPC_INTERACT)) return;
-                if (typeof showMsg === 'function') showMsg(ui('log.system.try.interact.npc', { npcId: npcId }), 'system');
+                if (typeof showMsg === 'function' && !(window.DungeonCheckpoint && window.DungeonCheckpoint.isKeeper(npcId))) showMsg(ui('log.system.try.interact.npc', { npcId: npcId }), 'system');
                 if (window.NPCSystem && typeof window.NPCSystem.openMenu === 'function') window.NPCSystem.openMenu(npcId);
             };
             window.SceneCtx.actions.tryIntentMove = function (tx, ty, dx, dy, source) {
+                if (window.DungeonRuntime && window.DungeonRuntime.active()) {
+                    window.DungeonRuntime.cancel();
+                    if (window.DungeonPanel && window.DungeonPanel.interactAt(tx, ty)) return;
+                }
                 if (isStoryMovementLocked()) return;
                 if (guardPlayerComaBlocked()) return;
                 if (isHideoutWarehouseConstructionLive()) {
@@ -8483,6 +8500,8 @@
             window.SceneCtx.actions.canAddFuelAtCurrentTile = canAddFuelAtCurrentTile;
             window.SceneCtx.actions.canPourWaterAtCurrentTile = canPourWaterAtCurrentTile;
             window.SceneCtx.actions.onEngineChanged = function () {
+                if (window.DungeonRuntime) window.DungeonRuntime.observe();
+                if (window.DungeonPanel) window.DungeonPanel.refresh();
                 if (window.SceneCtx && typeof window.SceneCtx.exitFootworkNieBuMode === 'function') {
                     window.SceneCtx.exitFootworkNieBuMode();
                 }
@@ -8877,6 +8896,7 @@
         stopCookingCraftIdle(); stopPharmacyCraftIdle(); stopAgricultureAutoTick(); stopLivestockAutoTick();
         if (window.Survival) {window.Survival.setStaminaRegenActionActive(false);window.Survival.setSitMeditationActive(false);}
     };
+    window.SceneApp.prepareDungeonAction = window.SceneApp.prepareFacilityAction;
     window.SceneApp.openAgriculturePanel = openAgriculturePanel;
     window.SceneApp.closeAgriculturePanel = closeAgriculturePanel;
     window.SceneApp.openLivestockPanel = openLivestockPanel;

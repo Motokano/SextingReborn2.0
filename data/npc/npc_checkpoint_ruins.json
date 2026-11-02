@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "npc.checkpoint.ruins",
+  "name": "检查站看守",
+  "displayTitle": "检查站看守",
+  "npcLabel": "检查站",
+  "sprite": "assets/dungeon/entrance/ruins-entry-checkpoint-v5.png",
+  "appearanceSchedule": {
+    "start": "00:00",
+    "end": "00:00"
+  },
+  "mainMenu": {
+    "showChat": true,
+    "showWorkWhen": "never",
+    "showLeave": true
+  },
+  "checkpoint": {
+    "greeting": "封好口的，我给你带回来。没封的，不归我管。"
+  },
+  "tags": [
+    "non_combat",
+    "dungeon_entry"
+  ]
+}

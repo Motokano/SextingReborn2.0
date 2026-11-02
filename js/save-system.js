@@ -553,6 +553,9 @@
             savedAt: Date.now(),
             time: { totalTicks: timeSt.totalTicks },
             weather: global.Weather && global.Weather.getState(),
+            dungeon: global.DungeonRuntime ? global.DungeonRuntime.getState() : null,
+            manufacturing_knowledge: global.ManufacturingKnowledge ? global.ManufacturingKnowledge.getState() : null,
+            combat_enemies: global.CombatEnemies && global.CombatEnemies.getState ? global.CombatEnemies.getState() : null,
             player: {
                 engine: { mapId: engineSt.mapId, x: engineSt.x, y: engineSt.y },
                 characterAttributes: charSt,
@@ -589,6 +592,8 @@
     }
     function applySnapshotContents(snapshot) {
         if (!assertSnapshotShape(snapshot)) return false;
+        if (global.ManufacturingKnowledge && !global.ManufacturingKnowledge.validate(snapshot.manufacturing_knowledge)) return false;
+        if (global.DungeonRuntime && !global.DungeonRuntime.validate(snapshot.dungeon, snapshot.player.engine)) return false;
         if (global.Hunting && !global.Hunting.validate(snapshot.hunting)) return false;
         if (global.FishingSession && !global.FishingSession.validate(snapshot.fishing)) return false;
         if (global.FishingPond && !global.FishingPond.validateEnvelope(snapshot.fishing_pond, snapshot.fishing)) return false;
@@ -611,6 +616,10 @@
 
         if (global.Weather && global.Weather.isReady()) global.Weather.restore(snapshot.weather || null, snapshot.time.totalTicks);
 
+        // Dynamic dungeon maps must exist before restoring the engine position.
+        if (global.CombatEnemies && global.CombatEnemies.setState) global.CombatEnemies.setState(snapshot.combat_enemies || null);
+        if (global.DungeonRuntime) global.DungeonRuntime.restore(snapshot.dungeon || null);
+        if (global.ManufacturingKnowledge) global.ManufacturingKnowledge.restore(snapshot.manufacturing_knowledge || null);
         // Engine position.
         if (typeof mods.GameEngine.setState === 'function') {
             mods.GameEngine.setState(snapshot.player.engine.mapId, snapshot.player.engine.x, snapshot.player.engine.y);

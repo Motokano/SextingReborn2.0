@@ -1,0 +1,15 @@
+{
+  "file": "pressure-pot-cache",
+  "state": "unsearched",
+  "prompt": "Use case: stylized-concept. Create ONE NEW production game prop sprite. Images 1-3 are mandatory approved style references: image 1 hand-painted cartoon contour/volume quality only, images 2-3 approved furniture finish; do not draw their character or objects. Image 4 is exact orthographic geometry ONLY: 45-degree camera elevation, ground lines slope +/-0.7071 (35.264 degrees), vertical edges stay vertical, no vanishing point. CRITICAL STYLE: clean strong dark outer contours, quieter inner edges, large matte painted light/shadow planes, selected purposeful repairs, modest local wear. Broad shapes must read at actual 144px grid beside an 85px-tall character pawn. No photographic texture, fine grain, uniform tiny scratches, overworked grunge, tiny mesh, plastic 3D gloss, or low-poly faceting. Modern industrial reuse society with restricted supplies; functional worn object, not medieval fantasy treasure or apocalyptic rubble. Upper-left light. Exact shape and depth must be drawn natively; no later shear/stretch. Complete isolated single object, center it with generous transparent margins. True transparent RGBA everywhere outside object and holes; NO floor, grid, base, pedestal, drop shadow, words, labels or extra scenery. State: CLOSED / FULL / UNSEARCHED. Subject: Small squat dull aluminum pressure cooker reused as storage, two thick black side handles, fitted closed lid with simple valve, one small riveted repair. Broad matte gray shading, no chrome glare. Round body ellipse ratio .707.",
+  "references": [
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/street-thugs-v1/tier-1.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/street-thug-boss-room-v6/private-cache.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/street-thug-boss-room-v6/transit-rack.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/street-thug-boss-room-v5/cache-geometry.png"
+  ],
+  "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-f2ccbcea-98e5-4788-ab16-3be5cd65e0aa.png",
+  "tool": "built-in image_gen",
+  "status": "registered-current",
+  "appliedFile": "pressure-pot-cache.png"
+}
