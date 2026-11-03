@@ -1,0 +1,361 @@
+{
+  "version": 1,
+  "date": "2026-11-03",
+  "status": "story-gated-runtime",
+  "tileWidth": 144,
+  "pawnScale": 1.25,
+  "groundOffsetY": 10,
+  "marker": "two crossed matte brown packing-tape strips on exposed clothing",
+  "note": "Native orientation, uniform scale, separate ground shadow. Third-tier canvas differs; registration matches the existing pawn dimensions. Generated edits have minor detail differences; not lossless overlays. Runtime display is gated by the saved story flag 血腥开关; the flag is off by default.",
+  "entries": [
+    {
+      "id": "tier-1",
+      "enemyIds": [
+        "enemy.street_thug_tier1",
+        "enemy.street_thug"
+      ],
+      "name": "街头混混",
+      "normal": {
+        "src": "assets/map/isometric/street-thug-lower-tiers-defeated-v1/tier-1.png",
+        "crop": [
+          103,
+          110,
+          1358,
+          844
+        ],
+        "anchor": [
+          782,
+          950
+        ],
+        "scaleAt144": 0.07595772787318363,
+        "pngSize": [
+          1536,
+          1024
+        ],
+        "alphaBounds": [
+          103,
+          110,
+          1358,
+          844
+        ],
+        "transparentFraction": 0.5162766774495443,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "sha256": "c4792e4cfd74ad9b6fcfd01c5b08f43cdef98adf074359f8a54b4b99b2af81a5"
+      },
+      "marked": {
+        "src": "assets/map/isometric/street-thugs-marked-v1/tier-1-marked.png",
+        "crop": [
+          103,
+          110,
+          1358,
+          844
+        ],
+        "anchor": [
+          782,
+          950
+        ],
+        "scaleAt144": 0.07595772787318363,
+        "pngSize": [
+          1536,
+          1024
+        ],
+        "alphaBounds": [
+          103,
+          111,
+          1357,
+          842
+        ],
+        "transparentFraction": 0.5163860321044922,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "sha256": "8058fea6d9f0dea50bcde8f340ffa5e88497647114547777921cc46a90860f30"
+      },
+      "prompt": "assets/map/isometric/street-thugs-marked-v1/tier-1-prompt.txt",
+      "generated": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a1a02a-6110-7552-b880-0e44e0dbb6b4\\exec-87422188-2eba-4d5c-a12b-79977294d935.png",
+      "references": [
+        {
+          "path": "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/map/isometric/street-thug-lower-tiers-defeated-v1/tier-1.png",
+          "sha256": "c4792e4cfd74ad9b6fcfd01c5b08f43cdef98adf074359f8a54b4b99b2af81a5"
+        },
+        {
+          "path": "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/corpse-bag-v3/marked.png",
+          "sha256": "aecf1af51db1307b5ef422017f824d46623f2d56c783dc5706fc63c000cf7e58"
+        },
+        {
+          "path": "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/street-thugs-v1/tier-1.png",
+          "sha256": "49712c9e0bcdcfd57c81a901916c55107e324ccae93ca91aaa4b0e43fb811817"
+        }
+      ]
+    },
+    {
+      "id": "tier-2",
+      "enemyIds": [
+        "enemy.street_thug_tier2"
+      ],
+      "name": "看场打手",
+      "normal": {
+        "src": "assets/map/isometric/street-thug-lower-tiers-defeated-v1/tier-2.png",
+        "crop": [
+          44,
+          255,
+          1449,
+          630
+        ],
+        "anchor": [
+          768.5,
+          881
+        ],
+        "scaleAt144": 0.07595772787318363,
+        "pngSize": [
+          1536,
+          1024
+        ],
+        "alphaBounds": [
+          44,
+          255,
+          1449,
+          630
+        ],
+        "transparentFraction": 0.5482686360677084,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "sha256": "897a70d37f7a2862d9606851f6cad235fa78a42a1405c035ec26a59fcfa6639a"
+      },
+      "marked": {
+        "src": "assets/map/isometric/street-thugs-marked-v1/tier-2-marked.png",
+        "crop": [
+          44,
+          255,
+          1449,
+          630
+        ],
+        "anchor": [
+          768.5,
+          881
+        ],
+        "scaleAt144": 0.07595772787318363,
+        "pngSize": [
+          1536,
+          1024
+        ],
+        "alphaBounds": [
+          44,
+          255,
+          1449,
+          628
+        ],
+        "transparentFraction": 0.5487009684244791,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "sha256": "4ea5afb4b26e56e11c933e66e035b347fcdcc0e8873b7b1393a96492fb868496"
+      },
+      "prompt": "assets/map/isometric/street-thugs-marked-v1/tier-2-prompt.txt",
+      "generated": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a1a02a-6110-7552-b880-0e44e0dbb6b4\\exec-36b856de-da15-460a-8122-c96e027750ce.png",
+      "references": [
+        {
+          "path": "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/map/isometric/street-thug-lower-tiers-defeated-v1/tier-2.png",
+          "sha256": "897a70d37f7a2862d9606851f6cad235fa78a42a1405c035ec26a59fcfa6639a"
+        },
+        {
+          "path": "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/corpse-bag-v3/marked.png",
+          "sha256": "aecf1af51db1307b5ef422017f824d46623f2d56c783dc5706fc63c000cf7e58"
+        },
+        {
+          "path": "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/street-thugs-v1/tier-1.png",
+          "sha256": "49712c9e0bcdcfd57c81a901916c55107e324ccae93ca91aaa4b0e43fb811817"
+        }
+      ]
+    },
+    {
+      "id": "tier-3",
+      "enemyIds": [
+        "enemy.street_thug_tier3"
+      ],
+      "name": "老练狠角色",
+      "normal": {
+        "src": "assets/map/isometric/street-thug-veteran-v1/defeated.png",
+        "crop": [
+          31,
+          338,
+          1159,
+          703
+        ],
+        "anchor": [
+          610,
+          1041
+        ],
+        "scaleAt144": 0.0764627659574468,
+        "pngSize": [
+          1215,
+          1295
+        ],
+        "alphaBounds": [
+          31,
+          338,
+          1159,
+          703
+        ],
+        "transparentFraction": 0.6337079937079937,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "sha256": "450973716adf61ee81df92059502e5ac6b8ea8301e106be5014a7a16dc3c4642"
+      },
+      "marked": {
+        "src": "assets/map/isometric/street-thugs-marked-v1/tier-3-marked.png",
+        "crop": [
+          17,
+          369,
+          1086,
+          658
+        ],
+        "anchor": [
+          559.5314926660914,
+          1027
+        ],
+        "scaleAt144": 0.0816025283100192,
+        "pngSize": [
+          1115,
+          1410
+        ],
+        "alphaBounds": [
+          17,
+          369,
+          1086,
+          658
+        ],
+        "transparentFraction": 0.6805075851540884,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "sha256": "1d9bdb07847ddf74189d1d514f0f586c9eb24c679ea88e0634836e80140f42ef"
+      },
+      "prompt": "assets/map/isometric/street-thugs-marked-v1/tier-3-prompt.txt",
+      "generated": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a1a02a-6110-7552-b880-0e44e0dbb6b4\\exec-b78cf7c5-3588-4825-95c9-7e3b2f3063c2.png",
+      "references": [
+        {
+          "path": "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/map/isometric/street-thug-veteran-v1/defeated.png",
+          "sha256": "450973716adf61ee81df92059502e5ac6b8ea8301e106be5014a7a16dc3c4642"
+        },
+        {
+          "path": "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/corpse-bag-v3/marked.png",
+          "sha256": "aecf1af51db1307b5ef422017f824d46623f2d56c783dc5706fc63c000cf7e58"
+        },
+        {
+          "path": "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/street-thugs-v1/tier-1.png",
+          "sha256": "49712c9e0bcdcfd57c81a901916c55107e324ccae93ca91aaa4b0e43fb811817"
+        }
+      ]
+    },
+    {
+      "id": "boss",
+      "enemyIds": [
+        "enemy.street_thug_boss"
+      ],
+      "name": "地头头目",
+      "normal": {
+        "src": "assets/map/isometric/street-thug-boss-defeated-v3/defeated.png",
+        "crop": [
+          40,
+          201,
+          1488,
+          642
+        ],
+        "anchor": [
+          780,
+          839
+        ],
+        "scaleAt144": 0.06433566433566433,
+        "pngSize": [
+          1536,
+          1024
+        ],
+        "alphaBounds": [
+          41,
+          204,
+          1487,
+          638
+        ],
+        "transparentFraction": 0.5443242390950521,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "sha256": "665d8b2406694615e96c78381152575bc15719927c86e22283e1d3bf32e000f1"
+      },
+      "marked": {
+        "src": "assets/map/isometric/street-thugs-marked-v1/boss-marked.png",
+        "crop": [
+          40,
+          201,
+          1488,
+          642
+        ],
+        "anchor": [
+          780,
+          839
+        ],
+        "scaleAt144": 0.06433566433566433,
+        "pngSize": [
+          1536,
+          1024
+        ],
+        "alphaBounds": [
+          40,
+          201,
+          1488,
+          640
+        ],
+        "transparentFraction": 0.5408611297607422,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "sha256": "8ec8f0eeaef02f4075bb0f350505c0c578423841c3bc2ebceefb4ceed646e652"
+      },
+      "prompt": "assets/map/isometric/street-thugs-marked-v1/boss-prompt.txt",
+      "generated": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a1a02a-6110-7552-b880-0e44e0dbb6b4\\exec-aa2e331d-75bd-43a1-bce2-b0fd2ac45e4c.png",
+      "references": [
+        {
+          "path": "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/map/isometric/street-thug-boss-defeated-v3/defeated.png",
+          "sha256": "665d8b2406694615e96c78381152575bc15719927c86e22283e1d3bf32e000f1"
+        },
+        {
+          "path": "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/corpse-bag-v3/marked.png",
+          "sha256": "aecf1af51db1307b5ef422017f824d46623f2d56c783dc5706fc63c000cf7e58"
+        },
+        {
+          "path": "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/street-thugs-v1/tier-1.png",
+          "sha256": "49712c9e0bcdcfd57c81a901916c55107e324ccae93ca91aaa4b0e43fb811817"
+        }
+      ]
+    }
+  ]
+}

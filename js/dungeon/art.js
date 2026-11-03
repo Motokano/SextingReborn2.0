@@ -46,7 +46,7 @@ function object(ctx,x,y,pr){
  if(recovery)RuinsMixed.drawRecovery(ctx,recovery,c.x,c.y,size);
  if(insight)RuinsInsight.draw(ctx,insight,c.x,c.y,size);
  if(k===m.exit)RuinsExitPawn.draw(ctx,c.x,c.y,size,s.player.cell===k?c:null);
- const corpses=s.corpses.filter(p=>p.cell===k).slice(0,3);for(let i=0;i<corpses.length;i++){const p=corpses[i];ctx.save();if(k===s.player.cell)ctx.globalAlpha=.55;DungeonCorpseArt.draw(ctx,p.marked,c.x+(i-(corpses.length-1)/2)*size*.1,c.y,pr.tileWidth);ctx.restore();}
+ const corpses=s.corpses.filter(p=>p.cell===k).slice(0,3);for(let i=0;i<corpses.length;i++){const p=corpses[i];ctx.save();if(k===s.player.cell)ctx.globalAlpha=.55;DungeonCorpseArt.draw(ctx,p,c.x+(i-(corpses.length-1)/2)*size*.1,c.y,pr.tileWidth);ctx.restore();}
 }
 // Visibility is applied before painting terrain/objects. A post-render ground
 // mask would incorrectly shear off the upper halves of walls and furniture.

@@ -1,0 +1,112 @@
+{
+  "date": "2026-11-03",
+  "tool": "image_gen.imagegen",
+  "mode": "built-in edit",
+  "status": "candidate",
+  "assets": [
+    {
+      "id": "tier-1",
+      "name": "街头混混",
+      "source": "assets/map/isometric/street-thug-lower-tiers-defeated-v1/tier-1.png",
+      "dims": "1536 x 1024",
+      "detail": "Supine grey tank-top character: place the X on the visible front of the grey shirt across chest and upper abdomen. Preserve the head on the left, splayed arms and legs, and single hand wrap.",
+      "crop": [
+        103,
+        110,
+        1358,
+        844
+      ],
+      "anchor": [
+        782,
+        950
+      ],
+      "scale": 0.07595772787318363,
+      "prompt": "Use case: precise-object-edit.\nAsset type: ONE transparent marked-state sprite for an existing isometric hand-painted RPG pawn.\nImage 1 is the sole EDIT TARGET: 街头混混's existing defeated pawn. Image 2 is ONLY a reference for the brown packing-tape X marker used on the game's marked flour-sack pawn; do not copy the bag, bread, rope or its shape. Image 3 is the approved standing street-thug STYLE reference required by the project; do not copy its standing pose or checkerboard background.\nPrimary request: create the marked version of image 1 by adding ONLY TWO broad matte tan-brown packing-tape strips forming one clearly readable X on the upward-facing CLOTHING of the torso. Supine grey tank-top character: place the X on the visible front of the grey shirt across chest and upper abdomen. Preserve the head on the left, splayed arms and legs, and single hand wrap.\nMarker: same warm kraft-brown tape color and clear dark-edged broad strips as image 2, gently torn ends, very sparse wear, adhering to clothing folds and local perspective. The X should occupy most of the visible shirt panel so it remains visible when the entire pawn is only about 90-110 pixels wide. It is a plain recovery marker, not a restraint: no bindings around limbs, no tape across the face or mouth, no wrapping the body, no extra accessories. No text, symbol printed on tape, label or flag.\nStrict invariants: keep image 1's exact 1536 x 1024 canvas, camera, native orientation, figure placement, scale, silhouette, anatomy, pose, head size, face, clothing, shoes, all limbs, existing mild surface injuries and blood marks, thin grey oval pawn base and all its edges. Do not increase or remove existing injury detail; no new blood. The only visible modification is the two tape strips over the shirt. Do not recompose, rotate, mirror, crop, enlarge or shrink the figure; preserve the existing transparent margins and ground-contact position so unmarked and marked states align.\nPreserve the approved bold dark outlines, broad hand-painted light/shadow facets, upper-left light and selective detail. Keep the original pawn base, but no floor tile, scene, cast ground shadow or additional objects. Genuine alpha-transparent background, no painted checkerboard or solid background. Return only this single complete marked pawn.",
+      "references": [
+        "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/map/isometric/street-thug-lower-tiers-defeated-v1/tier-1.png",
+        "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/corpse-bag-v3/marked.png",
+        "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/street-thugs-v1/tier-1.png"
+      ],
+      "generated": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a1a02a-6110-7552-b880-0e44e0dbb6b4\\exec-87422188-2eba-4d5c-a12b-79977294d935.png",
+      "marked": "assets/map/isometric/street-thugs-marked-v1/tier-1-marked.png"
+    },
+    {
+      "id": "tier-2",
+      "name": "看场打手",
+      "source": "assets/map/isometric/street-thug-lower-tiers-defeated-v1/tier-2.png",
+      "dims": "1536 x 1024",
+      "detail": "Curled side-lying black tank-top character with head on the right: place the X on the visible black shirt at the side/front of the torso, naturally occluded by the unchanged resting arm if necessary. Preserve the curled knees, silver chain, face and hand wrap.",
+      "crop": [
+        44,
+        255,
+        1449,
+        630
+      ],
+      "anchor": [
+        768.5,
+        881
+      ],
+      "scale": 0.07595772787318363,
+      "prompt": "Use case: precise-object-edit.\nAsset type: ONE transparent marked-state sprite for an existing isometric hand-painted RPG pawn.\nImage 1 is the sole EDIT TARGET: 看场打手's existing defeated pawn. Image 2 is ONLY a reference for the brown packing-tape X marker used on the game's marked flour-sack pawn; do not copy the bag, bread, rope or its shape. Image 3 is the approved standing street-thug STYLE reference required by the project; do not copy its standing pose or checkerboard background.\nPrimary request: create the marked version of image 1 by adding ONLY TWO broad matte tan-brown packing-tape strips forming one clearly readable X on the upward-facing CLOTHING of the torso. Curled side-lying black tank-top character with head on the right: place the X on the visible black shirt at the side/front of the torso, naturally occluded by the unchanged resting arm if necessary. Preserve the curled knees, silver chain, face and hand wrap.\nMarker: same warm kraft-brown tape color and clear dark-edged broad strips as image 2, gently torn ends, very sparse wear, adhering to clothing folds and local perspective. The X should occupy most of the visible shirt panel so it remains visible when the entire pawn is only about 90-110 pixels wide. It is a plain recovery marker, not a restraint: no bindings around limbs, no tape across the face or mouth, no wrapping the body, no extra accessories. No text, symbol printed on tape, label or flag.\nStrict invariants: keep image 1's exact 1536 x 1024 canvas, camera, native orientation, figure placement, scale, silhouette, anatomy, pose, head size, face, clothing, shoes, all limbs, existing mild surface injuries and blood marks, thin grey oval pawn base and all its edges. Do not increase or remove existing injury detail; no new blood. The only visible modification is the two tape strips over the shirt. Do not recompose, rotate, mirror, crop, enlarge or shrink the figure; preserve the existing transparent margins and ground-contact position so unmarked and marked states align.\nPreserve the approved bold dark outlines, broad hand-painted light/shadow facets, upper-left light and selective detail. Keep the original pawn base, but no floor tile, scene, cast ground shadow or additional objects. Genuine alpha-transparent background, no painted checkerboard or solid background. Return only this single complete marked pawn.",
+      "references": [
+        "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/map/isometric/street-thug-lower-tiers-defeated-v1/tier-2.png",
+        "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/corpse-bag-v3/marked.png",
+        "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/street-thugs-v1/tier-1.png"
+      ],
+      "generated": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a1a02a-6110-7552-b880-0e44e0dbb6b4\\exec-36b856de-da15-460a-8122-c96e027750ce.png",
+      "marked": "assets/map/isometric/street-thugs-marked-v1/tier-2-marked.png"
+    },
+    {
+      "id": "tier-3",
+      "name": "老练狠角色",
+      "source": "assets/map/isometric/street-thug-veteran-v1/defeated.png",
+      "dims": "1215 x 1295",
+      "detail": "Side-lying burgundy short-sleeved shirt character with head at the left: place the X on the visible front of the burgundy shirt at the chest. Preserve the bent knee, resting hand, both white hand wraps, beard stubble and all body placement.",
+      "crop": [
+        31,
+        339,
+        1158,
+        702
+      ],
+      "anchor": [
+        610,
+        1041
+      ],
+      "scale": 0.0764627659574468,
+      "prompt": "Use case: precise-object-edit.\nAsset type: ONE transparent marked-state sprite for an existing isometric hand-painted RPG pawn.\nImage 1 is the sole EDIT TARGET: 老练狠角色's existing defeated pawn. Image 2 is ONLY a reference for the brown packing-tape X marker used on the game's marked flour-sack pawn; do not copy the bag, bread, rope or its shape. Image 3 is the approved standing street-thug STYLE reference required by the project; do not copy its standing pose or checkerboard background.\nPrimary request: create the marked version of image 1 by adding ONLY TWO broad matte tan-brown packing-tape strips forming one clearly readable X on the upward-facing CLOTHING of the torso. Side-lying burgundy short-sleeved shirt character with head at the left: place the X on the visible front of the burgundy shirt at the chest. Preserve the bent knee, resting hand, both white hand wraps, beard stubble and all body placement.\nMarker: same warm kraft-brown tape color and clear dark-edged broad strips as image 2, gently torn ends, very sparse wear, adhering to clothing folds and local perspective. The X should occupy most of the visible shirt panel so it remains visible when the entire pawn is only about 90-110 pixels wide. It is a plain recovery marker, not a restraint: no bindings around limbs, no tape across the face or mouth, no wrapping the body, no extra accessories. No text, symbol printed on tape, label or flag.\nStrict invariants: keep image 1's exact 1215 x 1295 canvas, camera, native orientation, figure placement, scale, silhouette, anatomy, pose, head size, face, clothing, shoes, all limbs, existing mild surface injuries and blood marks, thin grey oval pawn base and all its edges. Do not increase or remove existing injury detail; no new blood. The only visible modification is the two tape strips over the shirt. Do not recompose, rotate, mirror, crop, enlarge or shrink the figure; preserve the existing transparent margins and ground-contact position so unmarked and marked states align.\nPreserve the approved bold dark outlines, broad hand-painted light/shadow facets, upper-left light and selective detail. Keep the original pawn base, but no floor tile, scene, cast ground shadow or additional objects. Genuine alpha-transparent background, no painted checkerboard or solid background. Return only this single complete marked pawn.",
+      "references": [
+        "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/map/isometric/street-thug-veteran-v1/defeated.png",
+        "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/corpse-bag-v3/marked.png",
+        "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/street-thugs-v1/tier-1.png"
+      ],
+      "generated": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a1a02a-6110-7552-b880-0e44e0dbb6b4\\exec-b78cf7c5-3588-4825-95c9-7e3b2f3063c2.png",
+      "marked": "assets/map/isometric/street-thugs-marked-v1/tier-3-marked.png"
+    },
+    {
+      "id": "boss",
+      "name": "地头头目",
+      "source": "assets/map/isometric/street-thug-boss-defeated-v3/defeated.png",
+      "dims": "1536 x 1024",
+      "detail": "Prone green-shirt boss with head at the left and back facing upward: place the X across the exposed green BACK of the shirt, following its fabric volume. Preserve grey temples, single black wristband, both arms, all legs and shoes, head and face position.",
+      "crop": [
+        41,
+        204,
+        1487,
+        639
+      ],
+      "anchor": [
+        780,
+        839
+      ],
+      "scale": 0.06433566433566433,
+      "prompt": "Use case: precise-object-edit.\nAsset type: ONE transparent marked-state sprite for an existing isometric hand-painted RPG pawn.\nImage 1 is the sole EDIT TARGET: 地头头目's existing defeated pawn. Image 2 is ONLY a reference for the brown packing-tape X marker used on the game's marked flour-sack pawn; do not copy the bag, bread, rope or its shape. Image 3 is the approved standing street-thug STYLE reference required by the project; do not copy its standing pose or checkerboard background.\nPrimary request: create the marked version of image 1 by adding ONLY TWO broad matte tan-brown packing-tape strips forming one clearly readable X on the upward-facing CLOTHING of the torso. Prone green-shirt boss with head at the left and back facing upward: place the X across the exposed green BACK of the shirt, following its fabric volume. Preserve grey temples, single black wristband, both arms, all legs and shoes, head and face position.\nMarker: same warm kraft-brown tape color and clear dark-edged broad strips as image 2, gently torn ends, very sparse wear, adhering to clothing folds and local perspective. The X should occupy most of the visible shirt panel so it remains visible when the entire pawn is only about 90-110 pixels wide. It is a plain recovery marker, not a restraint: no bindings around limbs, no tape across the face or mouth, no wrapping the body, no extra accessories. No text, symbol printed on tape, label or flag.\nStrict invariants: keep image 1's exact 1536 x 1024 canvas, camera, native orientation, figure placement, scale, silhouette, anatomy, pose, head size, face, clothing, shoes, all limbs, existing mild surface injuries and blood marks, thin grey oval pawn base and all its edges. Do not increase or remove existing injury detail; no new blood. The only visible modification is the two tape strips over the shirt. Do not recompose, rotate, mirror, crop, enlarge or shrink the figure; preserve the existing transparent margins and ground-contact position so unmarked and marked states align.\nPreserve the approved bold dark outlines, broad hand-painted light/shadow facets, upper-left light and selective detail. Keep the original pawn base, but no floor tile, scene, cast ground shadow or additional objects. Genuine alpha-transparent background, no painted checkerboard or solid background. Return only this single complete marked pawn.",
+      "references": [
+        "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/map/isometric/street-thug-boss-defeated-v3/defeated.png",
+        "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/corpse-bag-v3/marked.png",
+        "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/street-thugs-v1/tier-1.png"
+      ],
+      "generated": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a1a02a-6110-7552-b880-0e44e0dbb6b4\\exec-aa2e331d-75bd-43a1-bce2-b0fd2ac45e4c.png",
+      "marked": "assets/map/isometric/street-thugs-marked-v1/boss-marked.png"
+    }
+  ]
+}

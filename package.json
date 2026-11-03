@@ -2,6 +2,7 @@
   "name": "sexting-reborn",
   "private": true,
   "scripts": {
+    "test:corpse-art": "node tools/test-dungeon-corpse-art.mjs && node --test tools/test-corpse-gore-switch.mjs",
     "build:combat-ui": "vite build --config ui/vite.combat.config.mjs",
     "check:combat-ui": "svelte-check --workspace ui --tsconfig ./tsconfig.combat.json",
     "test:combat-ui": "node --test tools/test-combat-loadout.mjs",

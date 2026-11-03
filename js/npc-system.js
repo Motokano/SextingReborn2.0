@@ -44,7 +44,10 @@
 
     function safeJsonParse(raw, fallback) { try { return JSON.parse(raw); } catch (e) { return fallback; } }
     function getFlags() { return safeJsonParse(localStorage.getItem(LS_FLAGS) || '{}', {}); }
-    function setFlag(k, v) { var f = getFlags(); f[String(k)] = v; localStorage.setItem(LS_FLAGS, JSON.stringify(f)); }
+    function setFlag(k, v) {
+        var f = getFlags(); f[String(k)] = v; localStorage.setItem(LS_FLAGS, JSON.stringify(f));
+        if (global.DungeonCorpseArt && String(k) === global.DungeonCorpseArt.GORE_FLAG) global.DungeonCorpseArt.refresh();
+    }
     function getTriggered() { return safeJsonParse(localStorage.getItem(LS_TRIGGERED) || '[]', []); }
     function markTriggered(entryId) {
         var arr = getTriggered();
@@ -1412,6 +1415,7 @@
             try {
                 localStorage.setItem(LS_TRIGGERED, JSON.stringify(nextTriggered));
             } catch (e3) { /* ignore */ }
+            if (global.DungeonCorpseArt) global.DungeonCorpseArt.refresh();
         },
         /** 读取 demo flags（与 setFlag / 存档 setDemoState 同源），供场景门闸等查询；缺键返回 undefined。 */
         getFlagValue: function (key) {

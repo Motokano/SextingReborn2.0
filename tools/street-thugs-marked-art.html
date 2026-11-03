@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<base href="../"><title>倒地棋子 · 标记状态</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#17231d;color:#ece6d6;font:14px/1.6 'Microsoft YaHei',sans-serif}main{max-width:1160px;margin:auto;padding:22px}h1{font-size:24px;margin:0 0 14px}nav{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:16px}button,a{font:inherit;color:#e9dcb9}button{background:#304636;border:1px solid #65795d;border-radius:5px;padding:6px 13px;cursor:pointer}button[aria-pressed=true]{border-color:#d1b978;background:#45573c}#gallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.card{background:#23352b;border:1px solid #4e624d;border-radius:7px;overflow:hidden}h2{font-size:16px;margin:10px 16px 0}.art-scroll{overflow-x:auto}canvas{display:block;width:544px;height:220px;margin:auto}.links{display:flex;justify-content:center;gap:22px;margin:0 10px 12px}.note{color:#afbcaa;font-size:12px;margin:14px 0}#status:empty{display:none}#status{color:#e0bd79}body[data-mode=board] canvas{height:320px}@media(max-width:850px){#gallery{grid-template-columns:1fr}main{padding:12px}}
+</style>
+<main><h1>倒地棋子 · 标记状态</h1>
+<nav><button id="detail" aria-pressed="true">原图对照</button><button id="board" aria-pressed="false">144px棋格 · 人物125%</button><button id="marker" aria-pressed="true">标记：开</button><button id="gore" aria-pressed="false" hidden>血腥开关：关</button></nav>
+<p id="status" role="status">载入中…</p><div id="gallery"></div>
+<p class="note">候选美术 · <a href="assets/map/isometric/street-thugs-marked-v1/README.md">素材与提示词</a></p></main>
+<script src="js/core/map-projection.js"></script><script src="js/core/tile-renderer-v2.js"></script><script src="js/dungeon/corpse-art.js"></script><script type="module" src="tools/street-thugs-marked-art.mjs"></script>
+</html>
