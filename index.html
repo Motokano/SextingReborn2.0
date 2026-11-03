@@ -1621,6 +1621,12 @@
         #modal-pharmacy-station .pharmacy-compound-bar .kv { margin: 8px 0; font-size: 13px; line-height: 1.6; }
         #modal-pharmacy-station .pharmacy-compound-bar .bad { color: #fca5a5; }
         #modal-pharmacy-station #pharmacy-preview { margin-top: 18px; }
+        #modal-pharmacy-station .pharmacy-result { margin-top: 22px; padding: 16px; border: 1px solid #6e7654; border-radius: 8px; background: #30382b; }
+        #modal-pharmacy-station .pharmacy-result[data-success="false"] { border-color: #8c7251; background: #383127; }
+        #modal-pharmacy-station .pharmacy-result h3 { margin-bottom: 12px; color: #e3d9bc; }
+        #modal-pharmacy-station .pharmacy-result-row { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 14px; margin-top: 8px; line-height: 1.6; }
+        #modal-pharmacy-station .pharmacy-result-row strong { color: #f0e7d0; font-size: 15px; }
+        #modal-pharmacy-station .pharmacy-result-row span { color: #bcb3a4; font-size: 12px; }
         #modal-pharmacy-station .pharmacy-footer { flex-shrink: 0; display: flex; align-items: center; gap: 20px; padding: 14px 18px; border-top: 1px solid #4d4d45; background: #211d18; }
         #modal-pharmacy-station .pharmacy-footer-info { flex: 1; min-width: 0; }
         #modal-pharmacy-station .pharmacy-footer > .btn-start { flex: 0 0 160px; }
@@ -1629,11 +1635,6 @@
         #modal-pharmacy-station #pharmacy-action-status:empty { display: none; }
         #modal-pharmacy-station .cs-kv { gap: 6px 18px; }
         #modal-pharmacy-station .cs-kv .kv { background: none; border: none; padding: 0; }
-        #modal-pharmacy-station .pharmacy-tools { display: flex; justify-content: flex-end; gap: 20px; padding: 10px 18px; background: #1a1512; }
-        #modal-pharmacy-station summary { cursor: pointer; color: #bcb3a4; font-size: 13px; }
-        #modal-pharmacy-station .pharmacy-tool-content { position: absolute; z-index: 5; right: 18px; top: 104px; width: min(420px, calc(100% - 64px)); max-height: min(480px, 60vh); overflow: auto; padding: 16px; border: 1px solid #74634d; border-radius: 8px; background: #252520; box-shadow: 0 12px 35px #0009; line-height: 1.7; }
-        #modal-pharmacy-station .pharmacy-tool-content .cs-subtitle { margin-top: 16px; }
-        #modal-pharmacy-station #pharmacy-fix-equipment { margin-top: 6px; }
         @media (max-width: 700px) {
             #modal-pharmacy-station .cs-head { padding: 10px; gap: 10px; flex-wrap: wrap; }
             #modal-pharmacy-station #pharmacy-mode-tabs { order: 3; flex-basis: 100%; }
@@ -1644,10 +1645,8 @@
             #modal-pharmacy-station .pharmacy-workspace .content { overflow: visible; }
             #modal-pharmacy-station .pharmacy-footer { gap: 10px; padding: 12px; }
             #modal-pharmacy-station .pharmacy-footer > .btn-start { flex-basis: 110px; }
-            #modal-pharmacy-station .pharmacy-tool-content { top: 145px; }
         }
 
-        #modal-pharmacy-station #pharmacy-help-text { font-size: 13px; line-height: 1.65; color: #8e8e8e; }
         #modal-pharmacy-station .cs-empty-hint { color: #8e8e8e; font-size: 13px; }
         /* 堆肥/沤肥统一设施面板 */
         #modal-compost-station {
@@ -4047,27 +4046,6 @@
                     <div id="pharmacy-mode-tabs" class="pharmacy-tabs" aria-label="制药模式"></div>
                     <button type="button" class="cs-close" id="pharmacy-station-close" data-ui="pharmacy.modal.close"></button>
                 </div>
-                <div class="pharmacy-tools">
-                    <details id="pharmacy-equipment">
-                        <summary data-ui="pharmacy.equipment"></summary>
-                        <div class="pharmacy-tool-content">
-                            <div id="pharmacy-equipment-status"></div>
-                            <div class="cs-subtitle" data-ui="pharmacy.section.accessory"></div>
-                            <div id="pharmacy-accessory-list"></div>
-                            <div class="cs-add-row accessory">
-                                <select id="pharmacy-add-accessory" aria-label="可安装配件"></select>
-                                <button type="button" class="btn-mini" id="pharmacy-add-accessory-btn" data-ui="pharmacy.btn.install_accessory"></button>
-                            </div>
-                            <div class="cs-subtitle" data-ui="pharmacy.section.fuel_sources"></div>
-                            <div id="pharmacy-fuel-source-list" class="cs-ingredient-list"></div>
-                            <button type="button" class="btn-mini" id="pharmacy-modal-add-fuel-btn" data-ui="pharmacy.btn.fuel"></button>
-                        </div>
-                    </details>
-                    <details id="pharmacy-help">
-                        <summary data-ui="pharmacy.section.help"></summary>
-                        <div class="pharmacy-tool-content" id="pharmacy-help-text"></div>
-                    </details>
-                </div>
                 <div class="cs-body">
                     <section class="cs-box pharmacy-library">
                         <div class="pharmacy-tabs pharmacy-library-tabs">
@@ -4084,26 +4062,52 @@
                     </section>
                     <section class="cs-box pharmacy-workspace">
                         <div class="content">
+                            <section id="pharmacy-equipment-section">
+                                <div class="pharmacy-equipment-bar">
+                                    <svg class="pharmacy-equipment-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M14.5 6.5a5 5 0 0 0-6.4 6.4L3.5 17.5a2.1 2.1 0 0 0 3 3l4.6-4.6a5 5 0 0 0 6.4-6.4l-3.3 3.3-3-3z"/></svg>
+                                    <div class="pharmacy-equipment-copy">
+                                        <span class="pharmacy-equipment-label" data-ui="pharmacy.equipment"></span>
+                                        <div id="pharmacy-equipment-status" role="status"></div>
+                                    </div>
+                                    <button type="button" id="pharmacy-equipment-toggle" aria-expanded="false" aria-controls="pharmacy-equipment"></button>
+                                </div>
+                                <div id="pharmacy-equipment" hidden>
+                                    <div id="pharmacy-installed-section">
+                                        <h4 data-ui="pharmacy.equipment.installed"></h4>
+                                        <div id="pharmacy-accessory-list"></div>
+                                    </div>
+                                    <h4 data-ui="pharmacy.equipment.available"></h4>
+                                    <div id="pharmacy-available-accessories"></div>
+                                </div>
+                            </section>
                             <section id="pharmacy-method-section">
                                 <h3 data-ui="pharmacy.section.method"></h3>
                                 <div id="pharmacy-method-list" class="cs-method-list"></div>
                             </section>
+                            <section id="pharmacy-input-section">
                             <div class="pharmacy-input-heading">
                                 <h3 data-ui="pharmacy.section.inputs"></h3>
                                 <button type="button" class="btn-clear" id="pharmacy-clear-btn" data-ui="pharmacy.btn.clear"></button>
                             </div>
                             <div id="pharmacy-input-list"></div>
+                            </section>
                             <div id="pharmacy-compound-bar" class="pharmacy-compound-bar"></div>
                             <div id="pharmacy-preview" class="cs-kv"></div>
+                            <section id="pharmacy-result" class="pharmacy-result" role="status" aria-live="polite" hidden></section>
                         </div>
                     </section>
                 </div>
                 <div class="pharmacy-footer">
                     <div class="pharmacy-footer-info">
-                        <div id="pharmacy-status-kv" class="cs-kv"></div>
+                        <div class="pharmacy-footer-metrics">
+                            <div id="pharmacy-stamina" class="metric">
+                                <div class="row metric-caption"><span class="label" data-ui="status.label.stamina"></span><b id="pharmacy-stamina-text" class="value">—</b></div>
+                                <div id="pharmacy-stamina-meter" class="track" style="--tone:#9daf91" role="progressbar" aria-label="体力" aria-valuemin="0"><i id="pharmacy-stamina-bar"></i></div>
+                            </div>
+                            <div id="pharmacy-status-kv" class="cs-kv"></div>
+                        </div>
                         <div id="pharmacy-active-craft" aria-live="polite"></div>
                         <div id="pharmacy-action-status" role="status"></div>
-                        <button type="button" id="pharmacy-fix-equipment" class="btn-mini" hidden></button>
                     </div>
                     <button type="button" class="btn-start" id="pharmacy-start-btn"></button>
                 </div>
@@ -4561,6 +4565,7 @@
     <script src="js/bathroom-facility.js"></script>
     <script src="js/sewing-station-panel.js"></script>
     <script src="js/pharmacy-station-panel.js"></script>
+    <link rel="stylesheet" href="css/pharmacy-station.css">
     <link rel="stylesheet" href="css/forging-station.css">
     <link rel="stylesheet" href="css/forging-symbols.css">
     <script src="js/forging-config.js"></script>

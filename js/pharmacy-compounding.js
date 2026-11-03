@@ -18,6 +18,13 @@
     var DEFAULT_POTENCY_THRESHOLDS = [33, 66];
     var DEFAULT_OFFSET_CAP = 0.9;
     var DEFAULT_SYNERGY_BONUS = 0.2;
+    // One saved story flag controls discovery; missing flags (including old saves) stay closed.
+    var UNLOCK_FLAG = 'pharmacy_injection_unlocked';
+
+    function isUnlocked() {
+        var npc = global.NPCSystem;
+        return !!(npc && typeof npc.isDemoFlagTrue === 'function' && npc.isDemoFlagTrue(UNLOCK_FLAG));
+    }
 
     /** 配药台可投料的成分 sub_category。 */
     var COMPONENT_SUB_CATEGORIES = ['pharm_powder', 'solvent', 'pharm_adjuvant'];
@@ -398,6 +405,7 @@
 
     /** 只有无相冲、助溶充分且有实际药效的组合才能产出动态注射液实例。 */
     function buildInstance(inputs, options) {
+        if (!isUnlocked()) return { ok: false, reason: 'injection_locked' };
         var res = resolve(inputs);
         if (!res.ok) return res;
         if (res.precipitated || res.conflicts.length) return { ok: false, reason: 'incompatible_compound', resolved: res };
@@ -431,6 +439,7 @@
      * 返回 { ok, buff_ids, applied_buffs, toxicity_added, conflict_buffs, addiction_components, resolved }
      */
     function applyInjection(instance, options) {
+        if (!isUnlocked()) return { ok: false, reason: 'injection_locked' };
         var res = resolveInstance(instance);
         if (!res.ok) return res;
         if (res.precipitated || res.conflicts.length) return { ok: false, reason: 'incompatible_compound', resolved: res };
@@ -528,6 +537,8 @@
     }
 
     var api = {
+        UNLOCK_FLAG: UNLOCK_FLAG,
+        isUnlocked: isUnlocked,
         setConfig: setConfig,
         getConfig: getConfig,
         classifyTemplate: classifyTemplate,

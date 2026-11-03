@@ -209,6 +209,43 @@
         return 0;
     }
 
+    function getEquipmentBreakChance() {
+        var base = Number(getSystemConfigValue('pharmacy_equipment_break_chance', 0.20));
+        var reduction = Number(getSystemConfigValue('pharmacy_equipment_break_reduction_per_level', 0.0015));
+        return Math.max(0, Math.min(1, base - getPharmacySkillLevel() * reduction));
+    }
+
+    function getMethodAccessoryId(methodId) {
+        var method = getMethods()[String(methodId || '')];
+        return method && method.requires_accessory_item_id ? String(method.requires_accessory_item_id).trim() : '';
+    }
+
+    // Roll once when work starts; saving an unfinished batch preserves this decision.
+    function prepareEquipmentWear(methodId) {
+        var id = getMethodAccessoryId(methodId);
+        if (!id || getState().installed_accessory_item_ids.indexOf(id) < 0) return null;
+        var chance = getEquipmentBreakChance();
+        return { item_id: id, chance: chance, broken: Math.random() < chance };
+    }
+
+    function isAccessoryInUse(itemId) {
+        var craft = getState().active_craft;
+        return !!craft && getMethodAccessoryId(craft.method_id) === String(itemId);
+    }
+
+    function settleEquipmentWear(craft) {
+        // Older unfinished batches have no saved roll; decide once before settling them.
+        if (craft.equipment_wear === undefined) craft.equipment_wear = prepareEquipmentWear(craft.method_id);
+        var wear = craft.equipment_wear;
+        if (!wear || !wear.broken || wear.item_id !== getMethodAccessoryId(craft.method_id)) return '';
+        var installed = getState().installed_accessory_item_ids;
+        var index = installed.indexOf(wear.item_id);
+        if (index < 0) return '';
+        installed.splice(index, 1);
+        showMsg(ui('pharmacy.result.equipment_broken', { item: StationCraftCore.getItemDisplayNameSafe(wear.item_id) }), 'warn');
+        return wear.item_id;
+    }
+
     function getPharmacySuccessRate(baseSuccessRate, recommendedLevel) {
         var level = Math.max(0, Math.min(skillCurve.max_level, getPharmacySkillLevel()));
         if (level >= skillCurve.max_level) return 1;
@@ -236,7 +273,7 @@
             current_skill_level: getPharmacySkillLevel(),
             success_rate: getPharmacySuccessRate(base, recommended),
             cost: {
-                fuel: StationCraftCore.readMethodCostValue(costSource, 'fuel', 'fuel_cost'),
+                fuel: 0,
                 ticks: StationCraftCore.readMethodCostValue(costSource, 'ticks', 'craft_ticks'),
                 stamina: StationCraftCore.readMethodCostValue(costSource, 'stamina', 'stamina_cost')
             }
@@ -337,6 +374,33 @@
         if (cs) cs.active_craft = null;
     }
 
+    // Session receipt: built from delivered items, never from the recipe preview.
+    function clearLastCraftResult() { getState().last_result = null; }
+    function getLastCraftResult() { return getState().last_result || null; }
+    function recordCraftResult(success, outputs, mode, brokenEquipmentId) {
+        var rows = [];
+        (outputs || []).forEach(function (output) {
+            if (!output || !output.item_id || !(output.count > 0)) return;
+            var row = rows.find(function (r) { return r.item_id === output.item_id && r.destination === output.destination; });
+            if (row) row.count += output.count;
+            else rows.push({ item_id: output.item_id, count: output.count, destination: output.destination });
+        });
+        getState().last_result = { success: !!success, outputs: rows, mode: mode || 'craft', broken_equipment_id: brokenEquipmentId || '' };
+        refreshPharmacyPanel();
+    }
+
+    function deliverCraftOutput(instance) {
+        var itemId = instance.item_id;
+        var count = Math.max(1, parseInt(instance.count, 10) || 1);
+        var placed = IE.putItemIntoDefaultContainer(instance);
+        if (placed && placed.placed) return { item_id: itemId, count: count, destination: 'inventory' };
+        var at = E.getState();
+        if (typeof IE.addItemToGround === 'function' && IE.addItemToGround(at.mapId, at.x, at.y, instance)) {
+            return { item_id: itemId, count: count, destination: 'ground' };
+        }
+        return null;
+    }
+
     /** 成品继承本批易腐投入中最低剩余新鲜度比例；非易腐投入不参与。 */
     function inheritSpoilageOnOutput(outputInstance, consumedItems) {
         var out = outputInstance && typeof outputInstance === 'object' ? outputInstance : null;
@@ -364,10 +428,12 @@
         return out;
     }
 
-    /** 制药制作结算（原 scene-app finalizePharmacyCraftNow 迁出；行为零变）。 */
+    /** 制药完成后结算产物与本次所用设备；已经结算的批次不能再次提交。 */
     function finalizeCraftNow(craftSnap, options) {
         var opts = options && typeof options === 'object' ? options : {};
-        var craft = craftSnap && typeof craftSnap === 'object' ? craftSnap : getActiveCraft();
+        var craft = getState().active_craft;
+        if (!craft || !craft.method_id || (craftSnap && craftSnap !== craft)) return;
+        if (craft.equipment_wear === undefined) craft.equipment_wear = prepareEquipmentWear(craft.method_id);
         clearActiveCraft();
         stopCraftIdle();
 
@@ -378,19 +444,21 @@
         var forceFailure = !!opts.force_failure;
         var selected = StationCraftCore.normalizePharmacyInputs(craft.inputs || []);
         var matched = StationCraftCore.matchPharmacyRecipesByInputs(selected, mid);
+        var delivered = [];
 
         function grantItemOrDrop(itemId) {
             var outInst = inheritSpoilageOnOutput({ item_id: itemId, count: 1 }, evalRes && evalRes.success ? craft.consumed_items : []);
-            var placed = IE.putItemIntoDefaultContainer(outInst);
-            if (!placed || !placed.placed) {
-                var st0 = E.getState();
-                if (typeof IE.addItemToGround === 'function') IE.addItemToGround(st0.mapId, st0.x, st0.y, outInst);
-            }
+            delivered.push(deliverCraftOutput(outInst));
+        }
+
+        function finishResult(success) {
+            recordCraftResult(success, delivered, 'craft', settleEquipmentWear(craft));
         }
 
         if (forceFailure) {
             addPharmacySuccessProficiency(0.25);
             grantItemOrDrop(failId);
+            finishResult(false);
             showMsg(ui('pharmacy.msg.done_fail', { item: failId }), 'warn');
             SceneHud.refresh('backpack');
             SceneHud.refresh('status');
@@ -428,6 +496,7 @@
             if (!matched.length) {
                 addPharmacySuccessProficiency(0.25);
                 grantItemOrDrop(failId);
+                finishResult(false);
                 showMsg(ui('pharmacy.msg.no_recipe_fail', { item: failId }), 'warn');
                 SceneHud.refresh('backpack');
                 SceneHud.refresh('status');
@@ -438,6 +507,7 @@
             if (!pick) {
                 addPharmacySuccessProficiency(0.25);
                 grantItemOrDrop(failId);
+                finishResult(false);
                 showMsg(ui('pharmacy.msg.done_fail', { item: failId }), 'warn');
                 SceneHud.refresh('backpack');
                 SceneHud.refresh('status');
@@ -492,10 +562,11 @@
                 for (bk = 0; bk < bcnt; bk++) grantItemOrDrop(bid);
             }
         }
+        finishResult(evalRes.success);
         showMsg(
             evalRes.success
-                ? ui('pharmacy.msg.done_ok', { item: outputItemId, method: mid })
-                : ui('pharmacy.msg.done_fail', { item: failId }),
+                ? ui('pharmacy.msg.done_ok', { item: StationCraftCore.getItemDisplayNameSafe(outputItemId), method: getPharmacyMethodDisplayName(mid, m) })
+                : ui('pharmacy.msg.done_fail', { item: StationCraftCore.getItemDisplayNameSafe(outputItemId) }),
             evalRes.success ? 'success' : 'warn'
         );
         SceneHud.refresh('backpack');
@@ -588,6 +659,7 @@
     function uninstallPharmacyAccessoryToInventory(itemId) {
         var id = itemId != null ? String(itemId).trim() : '';
         if (!id) return { ok: false, reason: 'bad_item' };
+        if (isAccessoryInUse(id)) return { ok: false, reason: 'accessory_in_use', item_id: id };
         var cs = getState();
         var src = Array.isArray(cs.installed_accessory_item_ids) ? cs.installed_accessory_item_ids : [];
         var out = [];
@@ -662,6 +734,9 @@
         getSystemConfigValue: getSystemConfigValue,
         getSkillCurve: getSkillCurve,
         getPharmacySkillLevel: getPharmacySkillLevel,
+        getEquipmentBreakChance: getEquipmentBreakChance,
+        prepareEquipmentWear: prepareEquipmentWear,
+        isAccessoryInUse: isAccessoryInUse,
         getPharmacySuccessRate: getPharmacySuccessRate,
         getCraftPreview: getCraftPreview,
         getPharmacyLevelBySuccessUses: getPharmacyLevelBySuccessUses,
@@ -678,6 +753,10 @@
         getPharmacyMethodDisplayName: getPharmacyMethodDisplayName,
         getActiveCraft: getActiveCraft,
         clearActiveCraft: clearActiveCraft,
+        clearLastCraftResult: clearLastCraftResult,
+        getLastCraftResult: getLastCraftResult,
+        recordCraftResult: recordCraftResult,
+        deliverCraftOutput: deliverCraftOutput,
         inheritSpoilageOnOutput: inheritSpoilageOnOutput,
         finalizeCraftNow: finalizeCraftNow,
         tickCraftAfterWorldTick: tickCraftAfterWorldTick,

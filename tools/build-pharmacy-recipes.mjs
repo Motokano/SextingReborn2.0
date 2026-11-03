@@ -61,7 +61,7 @@ let replaced = 0;
     failure_output: null,
     allowed_station_tags: null,
     match_weight: r.match_weight != null ? r.match_weight : 1,
-    cost_override: r.cost_override && typeof r.cost_override === 'object' ? { ...r.cost_override } : null,
+    cost_override: r.cost_override && typeof r.cost_override === 'object' ? { ...r.cost_override, fuel: 0 } : null,
     pharmacy_generated: true
   };
   if (recipes[rid]) replaced++;

@@ -268,11 +268,18 @@
 
     function collectRows(tpl, inst, character, buffLookup) {
         var byBlock = {};
+        var pc = global.PharmacyCompounding;
+        var injectionUnlocked = !!(pc && typeof pc.isUnlocked === 'function' && pc.isUnlocked());
+        var injectionFields = ['components', 'pharmacy_compound', 'concentration_cost', 'concentration_capacity',
+            'adjuvant_strength', 'pharm_effect', 'pharm_toxicity', 'pharm_family', 'chem_class'];
         var fk;
         for (fk in fields) {
             if (!fields.hasOwnProperty(fk)) continue;
             var baseRule = fields[fk];
             if (!baseRule || typeof baseRule !== 'object') continue;
+            // Both tooltip renderers share this filter: no locked hints that reveal the system.
+            if (!injectionUnlocked && (injectionFields.indexOf(fk) >= 0 ||
+                (tpl && tpl.use_action === 'inject' && /^pharmacy/.test(baseRule.primary_block || '')))) continue;
             var rule = Object.assign({}, baseRule, { _fieldKey: fk });
             if (!isFieldVisible(rule, character)) continue;
             // 模块化统一读数：小属性缺失即不存在；实例状态（含 0）优先于模板初始化配置。

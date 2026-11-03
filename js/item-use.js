@@ -30,6 +30,7 @@
 
     function itemTemplateIsConsumable(tpl) {
         if (!tpl) return false;
+        if (getUseActionRoute(tpl) === 'inject' && !isInjectionUnlocked()) return false;
         if (tpl.food_profile && toBoolFlag(tpl.edible)) return true;
         var edible = toBoolFlag(tpl.edible);
         if (edible && tpl.edible_buff_id && String(tpl.edible_buff_id).trim()) return true;
@@ -50,6 +51,11 @@
     // 给药途径（47 §3.2/§5）：use_action 四途径分流
     // ---------------------------
     var USE_ACTION_IDS = ['drink', 'topical', 'inhale', 'inject'];
+
+    function isInjectionUnlocked() {
+        var pc = global.PharmacyCompounding;
+        return !!(pc && typeof pc.isUnlocked === 'function' && pc.isUnlocked());
+    }
     /** 七部位（09；与 scene-app BODY_PART_IDS 同源）。 */
     var BODY_PART_IDS = ['head', 'chest', 'belly', 'lhand', 'rhand', 'lfoot', 'rfoot'];
 
@@ -202,6 +208,7 @@
         var options = opts && typeof opts === 'object' ? opts : {};
         var rid = route != null ? String(route).trim().toLowerCase() : '';
         if (!rid) return failUse('no_route');
+        if (rid === 'inject' && !isInjectionUnlocked()) return failUse('injection_locked');
         if (!isUseRouteAllowed(rid)) return failUse('route_not_allowed', rid);
 
         var partId = '';

@@ -2902,7 +2902,7 @@
         if (!PharmacyStation.getActiveCraft()) return;
         pharmacyCraftIdleTimer = setInterval(function () {
             if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
-        }, getIdleTickMs());
+        }, 1000);
     }
 
     function stopPharmacyCraftIdle() {
@@ -2956,12 +2956,8 @@
         var routePreview = PharmacyStation.tryResolvePharmacyByUnifiedRoute(mid, selected);
         var previewData = routePreview && routePreview.ok ? routePreview.data : null;
         var costSource = previewData && previewData.cost_override ? { cost: previewData.cost_override } : m;
-        var needFuel = StationCraftCore.readMethodCostValue(costSource, 'fuel', 'fuel_cost');
         var needTicks = StationCraftCore.readMethodCostValue(costSource, 'ticks', 'craft_ticks');
         var needStamina = StationCraftCore.readMethodCostValue(costSource, 'stamina', 'stamina_cost');
-        var cs = PharmacyStation.getState();
-        var curFuel = parseInt(cs.fuel_points, 10) || 0;
-        if (curFuel < needFuel) return { ok: false, reason: 'insufficient_fuel', need: needFuel, current: curFuel };
         var survState = window.Survival && typeof window.Survival.getState === 'function' ? window.Survival.getState() : null;
         var curStamina = survState ? Number(survState.stamina || 0) : 0;
         if (curStamina < (window.Survival.getActionStaminaCost ? window.Survival.getActionStaminaCost(needStamina) : needStamina)) return { ok: false, reason: 'insufficient_stamina', need: needStamina, current: curStamina };
@@ -2975,7 +2971,6 @@
             return { ok: false, reason: 'consume_inputs_failed' };
         }
 
-        cs.fuel_points = curFuel - needFuel;
         if (window.Survival && typeof window.Survival.consumeStamina === 'function' && needStamina > 0) {
             window.Survival.consumeStamina(needStamina);
         }
@@ -2988,6 +2983,7 @@
             method_id: mid,
             inputs: selected,
             consumed_items: consumedRes.consumed || [],
+            equipment_wear: PharmacyStation.prepareEquipmentWear(mid),
             recommended_skill_level: previewData ? Math.max(0, parseInt(previewData.recommended_skill_level, 10) || 0) : 0,
             station_ref: {
                 station_type: stationCtx.station_type || 'main',
@@ -2996,6 +2992,7 @@
                 y: stationCtx.y
             }
         };
+        PharmacyStation.clearLastCraftResult();
         stopGatheringIdle();
         patchSurvivalTickForPharmacyCraftOnce();
         startPharmacyCraftIdleIfNeeded();
@@ -3008,12 +3005,15 @@
             started: true,
             method_id: mid,
             remaining_ticks: Math.max(1, needTicks),
-            consumed: { fuel: needFuel, ticks: needTicks, stamina: needStamina }
+            consumed: { fuel: 0, ticks: needTicks, stamina: needStamina }
         };
     }
 
     /** 制药台配药模式：无效输入不开工；配伍失败消耗后产药渣；合法组合产动态注射液。 */
     function tryCompoundAtStation(inputItems) {
+        if (!window.PharmacyCompounding || !window.PharmacyCompounding.isUnlocked()) {
+            return { ok: false, reason: 'injection_locked' };
+        }
         if (guardPlayerActionBlocked(ACTION_TYPES.CRAFT)) {
             return { ok: false, reason: 'action_disabled', action_type: ACTION_TYPES.CRAFT };
         }
@@ -3057,12 +3057,8 @@
         var compoundFailed = resolvedPreview.precipitated === true || (resolvedPreview.conflicts || []).length > 0;
         if (compoundFailed) {
             var residue = { item_id: PharmacyStation.getFailureItemId(), count: 1 };
-            var residuePlaced = IE.putItemIntoDefaultContainer(residue);
-            if (!residuePlaced || !residuePlaced.placed) {
-                var failState = E.getState();
-                if (typeof IE.addItemToGround === 'function') IE.addItemToGround(failState.mapId, failState.x, failState.y, residue);
-            }
-            showMsg(ui('pharmacy.msg.done_fail', { item: residue.item_id }), 'warn');
+            PharmacyStation.recordCraftResult(false, [PharmacyStation.deliverCraftOutput(residue)], 'compound');
+            showMsg(ui('pharmacy.msg.done_fail', { item: StationCraftCore.getItemDisplayNameSafe(residue.item_id) }), 'warn');
             if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
             if (window.SceneRenderer) window.SceneRenderer.render();
             return { ok: false, reason: 'incompatible_compound', consumed: true, failure_item_id: residue.item_id, resolved: resolvedPreview };
@@ -3076,11 +3072,7 @@
         if (typeof PharmacyStation.inheritSpoilageOnOutput === 'function') {
             PharmacyStation.inheritSpoilageOnOutput(built.instance, consumedRes.consumed || []);
         }
-        var placed = IE.putItemIntoDefaultContainer(built.instance);
-        if (!placed || !placed.placed) {
-            var st0 = E.getState();
-            if (typeof IE.addItemToGround === 'function') IE.addItemToGround(st0.mapId, st0.x, st0.y, built.instance);
-        }
+        PharmacyStation.recordCraftResult(true, [PharmacyStation.deliverCraftOutput(built.instance)], 'compound');
         if (typeof PharmacyStation.addPharmacySuccessProficiency === 'function') PharmacyStation.addPharmacySuccessProficiency(1);
         var res = built.resolved || {};
         showMsg(ui('pharmacy.compound.ok', {

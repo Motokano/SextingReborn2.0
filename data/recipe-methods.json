@@ -63,7 +63,7 @@
       "method_id": "life_pharmacy.crushing",
       "recipe_system": "life_pharmacy",
       "cost": {
-        "fuel": 12,
+        "fuel": 0,
         "water": 0,
         "ticks": 1,
         "stamina": 2
@@ -86,7 +86,7 @@
       "method_id": "life_pharmacy.maceration",
       "recipe_system": "life_pharmacy",
       "cost": {
-        "fuel": 10,
+        "fuel": 0,
         "water": 0,
         "ticks": 2,
         "stamina": 2
@@ -109,7 +109,7 @@
       "method_id": "life_pharmacy.distillation",
       "recipe_system": "life_pharmacy",
       "cost": {
-        "fuel": 18,
+        "fuel": 0,
         "water": 0,
         "ticks": 3,
         "stamina": 3
@@ -138,7 +138,7 @@
       "method_id": "life_pharmacy.filtration",
       "recipe_system": "life_pharmacy",
       "cost": {
-        "fuel": 8,
+        "fuel": 0,
         "water": 0,
         "ticks": 2,
         "stamina": 2
@@ -167,7 +167,7 @@
       "method_id": "life_pharmacy.centrifugation",
       "recipe_system": "life_pharmacy",
       "cost": {
-        "fuel": 14,
+        "fuel": 0,
         "water": 0,
         "ticks": 2,
         "stamina": 3
@@ -196,7 +196,7 @@
       "method_id": "life_pharmacy.crystallization",
       "recipe_system": "life_pharmacy",
       "cost": {
-        "fuel": 16,
+        "fuel": 0,
         "water": 0,
         "ticks": 3,
         "stamina": 2
@@ -225,7 +225,7 @@
       "method_id": "life_pharmacy.tableting",
       "recipe_system": "life_pharmacy",
       "cost": {
-        "fuel": 10,
+        "fuel": 0,
         "water": 0,
         "ticks": 1,
         "stamina": 2
@@ -248,7 +248,7 @@
       "method_id": "life_pharmacy.blending",
       "recipe_system": "life_pharmacy",
       "cost": {
-        "fuel": 8,
+        "fuel": 0,
         "water": 0,
         "ticks": 2,
         "stamina": 2
@@ -271,7 +271,7 @@
       "method_id": "life_pharmacy.rolling",
       "recipe_system": "life_pharmacy",
       "cost": {
-        "fuel": 6,
+        "fuel": 0,
         "water": 0,
         "ticks": 1,
         "stamina": 2

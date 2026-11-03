@@ -49,6 +49,7 @@ const messages = [];
 const buffs = new Map();
 
 const sandbox = {
+  NPCSystem: { isDemoFlagTrue: key => key === 'pharmacy_injection_unlocked' },
   console: { log() {}, warn() {}, error() {} },
   setTimeout,
   clearTimeout,
@@ -93,6 +94,7 @@ function run(file) {
 }
 
 run('pharmacy-config.js');
+run('pharmacy-compounding.js');
 run('station-craft-core.js');
 run('pharmacy-station.js');
 run('item-use.js');
@@ -392,6 +394,7 @@ ok('副作用 3 档 / 相冲 2 结局 / 成瘾 3 阶段惩罚模板齐备');
 
 console.log('\n⑧ 生效时间（onsetTicks）运行时行为');
 const buffSandbox = {
+  NPCSystem: { isDemoFlagTrue: key => key === 'pharmacy_injection_unlocked' },
   console: { log() {}, warn() {}, error() {} },
   fetch: async (p) => ({ ok: true, json: async () => loadJson(String(p)) }),
   GameTime: {
@@ -842,7 +845,7 @@ const sceneSrc = readText('js/scene-app.js');
 assert(panelSrc.includes('compound_mode'), '面板含配药模式状态');
 assert(panelSrc.includes('tryCompoundAtStation'), '面板调用配药入口');
 assert(panelSrc.includes('pharmacy-status-kv'), '面板状态区 id 与 index.html 对齐（历史 pharmacy-kv 死引用已修）');
-assert(panelSrc.includes('pharmacy-help-text'), '帮助区 id 与 index.html 对齐');
+assert(!panelSrc.includes('pharmacy-help'), '制药帮助入口及渲染已移除');
 assert(sceneSrc.includes('window.SceneApp.tryCompoundAtStation'), 'scene-app 导出配药入口');
 assert(sceneSrc.includes('PharmacyCompounding.setConfig'), 'scene-app 装载配药规则（含相冲表）');
 const uiText = loadJson('data/ui_text_zhCN.json');
@@ -1271,6 +1274,8 @@ ok('配药台过滤无注射格的药效族（不挂空 buff）');
 console.log('\n㉒ UI 信息显示接线（字段规则 + 信息模块 + tooltip）');
 const uiDict = loadJson('data/ui_text_zhCN.json');
 const uiSandbox = {
+  PharmacyCompounding: sandbox.PharmacyCompounding,
+  NPCSystem: sandbox.NPCSystem,
   console: { log() {}, warn() {}, error() {} },
   UIText: {
     t(key, vars) {

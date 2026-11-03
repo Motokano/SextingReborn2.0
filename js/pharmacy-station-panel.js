@@ -2,11 +2,8 @@
  * PharmacyStationPanel — 制药站面板 DOM（scene-app 组合根化拆解 ②）
  *
  * 来源：自 js/scene-app.js 迁出（pharmacy 面板族：渲染/开合/事件绑定 + UI 态变量）。
- * 语义零变；补全两处 latent 死引用（pharmacyResourceSlotKey/parsePharmacyResourceSlotKey
- * 原为 0 定义的缺失孪生，镜像 cooking 版）。
- *
- * 依赖注入 setUiDeps({ ui, showMsg, render, tryPharmacyAtStation, canAddFuelAtCurrentTile,
- *   onAddFuelClick, isPreCreationGameplayRestricted, showIntroBlockedMsg, guardPlayerComaBlocked })。
+ * 依赖注入 setUiDeps({ ui, showMsg, render, tryPharmacyAtStation, tryCompoundAtStation,
+ *   isPreCreationGameplayRestricted, showIntroBlockedMsg, guardPlayerComaBlocked })。
  * 状态/规则在 PharmacyStation/StationCraftCore/InventoryHelpers/StationContext；本模块只管 DOM。
  */
 (function (global) {
@@ -18,13 +15,14 @@
     var pharmacyStationUiState = {
         method_id: '',
         inputs: [],
-        /** 制药台模态：燃料来源格子 */
-        selected_fuel_slot_key: '',
         /** 47 §9.4 配药模式（k231）：true = 投料走配药结算，不走固定配方行 */
         compound_mode: false
     };
     var libraryView = 'materials';
-    var PHARMACY_FUEL_MAX_POINTS = 100;
+    var equipmentOpen = false;
+    var resolvedWearResult = null;
+    var dismissedCraftResult = null;
+    var staminaUnsubscribe = null;
 
     var uiDeps = {};
     function setUiDeps(deps) {
@@ -51,6 +49,19 @@
     /** 配药模式规则（浓度条等；模块缺失时返回 null）。 */
     function getCompounding() {
         return global.PharmacyCompounding || null;
+    }
+
+    function isInjectionUnlocked() {
+        var pc = getCompounding();
+        return !!(pc && typeof pc.isUnlocked === 'function' && pc.isUnlocked());
+    }
+
+    function resetLockedCompoundMode() {
+        if (!pharmacyStationUiState.compound_mode || isInjectionUnlocked()) return false;
+        pharmacyStationUiState.compound_mode = false;
+        pharmacyStationUiState.inputs = [];
+        libraryView = 'materials';
+        return true;
     }
 
     /**
@@ -80,6 +91,11 @@
 
         var toggleWrap = document.getElementById('pharmacy-mode-tabs') || document.createElement('div');
         toggleWrap.innerHTML = '';
+        var unlocked = isInjectionUnlocked();
+        toggleWrap.hidden = !unlocked;
+        toggleWrap.style.display = unlocked ? '' : 'none';
+        bar.hidden = !unlocked;
+        if (!unlocked) return;
         var mkBtn = function (label, isCompound) {
             var b = document.createElement('button');
             b.type = 'button';
@@ -87,6 +103,7 @@
             b.textContent = label;
             b.setAttribute('aria-pressed', String(!!pharmacyStationUiState.compound_mode === isCompound));
             b.onclick = function () {
+                if (isCompound && !isInjectionUnlocked()) { renderPharmacyStationPanel(); return; }
                 pharmacyStationUiState.compound_mode = isCompound;
                 libraryView = 'materials';
                 renderPharmacyStationPanel();
@@ -154,12 +171,6 @@
         }
 
     }
-    function canAddFuelAtCurrentTile() {
-        return (typeof uiDeps.canAddFuelAtCurrentTile === 'function') ? !!uiDeps.canAddFuelAtCurrentTile() : false;
-    }
-    function onAddFuelClick(opts) {
-        if (typeof uiDeps.onAddFuelClick === 'function') uiDeps.onAddFuelClick(opts);
-    }
     function isPreCreationGameplayRestricted() {
         return (typeof uiDeps.isPreCreationGameplayRestricted === 'function') ? !!uiDeps.isPreCreationGameplayRestricted() : false;
     }
@@ -169,21 +180,6 @@
     function guardPlayerComaBlocked() {
         return (typeof uiDeps.guardPlayerComaBlocked === 'function') ? !!uiDeps.guardPlayerComaBlocked() : false;
     }
-    /** 补全原缺失孪生：容器格键（镜像 cookingResourceSlotKey）。 */
-    function pharmacyResourceSlotKey(containerType, index) {
-        return String(containerType || '') + '|' + String(Math.floor(Number(index)));
-    }
-    /** 补全原缺失孪生：容器格键解析（镜像 parseCookingResourceSlotKey）。 */
-    function parsePharmacyResourceSlotKey(key) {
-        if (key == null || typeof key !== 'string') return null;
-        var p = key.indexOf('|');
-        if (p <= 0) return null;
-        var ct = key.slice(0, p);
-        var idx = parseInt(key.slice(p + 1), 10);
-        if (!isFinite(idx) || idx < 0) return null;
-        return { containerType: ct, index: idx };
-    }
-
     function getPharmacyIngredientOptionsFromInventory() {
         if (!IE) return [];
         var seen = {};
@@ -222,6 +218,15 @@
 
     function setPharmacyInputs(list) {
         pharmacyStationUiState.inputs = StationCraftCore.normalizePharmacyInputs(list || []);
+    }
+
+    function changePharmacyInputCount(itemId, value) {
+        var have = global.InventoryHelpers.getInventoryCountByItemId(itemId);
+        var count = Math.max(1, Math.min(Math.max(1, have), Math.floor(Number(value) || 1)));
+        var inputs = StationCraftCore.normalizePharmacyInputs(pharmacyStationUiState.inputs || []);
+        inputs.forEach(function (entry) { if (entry.item_id === itemId) entry.count = count; });
+        setPharmacyInputs(inputs);
+        renderPharmacyStationPanel();
     }
 
     function getStagedPharmacyCountForItem(itemId) {
@@ -317,103 +322,153 @@
         }
     }
 
-    function uiPharmacyInventoryContainerLabel(containerType) {
-        var t = String(containerType || '');
-        if (t === 'pocket') return ui('pharmacy.station_resource.container.pocket');
-        if (t === 'vest') return ui('pharmacy.station_resource.container.vest');
-        if (t === 'backpack') return ui('pharmacy.station_resource.container.backpack');
-        return t || '—';
+    function accessoryMethodsLabel(itemId) {
+        var methods = PharmacyStation.getMethods();
+        return Object.keys(methods).filter(function (id) {
+            return methods[id].requires_accessory_item_id === itemId;
+        }).map(function (id) {
+            return PharmacyStation.getPharmacyMethodDisplayName(id, methods[id]);
+        }).join('、');
     }
 
-    function slotKeyInPharmacySlotList(slots, key) {
-        if (!key || !Array.isArray(slots)) return false;
-        var si;
-        for (si = 0; si < slots.length; si++) {
-            if (pharmacyResourceSlotKey(slots[si].containerType, slots[si].index) === key) return true;
-        }
-        return false;
+    function changePharmacyAccessory(itemId, install) {
+        if (!pharmacyStationPanelOpen || pharmacyStationUiState.compound_mode) return;
+        var ret = install ? PharmacyStation.installPharmacyAccessoryFromInventory(itemId) : PharmacyStation.uninstallPharmacyAccessoryToInventory(itemId);
+        showMsg(ui('pharmacy.accessory.' + (install ? 'install' : 'uninstall') + (ret && ret.ok ? '_ok' : '_fail'), {
+            item: StationCraftCore.getItemDisplayNameSafe(itemId)
+        }), ret && ret.ok ? 'success' : 'warn');
+        renderPharmacyStationPanel();
+        SceneHud.refresh('backpack');
+        SceneHud.refresh('status');
+        if (global.SceneRenderer) global.SceneRenderer.render();
+        var toggle = document.getElementById('pharmacy-equipment-toggle');
+        if (toggle) toggle.focus();
     }
 
-    function renderPharmacyWaterFuelPickLists() {
-        var fuelWrap = document.getElementById('pharmacy-fuel-source-list');
-        if (!fuelWrap) return;
-        var char0 = IE && IE.getCharacterForDisplay ? IE.getCharacterForDisplay() : null;
-        var fuelSlots = global.InventoryHelpers.findAllContainerSlotsByPredicate(function (cell) {
-            return StationCraftCore.getItemFuelPoints(cell.item_id) > 0;
-        });
-        if (!slotKeyInPharmacySlotList(fuelSlots, pharmacyStationUiState.selected_fuel_slot_key)) {
-            pharmacyStationUiState.selected_fuel_slot_key = '';
+    function renderPharmacyEquipment(installed, compoundMode) {
+        var section = document.getElementById('pharmacy-equipment-section');
+        if (!section) return;
+        section.hidden = compoundMode;
+        var result = PharmacyStation.getLastCraftResult();
+        var brokenId = result && result.broken_equipment_id;
+        if (brokenId && installed.indexOf(brokenId) >= 0) resolvedWearResult = result;
+        var needsReplacement = !!brokenId && result !== resolvedWearResult;
+        section.setAttribute('data-state', needsReplacement ? 'broken' : installed.length ? 'ready' : 'empty');
+        var status = document.getElementById('pharmacy-equipment-status');
+        if (status) status.textContent = needsReplacement
+            ? ui('pharmacy.equipment.broken', { item: StationCraftCore.getItemDisplayNameSafe(brokenId) })
+            : installed.length ? installed.map(StationCraftCore.getItemDisplayNameSafe).join('、') : ui('pharmacy.equipment.none');
+        var toggle = document.getElementById('pharmacy-equipment-toggle');
+        if (toggle) {
+            toggle.textContent = ui(needsReplacement ? 'pharmacy.equipment.reinstall' : installed.length ? 'pharmacy.equipment.manage' : 'pharmacy.action.install');
+            toggle.setAttribute('aria-label', toggle.textContent);
+            toggle.setAttribute('aria-expanded', String(equipmentOpen && !compoundMode));
         }
+        var panel = document.getElementById('pharmacy-equipment');
+        if (panel) panel.hidden = !equipmentOpen || compoundMode;
+        var installedSection = document.getElementById('pharmacy-installed-section');
+        if (installedSection) installedSection.hidden = !installed.length;
 
-        function appendResourceRows(wrap, slots, kind, selectedKey) {
-            wrap.innerHTML = '';
-            var emptyKey = 'pharmacy.station_resource.empty_fuel';
-            if (!slots.length) {
-                wrap.innerHTML = '<div style="color:#a8a29e;font-size:13px;">' + ui(emptyKey) + '</div>';
-                return;
+        function appendEquipment(wrap, itemId, availableCount) {
+            var install = availableCount != null;
+            var row = document.createElement('div');
+            row.className = 'cs-input-row pharmacy-device-row';
+            row.setAttribute('data-equipment-id', itemId);
+            var identity = document.createElement('div');
+            identity.className = 'pharmacy-device-identity';
+            var name = document.createElement('strong');
+            name.textContent = StationCraftCore.getItemDisplayNameSafe(itemId);
+            var methods = document.createElement('span');
+            methods.className = 'pharmacy-device-methods';
+            methods.textContent = '→ ' + accessoryMethodsLabel(itemId);
+            identity.appendChild(name);
+            identity.appendChild(methods);
+            var action = document.createElement('div');
+            action.className = 'pharmacy-device-action';
+            if (install) {
+                var stock = document.createElement('span');
+                stock.textContent = '×' + availableCount;
+                action.appendChild(stock);
             }
-            var ri;
-            for (ri = 0; ri < slots.length; ri++) {
-                (function (sl) {
-                    var iid = sl.item.item_id;
-                    var disp = StationCraftCore.getItemDisplayNameSafe(iid);
-                    var cnt = (sl.item.count != null && parseInt(sl.item.count, 10) > 0) ? parseInt(sl.item.count, 10) : 1;
-                    var gain = StationCraftCore.getItemFuelPoints(iid);
-                    var gainTxt = ui('pharmacy.station_resource.fuel_gain_fmt', { n: gain });
-                    var rowKey = pharmacyResourceSlotKey(sl.containerType, sl.index);
-                    var row = document.createElement('div');
-                    row.className = 'cs-ingredient-row cs-resource-pick' + (rowKey === selectedKey ? ' active' : '');
-                    row.setAttribute('role', 'button');
-                    var left = document.createElement('div');
-                    left.className = 'cs-ing-left';
-                    var nameEl = document.createElement('div');
-                    nameEl.className = 'cs-ing-name';
-                    nameEl.textContent = disp;
-                    var idEl = document.createElement('div');
-                    idEl.className = 'cs-ing-id';
-                    idEl.textContent = uiPharmacyInventoryContainerLabel(sl.containerType) + ' · ' + (sl.index + 1);
-                    left.appendChild(nameEl);
-                    left.appendChild(idEl);
-                    var countsEl = document.createElement('div');
-                    countsEl.className = 'cs-ing-counts';
-                    var gLine = document.createElement('div');
-                    gLine.textContent = gainTxt;
-                    var sLine = document.createElement('div');
-                    sLine.textContent = ui('pharmacy.station_resource.available_fmt', { n: cnt });
-                    countsEl.appendChild(gLine);
-                    countsEl.appendChild(sLine);
-                    row.appendChild(left);
-                    row.appendChild(countsEl);
-                    row.onclick = function () {
-                        pharmacyStationUiState.selected_fuel_slot_key = rowKey;
-                        renderPharmacyStationPanel();
-                    };
-                    wrap.appendChild(row);
-                })(slots[ri]);
+            var button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'btn-mini ' + (install ? 'pharmacy-install-device' : 'pharmacy-uninstall-device');
+            button.textContent = ui(install ? 'pharmacy.btn.install_accessory' : 'pharmacy.equipment.uninstall');
+            button.setAttribute('aria-label', ui(install ? 'pharmacy.equipment.install_named' : 'pharmacy.equipment.uninstall_named', { item: name.textContent }));
+            button.disabled = !install && PharmacyStation.isAccessoryInUse(itemId);
+            if (button.disabled) button.title = ui('pharmacy.accessory.in_use');
+            button.onclick = function () { changePharmacyAccessory(itemId, install); };
+            action.appendChild(button);
+            row.appendChild(identity);
+            row.appendChild(action);
+            wrap.appendChild(row);
+        }
+        var installedList = document.getElementById('pharmacy-accessory-list');
+        if (installedList) {
+            installedList.innerHTML = '';
+            installed.forEach(function (id) { appendEquipment(installedList, id, null); });
+        }
+        var availableList = document.getElementById('pharmacy-available-accessories');
+        if (availableList) {
+            availableList.innerHTML = '';
+            var available = PharmacyStation.getPharmacyAccessoryOptionsFromInventory(installed);
+            // Keep the broken device first when a replacement is in the backpack.
+            if (needsReplacement) available.sort(function (a, b) { return Number(b.item_id === brokenId) - Number(a.item_id === brokenId); });
+            available.forEach(function (item) { appendEquipment(availableList, item.item_id, item.count); });
+            if (!available.length) {
+                var empty = document.createElement('p');
+                empty.className = 'pharmacy-equipment-empty';
+                empty.textContent = ui('pharmacy.equipment.no_available');
+                availableList.appendChild(empty);
             }
         }
-        appendResourceRows(fuelWrap, fuelSlots, 'fuel', pharmacyStationUiState.selected_fuel_slot_key);
+    }
+
+    // Same reading, tone and metric/track presentation used by the main HUD.
+    function renderPharmacyStamina() {
+        var meter = document.getElementById('pharmacy-stamina-meter');
+        var text = document.getElementById('pharmacy-stamina-text');
+        var bar = document.getElementById('pharmacy-stamina-bar');
+        if (!meter || !text || !bar) return;
+        var state = global.Survival && global.Survival.getState ? global.Survival.getState() : null;
+        var wrap = document.getElementById('pharmacy-stamina');
+        if (wrap) wrap.hidden = !state;
+        if (!state) return;
+        var current = Math.max(0, Number(state.stamina) || 0);
+        var max = Math.max(1, Number(state.stamina_max) || 100);
+        text.textContent = String(Number(current.toFixed(1))) + ' ';
+        var maximum = document.createElement('small');
+        maximum.textContent = '/ ' + Number(max.toFixed(1));
+        text.appendChild(maximum);
+        text.className = 'value ' + (current <= 0 ? 'danger' : current < max * 0.3 ? 'warn' : 'ok');
+        bar.style.width = Math.min(100, current / max * 100) + '%';
+        meter.setAttribute('aria-valuemax', String(max));
+        meter.setAttribute('aria-valuenow', String(Math.min(max, current)));
     }
 
     function renderPharmacyStationPanel() {
+        resetLockedCompoundMode();
         var modal = document.getElementById('modal-pharmacy-station');
         if (!modal) return;
         var methodWrap = document.getElementById('pharmacy-method-list');
         var listEl = document.getElementById('pharmacy-input-list');
-        var accessoryList = document.getElementById('pharmacy-accessory-list');
-        var accessorySel = document.getElementById('pharmacy-add-accessory');
         var knownWrap = document.getElementById('pharmacy-known-list');
         var kvWrap = document.getElementById('pharmacy-status-kv') || document.getElementById('pharmacy-kv');
-        var helpEl = document.getElementById('pharmacy-help-text') || document.getElementById('pharmacy-help');
         var startBtn = document.getElementById('pharmacy-start-btn');
         var mid = pharmacyStationUiState.method_id ? String(pharmacyStationUiState.method_id) : '';
         var compoundMode = !!pharmacyStationUiState.compound_mode;
+        var availableMethods = Object.keys(PharmacyStation.getMethods()).filter(function (id) {
+            return PharmacyStation.isPharmacyMethodUnlockedAtStation(id);
+        }).sort();
+        if (mid && availableMethods.indexOf(mid) < 0) {
+            setPharmacyMethodId('');
+            mid = '';
+        }
         function visible(id, show) {
             var el = document.getElementById(id);
             if (el) el.hidden = !show;
         }
-        visible('pharmacy-method-section', !compoundMode);
-        visible('pharmacy-equipment', !compoundMode);
+        visible('pharmacy-method-section', !compoundMode && availableMethods.length > 0);
         visible('pharmacy-recipes-tab', !compoundMode);
         visible('pharmacy-materials-view', compoundMode || libraryView === 'materials');
         visible('pharmacy-recipes-view', !compoundMode && libraryView === 'recipes');
@@ -428,8 +483,7 @@
         if (methodWrap) {
             methodWrap.style.display = compoundMode ? 'none' : '';
             methodWrap.innerHTML = '';
-            var ids = Object.keys(PharmacyStation.getMethods());
-            ids.sort();
+            var ids = availableMethods;
             var mi;
             for (mi = 0; mi < ids.length; mi++) {
                 var idm = ids[mi];
@@ -437,11 +491,29 @@
                 var btn = document.createElement('button');
                 btn.type = 'button';
                 btn.className = 'btn-method' + (String(idm) === String(mid) ? ' active' : '');
-                btn.textContent = PharmacyStation.getPharmacyMethodDisplayName(idm, mObj);
+                var methodName = PharmacyStation.getPharmacyMethodDisplayName(idm, mObj);
+                btn.setAttribute('aria-label', methodName);
+                btn.setAttribute('aria-pressed', String(String(idm) === String(mid)));
+                var methodLabel = document.createElement('span');
+                methodLabel.className = 'pharmacy-method-name';
+                methodLabel.textContent = methodName;
+                btn.appendChild(methodLabel);
+                if (mObj.requires_accessory_item_id) {
+                    btn.title = StationCraftCore.getItemDisplayNameSafe(mObj.requires_accessory_item_id);
+                }
                 btn.setAttribute('data-method-id', idm);
                 if (compoundMode) { btn.disabled = true; btn.style.opacity = '0.45'; }
-                btn.onclick = (function (xid) { return function () { setPharmacyMethodId(xid); renderPharmacyStationPanel(); }; })(idm);
+                btn.onclick = (function (xid) { return function () {
+                    if (PharmacyStation.isPharmacyMethodUnlockedAtStation(xid)) setPharmacyMethodId(xid);
+                    renderPharmacyStationPanel();
+                }; })(idm);
                 methodWrap.appendChild(btn);
+            }
+            if (!ids.length) {
+                var emptyMethods = document.createElement('div');
+                emptyMethods.className = 'cs-empty-hint';
+                emptyMethods.textContent = ui('pharmacy.methods.empty');
+                methodWrap.appendChild(emptyMethods);
             }
         }
 
@@ -450,37 +522,64 @@
             listEl.innerHTML = '';
             var selected = StationCraftCore.normalizePharmacyInputs(pharmacyStationUiState.inputs || []);
             pharmacyStationUiState.inputs = selected;
+            var clearButton = document.getElementById('pharmacy-clear-btn');
+            if (clearButton) clearButton.disabled = !selected.length;
             if (!selected.length) {
-                listEl.innerHTML = '<div style="color:#a8a29e;font-size:13px;">' + ui('pharmacy.inputs.empty') + '</div>';
+                var emptyInputs = document.createElement('div');
+                emptyInputs.className = 'pharmacy-input-empty';
+                emptyInputs.textContent = ui('pharmacy.inputs.empty');
+                listEl.appendChild(emptyInputs);
             } else {
                 for (var ii = 0; ii < selected.length; ii++) {
                     var row = document.createElement('div');
-                    row.className = 'cs-input-row';
+                    row.className = 'cs-input-row pharmacy-input-row';
                     var id0 = selected[ii].item_id;
                     var c0 = parseInt(selected[ii].count, 10) || 1;
                     var nameEl = document.createElement('div');
                     nameEl.className = 'iname';
                     nameEl.textContent = StationCraftCore.getItemDisplayNameSafe(id0);
+                    var identity = document.createElement('div');
+                    identity.className = 'pharmacy-input-identity';
+                    identity.appendChild(nameEl);
+                    var available = document.createElement('span');
+                    available.className = 'pharmacy-input-stock';
+                    var have = global.InventoryHelpers.getInventoryCountByItemId(id0);
+                    available.textContent = ui('pharmacy.inputs.available_fmt', { n: have });
+                    identity.appendChild(available);
+                    var quantity = document.createElement('div');
+                    quantity.className = 'pharmacy-quantity';
                     var cntEl = document.createElement('input');
                     cntEl.type = 'number';
                     cntEl.min = '1';
+                    cntEl.max = String(Math.max(1, have));
                     cntEl.step = '1';
+                    cntEl.inputMode = 'numeric';
                     cntEl.className = 'icnt';
                     cntEl.value = c0;
                     cntEl.setAttribute('aria-label', ui('pharmacy.action.quantity', { item: nameEl.textContent }));
                     cntEl.onchange = (function (rid, input) {
                         return function () {
-                            var have = global.InventoryHelpers.getInventoryCountByItemId(rid);
-                            var n = Math.max(1, Math.min(Math.max(1, have), Math.floor(Number(input.value) || 1)));
-                            var arr = StationCraftCore.normalizePharmacyInputs(pharmacyStationUiState.inputs || []);
-                            arr.forEach(function (entry) { if (entry.item_id === rid) entry.count = n; });
-                            setPharmacyInputs(arr);
-                            renderPharmacyStationPanel();
+                            changePharmacyInputCount(rid, input.value);
                         };
                     })(id0, cntEl);
+                    [-1, 1].forEach((function (rid, current, stock, input, group, name) {
+                        return function (delta) {
+                            var stepButton = document.createElement('button');
+                            stepButton.type = 'button';
+                            stepButton.className = 'pharmacy-quantity-step';
+                            stepButton.textContent = delta < 0 ? '−' : '+';
+                            stepButton.setAttribute('aria-label', ui(delta < 0 ? 'pharmacy.quantity.decrease' : 'pharmacy.quantity.increase', { item: name }));
+                            stepButton.disabled = delta < 0 ? current <= 1 : current >= stock;
+                            stepButton.onclick = function () { changePharmacyInputCount(rid, Number(input.value) + delta); };
+                            if (delta > 0) {
+                                group.appendChild(input);
+                            }
+                            group.appendChild(stepButton);
+                        };
+                    })(id0, c0, have, cntEl, quantity, nameEl.textContent));
                     var btnDel = document.createElement('button');
                     btnDel.type = 'button';
-                    btnDel.className = 'btn-mini';
+                    btnDel.className = 'btn-mini pharmacy-remove-input';
                     btnDel.textContent = ui('pharmacy.btn.remove');
                     btnDel.onclick = (function (rid) {
                         return function () {
@@ -491,8 +590,8 @@
                             renderPharmacyStationPanel();
                         };
                     })(id0);
-                    row.appendChild(nameEl);
-                    row.appendChild(cntEl);
+                    row.appendChild(identity);
+                    row.appendChild(quantity);
                     row.appendChild(btnDel);
                     listEl.appendChild(row);
                 }
@@ -501,60 +600,9 @@
 
         renderPharmacyIngredientPickerList();
 
-        // 配件安装/卸下
         var csAcc = PharmacyStation.getState();
         var installed = Array.isArray(csAcc.installed_accessory_item_ids) ? csAcc.installed_accessory_item_ids.slice() : [];
-        if (accessoryList) {
-            accessoryList.innerHTML = '';
-            if (!installed.length) {
-                accessoryList.innerHTML = '<div style="color:#a8a29e;font-size:13px;">' + ui('pharmacy.accessory.empty') + '</div>';
-            } else {
-                for (var ai = 0; ai < installed.length; ai++) {
-                    var aid = String(installed[ai]);
-                    var arow = document.createElement('div');
-                    arow.className = 'cs-input-row';
-                    var aname = document.createElement('div');
-                    aname.className = 'iname';
-                    aname.textContent = StationCraftCore.getItemDisplayNameSafe(aid);
-                    var abtn = document.createElement('button');
-                    abtn.type = 'button';
-                    abtn.className = 'btn-mini';
-                    abtn.textContent = ui('pharmacy.btn.remove');
-                    abtn.onclick = (function (rid) {
-                        return function () {
-                            var ret = PharmacyStation.uninstallPharmacyAccessoryToInventory(rid);
-                            if (!ret || !ret.ok) {
-                                showMsg(ui('pharmacy.accessory.uninstall_fail', { item: StationCraftCore.getItemDisplayNameSafe(rid) }), 'warn');
-                            } else {
-                                showMsg(ui('pharmacy.accessory.uninstall_ok', { item: StationCraftCore.getItemDisplayNameSafe(rid) }), 'success');
-                            }
-                            renderPharmacyStationPanel();
-                            SceneHud.refresh('backpack');
-                            SceneHud.refresh('status');
-                            if (global.SceneRenderer) global.SceneRenderer.render();
-                        };
-                    })(aid);
-                    arow.appendChild(aname);
-                    arow.appendChild(abtn);
-                    accessoryList.appendChild(arow);
-                }
-            }
-        }
-        if (accessorySel) {
-            var prevAcc = accessorySel.value ? String(accessorySel.value) : '';
-            var accOpts = PharmacyStation.getPharmacyAccessoryOptionsFromInventory(installed);
-            accessorySel.innerHTML = '';
-            for (var ax = 0; ax < accOpts.length; ax++) {
-                var ao = accOpts[ax];
-                var o = document.createElement('option');
-                o.value = ao.item_id;
-                o.textContent = StationCraftCore.getItemDisplayNameSafe(ao.item_id) + ' · ' + ui('pharmacy.inputs.available_fmt', { n: ao.count });
-                accessorySel.appendChild(o);
-            }
-            if (prevAcc && accOpts.some(function (z) { return String(z.item_id) === prevAcc; })) accessorySel.value = prevAcc;
-            var installButton = document.getElementById('pharmacy-add-accessory-btn');
-            if (installButton) installButton.disabled = !accOpts.length;
-        }
+        renderPharmacyEquipment(installed, compoundMode);
 
         // 已知配方快捷填材（可选）
         if (knownWrap) {
@@ -584,15 +632,32 @@
                     var btnK = document.createElement('button');
                     btnK.type = 'button';
                     btnK.className = 'btn-known';
-                    var rName = rid;
-                    try {
-                        if (global.UIText && typeof global.UIText.t === 'function') {
-                            rName = global.UIText.t('pharmacy.recipe.' + legacyRecipeKey);
-                        }
-                    } catch (eKn) { rName = rid; }
-                    btnK.textContent = rName;
+                    var output = rec.main_output || {};
+                    var outputId = Array.isArray(output) ? output[0] : output.item_id;
+                    var outputCount = Math.max(1, parseInt(Array.isArray(output) ? output[1] : output.count, 10) || 1);
+                    var rName = StationCraftCore.getItemDisplayNameSafe(outputId);
+                    if (!rName || rName === outputId) rName = ui('pharmacy.known.unnamed');
+                    var title = document.createElement('span');
+                    title.style.cssText = 'display:block;font-size:14px;line-height:1.5';
+                    title.textContent = rName + ' ×' + outputCount;
+                    var recipeMethod = String(rec.method_id || rec.required_method || '');
+                    var method = PharmacyStation.getMethods()[recipeMethod];
+                    var canSelect = PharmacyStation.isPharmacyMethodUnlockedAtStation(recipeMethod);
+                    var meta = document.createElement('span');
+                    meta.style.cssText = 'display:block;margin-top:4px;font-weight:400;font-size:12px;color:#bcb3a4;line-height:1.5';
+                    meta.textContent = method ? PharmacyStation.getPharmacyMethodDisplayName(recipeMethod, method) : '';
+                    if (!canSelect) meta.textContent += (meta.textContent ? ' · ' : '') + (method && method.requires_accessory_item_id
+                        ? ui('pharmacy.known.requires_equipment', { item: StationCraftCore.getItemDisplayNameSafe(method.requires_accessory_item_id) })
+                        : ui('pharmacy.action.locked'));
+                    btnK.disabled = !canSelect;
+                    btnK.setAttribute('data-recipe-id', String(rec.recipe_id));
+                    btnK.appendChild(title);
+                    btnK.appendChild(meta);
                     btnK.onclick = (function (rx) {
                         return function () {
+                            if (!PharmacyStation.isPharmacyMethodUnlockedAtStation(rx.method_id || rx.required_method)) {
+                                renderPharmacyStationPanel(); return;
+                            }
                             if (rx.method_id || rx.required_method) setPharmacyMethodId(rx.method_id || rx.required_method);
                             setPharmacyInputs(rx.inputs || []);
                             renderPharmacyStationPanel();
@@ -606,22 +671,66 @@
         // 状态区
         renderCompoundBar();
         var mSel = (PharmacyStation.getMethods() && mid && PharmacyStation.getMethods()[String(mid)]) ? PharmacyStation.getMethods()[String(mid)] : null;
-        var cs = PharmacyStation.getState();
-        var curFuel = parseInt(cs.fuel_points, 10) || 0;
-        var needFuel = mSel ? StationCraftCore.readMethodCostValue(mSel, 'fuel', 'fuel_cost') : 0;
-        var needTicks = mSel ? StationCraftCore.readMethodCostValue(mSel, 'ticks', 'craft_ticks') : 0;
         var needStamina = mSel ? StationCraftCore.readMethodCostValue(mSel, 'stamina', 'stamina_cost') : 0;
         var craftPreview = (!compoundMode && mid && typeof PharmacyStation.getCraftPreview === 'function')
             ? PharmacyStation.getCraftPreview(mid, pharmacyStationUiState.inputs || []) : null;
         if (craftPreview && craftPreview.ok) {
-            needFuel = craftPreview.cost.fuel;
-            needTicks = craftPreview.cost.ticks;
             needStamina = craftPreview.cost.stamina;
         }
         if (global.Survival && global.Survival.getActionStaminaCost) needStamina = global.Survival.getActionStaminaCost(needStamina);
         var survState = global.Survival && typeof global.Survival.getState === 'function' ? global.Survival.getState() : null;
         var curStamina = survState ? Number(survState.stamina || 0) : 0;
+        renderPharmacyStamina();
         var activeCraft = PharmacyStation.getActiveCraft();
+        var resultWrap = document.getElementById('pharmacy-result');
+        if (resultWrap) {
+            var result = PharmacyStation.getLastCraftResult();
+            var showResult = !!result && result !== dismissedCraftResult && !activeCraft && (result.mode !== 'compound' || isInjectionUnlocked());
+            resultWrap.hidden = !showResult;
+            resultWrap.innerHTML = '';
+            if (showResult) {
+                resultWrap.setAttribute('data-success', String(result.success));
+                var resultTitle = document.createElement('h3');
+                resultTitle.textContent = ui(result.success ? 'pharmacy.result.success' : 'pharmacy.result.failure');
+                resultWrap.appendChild(resultTitle);
+                var dismissResult = document.createElement('button');
+                dismissResult.type = 'button';
+                dismissResult.className = 'pharmacy-result-close';
+                dismissResult.textContent = '×';
+                dismissResult.setAttribute('aria-label', ui('pharmacy.result.close'));
+                dismissResult.title = ui('pharmacy.result.close');
+                dismissResult.onclick = function () {
+                    dismissedCraftResult = result;
+                    renderPharmacyStationPanel();
+                    var focusTarget = document.getElementById('pharmacy-start-btn');
+                    if (!focusTarget || focusTarget.disabled) focusTarget = document.getElementById('pharmacy-materials-tab');
+                    if (focusTarget) focusTarget.focus();
+                };
+                resultWrap.appendChild(dismissResult);
+                result.outputs.forEach(function (output) {
+                    var row = document.createElement('div');
+                    row.className = 'pharmacy-result-row';
+                    var item = document.createElement('strong');
+                    item.textContent = StationCraftCore.getItemDisplayNameSafe(output.item_id) + ' ×' + output.count;
+                    var destination = document.createElement('span');
+                    destination.textContent = ui(output.destination === 'ground' ? 'pharmacy.result.ground' : 'pharmacy.result.inventory');
+                    row.appendChild(item);
+                    row.appendChild(destination);
+                    resultWrap.appendChild(row);
+                });
+                if (!result.outputs.length) {
+                    var none = document.createElement('div');
+                    none.textContent = ui('pharmacy.result.empty');
+                    resultWrap.appendChild(none);
+                }
+                if (result.broken_equipment_id) {
+                    var wearNote = document.createElement('div');
+                    wearNote.className = 'pharmacy-result-wear';
+                    wearNote.textContent = ui('pharmacy.result.equipment_broken', { item: StationCraftCore.getItemDisplayNameSafe(result.broken_equipment_id) });
+                    resultWrap.appendChild(wearNote);
+                }
+            }
+        }
         var progressWrap = document.getElementById('pharmacy-active-craft');
         if (progressWrap) {
             progressWrap.innerHTML = '';
@@ -637,21 +746,21 @@
                 progressWrap.appendChild(progress);
             }
         }
-        var equipmentStatus = document.getElementById('pharmacy-equipment-status');
-        if (equipmentStatus) equipmentStatus.textContent = ui('pharmacy.equipment.status', { cur: curFuel, max: PHARMACY_FUEL_MAX_POINTS, n: installed.length });
-
         if (kvWrap) {
             kvWrap.innerHTML = '';
-            function addKv(text, bad) {
-                var d = document.createElement('div');
-                d.className = 'kv' + (bad ? ' bad' : '');
-                d.textContent = text;
-                kvWrap.appendChild(d);
-            }
             if (!compoundMode && mSel) {
-                addKv(ui('pharmacy.kv.fuel', { cur: curFuel, max: PHARMACY_FUEL_MAX_POINTS, need: needFuel }), curFuel < needFuel);
-                addKv(ui('pharmacy.kv.ticks', { n: needTicks }), false);
-                addKv(ui('pharmacy.kv.stamina', { cur: curStamina, need: needStamina }), curStamina < needStamina);
+                if (mSel.requires_accessory_item_id) {
+                    var breakChance = activeCraft && activeCraft.equipment_wear ? activeCraft.equipment_wear.chance : PharmacyStation.getEquipmentBreakChance();
+                    var risk = document.createElement('div');
+                    risk.className = 'pharmacy-equipment-risk';
+                    var riskLabel = document.createElement('span');
+                    riskLabel.textContent = ui('pharmacy.equipment.risk') + ' ';
+                    var riskValue = document.createElement('strong');
+                    riskValue.textContent = Number((breakChance * 100).toFixed(2)) + '%';
+                    risk.appendChild(riskLabel);
+                    risk.appendChild(riskValue);
+                    kvWrap.appendChild(risk);
+                }
             }
         }
         var previewWrap = document.getElementById('pharmacy-preview');
@@ -666,32 +775,11 @@
             }
         }
 
-        renderPharmacyWaterFuelPickLists();
-
-        if (helpEl) {
-            helpEl.innerHTML = '';
-            var lines = compoundMode ? [
-                ui('pharmacy.help.compound'),
-                ui('pharmacy.help.line4'),
-                ui('pharmacy.help.duration'),
-                ui('pharmacy.help.toxicity')
-            ] : [
-                ui('pharmacy.help.line1'),
-                ui('pharmacy.help.line2'),
-                ui('pharmacy.help.line3')
-            ];
-            lines.forEach(function (text, index) {
-                var paragraph = document.createElement('p');
-                paragraph.style.margin = index ? '10px 0 0' : '0';
-                paragraph.textContent = text;
-                helpEl.appendChild(paragraph);
-            });
-        }
 
         var inputs = StationCraftCore.normalizePharmacyInputs(pharmacyStationUiState.inputs || []);
         var blocked = '';
-        var equipmentAction = '';
-        if (activeCraft) blocked = ui('pharmacy.kv.remaining', { n: activeCraft.remaining_ticks });
+        if (activeCraft) blocked = ui('pharmacy.action.working');
+        else if (!compoundMode && !availableMethods.length) { blocked = ui('pharmacy.methods.empty'); }
         else if (!compoundMode && !mSel) blocked = ui('pharmacy.action.method');
         else if (!inputs.length) blocked = ui('pharmacy.action.inputs');
         else if (compoundMode) {
@@ -715,32 +803,15 @@
         if (!blocked && !compoundMode) {
             if (mSel.requires_accessory_item_id && installed.indexOf(mSel.requires_accessory_item_id) < 0) {
                 blocked = ui('pharmacy.action.accessory', { item: StationCraftCore.getItemDisplayNameSafe(mSel.requires_accessory_item_id) });
-                equipmentAction = 'pharmacy.action.install';
-            } else if (curFuel < needFuel) { blocked = ui('pharmacy.action.fuel'); equipmentAction = 'pharmacy.btn.fuel'; }
-            else if (curStamina < needStamina) blocked = ui('pharmacy.action.stamina');
+            } else if (curStamina < needStamina) blocked = ui('pharmacy.action.stamina');
         }
         var status = document.getElementById('pharmacy-action-status');
         if (status) status.textContent = blocked;
-        var fixEquipment = document.getElementById('pharmacy-fix-equipment');
-        if (fixEquipment) {
-            fixEquipment.hidden = !equipmentAction;
-            fixEquipment.textContent = equipmentAction ? ui(equipmentAction) : '';
-            fixEquipment.onclick = function () {
-                var equipment = document.getElementById('pharmacy-equipment');
-                if (equipment) equipment.open = true;
-                var help = document.getElementById('pharmacy-help');
-                if (help) help.open = false;
-            };
-        }
         var okStart = !blocked;
         if (startBtn) {
             startBtn.disabled = !okStart;
             startBtn.textContent = compoundMode ? ui('pharmacy.btn.compound_start') : ui('pharmacy.btn.start');
         }
-
-        var fuelModalBtn = document.getElementById('pharmacy-modal-add-fuel-btn');
-        var fuelModalOk = canAddFuelAtCurrentTile() && !!pharmacyStationUiState.selected_fuel_slot_key;
-        if (fuelModalBtn) fuelModalBtn.disabled = !fuelModalOk;
 
         if (global.UIText && typeof global.UIText.applyDom === 'function') {
             try { global.UIText.applyDom(modal); } catch (eApply) { /* ignore */ }
@@ -756,13 +827,13 @@
         if (r === 'empty_inputs') return 'pharmacy.try.fail.empty_inputs';
         if (r === 'not_pharmacy_ingredient') return 'pharmacy.try.fail.not_ingredient';
         if (r === 'missing_input_items') return 'pharmacy.try.fail.missing_inputs';
-        if (r === 'insufficient_fuel') return 'pharmacy.try.fail.insufficient_fuel';
         if (r === 'insufficient_stamina') return 'pharmacy.try.fail.insufficient_stamina';
         if (r === 'inventory_full') return 'pharmacy.try.fail.inventory_full';
         if (r === 'consume_inputs_failed') return 'pharmacy.try.fail.consume_failed';
         if (r === 'bad_args') return 'pharmacy.try.fail.bad_args';
         if (r === 'craft_in_progress') return 'pharmacy.try.fail.craft_in_progress';
         if (r === 'pharmacy_station_repair_locked') return 'pharmacy.try.fail.repair_locked';
+        if (r === 'injection_locked') return 'item.use.cannot';
         if (r === 'solvent_required') return 'pharmacy.compound.fail.solvent_required';
         if (r === 'too_many_solvent') return 'pharmacy.compound.fail.too_many_solvent';
         if (r === 'over_capacity') return 'pharmacy.compound.fail.over_capacity';
@@ -770,6 +841,7 @@
         if (r === 'compounding_unavailable') return 'pharmacy.compound.fail.unavailable';
         if (r === 'no_components') return 'pharmacy.compound.fail.no_components';
         if (r === 'compound_failed') return 'pharmacy.compound.fail.failed';
+        if (r === 'incompatible_compound') return 'pharmacy.compound.fail.failed';
         return 'pharmacy.try.fail.unknown';
     }
 
@@ -790,7 +862,7 @@
         }
         if (global.Survival && typeof global.Survival.advanceTick === 'function') global.Survival.advanceTick();
         pharmacyStationPanelOpen = true;
-        pharmacyStationUiState.selected_fuel_slot_key = '';
+        equipmentOpen = false;
         var modal = document.getElementById('modal-pharmacy-station');
         if (modal) {
             modal.classList.add('show');
@@ -821,12 +893,16 @@
     }
 
     function initPanel() {
-        ['pharmacy-equipment', 'pharmacy-help'].forEach(function (id, index, ids) {
-            var disclosure = document.getElementById(id);
-            if (disclosure) disclosure.addEventListener('toggle', function () {
-                var other = document.getElementById(ids[1 - index]);
-                if (disclosure.open && other) other.open = false;
+        if (!staminaUnsubscribe && global.SceneHud && global.SceneHud.subscribe) {
+            staminaUnsubscribe = global.SceneHud.subscribe('status', function () {
+                if (pharmacyStationPanelOpen) renderPharmacyStamina();
             });
+        }
+        var equipmentToggle = document.getElementById('pharmacy-equipment-toggle');
+        if (equipmentToggle) equipmentToggle.addEventListener('click', function () {
+            if (!pharmacyStationPanelOpen || pharmacyStationUiState.compound_mode) return;
+            equipmentOpen = !equipmentOpen;
+            renderPharmacyStationPanel();
         });
         var abPharmacy = !window.SvelteInteractions && document.getElementById('action-bar-pharmacy');
         if (abPharmacy) {
@@ -851,55 +927,16 @@
         }
         var clearBtn = document.getElementById('pharmacy-clear-btn');
         if (clearBtn) clearBtn.addEventListener('click', function () { if (!pharmacyStationPanelOpen) return; setPharmacyInputs([]); renderPharmacyStationPanel(); });
-        var fuelMb = document.getElementById('pharmacy-modal-add-fuel-btn');
-        if (fuelMb && !fuelMb._pharmacySrvBound) {
-            fuelMb._pharmacySrvBound = true;
-            fuelMb.addEventListener('click', function () {
-                if (!pharmacyStationPanelOpen) return;
-                var fk = pharmacyStationUiState.selected_fuel_slot_key ? String(pharmacyStationUiState.selected_fuel_slot_key) : '';
-                if (!fk) {
-                    showMsg(ui('pharmacy.add_fuel.pick_first'), 'info');
-                    return;
-                }
-                var pf = parsePharmacyResourceSlotKey(fk);
-                if (!pf) {
-                    showMsg(ui('pharmacy.add_fuel.pick_first'), 'info');
-                    return;
-                }
-                onAddFuelClick({ containerType: pf.containerType, index: pf.index });
-                renderPharmacyStationPanel();
-                SceneHud.refresh('backpack');
-                SceneHud.refresh('status');
-                if (global.SceneRenderer) global.SceneRenderer.render();
-            });
-        }
-        var addAccessoryBtn = document.getElementById('pharmacy-add-accessory-btn');
-        if (addAccessoryBtn) {
-            addAccessoryBtn.addEventListener('click', function () {
-                if (!pharmacyStationPanelOpen) return;
-                var sel = document.getElementById('pharmacy-add-accessory');
-                var aid = sel && sel.value ? String(sel.value) : '';
-                if (!aid) return;
-                var ret = PharmacyStation.installPharmacyAccessoryFromInventory(aid);
-                if (!ret || !ret.ok) {
-                    showMsg(ui('pharmacy.accessory.install_fail', { item: StationCraftCore.getItemDisplayNameSafe(aid) }), 'warn');
-                    renderPharmacyStationPanel();
-                    return;
-                }
-                showMsg(ui('pharmacy.accessory.install_ok', { item: StationCraftCore.getItemDisplayNameSafe(aid) }), 'success');
-                renderPharmacyStationPanel();
-                SceneHud.refresh('backpack');
-                SceneHud.refresh('status');
-                if (global.SceneRenderer) global.SceneRenderer.render();
-            });
-        }
         var startBtn = document.getElementById('pharmacy-start-btn');
         if (startBtn) {
             startBtn.addEventListener('click', function () {
                 if (!pharmacyStationPanelOpen) return;
+                // A flag change must not turn a queued injection click into ordinary crafting.
+                if (resetLockedCompoundMode()) { renderPharmacyStationPanel(); return; }
                 var mid = pharmacyStationUiState.method_id ? String(pharmacyStationUiState.method_id) : '';
                 var inputs = StationCraftCore.normalizePharmacyInputs(pharmacyStationUiState.inputs || []);
                 var res = pharmacyStationUiState.compound_mode ? tryCompoundAtStation(inputs) : tryPharmacyAtStation(mid, inputs);
+                if (res && res.consumed === true) setPharmacyInputs([]);
                 if (!res || res.ok !== true) {
                     var key = pharmacyStartReasonToMsgKey(res ? res.reason : 'unknown');
                     var vars = {};

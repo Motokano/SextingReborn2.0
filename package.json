@@ -52,7 +52,7 @@
     "audit:item-field-rules": "node tools/audit-item-field-display-rules.mjs",
     "audit:convert": "node tools/audit-convert-direction.mjs",
     "test:pain": "node tools/smoke-pain.mjs",
-    "test:pharmacy": "node tools/test-pharmacy-method-list.mjs && node tools/test-pharmacy-station-context.mjs && node tools/smoke-pharmacy.mjs",
+    "test:pharmacy": "node tools/test-pharmacy-method-list.mjs && node tools/test-pharmacy-station-context.mjs && node tools/smoke-pharmacy.mjs && node --test tools/test-pharmacy-unlock.mjs tools/test-pharmacy-panel-state.mjs tools/test-pharmacy-results.mjs tools/test-pharmacy-equipment.mjs",
     "mark:pharmacy-ingredients": "node tools/mark-pharmacy-ingredients.mjs",
     "test:ui-windows": "node tools/test-ui-windows.mjs",
     "test:isometric-map": "node tools/test-isometric-map.mjs",

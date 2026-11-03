@@ -349,8 +349,14 @@
             "type": "list",
             "items": [
               "久服或致依赖，药瘾上来五维一起掉。",
-              "配药不对会析出沉淀：药效打折、毒性上调。",
-              "针具不洁会带进感染；扎针前先找干净器具。"
+              {
+                "text": "配药不对会析出沉淀：药效打折、毒性上调。",
+                "requires_flag": "pharmacy_injection_unlocked"
+              },
+              {
+                "text": "针具不洁会带进感染；扎针前先找干净器具。",
+                "requires_flag": "pharmacy_injection_unlocked"
+              }
             ]
           }
         }

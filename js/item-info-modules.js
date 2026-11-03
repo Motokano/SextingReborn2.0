@@ -54,13 +54,21 @@
         return tpl && Object.prototype.hasOwnProperty.call(tpl, field) ? tpl[field] : undefined;
     }
 
+    function visibleListItems(content) {
+        return (Array.isArray(content.items) ? content.items : []).filter(function (entry) {
+            if (!entry || typeof entry !== 'object' || !entry.requires_flag) return true;
+            var npc = global.NPCSystem;
+            return !!(npc && typeof npc.isDemoFlagTrue === 'function' && npc.isDemoFlagTrue(entry.requires_flag));
+        }).map(function (entry) { return entry && typeof entry === 'object' ? String(entry.text || '') : entry; });
+    }
+
     function hasApplicableContent(content, tpl, inst) {
         if (content == null) return false;
         if (typeof content === 'string') return String(content).trim() !== '';
         if (typeof content !== 'object') return false;
         var ctype = String(content.type || '').toLowerCase();
         if (ctype === 'text') return String(content.text || '').trim() !== '';
-        if (ctype === 'list') return Array.isArray(content.items) && content.items.length > 0;
+        if (ctype === 'list') return visibleListItems(content).length > 0;
         if (ctype === 'kv') return Array.isArray(content.entries) && content.entries.length > 0;
         if (ctype === 'csv_field_text') {
             var csvKey = String(content.field || '').trim();
@@ -93,7 +101,7 @@
             return '<div class="tooltip-module-text">' + esc(v || '') + '</div>';
         }
         if (ctype === 'list') {
-            var items = Array.isArray(content.items) ? content.items : [];
+            var items = visibleListItems(content);
             if (!items.length) return '';
             var li = '';
             for (var i = 0; i < items.length; i++) {
@@ -232,7 +240,7 @@
             var type = String(content.type || '').toLowerCase();
             if (type === 'text') return [node('tooltip-module-text',content.text || '')];
             if (type === 'csv_field_text') { var v = readItemValue(tpl,inst,String(content.field || '').trim()); return [node('tooltip-module-text',v == null || String(v).trim() === '' ? content.fallback || '' : v || '')]; }
-            if (type === 'list') return (content.items || []).length ? [node('tooltip-module-list','',content.items.map(function (v) { return node('',v,[],'li'); }),'ul')] : [];
+            if (type === 'list') { var list = visibleListItems(content); return list.length ? [node('tooltip-module-list','',list.map(function (v) { return node('',v,[],'li'); }),'ul')] : []; }
             if (type === 'kv') return (content.entries || []).length ? [node('tooltip-module-kv','',content.entries.map(function (v) { return node('tooltip-module-kv-row','',[node('tooltip-module-k',v.k || '',[],'span'),node('tooltip-module-v',v.v || '',[],'span')]); }))] : [];
             if (type === 'tpl_kv') return (content.entries || []).flatMap(function (en) {
                 var f = String(en.field || '').trim(), raw = f ? readItemValue(tpl,inst,f) : undefined;

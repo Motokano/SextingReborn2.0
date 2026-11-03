@@ -75,6 +75,8 @@ const heldConsumerGapRecipes=new Set([
 ]);
 for(const [id,recipe] of recipes)recipe.enabled=!heldConsumerGapRecipes.has(id);
 doc.recipes=[...recipes.values()];
+// 制药已取消燃料成本；历史方案重建不得恢复该需求。
+for(const recipe of doc.recipes)if(recipe.cost_override)recipe.cost_override.fuel=0;
 fs.writeFileSync(recipePath,JSON.stringify(doc,null,2)+'\n');
 
 // 固定成品的依赖、缓解和口服毒性只从实际成品配方中的活性投入推导，避免与配方双写失配。

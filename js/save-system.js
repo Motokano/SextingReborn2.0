@@ -451,6 +451,13 @@
                             inputs: Array.isArray(pac.inputs) ? pac.inputs.slice() : [],
                             consumed_items: Array.isArray(pac.consumed_items) ? pac.consumed_items.slice() : []
                         };
+                        if (pac.equipment_wear !== undefined) {
+                            su.pharmacy_station.active_craft.equipment_wear = pac.equipment_wear ? {
+                                item_id: String(pac.equipment_wear.item_id || ''),
+                                chance: Math.max(0, Math.min(1, coerceNumber(pac.equipment_wear.chance, 0))),
+                                broken: pac.equipment_wear.broken === true
+                            } : null;
+                        }
                         if (pac.station_ref && typeof pac.station_ref === 'object') {
                             su.pharmacy_station.active_craft.station_ref = {
                                 station_type: pac.station_ref.station_type != null ? String(pac.station_ref.station_type) : '',
@@ -796,6 +803,13 @@
                             inputs: Array.isArray(pac2.inputs) ? pac2.inputs.slice() : [],
                             consumed_items: Array.isArray(pac2.consumed_items) ? pac2.consumed_items.slice() : []
                         };
+                        if (pac2.equipment_wear !== undefined) {
+                            global.SceneCtx.pharmacy_station_runtime.active_craft.equipment_wear = pac2.equipment_wear ? {
+                                item_id: String(pac2.equipment_wear.item_id || ''),
+                                chance: Math.max(0, Math.min(1, coerceNumber(pac2.equipment_wear.chance, 0))),
+                                broken: pac2.equipment_wear.broken === true
+                            } : null;
+                        }
                         if (pac2.station_ref && typeof pac2.station_ref === 'object') {
                             global.SceneCtx.pharmacy_station_runtime.active_craft.station_ref = {
                                 station_type: pac2.station_ref.station_type != null ? String(pac2.station_ref.station_type) : '',

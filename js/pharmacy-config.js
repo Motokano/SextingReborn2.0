@@ -17,6 +17,8 @@
         pharmacy_skill_max_level: 100,
         pharmacy_max_proficiency_uses: 5000000,
         pharmacy_success_bonus_per_level: 0.005,
+        pharmacy_equipment_break_chance: 0.20,
+        pharmacy_equipment_break_reduction_per_level: 0.0015,
         pharmacy_proficiency_usage_key: 'pharmacy_success',
         pharmacy_use_routes: 'drink|topical|inhale|inject',
         pharmacy_use_ticks_drink: 1,
@@ -147,6 +149,8 @@
         }
 
         out.pharmacy_global_failure_item_id = asText(kv.pharmacy_global_failure_item_id) || DEFAULTS.pharmacy_global_failure_item_id;
+        out.pharmacy_equipment_break_chance = Math.max(0, Math.min(1, toNumber(kv.pharmacy_equipment_break_chance, DEFAULTS.pharmacy_equipment_break_chance)));
+        out.pharmacy_equipment_break_reduction_per_level = Math.max(0, toNumber(kv.pharmacy_equipment_break_reduction_per_level, DEFAULTS.pharmacy_equipment_break_reduction_per_level));
         out.pharmacy_skill_curve = {
             max_level: Math.max(1, toInt(kv.pharmacy_skill_max_level, DEFAULTS.pharmacy_skill_max_level)),
             max_proficiency_uses: Math.max(1, toInt(kv.pharmacy_max_proficiency_uses, DEFAULTS.pharmacy_max_proficiency_uses)),

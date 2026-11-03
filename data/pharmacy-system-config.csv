@@ -3,6 +3,8 @@ pharmacy_global_failure_item_id,item.scrap.herb_dregs,制药失败全局产物�
 pharmacy_skill_max_level,100,制药熟练度满级；同烹饪口径（11 §8.2.1）
 pharmacy_max_proficiency_uses,5000000,满级所需累计成功次数；同烹饪/采集（11 §8.2.1）
 pharmacy_success_bonus_per_level,0.005,每级成功率加成（直加在基础成功率上）；同烹饪口径
+pharmacy_equipment_break_chance,0.20,每批制药所用设备基础损坏概率20%；成功和失败均结算一次
+pharmacy_equipment_break_reduction_per_level,0.0015,每级制药降低0.15个百分点；最低0%
 pharmacy_proficiency_usage_key,pharmacy_success,熟练度计数键（skills.life_pharmacy.move_usage）
 pharmacy_use_routes,drink|topical|inhale|inject,use_action 四途径白名单（47 §3.2）；竖线分隔
 pharmacy_inject_kit_item_ids,tool_syringe_pharmacy|tool_iv_set_pharmacy,刺入需器具：注射器/输液器物品 id（竖线分隔；空=不校验）

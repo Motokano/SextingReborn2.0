@@ -375,7 +375,7 @@
       ],
       "recommended_skill_level": 0,
       "cost_override": {
-        "fuel": 15,
+        "fuel": 0,
         "water": 0,
         "ticks": 2,
         "stamina": 2
@@ -1164,7 +1164,7 @@
       ],
       "recommended_skill_level": 2,
       "cost_override": {
-        "fuel": 25,
+        "fuel": 0,
         "water": 0,
         "ticks": 4,
         "stamina": 2
@@ -1194,7 +1194,7 @@
       ],
       "recommended_skill_level": 2,
       "cost_override": {
-        "fuel": 20,
+        "fuel": 0,
         "water": 0,
         "ticks": 3,
         "stamina": 2
@@ -1224,7 +1224,7 @@
       ],
       "recommended_skill_level": 2,
       "cost_override": {
-        "fuel": 20,
+        "fuel": 0,
         "water": 0,
         "ticks": 3,
         "stamina": 2
@@ -1254,7 +1254,7 @@
       ],
       "recommended_skill_level": 2,
       "cost_override": {
-        "fuel": 20,
+        "fuel": 0,
         "water": 0,
         "ticks": 3,
         "stamina": 2
@@ -1284,7 +1284,7 @@
       ],
       "recommended_skill_level": 2,
       "cost_override": {
-        "fuel": 25,
+        "fuel": 0,
         "water": 0,
         "ticks": 4,
         "stamina": 2
@@ -1314,7 +1314,7 @@
       ],
       "recommended_skill_level": 2,
       "cost_override": {
-        "fuel": 20,
+        "fuel": 0,
         "water": 0,
         "ticks": 3,
         "stamina": 2
@@ -1344,7 +1344,7 @@
       ],
       "recommended_skill_level": 6,
       "cost_override": {
-        "fuel": 30,
+        "fuel": 0,
         "water": 0,
         "ticks": 4,
         "stamina": 2
@@ -1374,7 +1374,7 @@
       ],
       "recommended_skill_level": 8,
       "cost_override": {
-        "fuel": 40,
+        "fuel": 0,
         "water": 0,
         "ticks": 5,
         "stamina": 2
@@ -1404,7 +1404,7 @@
       ],
       "recommended_skill_level": 2,
       "cost_override": {
-        "fuel": 20,
+        "fuel": 0,
         "water": 0,
         "ticks": 3,
         "stamina": 2
@@ -1430,7 +1430,7 @@
       ],
       "recommended_skill_level": 2,
       "cost_override": {
-        "fuel": 10,
+        "fuel": 0,
         "water": 0,
         "ticks": 12,
         "stamina": 4

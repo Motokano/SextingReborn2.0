@@ -1,0 +1,207 @@
+/* Pharmacy workspace: device choices and compact material controls. */
+#modal-pharmacy-station .cs-body { padding-top: 16px; }
+#modal-pharmacy-station .pharmacy-footer { gap: 24px; padding: 16px 20px; }
+#modal-pharmacy-station .pharmacy-footer-metrics { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 28px; }
+#modal-pharmacy-station #pharmacy-stamina { flex: 0 1 210px; min-width: 130px; margin: 0; }
+#modal-pharmacy-station #pharmacy-stamina .metric-caption { margin-bottom: 7px; }
+#modal-pharmacy-station #pharmacy-status-kv { margin: 0; }
+#modal-pharmacy-station .pharmacy-equipment-risk { display: flex; align-items: baseline; gap: 8px; color: #9da58f; font-size: 12px; }
+#modal-pharmacy-station .pharmacy-equipment-risk strong { color: #d4bd89; font: 500 17px/1.4 'Bahnschrift', 'Segoe UI', sans-serif; font-variant-numeric: tabular-nums; }
+#modal-pharmacy-station #pharmacy-active-craft:empty { display: none; }
+#modal-pharmacy-station #pharmacy-active-craft progress { height: 4px; margin-top: 12px; }
+#modal-pharmacy-station #pharmacy-action-status:not(:empty) { margin-top: 10px; font-size: 12px; }
+@media (max-width: 700px) {
+    #modal-pharmacy-station .pharmacy-footer { gap: 12px; padding: 14px 16px; }
+    #modal-pharmacy-station .pharmacy-footer-metrics { gap: 12px 18px; }
+    #modal-pharmacy-station #pharmacy-stamina { flex-basis: 180px; }
+}
+#modal-pharmacy-station .pharmacy-workspace > .content { padding: 22px; }
+#modal-pharmacy-station #pharmacy-equipment-section {
+    margin-bottom: 16px; border: 1px solid #69725466; border-radius: 8px;
+    background: linear-gradient(110deg, #b5a5790d, transparent 75%), #1c261e;
+}
+#modal-pharmacy-station .pharmacy-equipment-bar { display: flex; align-items: center; gap: 10px; padding: 12px; }
+#modal-pharmacy-station .pharmacy-equipment-icon { flex: 0 0 25px; width: 25px; height: 25px; color: #baa775; }
+#modal-pharmacy-station .pharmacy-equipment-copy { flex: 1; min-width: 0; }
+#modal-pharmacy-station .pharmacy-equipment-label { display: block; margin-bottom: 3px; font-size: 10px; color: #9ba28e; }
+#modal-pharmacy-station #pharmacy-equipment-status { color: #dddcc7; font-size: 13px; line-height: 1.5; overflow-wrap: anywhere; }
+#modal-pharmacy-station #pharmacy-equipment-toggle {
+    flex: 0 0 auto; min-height: 36px; padding: 7px 13px; border: 1px solid #ad9b6b;
+    border-radius: 6px; background: #baab7520; color: #e7d7a6; font: 500 12px/1.5 "Microsoft YaHei", sans-serif;
+    box-shadow: inset 0 1px #e6d8af14; cursor: pointer;
+}
+#modal-pharmacy-station #pharmacy-equipment-toggle::after { content: '+'; padding-left: 8px; font-size: 15px; }
+#modal-pharmacy-station #pharmacy-equipment-toggle[aria-expanded="true"]::after { content: '−'; }
+#modal-pharmacy-station #pharmacy-equipment-toggle:hover { background: #b9a76f35; border-color: #dac68d; }
+#modal-pharmacy-station #pharmacy-equipment-section[data-state="empty"],
+#modal-pharmacy-station #pharmacy-equipment-section[data-state="broken"] { border-color: #ad956a99; }
+#modal-pharmacy-station #pharmacy-equipment-section[data-state="empty"] #pharmacy-equipment-toggle,
+#modal-pharmacy-station #pharmacy-equipment-section[data-state="broken"] #pharmacy-equipment-toggle {
+    background: linear-gradient(#c9b683, #b4a06c); border-color: #dec99a; color: #262c1e; box-shadow: 0 2px 7px #0003, inset 0 1px #f3e2b34d;
+}
+#modal-pharmacy-station #pharmacy-equipment-section[data-state="broken"] #pharmacy-equipment-status { color: #e0b781; }
+#modal-pharmacy-station #pharmacy-equipment { border-top: 1px solid #73785545; padding: 0 12px 10px; }
+#modal-pharmacy-station #pharmacy-equipment h4 { margin: 12px 0 5px; font-size: 11px; color: #a3ab96; font-weight: 400; }
+#modal-pharmacy-station #pharmacy-equipment .pharmacy-device-row {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10px;
+    margin: 0; padding: 10px 0; border: 0; border-bottom: 1px solid #77806429; border-radius: 0; background: transparent;
+}
+#modal-pharmacy-station #pharmacy-equipment .pharmacy-device-row:last-child { border-bottom: 0; }
+#modal-pharmacy-station .pharmacy-device-identity { min-width: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+#modal-pharmacy-station .pharmacy-device-identity strong { color: #e1dcc7; font-size: 13px; font-weight: 500; overflow-wrap: anywhere; }
+#modal-pharmacy-station .pharmacy-device-methods { color: #a9b39a; font-size: 11px; line-height: 1.5; }
+#modal-pharmacy-station .pharmacy-device-action { display: flex; align-items: center; gap: 10px; color: #8e9884; font-size: 11px; }
+#modal-pharmacy-station #pharmacy-equipment .btn-mini { min-height: 32px; padding: 4px 11px; font-size: 12px; }
+#modal-pharmacy-station #pharmacy-equipment .pharmacy-install-device { border-color: #a39162; background: #b5a57518; color: #e3d4a4; }
+#modal-pharmacy-station #pharmacy-equipment .pharmacy-uninstall-device { background: transparent; color: #a4ac97; border-color: #64705766; }
+#modal-pharmacy-station .pharmacy-equipment-empty { margin: 10px 0 4px; color: #929c88; font-size: 12px; line-height: 1.6; }
+#modal-pharmacy-station #pharmacy-equipment-section button:focus-visible { outline: 2px solid #e2cb8f; outline-offset: 3px; }
+@media (max-width: 700px) {
+    #modal-pharmacy-station .pharmacy-equipment-bar { padding: 10px; gap: 8px; }
+    #modal-pharmacy-station #pharmacy-equipment-toggle { min-height: 40px; padding: 6px 10px; }
+    #modal-pharmacy-station #pharmacy-equipment .btn-mini { min-height: 40px; }
+}
+@media (max-width: 390px) {
+    #modal-pharmacy-station .pharmacy-equipment-icon { display: none; }
+}
+#modal-pharmacy-station #pharmacy-equipment-section {
+    margin-bottom: 16px; border: 1px solid #69725466; border-radius: 8px;
+    background: linear-gradient(110deg, #b5a5790d, transparent 75%), #1c261e;
+}
+#modal-pharmacy-station .pharmacy-equipment-bar { display: flex; align-items: center; gap: 10px; padding: 12px; }
+#modal-pharmacy-station .pharmacy-equipment-icon { flex: 0 0 25px; width: 25px; height: 25px; color: #baa775; }
+#modal-pharmacy-station .pharmacy-equipment-copy { flex: 1; min-width: 0; }
+#modal-pharmacy-station .pharmacy-equipment-label { display: block; margin-bottom: 3px; font-size: 10px; color: #9ba28e; }
+#modal-pharmacy-station #pharmacy-equipment-status { color: #dddcc7; font-size: 13px; line-height: 1.5; overflow-wrap: anywhere; }
+#modal-pharmacy-station #pharmacy-equipment-toggle {
+    flex: 0 0 auto; min-height: 36px; padding: 7px 13px; border: 1px solid #ad9b6b;
+    border-radius: 6px; background: #baab7520; color: #e7d7a6; font: 500 12px/1.5 "Microsoft YaHei", sans-serif;
+    box-shadow: inset 0 1px #e6d8af14; cursor: pointer;
+}
+#modal-pharmacy-station #pharmacy-equipment-toggle::after { content: '+'; padding-left: 8px; font-size: 15px; }
+#modal-pharmacy-station #pharmacy-equipment-toggle[aria-expanded="true"]::after { content: '−'; }
+#modal-pharmacy-station #pharmacy-equipment-toggle:hover { background: #b9a76f35; border-color: #dac68d; }
+#modal-pharmacy-station #pharmacy-equipment-section[data-state="empty"],
+#modal-pharmacy-station #pharmacy-equipment-section[data-state="broken"] { border-color: #ad956a99; }
+#modal-pharmacy-station #pharmacy-equipment-section[data-state="empty"] #pharmacy-equipment-toggle,
+#modal-pharmacy-station #pharmacy-equipment-section[data-state="broken"] #pharmacy-equipment-toggle {
+    background: linear-gradient(#c9b683, #b4a06c); border-color: #dec99a; color: #262c1e; box-shadow: 0 2px 7px #0003, inset 0 1px #f3e2b34d;
+}
+#modal-pharmacy-station #pharmacy-equipment-section[data-state="broken"] #pharmacy-equipment-status { color: #e0b781; }
+#modal-pharmacy-station #pharmacy-equipment { border-top: 1px solid #73785545; padding: 0 12px 10px; }
+#modal-pharmacy-station #pharmacy-equipment h4 { margin: 12px 0 5px; font-size: 11px; color: #a3ab96; font-weight: 400; }
+#modal-pharmacy-station #pharmacy-equipment .pharmacy-device-row {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10px;
+    margin: 0; padding: 10px 0; border: 0; border-bottom: 1px solid #77806429; border-radius: 0; background: transparent;
+}
+#modal-pharmacy-station #pharmacy-equipment .pharmacy-device-row:last-child { border-bottom: 0; }
+#modal-pharmacy-station .pharmacy-device-identity { min-width: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+#modal-pharmacy-station .pharmacy-device-identity strong { color: #e1dcc7; font-size: 13px; font-weight: 500; overflow-wrap: anywhere; }
+#modal-pharmacy-station .pharmacy-device-methods { color: #a9b39a; font-size: 11px; line-height: 1.5; }
+#modal-pharmacy-station .pharmacy-device-action { display: flex; align-items: center; gap: 10px; color: #8e9884; font-size: 11px; }
+#modal-pharmacy-station #pharmacy-equipment .btn-mini { min-height: 32px; padding: 4px 11px; font-size: 12px; }
+#modal-pharmacy-station #pharmacy-equipment .pharmacy-install-device { border-color: #a39162; background: #b5a57518; color: #e3d4a4; }
+#modal-pharmacy-station #pharmacy-equipment .pharmacy-uninstall-device { background: transparent; color: #a4ac97; border-color: #64705766; }
+#modal-pharmacy-station .pharmacy-equipment-empty { margin: 10px 0 4px; color: #929c88; font-size: 12px; line-height: 1.6; }
+#modal-pharmacy-station #pharmacy-equipment-section button:focus-visible { outline: 2px solid #e2cb8f; outline-offset: 3px; }
+@media (max-width: 700px) {
+    #modal-pharmacy-station .pharmacy-equipment-bar { padding: 10px; gap: 8px; }
+    #modal-pharmacy-station #pharmacy-equipment-toggle { min-height: 40px; padding: 6px 10px; }
+    #modal-pharmacy-station #pharmacy-equipment .btn-mini { min-height: 40px; }
+}
+@media (max-width: 390px) {
+    #modal-pharmacy-station .pharmacy-equipment-icon { display: none; }
+}
+#modal-pharmacy-station #pharmacy-method-section { display: flex; align-items: center; gap: 14px; padding-bottom: 16px; margin-bottom: 16px; border-bottom: 1px solid #a99a7229; }
+#modal-pharmacy-station #pharmacy-method-section h3 { margin: 0; flex-shrink: 0; }
+#modal-pharmacy-station #pharmacy-method-section h3,
+#modal-pharmacy-station #pharmacy-input-section h3 { font-size: 12px; font-weight: 500; letter-spacing: .1em; color: #bbb59e; }
+#modal-pharmacy-station #pharmacy-method-list { display: flex; gap: 8px; flex-wrap: wrap; }
+#modal-pharmacy-station #pharmacy-method-list .btn-method {
+    min-width: 0; padding: 6px 12px; text-align: center;
+    border: 1px solid #58604c; border-radius: 6px; background: #242c24; color: #ded8c6;
+    box-shadow: inset 0 1px #f0dda909; cursor: pointer;
+}
+#modal-pharmacy-station #pharmacy-method-list .btn-method.active {
+    background: linear-gradient(120deg, #bda77725, #bda7770a), #2c3429;
+    border-color: #b5a276; color: #eee1bd; box-shadow: inset 0 1px #e4d5ad1a;
+}
+#modal-pharmacy-station #pharmacy-method-list .btn-method:hover:not(:disabled) { background: #3b4433; border-color: #c7b487; }
+#modal-pharmacy-station #pharmacy-method-list .pharmacy-method-name { display: block; font-size: 13px; font-weight: 500; line-height: 1.5; }
+
+#modal-pharmacy-station #pharmacy-input-section .pharmacy-input-heading { margin: 0 0 12px; min-height: 30px; }
+#modal-pharmacy-station #pharmacy-clear-btn {
+    padding: 5px 0 5px 12px; border: 0; border-radius: 4px; background: transparent;
+    box-shadow: none; color: #a6aa96; font-size: 12px; font-weight: 400;
+}
+#modal-pharmacy-station #pharmacy-clear-btn:hover:not(:disabled) { background: transparent; color: #efdbb0; }
+#modal-pharmacy-station #pharmacy-clear-btn:disabled { opacity: .35; }
+#modal-pharmacy-station #pharmacy-input-list { display: grid; gap: 10px; }
+#modal-pharmacy-station #pharmacy-input-list .pharmacy-input-row {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto 36px; align-items: center; gap: 14px;
+    padding: 14px 15px; border: 1px solid #505a453f; border-radius: 8px;
+    background: linear-gradient(105deg, #b4b18c09, transparent 70%), #1b231ded;
+    box-shadow: inset 0 1px #d6dab207;
+}
+#modal-pharmacy-station #pharmacy-input-list .pharmacy-input-row:focus-within { border-color: #9e936c; }
+#modal-pharmacy-station #pharmacy-input-list .pharmacy-input-identity { min-width: 0; }
+#modal-pharmacy-station #pharmacy-input-list .iname { font-size: 14px; font-weight: 500; line-height: 1.6; color: #e7e1ce; white-space: normal; overflow-wrap: anywhere; }
+#modal-pharmacy-station #pharmacy-input-list .pharmacy-input-stock { display: block; margin-top: 3px; color: #939b89; font-size: 11px; font-variant-numeric: tabular-nums; }
+#modal-pharmacy-station #pharmacy-input-list .pharmacy-quantity {
+    display: grid; grid-template-columns: 30px 40px 30px; align-items: center;
+    height: 36px; border: 1px solid #626a54; border-radius: 7px; overflow: hidden;
+    background: #151d17; box-shadow: inset 0 1px 5px #0002;
+}
+#modal-pharmacy-station #pharmacy-input-list .pharmacy-quantity-step {
+    display: grid; place-items: center; align-self: stretch; padding: 0; border: 0; border-radius: 0;
+    box-shadow: none; background: #ffffff04; color: #c6c5ad; font: 18px/1 sans-serif; cursor: pointer;
+}
+#modal-pharmacy-station #pharmacy-input-list .pharmacy-quantity-step:hover:not(:disabled) { background: #b7a57524; color: #f0dfb7; }
+#modal-pharmacy-station #pharmacy-input-list .pharmacy-quantity-step:disabled { opacity: .28; }
+#modal-pharmacy-station #pharmacy-input-list .pharmacy-quantity input {
+    width: 100%; min-width: 0; height: 34px; padding: 0; border: 0; border-radius: 0;
+    outline-offset: -2px; box-shadow: none; background: transparent; text-align: center;
+    color: #f0e5c7; font: 500 14px/1.5 "Microsoft YaHei", sans-serif;
+    font-variant-numeric: tabular-nums; appearance: textfield; -moz-appearance: textfield;
+}
+#modal-pharmacy-station #pharmacy-input-list input::-webkit-inner-spin-button,
+#modal-pharmacy-station #pharmacy-input-list input::-webkit-outer-spin-button { appearance: none; margin: 0; }
+#modal-pharmacy-station #pharmacy-input-list .pharmacy-remove-input {
+    min-width: 0; min-height: 34px; padding: 0; border: 0; border-radius: 4px;
+    background: transparent; box-shadow: none; color: #939a89; font-size: 11px; font-weight: 400;
+}
+#modal-pharmacy-station #pharmacy-input-list .pharmacy-remove-input:hover { background: #a77d5912; color: #d9b59b; }
+#modal-pharmacy-station #pharmacy-input-list .pharmacy-input-empty {
+    display: grid; place-items: center; min-height: 88px; padding: 12px; border: 1px dashed #7c86613d;
+    border-radius: 8px; color: #8c9684; font-size: 12px; background: #141e171f;
+}
+@media (max-width: 700px) {
+    #modal-pharmacy-station .pharmacy-workspace > .content { padding: 16px; }
+    #modal-pharmacy-station #pharmacy-input-list .pharmacy-input-row { padding: 12px; gap: 10px; }
+    #modal-pharmacy-station #pharmacy-input-list .pharmacy-quantity { height: 42px; }
+    #modal-pharmacy-station #pharmacy-input-list .pharmacy-quantity input { height: 40px; }
+    #modal-pharmacy-station #pharmacy-input-list .pharmacy-remove-input { min-height: 42px; }
+}
+@media (max-width: 390px) {
+    #modal-pharmacy-station #pharmacy-input-list .pharmacy-input-row { grid-template-columns: minmax(0, 1fr) 36px; }
+    #modal-pharmacy-station #pharmacy-input-list .pharmacy-input-identity { grid-column: 1 / -1; }
+    #modal-pharmacy-station #pharmacy-input-list .pharmacy-quantity { justify-self: start; }
+}
+#modal-pharmacy-station .pharmacy-result { position: relative; }
+#modal-pharmacy-station .pharmacy-result h3 { padding-right: 30px; }
+#modal-pharmacy-station .pharmacy-result-close {
+    position: absolute; top: 8px; right: 8px;
+    display: grid; place-items: center; width: 28px; height: 28px; min-width: 0; min-height: 0;
+    padding: 0; border: 0; border-radius: 4px; background: transparent; box-shadow: none;
+    color: #bcb3a4; font: 20px/1 Arial, sans-serif; cursor: pointer;
+}
+#modal-pharmacy-station .pharmacy-result-close:hover { color: #f0e7d0; background: #e3d9bc14; }
+#modal-pharmacy-station .pharmacy-result-close:focus-visible { outline: 1px solid #c9b886; outline-offset: 1px; }
+#modal-pharmacy-station .pharmacy-result-wear {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(199, 159, 99, .22);
+    color: #d4ae79;
+    font-size: 13px;
+    line-height: 1.6;
+}
