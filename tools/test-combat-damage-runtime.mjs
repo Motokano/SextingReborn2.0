@@ -29,6 +29,7 @@ let state = { qi_li_current: 0, diqi_current: 1000, diqi_max_effective: 100 };
 let restored = 0, delivered = [], shield = 0;
 let innate = 20, actual = 100 / .7, exp = 1, level = 1, usage = 0;
 c.Survival = {
+  isDead: () => false,
   getState: () => state, getQiLiMax: () => 100,
   consumeQiLi: n => { const spent = Math.min(n, state.qi_li_current); state.qi_li_current -= spent; return spent; },
   consumeDiqi: n => { const spent = Math.min(n, state.diqi_current); state.diqi_current -= spent; return spent; },

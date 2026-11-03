@@ -50,8 +50,15 @@ try{
  assert.equal(W.validateEquip(w,'weapon_right').success,false,'no incomplete weapons');
  w=equip(weapon());assert.equal(W.intent().weaponPosition,'front');
  assert(!g.CombatSkills.getSkills()[W.SKILL],'fallbacks never enter learnable skill list');
+ for(const [id,min,max] of [['front_thrust',.2,1.7],['front_bump',.6,1],['side_cleave',.8,1.4],['side_swing',.8,1],['side_peck',.3,1.4],['hilt_strike',.6,.8],['hilt_thrust',.4,1.4]]){
+  const move=W.moves.find(m=>m.id==='weapon_basic_'+id);assert.ok(move,id);
+  for(const level of [0,1,100,1000]){
+   const profile=g.CombatSkills.getMovePowerProfile(W.SKILL,move,level);
+   near(profile.min,min);near(profile.max,max);assert.equal(profile.levelBonus,0);
+  }
+ }
  const initLimb=JSON.stringify(I.getCombatState().move_sequence_cursors);
- let a=attack('front');near(a.rawDamage,w.connections.front.part.forged_component.final_position_powers[0].power*.9);
+ let a=attack('front');near(a.rawDamage,w.connections.front.part.forged_component.final_position_powers[0].power*.35);
  assert.equal(a.proficiencyDelta,0);assert.equal(a.resourceResult.qiIntended,25);assert.equal(W.intent().weaponPosition,'side1');
  assert.equal(JSON.stringify(I.getCombatState().move_sequence_cursors),initLimb);
  assert.equal(g.BuffSystem.getBuffStacksSum('player','buff_weapon_basic_aim'),1);

@@ -526,9 +526,9 @@
         var moveUsage = (skillsState[skillId] && skillsState[skillId].move_usage) || {};
         var uses = moveUsage[moveId] != null ? parseInt(moveUsage[moveId], 10) || 0 : 0;
         var Rmove = CS.getMoveProficiencyRatio ? CS.getMoveProficiencyRatio(uses) : 0;
-        var baseL = CS.getBasePower(skillId, skillLv, null);
-        if (!isFinite(baseL) || baseL <= 0) baseL = 1;
-        if (weaponAction && sk.component_only) { baseL = 1; Rmove = 0; }
+        var movePower = CS.getMovePowerProfile(skillId, move, skillLv);
+        var levelBonus = movePower.levelBonus;
+        if (weaponAction && sk.component_only) { levelBonus = 0; Rmove = 0; }
 
         var breathMult = 1;
         var breathBar = null;
@@ -554,8 +554,8 @@
         var breathBurst = global.CombatBreath && global.CombatBreath.active();
         breathMult = breathPlan.multiplier * (breathBurst ? breathBurst.damage_multiplier : 1);
 
-        var Mmove = move.move_power_multiplier != null ? Number(move.move_power_multiplier) : 1;
-        if (!isFinite(Mmove) || Mmove <= 0) Mmove = 1;
+        // One uniform draw per action; the resolved result is reused by deferred commits.
+        var Mmove = movePower.min + (movePower.max > movePower.min ? Math.random() * (movePower.max - movePower.min) : 0);
         var G = weaponAction ? 1 : category === 'weapon'
             ? getWeaponSkillCoefForLimb(IE, limbId)
             : getSkillCoefForLimb(IE, limbId, move && move.form);
@@ -604,7 +604,7 @@
         var innateBonus = Math.max(0, innate - baseline) * 0.1;
         if (weaponAction) innateBonus = 0;
         var experienceBonus = IE.getCombatExperienceDamageMultiplier ? IE.getCombatExperienceDamageMultiplier() - 1 : 0;
-        var addTerms = [(baseL - 1), Rmove, innateBonus, experienceBonus];
+        var addTerms = [levelBonus, Rmove, innateBonus, experienceBonus];
         var increasedSum = sumPositive(addTerms);
         var decreasedSum = sumNegativeAbs(addTerms);
         var dmgBonusAdd = increasedSum - decreasedSum;
@@ -625,7 +625,7 @@
         var moreSum = sumPositive([moreMult - 1]);
         var lessSum = sumNegativeAbs([lessMult - 1]);
         var independentMult = moreMult * lessMult;
-        var rawDamage = global.CombatDamage.attack({ base: baseWeapon, levelBonus: baseL - 1,
+        var rawDamage = global.CombatDamage.attack({ base: baseWeapon, levelBonus: levelBonus,
             proficiencyBonus: Rmove, innateBonus: innateBonus, experienceBonus: experienceBonus,
             move: Mmove, power: pk, breath: breathMult });
         rawDamage = Math.max(0, rawDamage);
@@ -782,6 +782,8 @@
             moreSum: moreSum,
             lessSum: lessSum,
             moveProfRatio: Rmove,
+            movePowerMultiplier: Mmove,
+            movePowerRange: { min: movePower.min, max: movePower.max },
             skillTotalProfRatio: 0,
             baseFist: baseWeapon,
             kProbe: Kprobe,
@@ -903,7 +905,10 @@
         }
         if (CE && CE.commitAction) CE.commitAction(enemyId,eMapId,eIndex,action);
         if(bossReservation && !opts.deferResourceSpend)CE.commitBossAction(bossReservation);
-        var rawDamage = hitRollSuccess ? (bossReservation ? dmgMin * (bossReservation.burst?1.8:1) : Math.floor(dmgMin + Math.random() * (dmgMax - dmgMin + 1))) * eligibility.damageMultiplier : 0;
+        // Shared-skill enemies use the same continuous range and keep decimals until final damage.
+        // Draw once for an executed action, including misses; deferred commits reuse this result.
+        var plannedDamage = bossReservation ? dmgMin + (dmgMax > dmgMin ? Math.random() * (dmgMax - dmgMin) : 0) : 0;
+        var rawDamage = hitRollSuccess ? (bossReservation ? plannedDamage * (bossReservation.burst?1.8:1) : Math.floor(dmgMin + Math.random() * (dmgMax - dmgMin + 1))) * eligibility.damageMultiplier : 0;
         var typedDamage = createEmptyTypedDamage();
         typedDamage[damageType] = rawDamage;
         var skId = global.CombatInitiative && typeof global.CombatInitiative.getEnemyAttackSkillId === 'function'

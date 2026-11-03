@@ -21,7 +21,9 @@ export function scheduleAttackFx({actionId,moveId,actor,target,side,at,windup,ga
 export function resolvePreviewMove(baseMove,variantId,selectedMoveId){
   const modified=variantId==='triple'&&baseMove.id===selectedMoveId;
   const powerFactor=modified?.5:1;
-  const basePower=Number(baseMove.move_power_multiplier),baseSegments=Number(baseMove.hit_segments);
+  // Visual fixtures use the reference-level midpoint, never a live combat roll.
+  const range=baseMove.move_power_range;
+  const basePower=range?(Number(range.min)+Number(range.max))/2:Number(baseMove.move_power_multiplier),baseSegments=Number(baseMove.hit_segments);
   return {
     ...baseMove,
     hit_segments:modified?3:(Number.isFinite(baseSegments)?Math.max(1,Math.floor(baseSegments)):1),

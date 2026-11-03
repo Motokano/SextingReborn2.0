@@ -19,8 +19,10 @@
         for (const a of t.actions) {
             const shared = g.CombatSkills.getSkill(a.skill_id)?.moves.find(m => m.id === a.id);
             if (shared) Object.assign(a, clone(shared), {diqi_cost: a.diqi_cost});
-            a.power_min = a.power_max = attrs.jingu * .7 * a.move_power_multiplier *
-                (g.CombatSkills.getBasePower(a.skill_id, b.skill_level) + b.proficiency_ratio);
+            const profile = g.CombatSkills.getMovePowerProfile(a.skill_id, a, b.skill_level);
+            const base = attrs.jingu * .7 * (1 + profile.levelBonus + b.proficiency_ratio);
+            a.power_min = base * profile.min;
+            a.power_max = base * profile.max;
         }
         t.bossDerived = true;
         return t;

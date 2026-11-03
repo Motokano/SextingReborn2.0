@@ -109,7 +109,7 @@ function build(){
   $('mobile-move').value=selected;
   updateUI();
 }
-function variantDescription(actor){const m=effectiveMove(selected,actor);return `${m.previewVariantId?'三连变式':'原式'} ${m.hit_segments} 段 / 每段系数 ${m.move_power_multiplier.toFixed(2)}`;}
+function variantDescription(actor){const m=effectiveMove(selected,actor);return `${m.previewVariantId?'三连变式':'原式'} ${m.hit_segments} 段 / 每段系数 ${m.move_power_multiplier.toFixed(2)}${m.move_power_range?`（${m.move_power_range.reference_level}级中值）`:''}`;}
 function describeMove(){const m=effectiveMove(selected,swapped?1:0);$('move-description').textContent=`${m.hit_segments} 段${m.previewVariantId?' · 三连变式 · 每段威力 50%':''} · ${m.damage_type==='slash'?'劈砍':'钝击'} · ${fx().accents[selected].detail}`;}
 function updateUI(){
   $('play').textContent=playing?'暂停':'播放';$('timeline').value=time;$('time').textContent=(time/1000).toFixed(2)+'s';

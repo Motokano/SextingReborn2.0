@@ -298,6 +298,26 @@
     }
 
     /**
+     * 招式伤害参数；只读，不抽随机数。范围型招式用等级平移上下限，替代旧等级增伤。
+     * 未迁移的固定系数招式继续沿用原等级曲线；等级仍按模板上限夹紧。
+     */
+    function getMovePowerProfile(skillId, move, level) {
+        var range = move && move.move_power_range;
+        if (range && typeof range.reference_level === 'number' && isFinite(range.reference_level) && range.reference_level >= 1 &&
+            typeof range.min === 'number' && isFinite(range.min) && range.min >= 0 &&
+            typeof range.max === 'number' && isFinite(range.max) && range.max >= range.min &&
+            typeof range.per_level === 'number' && isFinite(range.per_level) && range.per_level >= 0) {
+            var L = Math.max(1, getSkillLevelForStatCurves(skillId, level));
+            var delta = (L - range.reference_level) * range.per_level;
+            return { min: Math.max(0, range.min + delta), max: Math.max(0, range.max + delta), levelBonus: 0 };
+        }
+        var fixed = move && move.move_power_multiplier != null ? Number(move.move_power_multiplier) : 1;
+        if (!isFinite(fixed) || fixed <= 0) fixed = 1;
+        var base = getBasePower(skillId, level);
+        return { min: fixed, max: fixed, levelBonus: isFinite(base) && base > 0 ? base - 1 : 0 };
+    }
+
+    /**
      * 步法：随等级成长的基础招架成功率、基础卸力比例。
      * - 若配置 `parry_success_at_level_1` + `parry_success_at_max`（及卸力一对）：在 L=1 与模板满级间线性插值；L&lt;1 为 0。
      * - 未声明成长曲线的步法不提供成长招架数值；固定加成另在柔韧乘算后结算。
@@ -447,6 +467,7 @@
         getUnlockedMoves: getUnlockedMoves,
         getMaxSlotsForLevel: getMaxSlotsForLevel,
         getBasePower: getBasePower,
+        getMovePowerProfile: getMovePowerProfile,
         getParryValues: getParryValues,
         getParryProficiencyUsageKey: getParryProficiencyUsageKey,
         getBreathPowerMultiplier: getBreathPowerMultiplier,

@@ -8,7 +8,13 @@ function prepare(t){
  Object.assign(t,attrs);t.effective_attributes=attrs;t.speed=1+attrs.dexterity*.005+Math.floor(b.skill_level/10);
  const p=g.CombatSkills.getParryValues('combat_basic_footwork',b.skill_level);
  t.parry_rate=p.success*(1+attrs.flexibility*.005)+.05;t.parry_damage_reduce=p.reduce*(1+attrs.flexibility*.005)+.05;
- for(const a of t.actions){const shared=g.CombatSkills.getSkill(a.skill_id)?.moves.find(m=>m.id===a.id);if(shared)Object.assign(a,clone(shared),{diqi_cost:a.diqi_cost});a.power_min=a.power_max=attrs.jingu*.7*a.move_power_multiplier*(g.CombatSkills.getBasePower(a.skill_id,b.skill_level)+b.proficiency_ratio);}
+ for(const a of t.actions){
+  const shared=g.CombatSkills.getSkill(a.skill_id)?.moves.find(m=>m.id===a.id);
+  if(shared)Object.assign(a,clone(shared),{diqi_cost:a.diqi_cost});
+  const profile=g.CombatSkills.getMovePowerProfile(a.skill_id,a,b.skill_level);
+  const base=attrs.jingu*.7*(1+profile.levelBonus+b.proficiency_ratio);
+  a.power_min=base*profile.min;a.power_max=base*profile.max;
+ }
  t.thugDerived=true;return t;
 }
 function state(st,t){return st.thug||(st.thug={diqi:t.thug.diqi_max,dashReadyTick:0,spentTick:null,damagedTick:null,settledTick:null,meditationTick:null,meditationTarget:0});}

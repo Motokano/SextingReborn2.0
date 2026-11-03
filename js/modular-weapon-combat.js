@@ -11,16 +11,16 @@
  const rangeModifiers=new Map();
  let transaction=null;
  const moveRows=[
-  ['front_thrust','直刺','pierce',.9,[10,50,30,5,5,0,0],'刺击'],
-  ['front_bump','顶击','blunt',.8,[0,50,30,10,10,0,0],'顶击'],
-  ['side_cleave','劈砍','slash',1.1,[25,35,0,20,20,0,0],'劈砍'],
-  ['side_swing','横击','blunt',.9,[0,20,0,25,25,15,15],'挥击'],
-  ['side_peck','啄刺','pierce',1,[20,20,10,25,25,0,0],'刺击'],
-  ['hilt_strike','柄击','blunt',.7,[20,40,20,10,10,0,0],'柄击'],
-  ['hilt_thrust','尾刺','pierce',.9,[0,20,60,10,10,0,0],'刺击']
+  ['front_thrust','直刺','pierce',[.2,1.7],[10,50,30,5,5,0,0],'刺击'],
+  ['front_bump','顶击','blunt',[.6,1],[0,50,30,10,10,0,0],'顶击'],
+  ['side_cleave','劈砍','slash',[.8,1.4],[25,35,0,20,20,0,0],'劈砍'],
+  ['side_swing','横击','blunt',[.8,1],[0,20,0,25,25,15,15],'挥击'],
+  ['side_peck','啄刺','pierce',[.3,1.4],[20,20,10,25,25,0,0],'刺击'],
+  ['hilt_strike','柄击','blunt',[.6,.8],[20,40,20,10,10,0,0],'柄击'],
+  ['hilt_thrust','尾刺','pierce',[.4,1.4],[0,20,60,10,10,0,0],'刺击']
  ];
  const moves=moveRows.map(([id,name,type,power,weights,tag])=>({
-  id:'weapon_basic_'+id,name,damage_type:type,move_power_multiplier:power,
+  id:'weapon_basic_'+id,name,damage_type:type,move_power_range:{reference_level:1,min:power[0],max:power[1],per_level:0},
   required_limb_tags:[tag],action_tags:[tag],hit_segments:1,attack_range:1,
   default_power_level:10,power_level_min:1,power_level_max:12,stun_head_hit:35,
   hit_part_weights:Object.fromEntries(['head','chest','abdomen','left_arm','right_arm','left_leg','right_leg'].map((k,i)=>[k,weights[i]])),

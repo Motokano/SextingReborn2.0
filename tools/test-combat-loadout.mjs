@@ -7,6 +7,47 @@ async function created(h) { const g = h.g; g.DialogueUI.close(); g.SceneApp.open
 const compact = s => s.replace(/\s+/g, '');
 const eq = (a, b) => assert.deepEqual(JSON.parse(JSON.stringify(a)), JSON.parse(JSON.stringify(b)));
 
+for (const full of [false, true]) test(`jab coefficient display follows skill level in ${full ? 'full' : 'default'} UI`, async () => {
+    const h = await boot(full), g = h.g, d = g.document, IE = g.InventoryEquipment;
+    try {
+        await created(h);
+        const skillId = 'combat_basic_unarmed';
+        IE.getState().skills[skillId].level = 100;
+        const combat = IE.getCombatState();
+        combat.limbs.rhand.active = skillId;
+        combat.limbs.rfoot.active = skillId;
+        combat.move_sequences.rhand = ['jab'];
+        IE.setCombatState({ limbs: combat.limbs, move_sequences: combat.move_sequences });
+        await click(h, '#btn-combat');
+        await click(h, '[data-limb=rhand] [data-edit=move]');
+        assert.match(d.querySelector('[data-pick=jab]').textContent, /倍率 ×0\.398～0\.598/);
+        assert.match(d.querySelector('[data-pick=swing_punch]').textContent, /倍率 ×0\.996～1\.196/);
+        await click(h, '[data-pick=jab]');
+        await click(h, '[data-limb=rhand] [data-edit=detail]');
+        assert.match(d.querySelector('.loadout-detail').textContent, /倍率 ×0\.398～0\.598/);
+        await click(h, '#btn-debug-combat-skill-plus50');
+        assert.match(d.querySelector('.loadout-detail').textContent, /倍率 ×0\.498～0\.698/);
+        await click(h, '#combat-loadout-picker .close');
+        await click(h, '[data-limb=rhand] [data-edit=move]');
+        assert.match(d.querySelector('[data-pick=jab]').textContent, /倍率 ×0\.498～0\.698/);
+        await click(h, '#combat-loadout-picker .close');
+        await click(h, '[data-limb=rfoot] [data-edit=move]');
+        assert.match(d.querySelector('[data-pick=front_kick]').textContent, /倍率 ×0\.598～0\.798/);
+        assert.match(d.querySelector('[data-pick=whip_kick]').textContent, /倍率 ×0\.647～0\.947/);
+        await click(h, '#combat-loadout-picker .close');
+        await click(h, '#combat-modal-close');
+        IE.getState().skills.combat_rogue_sanda={level:100,move_usage:{}};
+        const rogue=IE.getCombatState();rogue.limbs.rhand.active='combat_rogue_sanda';rogue.move_sequences.rhand=['slap_combo'];
+        IE.setCombatState({limbs:rogue.limbs,move_sequences:rogue.move_sequences});
+        await click(h, '#btn-combat');
+        await click(h, '[data-limb=rhand] [data-edit=move]');
+        assert.match(d.querySelector('[data-pick=poke_eye]').textContent, /倍率 ×0\.418～0\.528/);
+        assert.match(d.querySelector('[data-pick=shove]').textContent, /倍率 ×0\.298～0\.598/);
+        assert.match(d.querySelector('[data-pick=slap_combo]').textContent, /倍率 ×0\.299～0\.499 · 2 段/);
+        assert.deepEqual(h.errors, []);
+    } finally { await h.close(); }
+});
+
 test('approved default loadout: ownership, breathing costs, muscle gate/progress, passive uniqueness and save restore', async () => {
     const h = await boot(false), g = h.g, d = g.document, IE = g.InventoryEquipment, AP = g.Muscles;
     try {

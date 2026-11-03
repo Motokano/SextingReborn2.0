@@ -102,7 +102,12 @@
           ],
           "qi_cost": 25,
           "diqi_cost": 21,
-          "move_power_multiplier": 1.2,
+          "move_power_range": {
+            "reference_level": 1,
+            "min": 0.6,
+            "max": 0.8,
+            "per_level": 0.005
+          },
           "damage_type": "blunt",
           "hit_segments": 1,
           "stun_head_hit": 35,

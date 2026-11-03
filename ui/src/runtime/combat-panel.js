@@ -17,6 +17,12 @@ export function combatPanel(g, publish, t) {
     const groupEntries = id => g.Muscles?.getMusclesByGroup(id) || [];
     const countUnlocked = id => groupEntries(id).filter(m => g.Muscles.isUnlocked(m.id)).length;
     const currentSession = session => !!picker && picker.session === session && api.getOpen('combat');
+    function moveMultiplier(skillId, move) {
+        if (!move) return null;
+        const range = g.CombatSkills.getMovePowerProfile(skillId, move, IE.getSkillLevel(skillId));
+        const format = n => String(Number(n.toFixed(3)));
+        return range.min === range.max ? format(range.min) : `${format(range.min)}～${format(range.max)}`;
+    }
     function validPicker() {
         if (!picker) return false;
         const c = equipped();
@@ -53,7 +59,7 @@ export function combatPanel(g, publish, t) {
             result.title = `${label(p.id)} · ${p.index === 0 ? '主招式' : '变式'}`;
             result.subtitle = CS.getSkill(p.skillId)?.name || '';
             result.canClear = !!seq[p.index];
-            if (p.index === 0) result.items = CS.getUnlockedMoves(p.skillId, IE.getSkillLevel(p.skillId)).filter(m => !CS.moveAllowedOnLimbByTagKeys || CS.moveAllowedOnLimbByTagKeys(m, tags)).map(m => ({ id: m.id, name: m.name, meta: `熟练 ${Math.floor(CS.getMoveProficiencyRatio(usage[m.id] || 0) * 100)}%`, description: `倍率 ×${m.move_power_multiplier}${m.hit_segments > 1 ? ` · ${m.hit_segments} 段` : ''}`, selected: seq[0] === m.id }));
+            if (p.index === 0) result.items = CS.getUnlockedMoves(p.skillId, IE.getSkillLevel(p.skillId)).filter(m => !CS.moveAllowedOnLimbByTagKeys || CS.moveAllowedOnLimbByTagKeys(m, tags)).map(m => ({ id: m.id, name: m.name, meta: `熟练 ${Math.floor(CS.getMoveProficiencyRatio(usage[m.id] || 0) * 100)}%`, description: `倍率 ×${moveMultiplier(p.skillId, m)}${m.hit_segments > 1 ? ` · ${m.hit_segments} 段` : ''}`, selected: seq[0] === m.id }));
             else result.items = (CV?.getAllVariants() || []).filter(v => ['active_moves', 'both'].includes(String(v.assist_scope || 'active_moves')) && (!CV.isVariantUnlocked || CV.isVariantUnlocked(v, dependencies()))).map(v => { const id = 'variant:' + (v.variant_id || v.id); return { id, name: variantName(v), meta: seq.includes(id) ? '已装配' : '变式', disabled: seq.includes(id), selected: seq[p.index] === id }; });
             result.empty = p.index === 0 ? t('combat.seq.no_matching_moves') : '暂无可用变式';
         } else if (p.kind === 'muscles') {
@@ -71,7 +77,7 @@ export function combatPanel(g, publish, t) {
             result.empty = '暂无适用被动';
         } else if (p.kind === 'detail') {
             const sk = CS.getSkill(p.skillId), seq = c.move_sequences?.[p.id] || [], move = sk?.moves?.find(m => m.id === seq[0]);
-            Object.assign(result, { title: `${label(p.id)} · 配置详情`, name: sk?.name || '未装配', level: IE.getSkillLevel(p.skillId), description: sk?.description || '', move: move?.name || '未选招式', multiplier: move?.move_power_multiplier, report: api.recipeReport().errors, reportOpen: !!s.recipeSchemaListOpen });
+            Object.assign(result, { title: `${label(p.id)} · 配置详情`, name: sk?.name || '未装配', level: IE.getSkillLevel(p.skillId), description: sk?.description || '', move: move?.name || '未选招式', multiplier: moveMultiplier(p.skillId, move), report: api.recipeReport().errors, reportOpen: !!s.recipeSchemaListOpen });
         }
         return result;
     }

@@ -101,7 +101,12 @@
           ],
           "damage_type": "blunt",
           "hit_segments": 1,
-          "move_power_multiplier": 0.8,
+          "move_power_range": {
+            "reference_level": 1,
+            "min": 0.2,
+            "max": 0.4,
+            "per_level": 0.002
+          },
           "default_power_level": 10,
           "power_level_min": 1,
           "power_level_max": 12,
@@ -140,7 +145,12 @@
           ],
           "damage_type": "blunt",
           "hit_segments": 1,
-          "move_power_multiplier": 1.2,
+          "move_power_range": {
+            "reference_level": 1,
+            "min": 0.3,
+            "max": 0.5,
+            "per_level": 0.002
+          },
           "default_power_level": 10,
           "power_level_min": 1,
           "power_level_max": 12,
@@ -176,7 +186,12 @@
           ],
           "damage_type": "blunt",
           "hit_segments": 1,
-          "move_power_multiplier": 1.4,
+          "move_power_range": {
+            "reference_level": 1,
+            "min": 0.6,
+            "max": 0.8,
+            "per_level": 0.004
+          },
           "default_power_level": 10,
           "power_level_min": 1,
           "power_level_max": 12,
@@ -214,7 +229,12 @@
           ],
           "damage_type": "blunt",
           "hit_segments": 1,
-          "move_power_multiplier": 1,
+          "move_power_range": {
+            "reference_level": 1,
+            "min": 0.2,
+            "max": 0.5,
+            "per_level": 0.003
+          },
           "default_power_level": 10,
           "power_level_min": 1,
           "power_level_max": 12,
@@ -257,7 +277,7 @@
       "category": "weapon",
       "primary_attribute": "jingu",
       "innate_damage_baseline": 20,
-      "description": "占位兵器技能：底伤读 weapon_left/right 对应物品 weapon_attack_power；等级曲线 weapon_simple（与徒手线性满级+250%同源常数，可独立配）。需在装备槽持兵并在肢体链装配后方可测试。",
+      "description": "占位兵器技能：底伤读取所持兵器威力，兵击直斩系数固定0.1，不随等级增伤。需在装备槽持兵并在肢体链装配后方可测试。",
       "difficulty": 1,
       "icon": "🗡️",
       "moves": [
@@ -271,7 +291,12 @@
           ],
           "damage_type": "slash",
           "hit_segments": 1,
-          "move_power_multiplier": 1,
+          "move_power_range": {
+            "reference_level": 1,
+            "min": 0.1,
+            "max": 0.1,
+            "per_level": 0
+          },
           "default_power_level": 10,
           "power_level_min": 1,
           "power_level_max": 12,
@@ -447,7 +472,12 @@
           ],
           "damage_type": "blunt",
           "hit_segments": 1,
-          "move_power_multiplier": 0.9,
+          "move_power_range": {
+            "reference_level": 1,
+            "min": 0.22,
+            "max": 0.33,
+            "per_level": 0.002
+          },
           "default_power_level": 10,
           "power_level_min": 1,
           "power_level_max": 12,
@@ -485,7 +515,12 @@
           ],
           "damage_type": "blunt",
           "hit_segments": 1,
-          "move_power_multiplier": 1.1,
+          "move_power_range": {
+            "reference_level": 1,
+            "min": 0.3,
+            "max": 0.5,
+            "per_level": 0.001
+          },
           "default_power_level": 10,
           "power_level_min": 1,
           "power_level_max": 12,
@@ -525,7 +560,12 @@
           ],
           "damage_type": "blunt",
           "hit_segments": 1,
-          "move_power_multiplier": 0.6,
+          "move_power_range": {
+            "reference_level": 1,
+            "min": 0.1,
+            "max": 0.4,
+            "per_level": 0.002
+          },
           "default_power_level": 10,
           "power_level_min": 1,
           "power_level_max": 12,
@@ -569,7 +609,12 @@
           ],
           "damage_type": "blunt",
           "hit_segments": 2,
-          "move_power_multiplier": 0.5,
+          "move_power_range": {
+            "reference_level": 1,
+            "min": 0.2,
+            "max": 0.4,
+            "per_level": 0.001
+          },
           "default_power_level": 10,
           "power_level_min": 1,
           "power_level_max": 12,
