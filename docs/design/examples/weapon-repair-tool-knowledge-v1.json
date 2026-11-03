@@ -13,14 +13,14 @@
     "compatibility_scope": ["item_id", "component_id"],
     "undiscovered": "不生成条目、剪影、问号、锁定项或未发现数量。",
     "visible_name": {
-      "known": ["identity_known", "survival_language>=3"],
+      "known": ["identity_known", "survival_language>=5"],
       "fallback_field": "placeholder_name",
       "forbid_editor_name_fallback": true
     },
     "visible_description": {
       "hide_when": "survival_language<2",
       "identified_field": "fn",
-      "identified_requires": ["identity_known", "survival_language>=4"],
+      "identified_requires": ["identity_known", "survival_language>=10"],
       "otherwise_field": "fn_before"
     },
     "repair_use_requires": ["repair_use_known"],

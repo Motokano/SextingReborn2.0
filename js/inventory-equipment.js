@@ -1052,6 +1052,17 @@
         return 0;
     }
 
+    /** 语言文案门槛正本：data/item-field-display-rules.json；独立预览未载表时使用同值兜底。 */
+    function isLanguageTextUnlocked(field, character) {
+        var defaults = { sn: 5, fn_before: 2, fn: 10 };
+        if (!Object.prototype.hasOwnProperty.call(defaults, field)) return false;
+        var rules = global.ItemFieldDisplayRules;
+        var rule = rules && typeof rules.getFieldRule === 'function' ? rules.getFieldRule(field) : null;
+        var need = rule && rule.level_min != null ? Number(rule.level_min) : NaN;
+        if (!isFinite(need) || need < 0) need = defaults[field];
+        return getSurvivalLanguageLevel(character) >= need;
+    }
+
     /**
      * 根据技能等级返回展示档位 0/1/2，用于 name_0/1/2、desc_0/1/2
      * 档位阈值可留空，留空时默认档位 0
@@ -1072,16 +1083,14 @@
     }
 
     /**
-     * 语言小于 3：名称 placeholder_name；大于等于 3：名称 sn（无 sn 时用 name_0/name）
+     * 语言达到集中配置的真实名门槛（默认5级）才显示 sn，否则显示 placeholder_name。
      * @param {object} character 可选；缺省用当前角色 skills
      */
     function getDisplayName(tpl, tier, character) {
         if (!tpl) return '?';
-        if (global.ForgingSystem && global.ForgingSystem.managed(tpl.item_id)) return global.ForgingSystem.name(tpl.item_id);
+        if (global.ForgingSystem && global.ForgingSystem.managed(tpl.item_id)) return global.ForgingSystem.name(tpl.item_id, character);
         if (global.FishingPond && global.FishingPond.recognition(tpl.item_id) === false) return tpl.placeholder_name || '尚未认识的物品';
-        if (global.FishingPond && global.FishingPond.recognition(tpl.item_id) === true) return tpl.sn || tpl.name;
-        var langLv = getSurvivalLanguageLevel(character);
-        if (langLv < 3) {
+        if (!isLanguageTextUnlocked('sn', character)) {
             if (tpl.placeholder_name != null && String(tpl.placeholder_name) !== '') return String(tpl.placeholder_name);
             return tpl.name_0 != null ? tpl.name_0 : (tpl.name || tpl.id || '?');
         }
@@ -1090,17 +1099,17 @@
     }
 
     /**
-     * 语言小于 2：无说明；大于等于 2 且小于 4：fn_before（无则 desc_0）；大于等于 4：fn（无 fn 时用 desc_0）
+     * 集中配置默认：2级初步描述，10级完整描述；低等级不以完整描述的别名补初步描述。
      */
     function getDisplayDesc(tpl, tier, character) {
         if (!tpl) return '';
-        if (global.ForgingSystem && global.ForgingSystem.managed(tpl.item_id)) return global.ForgingSystem.description(tpl.item_id);
+        if (global.ForgingSystem && global.ForgingSystem.managed(tpl.item_id)) return global.ForgingSystem.description(tpl.item_id, character);
         if (global.FishingPond && global.FishingPond.recognition(tpl.item_id) === false) return tpl.placeholder_name || '';
-        var langLv = getSurvivalLanguageLevel(character);
-        if (langLv < 2) return '';
-        if (langLv < 4) {
+        if (!isLanguageTextUnlocked('fn_before', character)) return '';
+        if (!isLanguageTextUnlocked('fn', character)) {
             if (tpl.fn_before != null && String(tpl.fn_before) !== '') return String(tpl.fn_before);
-            return tpl.desc_0 != null ? tpl.desc_0 : (tpl.desc || '');
+            var preliminary = tpl.desc_0 != null ? tpl.desc_0 : (tpl.desc || '');
+            return tpl.fn != null && String(preliminary).trim() === String(tpl.fn).trim() ? '' : preliminary;
         }
         var fn = tpl.fn != null ? String(tpl.fn) : '';
         if (fn === '' && tpl.desc_0 != null) fn = String(tpl.desc_0);
@@ -3119,6 +3128,7 @@
         getEffectiveBaseValue: getEffectiveBaseValue,
         getAllItemIds: getAllItemIds,
         getItemDisplayTier: getItemDisplayTier,
+        isLanguageTextUnlocked: isLanguageTextUnlocked,
         getDisplayName: getDisplayName,
         getDisplayDesc: getDisplayDesc,
         getPocketSlots: getPocketSlots,

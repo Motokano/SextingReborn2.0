@@ -11,7 +11,7 @@
 
     /** fetch 失败或未加载时的兜底（与 survival-skills.json 保持一致） */
     var FALLBACK_SKILLS = [
-        { id: 'survival_language', name: '语言', desc: '决定能否看懂物品描述、听懂 NPC 语言，等级越高可理解的信息越多。' },
+        { id: 'survival_language', name: '语言', desc: '5级可读物品真实名，10级可读完整描述；也影响对 NPC 语言的理解。' },
         { id: 'survival_endurance', name: '耐力', desc: '降低各类生产活动的体力消耗，长时间干活不容易累垮。' },
         { id: 'survival_health', name: '健康', desc: '降低骨折等严重伤害概率，并略微减少饱食与饮水的日常消耗。' },
         { id: 'survival_immunity', name: '免疫', desc: '降低药物副作用，提高治愈速度，并延长止痛药等药物的有效时间。' },

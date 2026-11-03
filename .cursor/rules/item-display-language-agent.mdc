@@ -19,32 +19,36 @@ alwaysApply: true
 
 使用 `survival_language` 技能等级 `langLv`（缺省视为 0）。
 
-1. **语言等级 < 3**
+集中正本为`data/item-field-display-rules.json`的`fields.sn.level_min=5`、`fields.fn.level_min=10`、`fields.fn_before.level_min=2`；运行通过`InventoryEquipment.isLanguageTextUnlocked`读取。
+
+1. **语言等级 < 2**
    - 物品**名称**：显示 `placeholder_name`（若缺失，fallback 到 `name_0`/`name`/`id`）。
    - 物品**描述**：显示为空字符串（`''`）。
 
-2. **语言等级 >= 2 且 < 4**
-   - 物品**名称**：同 `< 3`（`placeholder_name`）。
-   - 物品**描述**：显示 `fn_before`（若缺失，fallback 到 `desc_0`）。
+2. **语言等级 >= 2 且 < 5**
+   - 物品**名称**：显示 `placeholder_name`。
+   - 物品**描述**：显示 `fn_before`（若缺失可回退到初步描述 `desc_0`，但不得使用与 `fn` 相同的完整描述别名）。
 
-3. **语言等级 >= 3 且 < 4**
+3. **语言等级 >= 5 且 < 10**
    - 物品**名称**：显示 `sn`（若缺失，fallback 到 `name_0`/`name`/`id`）。
    - 物品**描述**：继续走 `fn_before`。
 
-4. **语言等级 >= 4**
+4. **语言等级 >= 10**
    - 物品**名称**：显示 `sn`（fallback 同上）。
    - 物品**描述**：显示 `fn`（若 `fn` 缺失，fallback 到 `desc_0`）。
 
 > 本项目最终实现集中在 `InventoryEquipment.getDisplayName()` / `InventoryEquipment.getDisplayDesc()`，而不是依赖 `getItemDisplayTier()` 的档位。
 
+鱼种与铸造物品还需满足已有认识条件，语言达标不自动鉴定。已认识物品也须达到对应语言门槛。
+
 ## 2) items.json 字段要求（强制）
 
 `data/items.json` 的物品模板应包含（至少）：
-- `sn`：真实展示名（>=3 时用）
-- `placeholder_name`：鉴定前/低语言名称（<3 时用）
-- `fn_before`：鉴定前描述（>=2 且 <4 时用）
-- `fn`：鉴定后描述基底（>=4 时用）
-- `desc_0`：作为描述 fallback（当 `fn_before/fn` 缺失时用）
+- `sn`：真实展示名（>=5 时用）
+- `placeholder_name`：鉴定前/低语言名称（<5 时用）
+- `fn_before`：鉴定前描述（>=2 且 <10 时用）
+- `fn`：鉴定后描述基底（>=10 时用）
+- `desc_0`：描述 fallback；低等级不得借此提前显示与 `fn` 相同的完整描述
 
 这些字段由 `tools/build-items-json.mjs` 从 CSV 生成；不要在运行时代码里硬编码字段映射表。
 
@@ -61,7 +65,7 @@ alwaysApply: true
 - `js/scene-renderer.js`（hover 快捷栏/名称/描述）
 - `js/scene-app.js`（背包面板、脚下物品、工具提示、基地仓库列表等）
 
-若在某处未传 `character`，语言等级将无法生效，且会回落到不符合设计的默认展示。
+若未传 `character`，共用接口读取当前存档的技能等级；展示指定角色时须显式传入，避免读取当前玩家等级。
 
 ## 4) 模块化渲染约定（新增）
 

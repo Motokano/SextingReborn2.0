@@ -9,7 +9,7 @@ function harness(){
  for(const file of ['item-attribute-modules','inventory-equipment','item-assembly','combat-engagement','forging-config','forging-board-core','forging-rules','forging-system'])vm.runInContext(read('js/'+file+'.js'),c,{filename:file});
  const I=c.InventoryEquipment,S=c.ForgingSystem,R=c.ForgingRules,C=c.ForgingConfig;
  I.setConfig({equipment:{bag:{item_id:'bag',equip_slot:'backpack',backpack_slots:150}},items:c.ItemAttributeModules.hydrateCatalog(C.catalog),modules:{},default_equipment:{}});
- I.setState({equipment:{backpack:{item_id:'bag'}},inventory_backpack:[],inventory_pocket:[],inventory_vest:[],ground_items:{},skills:{survival_language:{level:4},life_forging:{level:1,move_usage:{}}}});
+ I.setState({equipment:{backpack:{item_id:'bag'}},inventory_backpack:[],inventory_pocket:[],inventory_vest:[],ground_items:{},skills:{survival_language:{level:10},life_forging:{level:1,move_usage:{}}}});
  flags.forging_station_unlocked=true;
  const give=(id,state={})=>{const item=I.ensureItemInstanceIdentity({item_id:id,count:1,...state});assert(I.putItemIntoDefaultContainer(item).placed);return item.instance_id;};
  const known=(patch)=>{const s=S.state();for(const [k,v]of Object.entries(patch))Object.assign(s.knowledge[k],v);c.NPCSystem.setDemoFlag('forging_runtime_v1',s);};

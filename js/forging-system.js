@@ -71,8 +71,8 @@
   if(!k.identity[id])return false;
   const route=C().bindings.feedRoutes[id];return !route||!!k.identity[route.rawItemId];
  }
- function name(id){const t=IE().getItemTemplate(id);if(!t)return '物品';return identified(id)&&IE().getSkillLevel('survival_language')>=3?(t.sn||t.name):(t.placeholder_name||'物品');}
- function description(id){const t=IE().getItemTemplate(id),lang=IE().getSkillLevel('survival_language');if(!t||lang<2)return '';return identified(id)&&lang>=4?t.fn||'':t.fn_before||'';}
+ function name(id,character){const t=IE().getItemTemplate(id);if(!t)return '物品';return identified(id)&&IE().isLanguageTextUnlocked('sn',character)?(t.sn||t.name):(t.placeholder_name||'物品');}
+ function description(id,character){const t=IE().getItemTemplate(id);if(!t||!IE().isLanguageTextUnlocked('fn_before',character))return '';return identified(id)&&IE().isLanguageTextUnlocked('fn',character)?t.fn||'':t.fn_before||'';}
  function identify(instanceId){return run(()=>{access(false);const r=materialRecord(instanceId);if(!managed(r.instance.item_id))fail('无法在这里辨认。');return transaction(()=>{const s=state();s.knowledge.identity[r.instance.item_id]=true;write(s);return {};});});}
  function inspectOre(instanceId){return run(()=>{access();const r=materialRecord(instanceId),ore=C().ores[r.instance.item_id];if(!ore)fail('请放入原矿。');return transaction(()=>{const s=state();s.knowledge.routes[ore.id]=true;write(s);return {};});});}
  function exactKnown(item){const f=item.forged_component,k=state().knowledge;return !!(f&&level()>=25&&k.structures[f.design_id]&&k.recipes[item.instance_id]&&Object.keys(f.recipe).every(id=>k.routes[C().bindings.feedRoutes[id]?.rawItemId]));}

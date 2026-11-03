@@ -9,11 +9,11 @@
       "docs/design/66-item-assembly-information-and-ui.md"
     ],
     "language": {
-      "name_below_3": "placeholder_name",
-      "name_at_least_3": "sn",
+      "name_below_5": "placeholder_name",
+      "name_at_least_5": "sn",
       "description_below_2": "",
-      "description_2_to_3": "fn_before",
-      "description_at_least_4": "fn"
+      "description_2_to_9": "fn_before",
+      "description_at_least_10": "fn"
     },
     "discovery": "未通过世界内途径发现的条目不列出，不显示剪影、隐藏条目数或未发现配方。语言等级只控制已发现物品的称呼与说明，不授予材料加工或版型制作权限。",
     "observation": "外观文案仅写当前能观察的事实。随机颜色、材质、厚度、内层种类、硅叶状态不由固定描述猜测。部件归属、口袋和左右等须经过相应检查；未确认左右时使用不带左右的外观称呼。",

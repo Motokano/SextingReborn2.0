@@ -10,13 +10,13 @@
     "identityNameRequires": [
       "item_seen",
       "identity_known",
-      "survival_language>=3"
+      "survival_language>=5"
     ],
     "nameOtherwise": "placeholder_name",
     "descriptionWhenLanguageBelow2": "omit",
     "identifiedDescriptionRequires": [
       "identity_known",
-      "survival_language>=4"
+      "survival_language>=10"
     ],
     "descriptionOtherwise": "fn_before",
     "neverReveal": [
@@ -211,12 +211,12 @@
       "feed_seen",
       "feed_identity_known",
       "raw_identity_known",
-      "survival_language>=3"
+      "survival_language>=5"
     ],
     "identifiedDescriptionRequires": [
       "feed_identity_known",
       "raw_identity_known",
-      "survival_language>=4"
+      "survival_language>=10"
     ],
     "productionEvidence": [
       "feed_seen",

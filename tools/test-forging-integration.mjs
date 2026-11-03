@@ -3,6 +3,12 @@ import {boot} from './ui-game-fixture.mjs';
 const h=await boot(true),g=h.g,doc=g.document;
 g.Element.prototype.animate=function(){return {cancel(){},finished:Promise.resolve()};};
 try{
+ let openingSteps=0;
+ while(g.DialogueUI.isDialogueOpen()&&openingSteps++<1000)g.DialogueUI.next();
+ assert(openingSteps<1000,'opening dialogue completes before station interaction');
+ await h.drain();
+ g.SceneApp.openCharacterCreationAfterIntro();
+ assert.equal(g.SceneApp.creation.confirm({name:'铸造回归',height:178,gender:'male',hand:'right',leg:'right'}),true);
  const S=g.ForgingSystem,I=g.InventoryEquipment;
  assert(I.getItemTemplate('material_forging_iron'),'main config registers formal items');
  assert.equal(g.GameEngine.getMap().npcs.find(n=>n.npc_id==='npc.station.forging_base').x,5);
@@ -11,7 +17,7 @@ try{
  g.GameEngine.setState('M0_Base_Inside_lv_1',5,12);
  assert.equal(g.ForgingStationPanel.open(),false,'station is initially locked');
  g.NPCSystem.setDemoFlag('forging_station_unlocked',true);
- I.getSkillsState().life_forging={level:25,move_usage:{}};I.getSkillsState().survival_language={level:4,move_usage:{}};
+ I.getSkillsState().life_forging={level:25,move_usage:{}};I.getSkillsState().survival_language={level:10,move_usage:{}};
  const inv=I.getState();inv.inventory_backpack=[];inv.inventory_pocket=[];
  // Keep the initial game's real bag and put samples in an available inventory root.
  inv.inventory_pocket.push({item_id:'ore_iron_raw',count:1});I.setState(inv);

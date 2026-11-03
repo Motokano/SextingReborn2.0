@@ -8,6 +8,7 @@ import { buildModularCatalog, hydrateModularCatalog } from './item-attribute-cat
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const read = p => fs.readFileSync(path.join(root, p), 'utf8');
 const json = p => JSON.parse(read(p));
+const languageFields = json('data/item-field-display-rules.json').fields;
 const design = 'docs/design/';
 const examples = design + 'examples/';
 const req = json(examples + 'weapon-forging-material-requirements-v1.json');
@@ -245,8 +246,8 @@ const bindings={version:1,date:'2026-10-18',status:'single_hand_combat_registere
   dataSources:[relative(design+'weapon-component-final-stats-draft.md'),...Object.values(sourceFiles).map(f=>relative(design+f)),relative(design+'weapon-hilt-durability-draft.md'),relative(design+'weapon-multi-slot-durability-draft.md')],
 };
 const knowledge={version:1,date:'2026-10-17',status:'forging_registered_effect_observation_pending',itemCatalog:'item-catalog-v2.json',owner:'character',defaultKnown:false,
-  common:{unseen:'omit_entire_entry',identityNameRequires:['item_seen','identity_known','survival_language>=3'],nameOtherwise:'placeholder_name',
-    descriptionWhenLanguageBelow2:'omit',identifiedDescriptionRequires:['identity_known','survival_language>=4'],descriptionOtherwise:'fn_before',
+  common:{unseen:'omit_entire_entry',identityNameRequires:['item_seen','identity_known',`survival_language>=${languageFields.sn.level_min}`],nameOtherwise:'placeholder_name',
+    descriptionWhenLanguageBelow2:'omit',identifiedDescriptionRequires:['identity_known',`survival_language>=${languageFields.fn.level_min}`],descriptionOtherwise:'fn_before',
     neverReveal:['editor_name','item_id','tags','assembly_types','assembly_slots','source','production_lines','base_value','full_catalog_count','hidden_trait_count'],
     noIdentityFrom:['language_level_alone','forging_level_alone','pickup','trade','move','open_panel','load_save'],
     noUnseenEnumeration:true,noUnknownGroupHeadings:true,noRawIdFallback:true,noFormulaLeaksInLogsOrSorting:true},
@@ -259,8 +260,8 @@ const knowledge={version:1,date:'2026-10-17',status:'forging_registered_effect_o
     exactInstancePerformance:{minForgingLevel:25,requires:['component_structure_known','instance_recipe_known','all_contributing_material_routes_known']},
     oreTraitStrength:{minForgingLevel:50,requires:['effect_known','trigger_known','relevant_route_known']},
     starsDoNotAutoIdentify:true,buffIsNotIdentityText:true,knowledgeKeyByItem:Object.fromEntries(Object.entries(definitions).map(([id,d])=>[id,d.structureKnowledgeKey]))},
-  feeds:{useAndScoresSource:'known_processing_route',namesRequire:['feed_seen','feed_identity_known','raw_identity_known','survival_language>=3'],
-    identifiedDescriptionRequires:['feed_identity_known','raw_identity_known','survival_language>=4'],
+  feeds:{useAndScoresSource:'known_processing_route',namesRequire:['feed_seen','feed_identity_known','raw_identity_known',`survival_language>=${languageFields.sn.level_min}`],
+    identifiedDescriptionRequires:['feed_identity_known','raw_identity_known',`survival_language>=${languageFields.fn.level_min}`],
     productionEvidence:['feed_seen','feed_route_known','feed_unit_known'],
     identityEvidence:'own_processing_of_identified_raw_ore_or_personal_feed_identification',
     rawIdentityCannotBeInferredFromHiddenRouteId:true,exactScoresMinForgingLevel:10,unknownContribution:'suppress_incomplete_totals_and_predictions',
