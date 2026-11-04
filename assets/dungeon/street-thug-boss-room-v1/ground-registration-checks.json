@@ -1,0 +1,240 @@
+{
+  "date": "2026-10-29",
+  "note": "Numerical checks of registered source axes, plus browser visual review. Curved basket short axis remains an estimate; numerical alignment alone does not prove the original drawing is geometrically exact.",
+  "checks": [
+    {
+      "id": "desk",
+      "sourceDegrees": [
+        21.99870822273615,
+        -32.49713642883802
+      ],
+      "targetDegrees": [
+        35.264389682754654,
+        -35.26438968275467
+      ],
+      "mirroredDegrees": [
+        -35.264389682754654,
+        35.26438968275467
+      ],
+      "matrix": [
+        1,
+        0.1582669356546258,
+        0,
+        1.35851446913842,
+        0,
+        0
+      ],
+      "maxSlopeError": 2.220446049250313e-16,
+      "keepsVertical": true,
+      "keepsAnchor": true
+    },
+    {
+      "id": "chair",
+      "sourceDegrees": [
+        22.489554942130876,
+        -30.49808511402463
+      ],
+      "targetDegrees": [
+        35.264389682754654,
+        -35.26438968275467
+      ],
+      "mirroredDegrees": [
+        -35.264389682754654,
+        35.26438968275467
+      ],
+      "matrix": [
+        1,
+        0.12337356600961691,
+        0,
+        1.4099836115384798,
+        0,
+        0
+      ],
+      "maxSlopeError": 1.1102230246251565e-16,
+      "keepsVertical": true,
+      "keepsAnchor": true
+    },
+    {
+      "id": "stash",
+      "sourceDegrees": [
+        23.50904022419246,
+        -27.02158159117704
+      ],
+      "targetDegrees": [
+        35.264389682754654,
+        -35.264389682754654
+      ],
+      "mirroredDegrees": [
+        -35.264389682754654,
+        35.264389682754654
+      ],
+      "matrix": [
+        1,
+        0.05611958580845622,
+        0,
+        1.4965222882254974,
+        0,
+        0
+      ],
+      "maxSlopeError": 1.1102230246251565e-16,
+      "keepsVertical": true,
+      "keepsAnchor": true
+    },
+    {
+      "id": "boss-private-cache-unsearched",
+      "sourceDegrees": [
+        19.49396307157107,
+        -34.01934998982646
+      ],
+      "targetDegrees": [
+        35.264389682754654,
+        -35.26438968275467
+      ],
+      "mirroredDegrees": [
+        -35.264389682754654,
+        35.26438968275467
+      ],
+      "matrix": [
+        1,
+        0.22058433115731946,
+        0,
+        1.3743572034723959,
+        0,
+        0
+      ],
+      "maxSlopeError": 2.220446049250313e-16,
+      "keepsVertical": true,
+      "keepsAnchor": true
+    },
+    {
+      "id": "boss-private-cache-searched",
+      "sourceDegrees": [
+        18.98321705922621,
+        -31.508297186488072
+      ],
+      "targetDegrees": [
+        35.264389682754654,
+        -35.264389682754654
+      ],
+      "mirroredDegrees": [
+        -35.264389682754654,
+        35.264389682754654
+      ],
+      "matrix": [
+        1,
+        0.19875833243383634,
+        0,
+        1.477757118467184,
+        0,
+        0
+      ],
+      "maxSlopeError": 1.1102230246251565e-16,
+      "keepsVertical": true,
+      "keepsAnchor": true
+    },
+    {
+      "id": "stolen-goods-basket-unsearched",
+      "sourceDegrees": [
+        16.488753705891252,
+        -33.02386755579665
+      ],
+      "targetDegrees": [
+        35.264389682754654,
+        -35.26438968275467
+      ],
+      "mirroredDegrees": [
+        -35.264389682754654,
+        35.26438968275467
+      ],
+      "matrix": [
+        1,
+        0.2646044403171647,
+        0,
+        1.4949403407749422,
+        0,
+        0
+      ],
+      "maxSlopeError": 2.220446049250313e-16,
+      "keepsVertical": true,
+      "keepsAnchor": true
+    },
+    {
+      "id": "stolen-goods-basket-searched",
+      "sourceDegrees": [
+        16.488753705891252,
+        -33.02386755579665
+      ],
+      "targetDegrees": [
+        35.264389682754654,
+        -35.26438968275467
+      ],
+      "mirroredDegrees": [
+        -35.264389682754654,
+        35.26438968275467
+      ],
+      "matrix": [
+        1,
+        0.2646044403171647,
+        0,
+        1.4949403407749422,
+        0,
+        0
+      ],
+      "maxSlopeError": 2.220446049250313e-16,
+      "keepsVertical": true,
+      "keepsAnchor": true
+    },
+    {
+      "id": "mat",
+      "sourceDegrees": [
+        31.508297186488072,
+        -31.005867195895654
+      ],
+      "targetDegrees": [
+        35.264389682754654,
+        -35.264389682754654
+      ],
+      "mirroredDegrees": [
+        -35.264389682754654,
+        35.264389682754654
+      ],
+      "matrix": [
+        1,
+        -0.006989523372519346,
+        0,
+        1.1649205620865692,
+        0,
+        0
+      ],
+      "maxSlopeError": 1.1102230246251565e-16,
+      "keepsVertical": true,
+      "keepsAnchor": true
+    },
+    {
+      "id": "rack",
+      "sourceDegrees": [
+        26.012375912129833,
+        -36.86989764584402
+      ],
+      "targetDegrees": [
+        35.264389682754654,
+        -35.26438968275467
+      ],
+      "mirroredDegrees": [
+        -35.264389682754654,
+        35.26438968275467
+      ],
+      "matrix": [
+        1,
+        0.14964618470991553,
+        0,
+        1.1423372878619509,
+        0,
+        0
+      ],
+      "maxSlopeError": 1.1102230246251565e-16,
+      "keepsVertical": true,
+      "keepsAnchor": true
+    }
+  ]
+}

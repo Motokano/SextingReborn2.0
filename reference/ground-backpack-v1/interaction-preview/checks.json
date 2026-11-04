@@ -1,0 +1,19 @@
+{
+  "status": "passed-isolated-interaction-simulation",
+  "tests": [
+    "drop/open/quantity/pocket-fit/liquid-state/conservation",
+    "batch-partial-success-original-slots",
+    "no-filled-nesting/swap-retains-own-contents",
+    "empty-reuse/empty-backup-pickup/redrop",
+    "whole-bag-vehicle/no-nesting",
+    "range/obstruction/exit/closes/cross-map",
+    "expiry-no-refresh-whole-tree",
+    "dungeon-no-100-tick-expiry/aging",
+    "atomic-failure-and-retry",
+    "death-by-ownership",
+    "widget-state-restore"
+  ],
+  "fragmentBytes": 64841,
+  "formalGameModified": false,
+  "errors": []
+}

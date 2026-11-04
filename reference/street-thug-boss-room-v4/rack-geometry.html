@@ -1,0 +1,21 @@
+<!doctype html><meta charset="utf-8"><title>Rack geometry master — 1×2 tiles</title>
+<style>html,body{margin:0;background:#eee9dd}canvas{display:block;width:1024px;height:1024px}</style>
+<canvas width="1024" height="1024" aria-label="货架两格占地的精确投影模板"></canvas>
+<script>
+const c=document.querySelector('canvas'),ctx=c.getContext('2d'),K=3.6;
+const p=(x,y,h=0)=>[512+(x-y)*72*K,610+(x+y)*72/Math.SQRT2*K-h*K];
+const poly=(points,fill,stroke='#566264',width=3)=>{ctx.beginPath();points.forEach((q,i)=>ctx[i?'lineTo':'moveTo'](...q));ctx.closePath();if(fill){ctx.fillStyle=fill;ctx.fill();}ctx.strokeStyle=stroke;ctx.lineWidth=width;ctx.stroke();};
+ctx.fillStyle='#eee9dd';ctx.fillRect(0,0,1024,1024);
+for(let y=-1;y<1;y++)poly([p(-.5,y),p(.5,y),p(.5,y+1),p(-.5,y+1)],'#d8dece','#b89338',4);
+// 52 screen pixels of vertical structure at a 144px tile width. Parallel projection throughout.
+for(const h of [5,27,52]){
+ poly([p(-.5,-1,h),p(.5,-1,h),p(.5,1,h),p(-.5,1,h)],'#b1bcba');
+ poly([p(.5,-1,h),p(.5,1,h),p(.5,1,h-2.5),p(.5,-1,h-2.5)],'#6e7e7d');
+ poly([p(-.5,1,h),p(.5,1,h),p(.5,1,h-2.5),p(-.5,1,h-2.5)],'#879390');
+}
+for(const [x,y] of [[-.5,-1],[.5,-1],[-.5,1],[.5,1],[.5,0]]){
+ ctx.beginPath();ctx.moveTo(...p(x,y));ctx.lineTo(...p(x,y,54));ctx.strokeStyle='#4b5b5c';ctx.lineWidth=11;ctx.stroke();
+ ctx.beginPath();ctx.moveTo(p(x,y)[0]-2,p(x,y)[1]-2);ctx.lineTo(p(x,y,54)[0]-2,p(x,y,54)[1]);ctx.strokeStyle='#c6cfcb';ctx.lineWidth=3;ctx.stroke();
+}
+for(const [x,y] of [[-.5,-1],[.5,-1],[.5,1],[-.5,1]]){ctx.beginPath();ctx.arc(...p(x,y),5,0,2*Math.PI);ctx.fillStyle='#b89338';ctx.fill();}
+</script>

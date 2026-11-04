@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "generator": "built-in image_gen",
+  "geometryReference": "reference/street-thug-boss-room-v4/rack-geometry.png",
+  "styleReference": "assets/dungeon/street-thug-boss-room-v3/transit-rack.png",
+  "props": [
+    {
+      "id": "cargo",
+      "src": "transit-rack-grid-v1.png",
+      "crop": [122, 164, 1015, 960],
+      "anchor": [631.5, 792],
+      "bodyWidth": 953,
+      "width": 216,
+      "groundSlopes": [0.6786885245901639, -0.6620370370370371],
+      "nativeFront": [1, 0],
+      "footprint": [1, 2],
+      "contactPoints": {"left": [155, 903], "near": [460, 1110], "right": [1108, 681]},
+      "fitToleranceAt144": 3.1,
+      "notes": "Frame footprint uses source foot span, not the image crop. The generated projection has a small residual angle error; runtime registration aligns the ground axes, keeps vertical posts upright and places the three visible feet within 3.1px of their ideal two-cell boundary vertices at 144px tile width. Hidden rear foot is inferred, not measured."
+    }
+  ]
+}

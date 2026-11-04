@@ -1,0 +1,4 @@
+<!doctype html><meta charset="utf-8"><title>Rack foot calibration</title><style>body{margin:0;background:#ccd3c0}canvas{display:block}</style><canvas width="1254" height="1254" aria-label="货架脚点校验"></canvas><script>
+const c=document.querySelector('canvas'),ctx=c.getContext('2d'),im=new Image();im.src='../../assets/dungeon/street-thug-boss-room-v4/transit-rack-grid-v1.png';
+im.onload=()=>{ctx.drawImage(im,0,0);ctx.strokeStyle='#ff3040';ctx.fillStyle='#ff3040';ctx.lineWidth=2;ctx.font='20px sans-serif';for(const [name,x,y] of [['left',155,903],['near',460,1110],['right',1108,681]]){ctx.beginPath();ctx.moveTo(x-20,y);ctx.lineTo(x+20,y);ctx.moveTo(x,y-20);ctx.lineTo(x,y+20);ctx.stroke();ctx.fillText(name,x+20,y);}};
+</script>

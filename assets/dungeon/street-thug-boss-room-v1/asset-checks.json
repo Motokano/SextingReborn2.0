@@ -1,0 +1,366 @@
+{
+  "boss-chair.png": {
+    "size": [
+      1294,
+      1216
+    ],
+    "alpha": [
+      0,
+      255
+    ],
+    "bounds": [
+      232,
+      19,
+      1149,
+      1204
+    ],
+    "samples": {
+      "(0, 0)": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "(647, 0)": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "(100, 100)": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "(647, 1215)": [
+        0,
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  "sealed-stash.png": {
+    "size": [
+      1536,
+      1024
+    ],
+    "alpha": [
+      0,
+      254
+    ],
+    "bounds": [
+      79,
+      48,
+      1459,
+      980
+    ],
+    "samples": {
+      "(0, 0)": [
+        1,
+        1,
+        1,
+        0
+      ],
+      "(768, 0)": [
+        7,
+        5,
+        0,
+        0
+      ],
+      "(100, 100)": [
+        17,
+        12,
+        4,
+        0
+      ],
+      "(768, 1023)": [
+        3,
+        1,
+        0,
+        0
+      ]
+    }
+  },
+  "territory-mark.png": {
+    "size": [
+      1484,
+      1060
+    ],
+    "alpha": [
+      0,
+      255
+    ],
+    "bounds": [
+      76,
+      144,
+      1418,
+      900
+    ],
+    "samples": {
+      "(0, 0)": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "(742, 0)": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "(100, 100)": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "(742, 1059)": [
+        0,
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  "watch-desk.png": {
+    "size": [
+      1536,
+      1024
+    ],
+    "alpha": [
+      0,
+      254
+    ],
+    "bounds": [
+      132,
+      28,
+      1401,
+      993
+    ],
+    "samples": {
+      "(0, 0)": [
+        1,
+        1,
+        1,
+        0
+      ],
+      "(768, 0)": [
+        16,
+        8,
+        1,
+        0
+      ],
+      "(100, 100)": [
+        10,
+        6,
+        0,
+        0
+      ],
+      "(768, 1023)": [
+        1,
+        1,
+        1,
+        0
+      ]
+    }
+  },
+  "boss-private-cache.png": {
+    "size": [
+      1536,
+      1024
+    ],
+    "alpha": [
+      0,
+      254
+    ],
+    "bounds": [
+      0,
+      31,
+      1522,
+      1004
+    ],
+    "visibleBoundsAlphaAtLeast2": [
+      200,
+      207,
+      1337,
+      1002
+    ],
+    "samples": {
+      "(0, 0)": [
+        1,
+        1,
+        1,
+        0
+      ],
+      "(768, 0)": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "(100, 100)": [
+        0,
+        1,
+        0,
+        0
+      ],
+      "(1535, 1023)": [
+        1,
+        2,
+        1,
+        0
+      ]
+    },
+    "note": "Source pixels unchanged. Distant alpha=1 speckles outside padded visible crop are omitted only by preview crop; no file-level alpha cleanup."
+  },
+  "boss-private-cache-searched.png": {
+    "size": [
+      1536,
+      1024
+    ],
+    "alpha": [
+      0,
+      254
+    ],
+    "bounds": [
+      89,
+      8,
+      1490,
+      1010
+    ],
+    "visibleBoundsAlphaAtLeast2": [
+      234,
+      9,
+      1359,
+      1009
+    ],
+    "samples": {
+      "(0, 0)": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "(768, 0)": [
+        81,
+        62,
+        30,
+        0
+      ],
+      "(100, 100)": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "(1535, 1023)": [
+        1,
+        2,
+        1,
+        0
+      ]
+    },
+    "note": "Source pixels unchanged. Distant alpha=1 speckles outside padded visible crop are omitted only by preview crop; no file-level alpha cleanup."
+  },
+  "stolen-goods-basket.png": {
+    "size": [
+      1536,
+      1024
+    ],
+    "alpha": [
+      0,
+      254
+    ],
+    "bounds": [
+      0,
+      0,
+      1535,
+      1024
+    ],
+    "visibleBoundsAlphaAtLeast2": [
+      112,
+      90,
+      1433,
+      969
+    ],
+    "samples": {
+      "(0, 0)": [
+        1,
+        1,
+        1,
+        0
+      ],
+      "(768, 0)": [
+        3,
+        2,
+        0,
+        0
+      ],
+      "(100, 100)": [
+        14,
+        8,
+        1,
+        0
+      ],
+      "(1535, 1023)": [
+        1,
+        2,
+        1,
+        0
+      ]
+    },
+    "note": "Source pixels unchanged. Distant alpha=1 speckles outside padded visible crop are omitted only by preview crop; no file-level alpha cleanup."
+  },
+  "stolen-goods-basket-searched.png": {
+    "size": [
+      1536,
+      1024
+    ],
+    "alpha": [
+      0,
+      254
+    ],
+    "bounds": [
+      29,
+      23,
+      1509,
+      1024
+    ],
+    "visibleBoundsAlphaAtLeast2": [
+      29,
+      23,
+      1509,
+      999
+    ],
+    "samples": {
+      "(0, 0)": [
+        24,
+        15,
+        2,
+        0
+      ],
+      "(768, 0)": [
+        26,
+        19,
+        7,
+        0
+      ],
+      "(100, 100)": [
+        72,
+        54,
+        26,
+        0
+      ],
+      "(1535, 1023)": [
+        1,
+        2,
+        1,
+        0
+      ]
+    },
+    "note": "Source pixels unchanged. Distant alpha=1 speckles outside padded visible crop are omitted only by preview crop; no file-level alpha cleanup."
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "version": 3,
+  "status": "art-design-candidate",
+  "date": "2026-10-29",
+  "referenceTileWidth": 144,
+  "note": "New props and display sizes are art-review candidates. Ground anchors need final room integration checks. Original PNGs are preserved.",
+  "props": [
+    {"id":"desk","name":"看场桌","src":"watch-desk.png","crop":[132,28,1269,965],"anchor":[765,700],"width":128,"footprint":[2,1],"groundSlopes":[0.404,-0.637],"role":"decoration","detail":"旧木桌、暗绿包角、账本与搪瓷杯"},
+    {"id":"chair","name":"头目座椅","src":"boss-chair.png","crop":[232,19,917,1185],"anchor":[680,945],"width":52,"footprint":[1,1],"groundSlopes":[0.414,-0.589],"role":"decoration","detail":"木扶手、旧绿布垫、单块补丁"},
+    {"id":"stash","name":"封扎货堆","src":"sealed-stash.png","crop":[79,48,1380,932],"anchor":[775,745],"width":128,"footprint":[2,1],"groundSlopes":[0.435,-0.510],"role":"obstacle","detail":"并排封箱、粗绳和旧帆布，固定障碍"},
+    {"id":"mark","name":"门边涂记","src":"territory-mark.png","crop":[76,144,1342,756],"width":28,"footprint":[0,0],"role":"wall-decal","detail":"旧绿铁片上的粗白划记，贴墙使用"}
+  ],
+  "containers": [
+    {
+      "id":"boss-private-cache","name":"头目私藏箱","width":68,"footprint":[1,1],"role":"searchable-container",
+      "detail":"平盖旧木箱、暗绿包铁与地痞涂记；搜空后掀盖，露出空箱底。",
+      "unsearched":{"src":"boss-private-cache.png","crop":[198,205,1141,799],"anchor":[766,755],"bodyWidth":1092,"groundSlopes":[0.354,-0.675]},
+      "searched":{"src":"boss-private-cache-searched.png","crop":[232,7,1129,1005],"anchor":[759,775],"bodyWidth":1010,"groundSlopes":[0.344,-0.613]}
+    },
+    {
+      "id":"stolen-goods-basket","name":"赃物袋筐","width":80,"footprint":[1,1],"role":"searchable-container",
+      "detail":"藤编筐、旧绿布内衬与鼓起的布包；搜空后包裹塌下，露出空筐。",
+      "unsearched":{"src":"stolen-goods-basket.png","crop":[110,88,1325,883],"anchor":[790,760],"bodyWidth":1321,"groundSlopes":[0.296,-0.650]},
+      "searched":{"src":"stolen-goods-basket-searched.png","crop":[27,21,1484,980],"anchor":[776,765],"bodyWidth":1480,"groundSlopes":[0.296,-0.650]}
+    }
+  ],
+  "containerRegistrationNote":"Per-state source body widths and ground anchors compensate generated-image framing changes; the lid/contents are excluded from body scale. Ground slopes map to +/-1/sqrt(2) once around the contact center, keeping verticals vertical. Crops retain the silhouette with padding and omit distant alpha=1 noise. PNG pixels unchanged. Final runtime placement remains to be checked.",
+  "projectionCalibration":{"targetGroundSlopes":[0.7071067811865476,-0.7071067811865476],"method":"Vertical-preserving affine registration, matching js/dungeon/canteen-art.js. Source rigid-edge slopes checked by image line analysis and visual inspection. Basket short axis estimated from curved rim; shared by both states. Source-image galleries stay unprojected.","reuse":{"mat":{"anchor":[650,670],"groundSlopes":[0.613,-0.601]},"rack":{"anchor":[699,824],"groundSlopes":[0.488,-0.750]}}},
+  "reuse": {
+    "boss":"assets/map/isometric/street-thug-boss-v1/standing.png",
+    "mat":"assets/dungeon/outpost-decor-v1/worn-mat.png",
+    "rack":"assets/dungeon/outpost-decor-v1/timber-rack.png",
+    "floor":"assets/dungeon/outpost-decor-v1/floor-concrete.png",
+    "wall":"assets/dungeon/walls-v2/wall-peeling-workshop.png",
+    "door":"RuinsModuleArt iron door from assets/dungeon/modules-v1/material-atlas-v1.png"
+  }
+}

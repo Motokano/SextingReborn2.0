@@ -1,0 +1,338 @@
+{
+  "corner-rubble": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      212,
+      332,
+      1061,
+      987
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "06703f8bbc84667f287fc8ac982ca1c85e87aa3d8eca3b9815805441435391e8"
+  },
+  "factory-desk-low": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      163,
+      346,
+      1092,
+      1088
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "337291a7a0e37c4acb6f75588a2815525a09d14ac3534c4ab8c0e4d8cee573f5"
+  },
+  "factory-desk": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      165,
+      226,
+      1089,
+      1135
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "7aaacd486223e6eb61b322d5f76e4728954b99f6748676be88e7967af64b03b6"
+  },
+  "metal-sideboard-facing-y": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      178,
+      122,
+      1085,
+      1150
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "3248c6f2d94644ca5a02b5bd7c0485f1a11c89c6cbd7ef0b384989f24777f066"
+  },
+  "metal-sideboard-low": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      178,
+      268,
+      1083,
+      1164
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "93483ae9b5c0cbb151afaea6d86e9d45416cd8b1683897eec9d9827a6417aed3"
+  },
+  "metal-sideboard": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      178,
+      123,
+      1085,
+      1145
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "cd5b2438718b1830a919bc42d8c863875626366dacfe42dc861c607c6b225c5f"
+  },
+  "painted-concrete": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGB",
+    "bbox": [
+      0,
+      0,
+      1254,
+      1254
+    ],
+    "alphaRange": null,
+    "sha256": "5659c1f2a8f675d184b18b9df62c6a2eecbd8bfe948d379bbb8eb57ce8852e80"
+  },
+  "painted-plaster": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGB",
+    "bbox": [
+      0,
+      0,
+      1254,
+      1254
+    ],
+    "alphaRange": null,
+    "sha256": "97e85c9c6a157b67d5e97236b8f98a0dbc9135e5dc3147141b545d28d047acde"
+  },
+  "private-cache-low": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      151,
+      355,
+      1104,
+      1105
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "a74194407d685fb24cf885d6ef2235d868ebfa14ca219cfc0e987b8bd73e39bd"
+  },
+  "private-cache-searched-low": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      171,
+      218,
+      1141,
+      1192
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "e719f2b071605b710edba1870dfe40a0b39b2634c570d002f7092f00b669547a"
+  },
+  "private-cache-searched": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      162,
+      25,
+      1149,
+      1197
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "b77b17feb4055d951cb7875a9c3eeb7000757e7ff430883ec4ec7d7273e273ef"
+  },
+  "private-cache": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      150,
+      192,
+      1103,
+      1098
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "10e9e1490ccff42aec8a36b3fcb5bd71c42f2e4b90603ec1e77908ff59bb0674"
+  },
+  "steel-cot": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      76,
+      122,
+      1217,
+      1137
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "f9e930b97be9f952fb10d6b8faa4c572f5f4fc0130b5e42ec3af80d1a3ccef8a"
+  },
+  "stolen-basket-searched": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      143,
+      216,
+      1123,
+      1070
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "05353a2c2d417982ab4e117791720305e5e5111cc0077a80b51f7291e7525f58"
+  },
+  "stolen-basket": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      142,
+      216,
+      1123,
+      1070
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "fe537dd553e56459ceb9f61d6b9eea936be1224d609c2039a6c80452da7ef94e"
+  },
+  "stopped-fan": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      342,
+      268,
+      887,
+      1074
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "aaea704e8e55114759b02782f816a9d87c86f4507eb692a70aeb04331529f60c"
+  },
+  "transit-rack": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      112,
+      147,
+      1171,
+      1159
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "0f5ff523af27e8380e9066b5743b6920e5365aa48f637d88951a0adad7db3e31"
+  },
+  "vinyl-armchair": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      264,
+      153,
+      1017,
+      1093
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "b99834a682f5a78310507fb87237e3d0756caba02ce34a6e52c8d0c54e86da59"
+  },
+  "worn-mat": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      54,
+      241,
+      1192,
+      1039
+    ],
+    "alphaRange": [
+      0,
+      255
+    ],
+    "sha256": "48fb9f4bc482917b9d045fbb2aed2d59b40068c468456628ec1bc81730ddcd25"
+  }
+}

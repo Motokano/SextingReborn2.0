@@ -1,0 +1,89 @@
+[
+  {
+    "file": "drinking-table.png",
+    "size": [
+      1536,
+      1024
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      0,
+      24,
+      1448,
+      992
+    ],
+    "opaque_bbox": [
+      134,
+      28,
+      1433,
+      987
+    ],
+    "transparent_pixels": 835875,
+    "opaque_pixels": 0,
+    "partial_pixels": 736989,
+    "corners": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "file": "serving-sideboard.png",
+    "size": [
+      1424,
+      1105
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      0,
+      0,
+      1388,
+      1105
+    ],
+    "opaque_bbox": [
+      90,
+      4,
+      1343,
+      1090
+    ],
+    "transparent_pixels": 829496,
+    "opaque_pixels": 845,
+    "partial_pixels": 743179,
+    "corners": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  {
+    "file": "sleeping-nook.png",
+    "size": [
+      1536,
+      1024
+    ],
+    "mode": "RGBA",
+    "bbox": [
+      0,
+      0,
+      1474,
+      1008
+    ],
+    "opaque_bbox": [
+      205,
+      5,
+      1312,
+      997
+    ],
+    "transparent_pixels": 969349,
+    "opaque_pixels": 0,
+    "partial_pixels": 603515,
+    "corners": [
+      0,
+      0,
+      0,
+      0
+    ]
+  }
+]

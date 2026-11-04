@@ -1,0 +1,32 @@
+<!doctype html><meta charset="utf-8"><title>房间物件棋格模板</title><style>body{margin:0;background:#eee9dd}canvas{display:block}</style><canvas width="1024" height="1024" aria-label="精确棋格物件模板"></canvas>
+<script type="module">
+const id=new URLSearchParams(location.search).get('id')||'desk';
+const config={
+ desk:{w:1,d:1,h:35},chair:{w:.60,d:.60,h:19},
+ bed:{w:1,d:2,h:25},cabinet:{w:1,d:1,h:38},
+ fan:{w:.42,d:.42,h:9},cache:{w:.92,d:.92,h:29},
+ basket:{w:.80,d:.80,h:24},mat:{w:2,d:1,h:0},
+ rubble:{w:.9,d:.9,h:12}
+}[id];
+const canvas=document.querySelector('canvas'),ctx=canvas.getContext('2d'),K=['bed','mat'].includes(id)?3.5:5;
+const anchor=[512,id==='mat'?512:650],p=(x,y,h=0)=>[anchor[0]+(x-y)*72*K,anchor[1]+(x+y)*72/Math.SQRT2*K-h*K];
+const poly=(q,fill,stroke='#3f4c47',line=5)=>{ctx.beginPath();q.forEach((a,i)=>ctx[i?'lineTo':'moveTo'](...a));ctx.closePath();if(fill){ctx.fillStyle=fill;ctx.fill();}ctx.strokeStyle=stroke;ctx.lineWidth=line;ctx.stroke();};
+const {w,d,h}=config,x0=-w/2,x1=w/2,y0=-d/2,y1=d/2;
+const corners=(z=0)=>[[x0,y0],[x1,y0],[x1,y1],[x0,y1]].map(([x,y])=>p(x,y,z));
+const box=(a,b,c,e,z0,z1,color='#9cae9f')=>{poly([p(a,b,z1),p(c,b,z1),p(c,e,z1),p(a,e,z1)],color);poly([p(a,e,z1),p(c,e,z1),p(c,e,z0),p(a,e,z0)],'#7d9185');poly([p(c,b,z1),p(c,e,z1),p(c,e,z0),p(c,b,z0)],'#60796d');};
+ctx.fillStyle='#eee9dd';ctx.fillRect(0,0,1024,1024);poly(corners(),'#d8dece','#c39744',4);
+if(id==='desk'||id==='bed'){
+ for(const [x,y] of [[x0,y0],[x1,y0],[x0,y1],[x1,y1]])box(x-.02,y-.02,x+.02,y+.02,0,h);
+ box(x0,y0,x1,y1,h-3,h,'#c4c7af');
+ if(id==='bed'){box(x0,y0,x1,y0+.04,h,50);box(x0,y1-.04,x1,y1,h,37);}
+}else if(id==='chair'){
+ box(x0,y0,x1,y1,5,19);box(x0,y0,x1,y0+.1,19,52);
+ box(x0,y0,x0+.10,y1,19,30);box(x1-.10,y0,x1,y1,19,30);
+}else if(id==='fan'){
+ box(x0,y0,x1,y1,0,4);box(-.03,-.03,.03,.03,4,20);
+ const q=p(0,0,30);ctx.beginPath();ctx.ellipse(q[0],q[1],82,95,0,0,Math.PI*2);ctx.fillStyle='#9eafa0';ctx.fill();ctx.strokeStyle='#3f4c47';ctx.lineWidth=7;ctx.stroke();
+}else if(id==='mat'){poly(corners(),'#968969','#403b32',8);}
+else box(x0,y0,x1,y1,0,h);
+for(const q of corners()){ctx.beginPath();ctx.arc(...q,4,0,Math.PI*2);ctx.fillStyle='#c39744';ctx.fill();}
+document.title=id+' · 棋格几何模板';
+</script>

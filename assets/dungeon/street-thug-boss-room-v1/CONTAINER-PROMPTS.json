@@ -1,0 +1,54 @@
+{
+  "date": "2026-10-29",
+  "tool": "built-in image_gen",
+  "note": "Two container types, each unsearched and searched. Searched assets are edits of their corresponding original. Original RGBA pixels preserved.",
+  "requests": [
+    {
+      "id": "boss-private-cache",
+      "args": {
+        "transparent_background": true,
+        "referenced_image_paths": [
+          "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/street-thug-boss-room-v1/watch-desk.png",
+          "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/street-thug-boss-room-v1/territory-mark.png"
+        ],
+        "prompt": "Use case: stylized-concept. Create ONE transparent game prop sprite: a street thug boss's personal supply strongbox, UNSEARCHED CLOSED state, exclusive to a shabby dungeon gang den. Image 1 is the approved room furniture STYLE, materials, outline, light direction and isometric camera reference ONLY; do not draw the desk. Image 2 is the gang's white three slashes crossed with a single horizontal stroke emblem, use a small weathered painted version on the front of the box. Subject: one compact squat rectangular FLAT-LID wooden strongbox, thick worn honey-brown planks, two broad matte dark olive-green iron reinforcing straps around the body and lid, sturdy weathered corner plates, a simple small central latch NOT a padlock; one small side handle. Clearly separate the hinged flat lid from the body with a dark seam. No fantasy rounded treasure-chest lid. No precious gems or gold. The strongbox is cared for but old, with restrained scuffs and softened wood edges. Hand-painted detailed game illustration, rich solid volume and dark clean outlines, matching the references. Three-quarter isometric view, see top, front and right side, exact same elevation and orientation as reference furniture, upper-left illumination. The box is entirely within canvas, centered horizontally in lower two thirds; leave generous TRANSPARENT room above for a future raised lid variant. Subject visible width around 70% of a square canvas. Cutout with real transparent alpha. NO ground, NO floor patch, NO ground shadow, NO pedestal or base, NO characters, NO extra surrounding objects, NO text labels, NO glow or aura. One asset only, not a sprite sheet."
+      },
+      "source": "exec-caf66656-ec57-456b-9086-a60a935e34dc.png"
+    },
+    {
+      "id": "stolen-goods-basket",
+      "args": {
+        "transparent_background": true,
+        "referenced_image_paths": [
+          "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/street-thug-boss-room-v1/watch-desk.png",
+          "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/street-thug-boss-room-v1/sealed-stash.png",
+          "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/street-thug-boss-room-v1/territory-mark.png"
+        ],
+        "prompt": "Use case: stylized-concept. Create ONE transparent game prop sprite: a stolen-goods basket with cloth sacks inside, UNSEARCHED FULL state, exclusive to a street thug boss dungeon den. Image 1 sets hand-painted game art style, warm weathered wood, dark olive-green worn material, dark outlines, illumination and isometric camera. Image 2 is material/style reference for coarse cloth and ropes ONLY, do NOT copy its sealed rectangular crate pile. Image 3 is a small optional gang marker: three white slashes crossed once horizontally, painted on a little dark olive cloth patch on the basket front. Subject: ONE squat broad oval wicker basket, sturdy warm brown thick woven reeds with a reinforced wooden bottom contained within the basket, two low loop handles, dark olive canvas lining visibly folded over its rim. Inside are TWO softly bulging coarse tan cloth bundles snugly packed together, one tied with a loosenable string, the other covered by a folded olive cloth flap, suggesting everyday stolen supplies without illustrating specific loot rewards. Distinctly soft bulging organic silhouette compared with a box, stable flat bottom. Basket body is broad and low, not tall barrel-like; its container mouth and handles clearly readable. Rich handpainted volume, simplified large forms readable at small map size, carefully rendered wicker and cloth details. Three-quarter isometric view see top, front and right side, same camera and lighting as room desk reference. Center one complete compact asset, 70% canvas width, generous transparent margin around, no clipping. Real transparent alpha. NO outside loose objects, NO coins or treasure, NO floor or ground patch, NO ground shadow, NO pawn base or pedestal, NO people, NO letters, NO UI. One asset only, not a sheet."
+      },
+      "source": "exec-fb519fc1-7e91-4cab-9009-f683987d9e19.png"
+    },
+    {
+      "id": "boss-private-cache-searched",
+      "args": {
+        "transparent_background": true,
+        "referenced_image_paths": [
+          "C:/Users/haoxian.huang/.codex/generated_images/01a17b42-6e6e-7e22-a6af-27970fdf58ae/exec-caf66656-ec57-456b-9086-a60a935e34dc.png"
+        ],
+        "prompt": "Use case: precise-object-edit. Edit THIS ONE game strongbox sprite to its SEARCHED / EMPTY state. The supplied image is the EDIT TARGET. Preserve the exact original box BODY geometry, proportions, front metal emblem plate, three-slashes gang mark, side handle, corner straps, planks, material colors, weathering, line weight, isometric camera, light direction and scale. Change ONLY these things: swing its existing flat hinged lid open upward and backward to about 95 degrees on the two rear hinges; release the front clasp and show its simple opened tab; reveal a clearly EMPTY dark wooden interior lined with a thin worn olive cloth at the bottom. No loot, coins, keys, bags or new objects. The lid remains attached and matches its original thickness/wood planks/two iron straps. Preserve full unbroken box body silhouette and bottom corner shape; opening the lid must not narrow or resize the body. Extend transparent canvas upward if needed to fit the raised lid without changing body scale. Full object entirely inside canvas with margins. Keep genuine transparent background, no ground patch, shadow, base, aura, scene or labels. This is a registered alternate state of the SAME exact object, not a redesign. One asset only."
+      },
+      "source": "exec-bc774af0-a66b-44ca-aa51-15214823dadb.png"
+    },
+    {
+      "id": "stolen-goods-basket-searched",
+      "args": {
+        "transparent_background": true,
+        "referenced_image_paths": [
+          "C:/Users/haoxian.huang/.codex/generated_images/01a17b42-6e6e-7e22-a6af-27970fdf58ae/exec-fb519fc1-7e91-4cab-9009-f683987d9e19.png"
+        ],
+        "prompt": "Use case: precise-object-edit. Edit THIS ONE stolen-goods basket game sprite to its SEARCHED / EMPTY state. Supplied image is the EDIT TARGET. Preserve EXACT original canvas size, camera, basket BODY position and size, oval wicker frame, bottom outline, front metal emblem plate, three-slashes gang mark, two handle shapes and positions, all material colors, wear, outline width and light direction. Change ONLY its contents: remove both bulging filled bundles, leaving the basket visibly empty; untied tan sack fabric lies FLAT and collapsed on the bottom inside, olive inner lining drapes softly over the rim, and one short slack drawstring lies INSIDE the basket. Show a large dark EMPTY cavity with the flat cloth at the bottom. No bulging bags left. Do not add or remove handles, do not resize or shift the basket frame, do not enlarge or raise the front rim. No items spill outside the original footprint. Retain same detailed hand-painted style. Genuine transparent alpha, no floor, shadow, pedestal, glow or text. One asset only, searched variant of exact same container."
+      },
+      "source": "exec-638af59b-1e61-4df9-adff-918d65bd3a4e.png"
+    }
+  ]
+}

@@ -1,0 +1,4207 @@
+{
+  "version": 1,
+  "referenceTileWidth": 144,
+  "styleStandard": "docs/design/77-grid-scene-art-standard.md",
+  "catalog": {
+    "abandoned-chest-v1": {
+      "name": "遗留箱子",
+      "tileWidth": 0.634,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "category": "container",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 42px; compare against existing player and boss in board review",
+      "contactKind": "ground corners",
+      "unsearched": {
+        "src": "assets/dungeon/grid-scene-v1/abandoned-chest.png",
+        "crop": [
+          228,
+          71,
+          1034,
+          940
+        ],
+        "anchor": [
+          734.5,
+          723
+        ],
+        "bodyWidth": 979,
+        "groundSlopes": [
+          0.4823529411764706,
+          -0.6953125
+        ],
+        "contacts": [
+          [
+            245,
+            713
+          ],
+          [
+            840,
+            1000
+          ],
+          [
+            1224,
+            733
+          ]
+        ],
+        "size": [
+          1487,
+          1058
+        ]
+      },
+      "searched": {
+        "src": "assets/dungeon/grid-scene-v1/abandoned-chest-searched.png",
+        "crop": [
+          244,
+          38,
+          1026,
+          985
+        ],
+        "anchor": [
+          726.5,
+          727
+        ],
+        "bodyWidth": 945,
+        "groundSlopes": [
+          0.4872665534804754,
+          -0.7837078651685393
+        ],
+        "contacts": [
+          [
+            254,
+            723
+          ],
+          [
+            843,
+            1010
+          ],
+          [
+            1199,
+            731
+          ]
+        ],
+        "size": [
+          1487,
+          1058
+        ]
+      }
+    },
+    "discarded-toolbox-v1": {
+      "name": "废弃工具箱",
+      "tileWidth": 0.294,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "category": "container",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 22px; compare against existing player and boss in board review",
+      "contactKind": "ground corners",
+      "unsearched": {
+        "src": "assets/dungeon/grid-scene-v1/discarded-toolbox.png",
+        "crop": [
+          227,
+          68,
+          1092,
+          912
+        ],
+        "anchor": [
+          768,
+          705.5
+        ],
+        "bodyWidth": 1036,
+        "groundSlopes": [
+          0.5346097201767305,
+          -0.453781512605042
+        ],
+        "contacts": [
+          [
+            250,
+            605
+          ],
+          [
+            929,
+            968
+          ],
+          [
+            1286,
+            806
+          ]
+        ],
+        "size": [
+          1536,
+          1024
+        ]
+      },
+      "searched": {
+        "src": "assets/dungeon/grid-scene-v1/discarded-toolbox-searched.png",
+        "crop": [
+          330,
+          36,
+          893,
+          912
+        ],
+        "anchor": [
+          768.5,
+          711
+        ],
+        "bodyWidth": 837,
+        "groundSlopes": [
+          0.5574074074074075,
+          -0.4882154882154882
+        ],
+        "contacts": [
+          [
+            350,
+            633
+          ],
+          [
+            890,
+            934
+          ],
+          [
+            1187,
+            789
+          ]
+        ],
+        "size": [
+          1536,
+          1024
+        ]
+      }
+    },
+    "reused-fridge-v1": {
+      "name": "旧冰箱储物柜",
+      "tileWidth": 0.58,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "category": "container",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid with existing player and boss",
+      "contactKind": "ground corners",
+      "unsearched": {
+        "src": "assets/dungeon/grid-scene-v1/reused-fridge.png",
+        "crop": [
+          248,
+          200,
+          758,
+          888
+        ],
+        "anchor": [
+          632,
+          901
+        ],
+        "bodyWidth": 646,
+        "groundSlopes": [
+          0.5235294117647059,
+          -0.5490196078431373
+        ],
+        "contacts": [
+          [
+            309,
+            896
+          ],
+          [
+            649,
+            1074
+          ],
+          [
+            955,
+            906
+          ]
+        ],
+        "size": [
+          1254,
+          1254
+        ]
+      },
+      "searched": {
+        "src": "assets/dungeon/grid-scene-v1/reused-fridge-searched.png",
+        "crop": [
+          131,
+          206,
+          994,
+          872
+        ],
+        "anchor": [
+          764.5,
+          887
+        ],
+        "bodyWidth": 605,
+        "groundSlopes": [
+          0.5771604938271605,
+          -0.608540925266904
+        ],
+        "contacts": [
+          [
+            462,
+            879
+          ],
+          [
+            786,
+            1066
+          ],
+          [
+            1067,
+            895
+          ]
+        ],
+        "size": [
+          1254,
+          1254
+        ]
+      }
+    },
+    "overturned-cart-v1": {
+      "name": "翻倒的货车",
+      "tileWidth": 0.79,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "category": "container",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid with existing player and boss",
+      "contactKind": "ground corners",
+      "unsearched": {
+        "src": "assets/dungeon/grid-scene-v1/overturned-cart.png",
+        "crop": [
+          110,
+          99,
+          1333,
+          871
+        ],
+        "anchor": [
+          925,
+          650
+        ],
+        "bodyWidth": 946,
+        "groundSlopes": [
+          0.6717724288840262,
+          -0.6278118609406953
+        ],
+        "contacts": [
+          [
+            452,
+            650
+          ],
+          [
+            909,
+            957
+          ],
+          [
+            1398,
+            650
+          ]
+        ],
+        "size": [
+          1493,
+          1054
+        ]
+      },
+      "searched": {
+        "src": "assets/dungeon/grid-scene-v1/overturned-cart-searched.png",
+        "crop": [
+          110,
+          98,
+          1334,
+          872
+        ],
+        "anchor": [
+          925,
+          650
+        ],
+        "bodyWidth": 946,
+        "groundSlopes": [
+          0.6717724288840262,
+          -0.6278118609406953
+        ],
+        "contacts": [
+          [
+            452,
+            650
+          ],
+          [
+            909,
+            957
+          ],
+          [
+            1398,
+            650
+          ]
+        ],
+        "size": [
+          1493,
+          1054
+        ]
+      }
+    },
+    "abandoned-cargo-v1": {
+      "name": "废弃货堆",
+      "tileWidth": 0.927,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "category": "container",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid with existing player and boss",
+      "contactKind": "ground corners",
+      "unsearched": {
+        "src": "assets/dungeon/grid-scene-v1/abandoned-cargo.png",
+        "crop": [
+          159,
+          120,
+          1050,
+          957
+        ],
+        "anchor": [
+          682,
+          765.5
+        ],
+        "bodyWidth": 1012,
+        "groundSlopes": [
+          0.6058700209643606,
+          -0.5719626168224299
+        ],
+        "contacts": [
+          [
+            176,
+            774
+          ],
+          [
+            653,
+            1063
+          ],
+          [
+            1188,
+            757
+          ]
+        ],
+        "size": [
+          1362,
+          1155
+        ]
+      },
+      "searched": {
+        "src": "assets/dungeon/grid-scene-v1/abandoned-cargo-searched.png",
+        "crop": [
+          160,
+          106,
+          1048,
+          970
+        ],
+        "anchor": [
+          682,
+          765.5
+        ],
+        "bodyWidth": 1012,
+        "groundSlopes": [
+          0.6058700209643606,
+          -0.5719626168224299
+        ],
+        "contacts": [
+          [
+            176,
+            774
+          ],
+          [
+            653,
+            1063
+          ],
+          [
+            1188,
+            757
+          ]
+        ],
+        "size": [
+          1362,
+          1155
+        ]
+      }
+    },
+    "damaged-barrel-v1": {
+      "name": "破损木桶",
+      "tileWidth": 0.382,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "category": "container",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 52px; compare against existing player and boss in board review",
+      "contactKind": "round silhouette",
+      "unsearched": {
+        "src": "assets/dungeon/grid-scene-v1/damaged-barrel.png",
+        "crop": [
+          325,
+          238,
+          603,
+          815
+        ],
+        "anchor": [
+          626,
+          897
+        ],
+        "bodyWidth": 546,
+        "groundSlopes": [
+          0.7071067811865476,
+          -0.7071067811865476
+        ],
+        "contacts": [
+          [
+            353,
+            897
+          ],
+          [
+            626,
+            1040
+          ],
+          [
+            899,
+            897
+          ]
+        ],
+        "size": [
+          1254,
+          1254
+        ]
+      },
+      "searched": {
+        "src": "assets/dungeon/grid-scene-v1/damaged-barrel-searched.png",
+        "crop": [
+          325,
+          125,
+          604,
+          928
+        ],
+        "anchor": [
+          626,
+          897
+        ],
+        "bodyWidth": 546,
+        "groundSlopes": [
+          0.7071067811865476,
+          -0.7071067811865476
+        ],
+        "contacts": [
+          [
+            353,
+            897
+          ],
+          [
+            626,
+            1040
+          ],
+          [
+            899,
+            897
+          ]
+        ],
+        "size": [
+          1254,
+          1254
+        ]
+      }
+    },
+    "lost-backpack-v1": {
+      "name": "遗落背包",
+      "tileWidth": 0.178,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "category": "container",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 34px; compare against existing player and boss in board review",
+      "contactKind": "ground corners",
+      "unsearched": {
+        "src": "assets/dungeon/grid-scene-v1/lost-backpack.png",
+        "crop": [
+          318,
+          200,
+          723,
+          815
+        ],
+        "anchor": [
+          678,
+          863
+        ],
+        "bodyWidth": 664,
+        "groundSlopes": [
+          0.42318840579710143,
+          -0.4200626959247649
+        ],
+        "contacts": [
+          [
+            346,
+            857
+          ],
+          [
+            691,
+            1003
+          ],
+          [
+            1010,
+            869
+          ]
+        ],
+        "size": [
+          1330,
+          1182
+        ]
+      },
+      "searched": {
+        "src": "assets/dungeon/grid-scene-v1/lost-backpack-searched.png",
+        "crop": [
+          318,
+          188,
+          724,
+          828
+        ],
+        "anchor": [
+          678,
+          863
+        ],
+        "bodyWidth": 664,
+        "groundSlopes": [
+          0.42318840579710143,
+          -0.4200626959247649
+        ],
+        "contacts": [
+          [
+            346,
+            857
+          ],
+          [
+            691,
+            1003
+          ],
+          [
+            1010,
+            869
+          ]
+        ],
+        "size": [
+          1330,
+          1182
+        ]
+      }
+    },
+    "collapsed-shelf-v1": {
+      "name": "倒塌货架",
+      "tileWidth": 0.69,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "category": "container",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid with existing player and boss",
+      "contactKind": "ground corners",
+      "unsearched": {
+        "src": "assets/dungeon/grid-scene-v1/collapsed-shelf.png",
+        "crop": [
+          170,
+          103,
+          996,
+          995
+        ],
+        "anchor": [
+          666,
+          802
+        ],
+        "bodyWidth": 954,
+        "groundSlopes": [
+          0.5583456425406204,
+          -0.6425992779783394
+        ],
+        "contacts": [
+          [
+            189,
+            702
+          ],
+          [
+            866,
+            1080
+          ],
+          [
+            1143,
+            902
+          ]
+        ],
+        "size": [
+          1334,
+          1179
+        ]
+      },
+      "searched": {
+        "src": "assets/dungeon/grid-scene-v1/collapsed-shelf-searched.png",
+        "crop": [
+          169,
+          76,
+          998,
+          1023
+        ],
+        "anchor": [
+          666,
+          802
+        ],
+        "bodyWidth": 954,
+        "groundSlopes": [
+          0.5583456425406204,
+          -0.6425992779783394
+        ],
+        "contacts": [
+          [
+            189,
+            702
+          ],
+          [
+            866,
+            1080
+          ],
+          [
+            1143,
+            902
+          ]
+        ],
+        "size": [
+          1334,
+          1179
+        ]
+      }
+    },
+    "salvaged-shopping-cart-v1": {
+      "name": "旧购物车货笼",
+      "tileWidth": 0.272,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "category": "container",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 58px; compare against existing player and boss in board review",
+      "contactKind": "ground corners",
+      "unsearched": {
+        "src": "assets/dungeon/grid-scene-v1/salvaged-shopping-cart.png",
+        "crop": [
+          252,
+          47,
+          957,
+          1050
+        ],
+        "anchor": [
+          710.5,
+          931
+        ],
+        "bodyWidth": 589,
+        "groundSlopes": [
+          0.8613861386138614,
+          -0.330749354005168
+        ],
+        "contacts": [
+          [
+            416,
+            908
+          ],
+          [
+            618,
+            1082
+          ],
+          [
+            1005,
+            954
+          ]
+        ],
+        "size": [
+          1383,
+          1137
+        ]
+      },
+      "searched": {
+        "src": "assets/dungeon/grid-scene-v1/salvaged-shopping-cart-searched.png",
+        "crop": [
+          256,
+          47,
+          972,
+          1058
+        ],
+        "anchor": [
+          716.5,
+          934
+        ],
+        "bodyWidth": 591,
+        "groundSlopes": [
+          0.9226804123711341,
+          -0.34005037783375314
+        ],
+        "contacts": [
+          [
+            421,
+            912
+          ],
+          [
+            615,
+            1091
+          ],
+          [
+            1012,
+            956
+          ]
+        ],
+        "size": [
+          1383,
+          1137
+        ]
+      }
+    },
+    "reused-plastic-drum-v1": {
+      "name": "蓝塑料储物桶",
+      "tileWidth": 0.513,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "category": "container",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 50px; compare against existing player and boss in board review",
+      "contactKind": "round silhouette",
+      "unsearched": {
+        "src": "assets/dungeon/grid-scene-v1/reused-plastic-drum.png",
+        "crop": [
+          325,
+          262,
+          670,
+          753
+        ],
+        "anchor": [
+          660,
+          846
+        ],
+        "bodyWidth": 630,
+        "groundSlopes": [
+          0.7071067811865476,
+          -0.7071067811865476
+        ],
+        "contacts": [
+          [
+            345,
+            846
+          ],
+          [
+            656,
+            1004
+          ],
+          [
+            975,
+            846
+          ]
+        ],
+        "size": [
+          1312,
+          1199
+        ]
+      },
+      "searched": {
+        "src": "assets/dungeon/grid-scene-v1/reused-plastic-drum-searched.png",
+        "crop": [
+          327,
+          97,
+          666,
+          1008
+        ],
+        "anchor": [
+          660,
+          948
+        ],
+        "bodyWidth": 630,
+        "groundSlopes": [
+          0.7071067811865476,
+          -0.7071067811865476
+        ],
+        "contacts": [
+          [
+            345,
+            948
+          ],
+          [
+            656,
+            1106
+          ],
+          [
+            975,
+            948
+          ]
+        ],
+        "size": [
+          1312,
+          1199
+        ]
+      }
+    },
+    "reused-washer-drum-v1": {
+      "name": "洗衣机内胆货篓",
+      "tileWidth": 0.456,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "category": "container",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 38px; compare against existing player and boss in board review",
+      "contactKind": "round silhouette",
+      "unsearched": {
+        "src": "assets/dungeon/grid-scene-v1/reused-washer-drum.png",
+        "crop": [
+          278,
+          297,
+          788,
+          707
+        ],
+        "anchor": [
+          670,
+          834
+        ],
+        "bodyWidth": 654,
+        "groundSlopes": [
+          0.7071067811865476,
+          -0.7071067811865476
+        ],
+        "contacts": [
+          [
+            343,
+            834
+          ],
+          [
+            670,
+            993
+          ],
+          [
+            997,
+            834
+          ]
+        ],
+        "size": [
+          1312,
+          1199
+        ]
+      },
+      "searched": {
+        "src": "assets/dungeon/grid-scene-v1/reused-washer-drum-searched.png",
+        "crop": [
+          278,
+          297,
+          787,
+          707
+        ],
+        "anchor": [
+          670,
+          834
+        ],
+        "bodyWidth": 654,
+        "groundSlopes": [
+          0.7071067811865476,
+          -0.7071067811865476
+        ],
+        "contacts": [
+          [
+            343,
+            834
+          ],
+          [
+            670,
+            993
+          ],
+          [
+            997,
+            834
+          ]
+        ],
+        "size": [
+          1312,
+          1199
+        ]
+      }
+    },
+    "patched-suitcase-v1": {
+      "name": "补缀拉杆箱",
+      "tileWidth": 0.145,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "category": "container",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 44px; compare against existing player and boss in board review",
+      "contactKind": "ground corners",
+      "unsearched": {
+        "src": "assets/dungeon/grid-scene-v1/patched-suitcase.png",
+        "crop": [
+          293,
+          90,
+          679,
+          1073
+        ],
+        "anchor": [
+          625,
+          1014.5
+        ],
+        "bodyWidth": 610,
+        "groundSlopes": [
+          0.5294117647058824,
+          -0.33992094861660077
+        ],
+        "contacts": [
+          [
+            320,
+            963
+          ],
+          [
+            677,
+            1152
+          ],
+          [
+            930,
+            1066
+          ]
+        ],
+        "size": [
+          1234,
+          1275
+        ]
+      },
+      "searched": {
+        "src": "assets/dungeon/grid-scene-v1/patched-suitcase-searched.png",
+        "crop": [
+          115,
+          94,
+          858,
+          1081
+        ],
+        "anchor": [
+          625,
+          1014.5
+        ],
+        "bodyWidth": 610,
+        "groundSlopes": [
+          0.5294117647058824,
+          -0.33992094861660077
+        ],
+        "contacts": [
+          [
+            320,
+            963
+          ],
+          [
+            677,
+            1152
+          ],
+          [
+            930,
+            1066
+          ]
+        ],
+        "size": [
+          1233,
+          1275
+        ]
+      }
+    },
+    "repaired-cooler-v1": {
+      "name": "修补保温箱",
+      "tileWidth": 0.369,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "category": "container",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 34px; compare against existing player and boss in board review",
+      "contactKind": "ground corners",
+      "unsearched": {
+        "src": "assets/dungeon/grid-scene-v1/repaired-cooler.png",
+        "crop": [
+          318,
+          197,
+          797,
+          797
+        ],
+        "anchor": [
+          721.5,
+          779
+        ],
+        "bodyWidth": 737,
+        "groundSlopes": [
+          0.48268398268398266,
+          -0.6581818181818182
+        ],
+        "contacts": [
+          [
+            353,
+            758
+          ],
+          [
+            815,
+            981
+          ],
+          [
+            1090,
+            800
+          ]
+        ],
+        "size": [
+          1402,
+          1122
+        ]
+      },
+      "searched": {
+        "src": "assets/dungeon/grid-scene-v1/repaired-cooler-searched.png",
+        "crop": [
+          326,
+          61,
+          813,
+          969
+        ],
+        "anchor": [
+          721.5,
+          819
+        ],
+        "bodyWidth": 737,
+        "groundSlopes": [
+          0.48268398268398266,
+          -0.6581818181818182
+        ],
+        "contacts": [
+          [
+            353,
+            798
+          ],
+          [
+            815,
+            1021
+          ],
+          [
+            1090,
+            840
+          ]
+        ],
+        "size": [
+          1402,
+          1122
+        ]
+      }
+    },
+    "rice-cooker-cache-v1": {
+      "name": "旧电饭煲藏物罐",
+      "tileWidth": 0.157,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "category": "container",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 22px; compare against existing player and boss in board review",
+      "contactKind": "round silhouette",
+      "unsearched": {
+        "src": "assets/dungeon/grid-scene-v1/rice-cooker-cache.png",
+        "crop": [
+          331,
+          328,
+          635,
+          645
+        ],
+        "anchor": [
+          624.5,
+          871.5
+        ],
+        "bodyWidth": 469,
+        "groundSlopes": [
+          0.7071067811865476,
+          -0.7071067811865476
+        ],
+        "contacts": [
+          [
+            390,
+            855
+          ],
+          [
+            653,
+            960
+          ],
+          [
+            859,
+            888
+          ]
+        ],
+        "size": [
+          1254,
+          1254
+        ]
+      },
+      "searched": {
+        "src": "assets/dungeon/grid-scene-v1/rice-cooker-cache-searched.png",
+        "crop": [
+          332,
+          162,
+          647,
+          896
+        ],
+        "anchor": [
+          624.5,
+          954.5
+        ],
+        "bodyWidth": 469,
+        "groundSlopes": [
+          0.7071067811865476,
+          -0.7071067811865476
+        ],
+        "contacts": [
+          [
+            390,
+            938
+          ],
+          [
+            653,
+            1043
+          ],
+          [
+            859,
+            971
+          ]
+        ],
+        "size": [
+          1254,
+          1254
+        ]
+      }
+    },
+    "pressure-pot-cache-v1": {
+      "name": "旧压力锅储物罐",
+      "tileWidth": 0.236,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "category": "container",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 22px; compare against existing player and boss in board review",
+      "contactKind": "round silhouette",
+      "unsearched": {
+        "src": "assets/dungeon/grid-scene-v1/pressure-pot-cache.png",
+        "crop": [
+          291,
+          328,
+          732,
+          604
+        ],
+        "anchor": [
+          664.5,
+          806
+        ],
+        "bodyWidth": 563,
+        "groundSlopes": [
+          0.7071067811865476,
+          -0.7071067811865476
+        ],
+        "contacts": [
+          [
+            383,
+            806
+          ],
+          [
+            664,
+            921
+          ],
+          [
+            946,
+            806
+          ]
+        ],
+        "size": [
+          1312,
+          1199
+        ]
+      },
+      "searched": {
+        "src": "assets/dungeon/grid-scene-v1/pressure-pot-cache-searched.png",
+        "crop": [
+          269,
+          128,
+          767,
+          934
+        ],
+        "anchor": [
+          664.5,
+          971
+        ],
+        "bodyWidth": 563,
+        "groundSlopes": [
+          0.7071067811865476,
+          -0.7071067811865476
+        ],
+        "contacts": [
+          [
+            383,
+            971
+          ],
+          [
+            664,
+            1086
+          ],
+          [
+            946,
+            971
+          ]
+        ],
+        "size": [
+          1312,
+          1199
+        ]
+      }
+    },
+    "computer-tower-cabinet-v1": {
+      "name": "旧机箱杂物柜",
+      "tileWidth": 0.48,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "category": "container",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid with existing player and boss",
+      "contactKind": "ground corners",
+      "unsearched": {
+        "src": "assets/dungeon/grid-scene-v1/computer-tower-cabinet.png",
+        "crop": [
+          258,
+          208,
+          816,
+          857
+        ],
+        "anchor": [
+          666.5,
+          794
+        ],
+        "bodyWidth": 781,
+        "groundSlopes": [
+          0.7263374485596708,
+          -0.5389830508474577
+        ],
+        "contacts": [
+          [
+            276,
+            697
+          ],
+          [
+            762,
+            1050
+          ],
+          [
+            1057,
+            891
+          ]
+        ],
+        "size": [
+          1327,
+          1185
+        ]
+      },
+      "searched": {
+        "src": "assets/dungeon/grid-scene-v1/computer-tower-cabinet-searched.png",
+        "crop": [
+          96,
+          139,
+          1139,
+          956
+        ],
+        "anchor": [
+          512.5,
+          765
+        ],
+        "bodyWidth": 805,
+        "groundSlopes": [
+          0.7295719844357976,
+          -0.49828178694158076
+        ],
+        "contacts": [
+          [
+            110,
+            650
+          ],
+          [
+            624,
+            1025
+          ],
+          [
+            915,
+            880
+          ]
+        ],
+        "size": [
+          1327,
+          1185
+        ]
+      }
+    },
+    "wheelie-bin-cache-v1": {
+      "name": "带轮垃圾桶货筒",
+      "tileWidth": 0.245,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "category": "container",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 62px; compare against existing player and boss in board review",
+      "contactKind": "ground corners",
+      "unsearched": {
+        "src": "assets/dungeon/grid-scene-v1/wheelie-bin-cache.png",
+        "crop": [
+          300,
+          196,
+          733,
+          842
+        ],
+        "anchor": [
+          693.5,
+          909.5
+        ],
+        "bodyWidth": 577,
+        "groundSlopes": [
+          0.5423728813559322,
+          -0.2961876832844575
+        ],
+        "contacts": [
+          [
+            405,
+            896
+          ],
+          [
+            641,
+            1024
+          ],
+          [
+            982,
+            923
+          ]
+        ],
+        "size": [
+          1312,
+          1199
+        ]
+      },
+      "searched": {
+        "src": "assets/dungeon/grid-scene-v1/wheelie-bin-cache-searched.png",
+        "crop": [
+          303,
+          98,
+          729,
+          940
+        ],
+        "anchor": [
+          693.5,
+          909.5
+        ],
+        "bodyWidth": 577,
+        "groundSlopes": [
+          0.5423728813559322,
+          -0.2961876832844575
+        ],
+        "contacts": [
+          [
+            405,
+            896
+          ],
+          [
+            641,
+            1024
+          ],
+          [
+            982,
+            923
+          ]
+        ],
+        "size": [
+          1312,
+          1199
+        ]
+      }
+    },
+    "postbox-cache-v1": {
+      "name": "旧邮筒藏物柜",
+      "tileWidth": 0.327,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "category": "container",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 74px; compare against existing player and boss in board review",
+      "contactKind": "ground corners",
+      "unsearched": {
+        "src": "assets/dungeon/grid-scene-v1/postbox-cache.png",
+        "crop": [
+          312,
+          139,
+          685,
+          952
+        ],
+        "anchor": [
+          663.5,
+          934.5
+        ],
+        "bodyWidth": 591,
+        "groundSlopes": [
+          0.4634760705289673,
+          -0.5309278350515464
+        ],
+        "contacts": [
+          [
+            368,
+            894
+          ],
+          [
+            765,
+            1078
+          ],
+          [
+            959,
+            975
+          ]
+        ],
+        "size": [
+          1312,
+          1199
+        ]
+      },
+      "searched": {
+        "src": "assets/dungeon/grid-scene-v1/postbox-cache-searched.png",
+        "crop": [
+          134,
+          143,
+          856,
+          949
+        ],
+        "anchor": [
+          663.5,
+          934.5
+        ],
+        "bodyWidth": 591,
+        "groundSlopes": [
+          0.4634760705289673,
+          -0.5309278350515464
+        ],
+        "contacts": [
+          [
+            368,
+            894
+          ],
+          [
+            765,
+            1078
+          ],
+          [
+            959,
+            975
+          ]
+        ],
+        "size": [
+          1312,
+          1199
+        ]
+      }
+    },
+    "factory-locker-cache-v1": {
+      "name": "旧更衣柜",
+      "tileWidth": 0.397,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "category": "container",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 90px; compare against existing player and boss in board review",
+      "contactKind": "ground corners",
+      "unsearched": {
+        "src": "assets/dungeon/grid-scene-v1/factory-locker-cache.png",
+        "crop": [
+          380,
+          169,
+          567,
+          924
+        ],
+        "anchor": [
+          663.5,
+          939
+        ],
+        "bodyWidth": 509,
+        "groundSlopes": [
+          0.5376344086021505,
+          -0.5739130434782609
+        ],
+        "contacts": [
+          [
+            409,
+            930
+          ],
+          [
+            688,
+            1080
+          ],
+          [
+            918,
+            948
+          ]
+        ],
+        "size": [
+          1312,
+          1199
+        ]
+      },
+      "searched": {
+        "src": "assets/dungeon/grid-scene-v1/factory-locker-cache-searched.png",
+        "crop": [
+          179,
+          172,
+          765,
+          919
+        ],
+        "anchor": [
+          663.5,
+          939
+        ],
+        "bodyWidth": 509,
+        "groundSlopes": [
+          0.5376344086021505,
+          -0.5739130434782609
+        ],
+        "contacts": [
+          [
+            409,
+            930
+          ],
+          [
+            688,
+            1080
+          ],
+          [
+            918,
+            948
+          ]
+        ],
+        "size": [
+          1312,
+          1199
+        ]
+      }
+    },
+    "vending-machine-cupboard-v1": {
+      "name": "旧售货机货柜",
+      "tileWidth": 0.51,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "category": "container",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 90px; compare against existing player and boss in board review",
+      "contactKind": "ground corners",
+      "unsearched": {
+        "src": "assets/dungeon/grid-scene-v1/vending-machine-cupboard.png",
+        "crop": [
+          295,
+          120,
+          667,
+          1018
+        ],
+        "anchor": [
+          625,
+          943.5
+        ],
+        "bodyWidth": 614,
+        "groundSlopes": [
+          0.5254691689008043,
+          -0.6846473029045643
+        ],
+        "contacts": [
+          [
+            318,
+            928
+          ],
+          [
+            691,
+            1124
+          ],
+          [
+            932,
+            959
+          ]
+        ],
+        "size": [
+          1254,
+          1254
+        ]
+      },
+      "searched": {
+        "src": "assets/dungeon/grid-scene-v1/vending-machine-cupboard-searched.png",
+        "crop": [
+          126,
+          123,
+          834,
+          1013
+        ],
+        "anchor": [
+          625,
+          943.5
+        ],
+        "bodyWidth": 614,
+        "groundSlopes": [
+          0.5254691689008043,
+          -0.6846473029045643
+        ],
+        "contacts": [
+          [
+            318,
+            928
+          ],
+          [
+            691,
+            1124
+          ],
+          [
+            932,
+            959
+          ]
+        ],
+        "size": [
+          1254,
+          1254
+        ]
+      }
+    },
+    "pram-cargo-basket-v1": {
+      "name": "旧婴儿车货篮",
+      "tileWidth": 0.314,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "category": "container",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 56px; compare against existing player and boss in board review",
+      "contactKind": "ground corners",
+      "unsearched": {
+        "src": "assets/dungeon/grid-scene-v1/pram-cargo-basket.png",
+        "crop": [
+          292,
+          91,
+          955,
+          953
+        ],
+        "anchor": [
+          730,
+          865.5
+        ],
+        "bodyWidth": 746,
+        "groundSlopes": [
+          0.5379310344827586,
+          -0.3925438596491228
+        ],
+        "contacts": [
+          [
+            357,
+            877
+          ],
+          [
+            647,
+            1033
+          ],
+          [
+            1103,
+            854
+          ]
+        ],
+        "size": [
+          1402,
+          1122
+        ]
+      },
+      "searched": {
+        "src": "assets/dungeon/grid-scene-v1/pram-cargo-basket-searched.png",
+        "crop": [
+          291,
+          93,
+          964,
+          951
+        ],
+        "anchor": [
+          730,
+          865.5
+        ],
+        "bodyWidth": 746,
+        "groundSlopes": [
+          0.5379310344827586,
+          -0.3925438596491228
+        ],
+        "contacts": [
+          [
+            357,
+            877
+          ],
+          [
+            647,
+            1033
+          ],
+          [
+            1103,
+            854
+          ]
+        ],
+        "size": [
+          1402,
+          1122
+        ]
+      }
+    },
+    "wire-cage-trolley-v1": {
+      "name": "铁网周转货笼",
+      "tileWidth": 0.707,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "category": "container",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 85px; compare against existing player and boss in board review",
+      "contactKind": "ground corners",
+      "unsearched": {
+        "src": "assets/dungeon/grid-scene-v1/wire-cage-trolley.png",
+        "crop": [
+          169,
+          141,
+          932,
+          993
+        ],
+        "anchor": [
+          629.5,
+          894.5
+        ],
+        "bodyWidth": 821,
+        "groundSlopes": [
+          0.5683962264150944,
+          -0.5239294710327456
+        ],
+        "contacts": [
+          [
+            219,
+            878
+          ],
+          [
+            643,
+            1119
+          ],
+          [
+            1040,
+            911
+          ]
+        ],
+        "size": [
+          1254,
+          1254
+        ]
+      },
+      "searched": {
+        "src": "assets/dungeon/grid-scene-v1/wire-cage-trolley-searched.png",
+        "crop": [
+          168,
+          141,
+          934,
+          994
+        ],
+        "anchor": [
+          636.5,
+          893
+        ],
+        "bodyWidth": 827,
+        "groundSlopes": [
+          0.568019093078759,
+          -0.5098039215686274
+        ],
+        "contacts": [
+          [
+            223,
+            878
+          ],
+          [
+            642,
+            1116
+          ],
+          [
+            1050,
+            908
+          ]
+        ],
+        "size": [
+          1254,
+          1254
+        ]
+      }
+    },
+    "stacked-plastic-crates-v1": {
+      "name": "叠放周转筐",
+      "tileWidth": 0.446,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "category": "container",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 64px; compare against existing player and boss in board review",
+      "contactKind": "ground corners",
+      "unsearched": {
+        "src": "assets/dungeon/grid-scene-v1/stacked-plastic-crates.png",
+        "crop": [
+          237,
+          146,
+          844,
+          989
+        ],
+        "anchor": [
+          659.5,
+          918.5
+        ],
+        "bodyWidth": 791,
+        "groundSlopes": [
+          0.5206812652068127,
+          -0.5026315789473684
+        ],
+        "contacts": [
+          [
+            264,
+            907
+          ],
+          [
+            675,
+            1121
+          ],
+          [
+            1055,
+            930
+          ]
+        ],
+        "size": [
+          1312,
+          1199
+        ]
+      },
+      "searched": {
+        "src": "assets/dungeon/grid-scene-v1/stacked-plastic-crates-searched.png",
+        "crop": [
+          241,
+          149,
+          836,
+          987
+        ],
+        "anchor": [
+          653,
+          884
+        ],
+        "bodyWidth": 792,
+        "groundSlopes": [
+          0.6039603960396039,
+          -0.5567010309278351
+        ],
+        "contacts": [
+          [
+            257,
+            870
+          ],
+          [
+            661,
+            1114
+          ],
+          [
+            1049,
+            898
+          ]
+        ],
+        "size": [
+          1312,
+          1199
+        ]
+      }
+    },
+    "sideways-oil-drum-cabinet-v1": {
+      "name": "横置铁桶柜",
+      "tileWidth": 0.601,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "category": "container",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 58px; compare against existing player and boss in board review",
+      "contactKind": "ground corners",
+      "unsearched": {
+        "src": "assets/dungeon/grid-scene-v1/sideways-oil-drum-cabinet.png",
+        "crop": [
+          313,
+          158,
+          857,
+          733
+        ],
+        "anchor": [
+          741.5,
+          695
+        ],
+        "bodyWidth": 649,
+        "groundSlopes": [
+          0.49257425742574257,
+          -0.6653061224489796
+        ],
+        "contacts": [
+          [
+            417,
+            677
+          ],
+          [
+            821,
+            876
+          ],
+          [
+            1066,
+            713
+          ]
+        ],
+        "size": [
+          1478,
+          1064
+        ]
+      },
+      "searched": {
+        "src": "assets/dungeon/grid-scene-v1/sideways-oil-drum-cabinet-searched.png",
+        "crop": [
+          169,
+          159,
+          1003,
+          732
+        ],
+        "anchor": [
+          777,
+          708
+        ],
+        "bodyWidth": 732,
+        "groundSlopes": [
+          0.42142857142857143,
+          -0.49038461538461536
+        ],
+        "contacts": [
+          [
+            411,
+            696
+          ],
+          [
+            831,
+            873
+          ],
+          [
+            1143,
+            720
+          ]
+        ],
+        "size": [
+          1478,
+          1064
+        ]
+      }
+    },
+    "cable-spool-shelf-v1": {
+      "name": "电缆卷盘货架",
+      "tileWidth": 0.683,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "category": "container",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 55px; compare against existing player and boss in board review",
+      "contactKind": "round silhouette",
+      "unsearched": {
+        "src": "assets/dungeon/grid-scene-v1/cable-spool-shelf.png",
+        "crop": [
+          242,
+          209,
+          832,
+          814
+        ],
+        "anchor": [
+          656,
+          826
+        ],
+        "bodyWidth": 778,
+        "groundSlopes": [
+          0.7071067811865476,
+          -0.7071067811865476
+        ],
+        "contacts": [
+          [
+            267,
+            826
+          ],
+          [
+            653,
+            1008
+          ],
+          [
+            1045,
+            826
+          ]
+        ],
+        "size": [
+          1312,
+          1199
+        ]
+      },
+      "searched": {
+        "src": "assets/dungeon/grid-scene-v1/cable-spool-shelf-searched.png",
+        "crop": [
+          246,
+          202,
+          856,
+          818
+        ],
+        "anchor": [
+          660.5,
+          863
+        ],
+        "bodyWidth": 799,
+        "groundSlopes": [
+          0.7071067811865476,
+          -0.7071067811865476
+        ],
+        "contacts": [
+          [
+            261,
+            863
+          ],
+          [
+            663,
+            1012
+          ],
+          [
+            1060,
+            863
+          ]
+        ],
+        "size": [
+          1312,
+          1199
+        ]
+      }
+    },
+    "milk-churn-storage-v1": {
+      "name": "旧奶罐",
+      "tileWidth": 0.225,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "category": "container",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 38px; compare against existing player and boss in board review",
+      "contactKind": "round silhouette",
+      "unsearched": {
+        "src": "assets/dungeon/grid-scene-v1/milk-churn-storage.png",
+        "crop": [
+          308,
+          235,
+          598,
+          826
+        ],
+        "anchor": [
+          607.5,
+          935
+        ],
+        "bodyWidth": 501,
+        "groundSlopes": [
+          0.7071067811865476,
+          -0.7071067811865476
+        ],
+        "contacts": [
+          [
+            357,
+            935
+          ],
+          [
+            605,
+            1050
+          ],
+          [
+            858,
+            935
+          ]
+        ],
+        "size": [
+          1215,
+          1295
+        ]
+      },
+      "searched": {
+        "src": "assets/dungeon/grid-scene-v1/milk-churn-storage-searched.png",
+        "crop": [
+          314,
+          79,
+          701,
+          996
+        ],
+        "anchor": [
+          616,
+          941.5
+        ],
+        "bodyWidth": 518,
+        "groundSlopes": [
+          0.7071067811865476,
+          -0.7071067811865476
+        ],
+        "contacts": [
+          [
+            357,
+            941
+          ],
+          [
+            613,
+            1060
+          ],
+          [
+            875,
+            942
+          ]
+        ],
+        "size": [
+          1215,
+          1295
+        ]
+      }
+    },
+    "motorcycle-topbox-cache-v1": {
+      "name": "旧摩托尾箱",
+      "tileWidth": 0.298,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "category": "container",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 28px; compare against existing player and boss in board review",
+      "contactKind": "ground corners",
+      "unsearched": {
+        "src": "assets/dungeon/grid-scene-v1/motorcycle-topbox-cache.png",
+        "crop": [
+          254,
+          199,
+          902,
+          777
+        ],
+        "anchor": [
+          713.5,
+          762.5
+        ],
+        "bodyWidth": 819,
+        "groundSlopes": [
+          0.5011286681715575,
+          -0.4654255319148936
+        ],
+        "contacts": [
+          [
+            304,
+            739
+          ],
+          [
+            747,
+            961
+          ],
+          [
+            1123,
+            786
+          ]
+        ],
+        "size": [
+          1385,
+          1136
+        ]
+      },
+      "searched": {
+        "src": "assets/dungeon/grid-scene-v1/motorcycle-topbox-cache-searched.png",
+        "crop": [
+          266,
+          97,
+          896,
+          956
+        ],
+        "anchor": [
+          703,
+          798
+        ],
+        "bodyWidth": 822,
+        "groundSlopes": [
+          0.5968468468468469,
+          -0.5846560846560847
+        ],
+        "contacts": [
+          [
+            292,
+            776
+          ],
+          [
+            736,
+            1041
+          ],
+          [
+            1114,
+            820
+          ]
+        ],
+        "size": [
+          1385,
+          1136
+        ]
+      }
+    },
+    "tire-storage-basket-v1": {
+      "name": "轮胎储物筐",
+      "tileWidth": 0.504,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "category": "container",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 36px; compare against existing player and boss in board review",
+      "contactKind": "round silhouette",
+      "unsearched": {
+        "src": "assets/dungeon/grid-scene-v1/tire-storage-basket.png",
+        "crop": [
+          159,
+          284,
+          1022,
+          787
+        ],
+        "anchor": [
+          689,
+          891
+        ],
+        "bodyWidth": 884,
+        "groundSlopes": [
+          0.7071067811865476,
+          -0.7071067811865476
+        ],
+        "contacts": [
+          [
+            247,
+            891
+          ],
+          [
+            649,
+            1060
+          ],
+          [
+            1131,
+            891
+          ]
+        ],
+        "size": [
+          1312,
+          1199
+        ]
+      },
+      "searched": {
+        "src": "assets/dungeon/grid-scene-v1/tire-storage-basket-searched.png",
+        "crop": [
+          164,
+          287,
+          1013,
+          783
+        ],
+        "anchor": [
+          674.5,
+          896
+        ],
+        "bodyWidth": 895,
+        "groundSlopes": [
+          0.7071067811865476,
+          -0.7071067811865476
+        ],
+        "contacts": [
+          [
+            227,
+            896
+          ],
+          [
+            679,
+            1056
+          ],
+          [
+            1122,
+            896
+          ]
+        ],
+        "size": [
+          1312,
+          1199
+        ]
+      }
+    },
+    "aluminum-flight-case-v1": {
+      "name": "旧器材航空箱",
+      "tileWidth": 0.469,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "category": "container",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 30px; compare against existing player and boss in board review",
+      "contactKind": "ground corners",
+      "unsearched": {
+        "src": "assets/dungeon/grid-scene-v1/aluminum-flight-case.png",
+        "crop": [
+          227,
+          210,
+          969,
+          798
+        ],
+        "anchor": [
+          712,
+          753.5
+        ],
+        "bodyWidth": 898,
+        "groundSlopes": [
+          0.48849557522123893,
+          -0.5975975975975976
+        ],
+        "contacts": [
+          [
+            263,
+            715
+          ],
+          [
+            828,
+            991
+          ],
+          [
+            1161,
+            792
+          ]
+        ],
+        "size": [
+          1402,
+          1122
+        ]
+      },
+      "searched": {
+        "src": "assets/dungeon/grid-scene-v1/aluminum-flight-case-searched.png",
+        "crop": [
+          227,
+          68,
+          972,
+          967
+        ],
+        "anchor": [
+          706,
+          765
+        ],
+        "bodyWidth": 918,
+        "groundSlopes": [
+          0.5177304964539007,
+          -0.632768361581921
+        ],
+        "contacts": [
+          [
+            247,
+            731
+          ],
+          [
+            811,
+            1023
+          ],
+          [
+            1165,
+            799
+          ]
+        ],
+        "size": [
+          1402,
+          1122
+        ]
+      }
+    },
+    "marine-buoy-cache-v1": {
+      "name": "浮球藏物罐",
+      "tileWidth": 0.413,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "category": "container",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 42px; compare against existing player and boss in board review",
+      "contactKind": "round silhouette",
+      "unsearched": {
+        "src": "assets/dungeon/grid-scene-v1/marine-buoy-cache.png",
+        "crop": [
+          246,
+          251,
+          823,
+          731
+        ],
+        "anchor": [
+          709.5,
+          835
+        ],
+        "bodyWidth": 637,
+        "groundSlopes": [
+          0.7071067811865476,
+          -0.7071067811865476
+        ],
+        "contacts": [
+          [
+            391,
+            835
+          ],
+          [
+            702,
+            970
+          ],
+          [
+            1028,
+            835
+          ]
+        ],
+        "size": [
+          1348,
+          1167
+        ]
+      },
+      "searched": {
+        "src": "assets/dungeon/grid-scene-v1/marine-buoy-cache-searched.png",
+        "crop": [
+          246,
+          83,
+          822,
+          940
+        ],
+        "anchor": [
+          692,
+          913
+        ],
+        "bodyWidth": 654,
+        "groundSlopes": [
+          0.7071067811865476,
+          -0.7071067811865476
+        ],
+        "contacts": [
+          [
+            365,
+            910
+          ],
+          [
+            688,
+            1012
+          ],
+          [
+            1019,
+            916
+          ]
+        ],
+        "size": [
+          1347,
+          1167
+        ]
+      }
+    },
+    "patched-bulk-sack-v1": {
+      "name": "补缀吨袋",
+      "tileWidth": 0.574,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "category": "container",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 85px; compare against existing player and boss in board review",
+      "contactKind": "ground corners",
+      "unsearched": {
+        "src": "assets/dungeon/grid-scene-v1/patched-bulk-sack.png",
+        "crop": [
+          226,
+          167,
+          862,
+          906
+        ],
+        "anchor": [
+          662,
+          878
+        ],
+        "bodyWidth": 796,
+        "groundSlopes": [
+          0.4794871794871795,
+          -0.43596059113300495
+        ],
+        "contacts": [
+          [
+            264,
+            873
+          ],
+          [
+            654,
+            1060
+          ],
+          [
+            1060,
+            883
+          ]
+        ],
+        "size": [
+          1312,
+          1199
+        ]
+      },
+      "searched": {
+        "src": "assets/dungeon/grid-scene-v1/patched-bulk-sack-searched.png",
+        "crop": [
+          193,
+          123,
+          948,
+          980
+        ],
+        "anchor": [
+          662,
+          898
+        ],
+        "bodyWidth": 854,
+        "groundSlopes": [
+          0.49099099099099097,
+          -0.44390243902439025
+        ],
+        "contacts": [
+          [
+            235,
+            880
+          ],
+          [
+            679,
+            1098
+          ],
+          [
+            1089,
+            916
+          ]
+        ],
+        "size": [
+          1312,
+          1199
+        ]
+      }
+    },
+    "timber-rack": {
+      "name": "旧料架",
+      "tileWidth": 0.686,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "category": "decor",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 70px; compare against existing player and boss in board review",
+      "contactKind": "ground corners",
+      "normal": {
+        "src": "assets/dungeon/grid-scene-v1/timber-rack.png",
+        "crop": [
+          190,
+          117,
+          955,
+          1018
+        ],
+        "anchor": [
+          666.5,
+          868.5
+        ],
+        "bodyWidth": 849,
+        "groundSlopes": [
+          0.6258278145695364,
+          -0.5594149908592322
+        ],
+        "contacts": [
+          [
+            242,
+            927
+          ],
+          [
+            544,
+            1116
+          ],
+          [
+            1091,
+            810
+          ]
+        ],
+        "size": [
+          1312,
+          1199
+        ]
+      }
+    },
+    "broken-chair": {
+      "name": "修补旧椅",
+      "tileWidth": 0.34,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "category": "decor",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid with existing player and boss",
+      "contactKind": "ground corners",
+      "normal": {
+        "src": "assets/dungeon/grid-scene-v1/broken-chair.png",
+        "crop": [
+          276,
+          69,
+          742,
+          1130
+        ],
+        "anchor": [
+          632.5,
+          982.5
+        ],
+        "bodyWidth": 613,
+        "groundSlopes": [
+          0.5697674418604651,
+          -0.6728624535315985
+        ],
+        "contacts": [
+          [
+            326,
+            975
+          ],
+          [
+            670,
+            1171
+          ],
+          [
+            939,
+            990
+          ]
+        ],
+        "size": [
+          1254,
+          1254
+        ]
+      }
+    },
+    "old-radiator": {
+      "name": "旧暖气片",
+      "tileWidth": 0.324,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "category": "decor",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 46px; compare against existing player and boss in board review",
+      "contactKind": "ground corners",
+      "normal": {
+        "src": "assets/dungeon/grid-scene-v1/old-radiator.png",
+        "crop": [
+          295,
+          64,
+          867,
+          966
+        ],
+        "anchor": [
+          748,
+          809.5
+        ],
+        "bodyWidth": 704,
+        "groundSlopes": [
+          0.5372549019607843,
+          -0.579064587973274
+        ],
+        "contacts": [
+          [
+            396,
+            871
+          ],
+          [
+            651,
+            1008
+          ],
+          [
+            1100,
+            748
+          ]
+        ],
+        "size": [
+          1402,
+          1122
+        ]
+      }
+    },
+    "tire-pair": {
+      "name": "旧轮胎堆",
+      "tileWidth": 0.441,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "category": "decor",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 42px; compare against existing player and boss in board review",
+      "contactKind": "round silhouette",
+      "normal": {
+        "src": "assets/dungeon/grid-scene-v1/tire-pair.png",
+        "crop": [
+          271,
+          266,
+          726,
+          781
+        ],
+        "anchor": [
+          630,
+          876.5
+        ],
+        "bodyWidth": 688,
+        "groundSlopes": [
+          0.7071067811865476,
+          -0.7071067811865476
+        ],
+        "contacts": [
+          [
+            286,
+            878
+          ],
+          [
+            633,
+            1032
+          ],
+          [
+            974,
+            875
+          ]
+        ],
+        "size": [
+          1254,
+          1254
+        ]
+      }
+    },
+    "sealed-cargo-obstacle-v1": {
+      "name": "封存货堆",
+      "tileWidth": 1.798,
+      "logicalFootprint": [
+        2,
+        2
+      ],
+      "category": "decor",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid with existing player and boss",
+      "contactKind": "ground corners",
+      "normal": {
+        "src": "assets/dungeon/grid-scene-v1/sealed-cargo-obstacle-v1.png",
+        "crop": [
+          185,
+          79,
+          1035,
+          1018
+        ],
+        "anchor": [
+          702.5,
+          783.5
+        ],
+        "bodyWidth": 965,
+        "groundSlopes": [
+          0.6007604562737643,
+          -0.6446469248291572
+        ],
+        "contacts": [
+          [
+            220,
+            767
+          ],
+          [
+            746,
+            1083
+          ],
+          [
+            1185,
+            800
+          ]
+        ],
+        "size": [
+          1378,
+          1142
+        ]
+      }
+    },
+    "collapsed-rubble-obstacle-v1": {
+      "name": "塌落砖石",
+      "tileWidth": 1.85,
+      "logicalFootprint": [
+        2,
+        2
+      ],
+      "category": "decor",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid with existing player and boss",
+      "contactKind": "ground corners",
+      "normal": {
+        "src": "assets/dungeon/grid-scene-v1/collapsed-rubble-obstacle-v1.png",
+        "crop": [
+          283,
+          154,
+          961,
+          778
+        ],
+        "anchor": [
+          756.5,
+          692.5
+        ],
+        "bodyWidth": 867,
+        "groundSlopes": [
+          0.5362997658079626,
+          -0.4863636363636364
+        ],
+        "contacts": [
+          [
+            323,
+            685
+          ],
+          [
+            750,
+            914
+          ],
+          [
+            1190,
+            700
+          ]
+        ],
+        "size": [
+          1487,
+          1058
+        ]
+      }
+    },
+    "timber-stone-barricade-v1": {
+      "name": "拼装挡路架",
+      "tileWidth": 1.164,
+      "logicalFootprint": [
+        2,
+        1
+      ],
+      "category": "decor",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid with existing player and boss",
+      "contactKind": "ground corners",
+      "normal": {
+        "src": "assets/dungeon/grid-scene-v1/timber-stone-barricade-v1.png",
+        "crop": [
+          237,
+          77,
+          1097,
+          871
+        ],
+        "anchor": [
+          786.5,
+          679
+        ],
+        "bodyWidth": 1073,
+        "groundSlopes": [
+          0.44739756367663347,
+          -0.6470588235294118
+        ],
+        "contacts": [
+          [
+            250,
+            532
+          ],
+          [
+            1153,
+            936
+          ],
+          [
+            1323,
+            826
+          ]
+        ],
+        "size": [
+          1536,
+          1024
+        ]
+      }
+    },
+    "workshop-machine-v1": {
+      "name": "旧车间机组",
+      "tileWidth": 2.105,
+      "logicalFootprint": [
+        3,
+        2
+      ],
+      "category": "decor",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid with existing player and boss",
+      "contactKind": "ground corners",
+      "normal": {
+        "src": "assets/dungeon/grid-scene-v1/workshop-machine-v1.png",
+        "crop": [
+          135,
+          346,
+          1301,
+          671
+        ],
+        "anchor": [
+          794.5,
+          764
+        ],
+        "bodyWidth": 1061,
+        "groundSlopes": [
+          0.4291497975708502,
+          -0.53125
+        ],
+        "contacts": [
+          [
+            264,
+            690
+          ],
+          [
+            1005,
+            1008
+          ],
+          [
+            1325,
+            838
+          ]
+        ],
+        "size": [
+          1536,
+          1024
+        ]
+      }
+    },
+    "workshop-bench-v1": {
+      "name": "车间工作台",
+      "tileWidth": 1.295,
+      "logicalFootprint": [
+        2,
+        1
+      ],
+      "category": "decor",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid with existing player and boss",
+      "contactKind": "ground corners",
+      "normal": {
+        "src": "assets/dungeon/grid-scene-v1/workshop-bench-v1.png",
+        "crop": [
+          221,
+          216,
+          1014,
+          794
+        ],
+        "anchor": [
+          726.5,
+          755
+        ],
+        "bodyWidth": 909,
+        "groundSlopes": [
+          0.5043604651162791,
+          -0.6199095022624435
+        ],
+        "contacts": [
+          [
+            272,
+            650
+          ],
+          [
+            960,
+            997
+          ],
+          [
+            1181,
+            860
+          ]
+        ],
+        "size": [
+          1440,
+          1092
+        ]
+      }
+    },
+    "canteen-table-v1": {
+      "name": "旧食堂长桌",
+      "tileWidth": 1.311,
+      "logicalFootprint": [
+        2,
+        1
+      ],
+      "category": "decor",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid with existing player and boss",
+      "contactKind": "ground corners",
+      "normal": {
+        "src": "assets/dungeon/grid-scene-v1/canteen-table-v1.png",
+        "crop": [
+          217,
+          188,
+          1091,
+          782
+        ],
+        "anchor": [
+          766.5,
+          665
+        ],
+        "bodyWidth": 1009,
+        "groundSlopes": [
+          0.5649867374005305,
+          -0.5882352941176471
+        ],
+        "contacts": [
+          [
+            262,
+            527
+          ],
+          [
+            1016,
+            953
+          ],
+          [
+            1271,
+            803
+          ]
+        ],
+        "size": [
+          1536,
+          1024
+        ]
+      }
+    },
+    "canteen-counter-v1": {
+      "name": "食堂备餐台",
+      "tileWidth": 1.276,
+      "logicalFootprint": [
+        2,
+        1
+      ],
+      "category": "decor",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid with existing player and boss",
+      "contactKind": "ground corners",
+      "normal": {
+        "src": "assets/dungeon/grid-scene-v1/canteen-counter-v1.png",
+        "crop": [
+          251,
+          170,
+          1038,
+          796
+        ],
+        "anchor": [
+          770,
+          713
+        ],
+        "bodyWidth": 948,
+        "groundSlopes": [
+          0.4642857142857143,
+          -0.6181818181818182
+        ],
+        "contacts": [
+          [
+            296,
+            612
+          ],
+          [
+            1024,
+            950
+          ],
+          [
+            1244,
+            814
+          ]
+        ],
+        "size": [
+          1536,
+          1024
+        ]
+      }
+    },
+    "clinic-bed-v1": {
+      "name": "临时诊疗床",
+      "tileWidth": 1.332,
+      "logicalFootprint": [
+        2,
+        1
+      ],
+      "category": "decor",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid with existing player and boss",
+      "contactKind": "ground corners",
+      "normal": {
+        "src": "assets/dungeon/grid-scene-v1/clinic-bed-v1.png",
+        "crop": [
+          182,
+          175,
+          1187,
+          792
+        ],
+        "anchor": [
+          773,
+          655
+        ],
+        "bodyWidth": 1106,
+        "groundSlopes": [
+          0.527027027027027,
+          -0.6267123287671232
+        ],
+        "contacts": [
+          [
+            220,
+            532
+          ],
+          [
+            1034,
+            961
+          ],
+          [
+            1326,
+            778
+          ]
+        ],
+        "size": [
+          1536,
+          1024
+        ]
+      }
+    },
+    "clinic-bench-v1": {
+      "name": "候诊长凳",
+      "tileWidth": 1.25,
+      "logicalFootprint": [
+        2,
+        1
+      ],
+      "category": "decor",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid with existing player and boss",
+      "contactKind": "ground corners",
+      "normal": {
+        "src": "assets/dungeon/grid-scene-v1/clinic-bench-v1.png",
+        "crop": [
+          128,
+          201,
+          1241,
+          791
+        ],
+        "anchor": [
+          749.5,
+          667.5
+        ],
+        "bodyWidth": 1129,
+        "groundSlopes": [
+          0.5288135593220339,
+          -0.5778688524590164
+        ],
+        "contacts": [
+          [
+            185,
+            504
+          ],
+          [
+            1070,
+            972
+          ],
+          [
+            1314,
+            831
+          ]
+        ],
+        "size": [
+          1495,
+          1052
+        ]
+      }
+    },
+    "old-water-filter": {
+      "name": "旧净水桶",
+      "tileWidth": 0.36,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "category": "recovery",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid with existing player and boss",
+      "contactKind": "ground corners",
+      "normal": {
+        "src": "assets/dungeon/grid-scene-v1/old-water-filter.png",
+        "crop": [
+          320,
+          88,
+          630,
+          1100
+        ],
+        "anchor": [
+          639,
+          1014
+        ],
+        "bodyWidth": 524,
+        "groundSlopes": [
+          0.7169811320754716,
+          -0.44015444015444016
+        ],
+        "contacts": [
+          [
+            377,
+            976
+          ],
+          [
+            642,
+            1166
+          ],
+          [
+            901,
+            1052
+          ]
+        ],
+        "size": [
+          1254,
+          1254
+        ]
+      },
+      "used": {
+        "src": "assets/dungeon/grid-scene-v1/old-water-filter-used.png",
+        "crop": [
+          320,
+          88,
+          631,
+          1101
+        ],
+        "anchor": [
+          639,
+          1014
+        ],
+        "bodyWidth": 524,
+        "groundSlopes": [
+          0.7169811320754716,
+          -0.44015444015444016
+        ],
+        "contacts": [
+          [
+            377,
+            976
+          ],
+          [
+            642,
+            1166
+          ],
+          [
+            901,
+            1052
+          ]
+        ],
+        "size": [
+          1254,
+          1254
+        ]
+      }
+    },
+    "barrel-cooking-stove": {
+      "name": "铁桶小灶",
+      "tileWidth": 0.283,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "category": "recovery",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 55px; compare against existing player and boss in board review",
+      "contactKind": "round silhouette",
+      "normal": {
+        "src": "assets/dungeon/grid-scene-v1/barrel-cooking-stove.png",
+        "crop": [
+          331,
+          231,
+          685,
+          866
+        ],
+        "anchor": [
+          626.5,
+          986
+        ],
+        "bodyWidth": 489,
+        "groundSlopes": [
+          0.7071067811865476,
+          -0.7071067811865476
+        ],
+        "contacts": [
+          [
+            382,
+            981
+          ],
+          [
+            653,
+            1083
+          ],
+          [
+            871,
+            991
+          ]
+        ],
+        "size": [
+          1254,
+          1254
+        ]
+      },
+      "used": {
+        "src": "assets/dungeon/grid-scene-v1/barrel-cooking-stove-used.png",
+        "crop": [
+          331,
+          230,
+          686,
+          868
+        ],
+        "anchor": [
+          626.5,
+          986
+        ],
+        "bodyWidth": 489,
+        "groundSlopes": [
+          0.7071067811865476,
+          -0.7071067811865476
+        ],
+        "contacts": [
+          [
+            382,
+            981
+          ],
+          [
+            653,
+            1083
+          ],
+          [
+            871,
+            991
+          ]
+        ],
+        "size": [
+          1254,
+          1254
+        ]
+      }
+    },
+    "first-aid-trolley": {
+      "name": "急救推车",
+      "tileWidth": 0.359,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "category": "recovery",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 55px; compare against existing player and boss in board review",
+      "contactKind": "ground corners",
+      "normal": {
+        "src": "assets/dungeon/grid-scene-v1/first-aid-trolley.png",
+        "crop": [
+          211,
+          122,
+          848,
+          1069
+        ],
+        "anchor": [
+          633,
+          962
+        ],
+        "bodyWidth": 722,
+        "groundSlopes": [
+          0.5555555555555556,
+          -0.6088328075709779
+        ],
+        "contacts": [
+          [
+            272,
+            946
+          ],
+          [
+            677,
+            1171
+          ],
+          [
+            994,
+            978
+          ]
+        ],
+        "size": [
+          1230,
+          1278
+        ]
+      },
+      "used": {
+        "src": "assets/dungeon/grid-scene-v1/first-aid-trolley-used.png",
+        "crop": [
+          209,
+          121,
+          851,
+          1071
+        ],
+        "anchor": [
+          633,
+          962
+        ],
+        "bodyWidth": 722,
+        "groundSlopes": [
+          0.5555555555555556,
+          -0.6088328075709779
+        ],
+        "contacts": [
+          [
+            272,
+            946
+          ],
+          [
+            677,
+            1171
+          ],
+          [
+            994,
+            978
+          ]
+        ],
+        "size": [
+          1230,
+          1278
+        ]
+      }
+    },
+    "car-seat-rest-berth": {
+      "name": "车座铺位",
+      "tileWidth": 0.279,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "category": "recovery",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 60px; compare against existing player and boss in board review",
+      "contactKind": "ground corners",
+      "normal": {
+        "src": "assets/dungeon/grid-scene-v1/car-seat-rest-berth.png",
+        "crop": [
+          266,
+          130,
+          757,
+          1007
+        ],
+        "anchor": [
+          639,
+          965
+        ],
+        "bodyWidth": 618,
+        "groundSlopes": [
+          0.43626062322946174,
+          -0.6037735849056604
+        ],
+        "contacts": [
+          [
+            330,
+            968
+          ],
+          [
+            683,
+            1122
+          ],
+          [
+            948,
+            962
+          ]
+        ],
+        "size": [
+          1254,
+          1254
+        ]
+      },
+      "used": {
+        "src": "assets/dungeon/grid-scene-v1/car-seat-rest-berth-used.png",
+        "crop": [
+          266,
+          130,
+          757,
+          1007
+        ],
+        "anchor": [
+          639,
+          965
+        ],
+        "bodyWidth": 618,
+        "groundSlopes": [
+          0.43626062322946174,
+          -0.6037735849056604
+        ],
+        "contacts": [
+          [
+            330,
+            968
+          ],
+          [
+            683,
+            1122
+          ],
+          [
+            948,
+            962
+          ]
+        ],
+        "size": [
+          1254,
+          1254
+        ]
+      }
+    },
+    "campfire-small-pot": {
+      "name": "篝火小锅",
+      "tileWidth": 0.307,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "category": "recovery",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 28px; compare against existing player and boss in board review",
+      "contactKind": "round silhouette",
+      "normal": {
+        "src": "assets/dungeon/grid-scene-v1/campfire-small-pot.png",
+        "crop": [
+          275,
+          211,
+          763,
+          798
+        ],
+        "anchor": [
+          651,
+          834
+        ],
+        "bodyWidth": 722,
+        "groundSlopes": [
+          0.7071067811865476,
+          -0.7071067811865476
+        ],
+        "contacts": [
+          [
+            290,
+            847
+          ],
+          [
+            670,
+            1000
+          ],
+          [
+            1012,
+            821
+          ]
+        ],
+        "size": [
+          1312,
+          1199
+        ]
+      },
+      "used": {
+        "src": "assets/dungeon/grid-scene-v1/campfire-small-pot-used.png",
+        "crop": [
+          275,
+          211,
+          763,
+          800
+        ],
+        "anchor": [
+          651,
+          834
+        ],
+        "bodyWidth": 722,
+        "groundSlopes": [
+          0.7071067811865476,
+          -0.7071067811865476
+        ],
+        "contacts": [
+          [
+            290,
+            847
+          ],
+          [
+            670,
+            1000
+          ],
+          [
+            1012,
+            821
+          ]
+        ],
+        "size": [
+          1312,
+          1199
+        ]
+      }
+    },
+    "small-enamel-water-jug": {
+      "name": "旧提水壶",
+      "tileWidth": 0.176,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "category": "recovery",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 24px; compare against existing player and boss in board review",
+      "contactKind": "round silhouette",
+      "normal": {
+        "src": "assets/dungeon/grid-scene-v1/small-enamel-water-jug.png",
+        "crop": [
+          303,
+          280,
+          651,
+          734
+        ],
+        "anchor": [
+          661.5,
+          895.5
+        ],
+        "bodyWidth": 539,
+        "groundSlopes": [
+          0.7071067811865476,
+          -0.7071067811865476
+        ],
+        "contacts": [
+          [
+            392,
+            893
+          ],
+          [
+            669,
+            1001
+          ],
+          [
+            931,
+            898
+          ]
+        ],
+        "size": [
+          1254,
+          1254
+        ]
+      },
+      "used": {
+        "src": "assets/dungeon/grid-scene-v1/small-enamel-water-jug-used.png",
+        "crop": [
+          304,
+          280,
+          651,
+          735
+        ],
+        "anchor": [
+          661.5,
+          895.5
+        ],
+        "bodyWidth": 539,
+        "groundSlopes": [
+          0.7071067811865476,
+          -0.7071067811865476
+        ],
+        "contacts": [
+          [
+            392,
+            893
+          ],
+          [
+            669,
+            1001
+          ],
+          [
+            931,
+            898
+          ]
+        ],
+        "size": [
+          1254,
+          1254
+        ]
+      }
+    },
+    "fragment-desk": {
+      "name": "残页书桌",
+      "tileWidth": 0.49,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "category": "insight",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid with existing player and boss",
+      "contactKind": "ground corners",
+      "normal": {
+        "src": "assets/dungeon/grid-scene-v1/fragment-desk.png",
+        "crop": [
+          206,
+          189,
+          857,
+          930
+        ],
+        "anchor": [
+          633,
+          883.5
+        ],
+        "bodyWidth": 738,
+        "groundSlopes": [
+          0.5404255319148936,
+          -0.6828358208955224
+        ],
+        "contacts": [
+          [
+            264,
+            848
+          ],
+          [
+            734,
+            1102
+          ],
+          [
+            1002,
+            919
+          ]
+        ],
+        "size": [
+          1254,
+          1254
+        ]
+      },
+      "used": {
+        "src": "assets/dungeon/grid-scene-v1/fragment-desk-used.png",
+        "crop": [
+          206,
+          189,
+          858,
+          931
+        ],
+        "anchor": [
+          633,
+          883.5
+        ],
+        "bodyWidth": 738,
+        "groundSlopes": [
+          0.5404255319148936,
+          -0.6828358208955224
+        ],
+        "contacts": [
+          [
+            264,
+            848
+          ],
+          [
+            734,
+            1102
+          ],
+          [
+            1002,
+            919
+          ]
+        ],
+        "size": [
+          1254,
+          1254
+        ]
+      }
+    },
+    "practice-stump": {
+      "name": "练武残桩",
+      "tileWidth": 0.202,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "category": "insight",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 46px; compare against existing player and boss in board review",
+      "contactKind": "round silhouette",
+      "normal": {
+        "src": "assets/dungeon/grid-scene-v1/practice-stump.png",
+        "crop": [
+          324,
+          121,
+          647,
+          949
+        ],
+        "anchor": [
+          711,
+          942
+        ],
+        "bodyWidth": 450,
+        "groundSlopes": [
+          0.7071067811865476,
+          -0.7071067811865476
+        ],
+        "contacts": [
+          [
+            486,
+            942
+          ],
+          [
+            711,
+            1054
+          ],
+          [
+            936,
+            942
+          ]
+        ],
+        "size": [
+          1254,
+          1254
+        ]
+      },
+      "used": {
+        "src": "assets/dungeon/grid-scene-v1/practice-stump-used.png",
+        "crop": [
+          324,
+          120,
+          648,
+          950
+        ],
+        "anchor": [
+          711,
+          942
+        ],
+        "bodyWidth": 450,
+        "groundSlopes": [
+          0.7071067811865476,
+          -0.7071067811865476
+        ],
+        "contacts": [
+          [
+            486,
+            942
+          ],
+          [
+            711,
+            1054
+          ],
+          [
+            936,
+            942
+          ]
+        ],
+        "size": [
+          1254,
+          1254
+        ]
+      }
+    },
+    "exit-waypost": {
+      "name": "撤离路牌",
+      "tileWidth": 0.19,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "category": "decor",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid with existing player and boss",
+      "contactKind": "ground corners",
+      "normal": {
+        "src": "assets/dungeon/grid-scene-v1/exit-waypost.png",
+        "crop": [
+          389,
+          128,
+          502,
+          1016
+        ],
+        "anchor": [
+          574.5,
+          1039.5
+        ],
+        "bodyWidth": 351,
+        "groundSlopes": [
+          0.5117845117845118,
+          -0.5370370370370371
+        ],
+        "contacts": [
+          [
+            399,
+            978
+          ],
+          [
+            696,
+            1130
+          ],
+          [
+            750,
+            1101
+          ]
+        ],
+        "size": [
+          1215,
+          1295
+        ]
+      }
+    },
+    "canteen-food-crate": {
+      "name": "食材筐",
+      "tileWidth": 0.8,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "category": "container",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid with existing player and boss",
+      "contactKind": "ground corners",
+      "normal": {
+        "src": "assets/dungeon/grid-scene-v1/canteen-food-crate.png",
+        "crop": [
+          148,
+          169,
+          1046,
+          935
+        ],
+        "anchor": [
+          673,
+          796.5
+        ],
+        "bodyWidth": 940,
+        "groundSlopes": [
+          0.6239669421487604,
+          -0.6513157894736842
+        ],
+        "contacts": [
+          [
+            203,
+            794
+          ],
+          [
+            687,
+            1096
+          ],
+          [
+            1143,
+            799
+          ]
+        ],
+        "size": [
+          1312,
+          1199
+        ]
+      },
+      "searched": {
+        "src": "assets/dungeon/grid-scene-v1/canteen-food-crate-searched.png",
+        "crop": [
+          149,
+          169,
+          1044,
+          936
+        ],
+        "anchor": [
+          673,
+          796.5
+        ],
+        "bodyWidth": 940,
+        "groundSlopes": [
+          0.6239669421487604,
+          -0.6513157894736842
+        ],
+        "contacts": [
+          [
+            203,
+            794
+          ],
+          [
+            687,
+            1096
+          ],
+          [
+            1143,
+            799
+          ]
+        ],
+        "size": [
+          1312,
+          1199
+        ]
+      },
+      "partial": {
+        "src": "assets/dungeon/grid-scene-v1/canteen-food-crate-partial.png",
+        "crop": [
+          148,
+          169,
+          1046,
+          937
+        ],
+        "anchor": [
+          673,
+          796.5
+        ],
+        "bodyWidth": 940,
+        "groundSlopes": [
+          0.6239669421487604,
+          -0.6513157894736842
+        ],
+        "contacts": [
+          [
+            203,
+            794
+          ],
+          [
+            687,
+            1096
+          ],
+          [
+            1143,
+            799
+          ]
+        ],
+        "size": [
+          1312,
+          1199
+        ]
+      },
+      "low": {
+        "src": "assets/dungeon/grid-scene-v1/canteen-food-crate-low.png",
+        "crop": [
+          149,
+          168,
+          1045,
+          936
+        ],
+        "anchor": [
+          673,
+          796.5
+        ],
+        "bodyWidth": 940,
+        "groundSlopes": [
+          0.6239669421487604,
+          -0.6513157894736842
+        ],
+        "contacts": [
+          [
+            203,
+            794
+          ],
+          [
+            687,
+            1096
+          ],
+          [
+            1143,
+            799
+          ]
+        ],
+        "size": [
+          1312,
+          1199
+        ]
+      }
+    },
+    "broken-fan": {
+      "name": "停转旧风扇",
+      "tileWidth": 0.22,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "category": "decor",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid with existing player and boss",
+      "contactKind": "ground corners",
+      "normal": {
+        "src": "assets/dungeon/grid-scene-v1/broken-fan.png",
+        "crop": [
+          340,
+          266,
+          549,
+          810
+        ],
+        "anchor": [
+          650.5,
+          952.5
+        ],
+        "bodyWidth": 429,
+        "groundSlopes": [
+          0.49065420560747663,
+          -0.5116279069767442
+        ],
+        "contacts": [
+          [
+            436,
+            955
+          ],
+          [
+            650,
+            1060
+          ],
+          [
+            865,
+            950
+          ]
+        ],
+        "size": [
+          1254,
+          1254
+        ]
+      }
+    },
+    "worn-mat": {
+      "name": "磨旧地垫",
+      "tileWidth": 0.726,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "category": "decor",
+      "nativeFacing": "source orientation; mirror exchanges grid axes",
+      "heightReference": "144px grid with existing player and boss",
+      "contactKind": "ground corners",
+      "normal": {
+        "src": "assets/dungeon/grid-scene-v1/worn-mat.png",
+        "crop": [
+          53,
+          238,
+          1149,
+          815
+        ],
+        "anchor": [
+          622.5,
+          642
+        ],
+        "bodyWidth": 1119,
+        "groundSlopes": [
+          0.7099337748344371,
+          -0.6538461538461539
+        ],
+        "contacts": [
+          [
+            63,
+            493
+          ],
+          [
+            818,
+            1029
+          ],
+          [
+            1182,
+            791
+          ]
+        ],
+        "size": [
+          1254,
+          1254
+        ]
+      }
+    }
+  }
+}

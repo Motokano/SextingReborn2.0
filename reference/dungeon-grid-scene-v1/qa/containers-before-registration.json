@@ -1,0 +1,2124 @@
+[
+  {
+    "id": "abandoned-chest-v1",
+    "name": "遗留箱子",
+    "tileWidth": 0.634,
+    "unsearched": {
+      "file": "abandoned-chest",
+      "contacts": [
+        [
+          245,
+          713
+        ],
+        [
+          840,
+          1000
+        ],
+        [
+          1224,
+          733
+        ]
+      ]
+    },
+    "searched": {
+      "file": "abandoned-chest-searched",
+      "contacts": [
+        [
+          254,
+          723
+        ],
+        [
+          843,
+          1010
+        ],
+        [
+          1199,
+          731
+        ]
+      ]
+    },
+    "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 42px; compare against existing player and boss in board review"
+  },
+  {
+    "id": "discarded-toolbox-v1",
+    "name": "废弃工具箱",
+    "tileWidth": 0.294,
+    "unsearched": {
+      "file": "discarded-toolbox",
+      "contacts": [
+        [
+          250,
+          605
+        ],
+        [
+          929,
+          968
+        ],
+        [
+          1286,
+          806
+        ]
+      ]
+    },
+    "searched": {
+      "file": "discarded-toolbox-searched",
+      "contacts": [
+        [
+          350,
+          633
+        ],
+        [
+          890,
+          934
+        ],
+        [
+          1187,
+          789
+        ]
+      ]
+    },
+    "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 22px; compare against existing player and boss in board review"
+  },
+  {
+    "id": "reused-fridge-v1",
+    "name": "旧冰箱储物柜",
+    "tileWidth": 0.58,
+    "unsearched": {
+      "file": "reused-fridge",
+      "contacts": [
+        [
+          309,
+          896
+        ],
+        [
+          649,
+          1074
+        ],
+        [
+          955,
+          906
+        ]
+      ]
+    },
+    "searched": {
+      "file": "reused-fridge-searched",
+      "contacts": [
+        [
+          462,
+          879
+        ],
+        [
+          786,
+          1066
+        ],
+        [
+          1067,
+          895
+        ]
+      ]
+    }
+  },
+  {
+    "id": "overturned-cart-v1",
+    "name": "翻倒的货车",
+    "tileWidth": 0.79,
+    "unsearched": {
+      "file": "overturned-cart",
+      "contacts": [
+        [
+          452,
+          650
+        ],
+        [
+          909,
+          957
+        ],
+        [
+          1398,
+          650
+        ]
+      ]
+    },
+    "searched": {
+      "file": "overturned-cart-searched",
+      "contacts": [
+        [
+          452,
+          650
+        ],
+        [
+          909,
+          957
+        ],
+        [
+          1398,
+          650
+        ]
+      ]
+    }
+  },
+  {
+    "id": "abandoned-cargo-v1",
+    "name": "废弃货堆",
+    "tileWidth": 0.927,
+    "unsearched": {
+      "file": "abandoned-cargo",
+      "contacts": [
+        [
+          176,
+          774
+        ],
+        [
+          653,
+          1063
+        ],
+        [
+          1188,
+          757
+        ]
+      ]
+    },
+    "searched": {
+      "file": "abandoned-cargo-searched",
+      "contacts": [
+        [
+          176,
+          774
+        ],
+        [
+          653,
+          1063
+        ],
+        [
+          1188,
+          757
+        ]
+      ]
+    }
+  },
+  {
+    "id": "damaged-barrel-v1",
+    "name": "破损木桶",
+    "tileWidth": 0.382,
+    "unsearched": {
+      "file": "damaged-barrel",
+      "contacts": [
+        [
+          353,
+          897
+        ],
+        [
+          626,
+          1040
+        ],
+        [
+          899,
+          897
+        ]
+      ]
+    },
+    "searched": {
+      "file": "damaged-barrel-searched",
+      "contacts": [
+        [
+          353,
+          897
+        ],
+        [
+          626,
+          1040
+        ],
+        [
+          899,
+          897
+        ]
+      ]
+    },
+    "contactKind": "round silhouette",
+    "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 52px; compare against existing player and boss in board review"
+  },
+  {
+    "id": "lost-backpack-v1",
+    "name": "遗落背包",
+    "tileWidth": 0.178,
+    "unsearched": {
+      "file": "lost-backpack",
+      "contacts": [
+        [
+          346,
+          857
+        ],
+        [
+          691,
+          1003
+        ],
+        [
+          1010,
+          869
+        ]
+      ]
+    },
+    "searched": {
+      "file": "lost-backpack-searched",
+      "contacts": [
+        [
+          346,
+          857
+        ],
+        [
+          691,
+          1003
+        ],
+        [
+          1010,
+          869
+        ]
+      ]
+    },
+    "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 34px; compare against existing player and boss in board review"
+  },
+  {
+    "id": "collapsed-shelf-v1",
+    "name": "倒塌货架",
+    "tileWidth": 0.69,
+    "unsearched": {
+      "file": "collapsed-shelf",
+      "contacts": [
+        [
+          189,
+          702
+        ],
+        [
+          866,
+          1080
+        ],
+        [
+          1143,
+          902
+        ]
+      ]
+    },
+    "searched": {
+      "file": "collapsed-shelf-searched",
+      "contacts": [
+        [
+          189,
+          702
+        ],
+        [
+          866,
+          1080
+        ],
+        [
+          1143,
+          902
+        ]
+      ]
+    }
+  },
+  {
+    "id": "salvaged-shopping-cart-v1",
+    "name": "旧购物车货笼",
+    "tileWidth": 0.272,
+    "unsearched": {
+      "file": "salvaged-shopping-cart",
+      "contacts": [
+        [
+          416,
+          908
+        ],
+        [
+          618,
+          1082
+        ],
+        [
+          1005,
+          954
+        ]
+      ]
+    },
+    "searched": {
+      "file": "salvaged-shopping-cart-searched",
+      "contacts": [
+        [
+          421,
+          912
+        ],
+        [
+          615,
+          1091
+        ],
+        [
+          1012,
+          956
+        ]
+      ]
+    },
+    "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 58px; compare against existing player and boss in board review"
+  },
+  {
+    "id": "reused-plastic-drum-v1",
+    "name": "蓝塑料储物桶",
+    "tileWidth": 0.513,
+    "unsearched": {
+      "file": "reused-plastic-drum",
+      "contacts": [
+        [
+          345,
+          846
+        ],
+        [
+          656,
+          1004
+        ],
+        [
+          975,
+          846
+        ]
+      ]
+    },
+    "searched": {
+      "file": "reused-plastic-drum-searched",
+      "contacts": [
+        [
+          345,
+          948
+        ],
+        [
+          656,
+          1106
+        ],
+        [
+          975,
+          948
+        ]
+      ]
+    },
+    "contactKind": "round silhouette",
+    "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 50px; compare against existing player and boss in board review"
+  },
+  {
+    "id": "reused-washer-drum-v1",
+    "name": "洗衣机内胆货篓",
+    "tileWidth": 0.456,
+    "unsearched": {
+      "file": "reused-washer-drum",
+      "contacts": [
+        [
+          343,
+          834
+        ],
+        [
+          670,
+          993
+        ],
+        [
+          997,
+          834
+        ]
+      ]
+    },
+    "searched": {
+      "file": "reused-washer-drum-searched",
+      "contacts": [
+        [
+          343,
+          834
+        ],
+        [
+          670,
+          993
+        ],
+        [
+          997,
+          834
+        ]
+      ]
+    },
+    "contactKind": "round silhouette",
+    "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 38px; compare against existing player and boss in board review"
+  },
+  {
+    "id": "patched-suitcase-v1",
+    "name": "补缀拉杆箱",
+    "tileWidth": 0.145,
+    "unsearched": {
+      "file": "patched-suitcase",
+      "contacts": [
+        [
+          320,
+          963
+        ],
+        [
+          677,
+          1152
+        ],
+        [
+          930,
+          1066
+        ]
+      ]
+    },
+    "searched": {
+      "file": "patched-suitcase-searched",
+      "contacts": [
+        [
+          320,
+          963
+        ],
+        [
+          677,
+          1152
+        ],
+        [
+          930,
+          1066
+        ]
+      ]
+    },
+    "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 44px; compare against existing player and boss in board review"
+  },
+  {
+    "id": "repaired-cooler-v1",
+    "name": "修补保温箱",
+    "tileWidth": 0.369,
+    "unsearched": {
+      "file": "repaired-cooler",
+      "contacts": [
+        [
+          353,
+          758
+        ],
+        [
+          815,
+          981
+        ],
+        [
+          1090,
+          800
+        ]
+      ]
+    },
+    "searched": {
+      "file": "repaired-cooler-searched",
+      "contacts": [
+        [
+          353,
+          798
+        ],
+        [
+          815,
+          1021
+        ],
+        [
+          1090,
+          840
+        ]
+      ]
+    },
+    "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 34px; compare against existing player and boss in board review"
+  },
+  {
+    "id": "rice-cooker-cache-v1",
+    "name": "旧电饭煲藏物罐",
+    "tileWidth": 0.157,
+    "unsearched": {
+      "file": "rice-cooker-cache",
+      "contacts": [
+        [
+          390,
+          855
+        ],
+        [
+          653,
+          960
+        ],
+        [
+          859,
+          888
+        ]
+      ]
+    },
+    "searched": {
+      "file": "rice-cooker-cache-searched",
+      "contacts": [
+        [
+          390,
+          938
+        ],
+        [
+          653,
+          1043
+        ],
+        [
+          859,
+          971
+        ]
+      ]
+    },
+    "contactKind": "round silhouette",
+    "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 22px; compare against existing player and boss in board review"
+  },
+  {
+    "id": "pressure-pot-cache-v1",
+    "name": "旧压力锅储物罐",
+    "tileWidth": 0.236,
+    "unsearched": {
+      "file": "pressure-pot-cache",
+      "contacts": [
+        [
+          383,
+          806
+        ],
+        [
+          664,
+          921
+        ],
+        [
+          946,
+          806
+        ]
+      ]
+    },
+    "searched": {
+      "file": "pressure-pot-cache-searched",
+      "contacts": [
+        [
+          383,
+          971
+        ],
+        [
+          664,
+          1086
+        ],
+        [
+          946,
+          971
+        ]
+      ]
+    },
+    "contactKind": "round silhouette",
+    "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 22px; compare against existing player and boss in board review"
+  },
+  {
+    "id": "computer-tower-cabinet-v1",
+    "name": "旧机箱杂物柜",
+    "tileWidth": 0.48,
+    "unsearched": {
+      "file": "computer-tower-cabinet",
+      "contacts": [
+        [
+          276,
+          697
+        ],
+        [
+          762,
+          1050
+        ],
+        [
+          1057,
+          891
+        ]
+      ]
+    },
+    "searched": {
+      "file": "computer-tower-cabinet-searched",
+      "contacts": [
+        [
+          110,
+          650
+        ],
+        [
+          624,
+          1025
+        ],
+        [
+          915,
+          880
+        ]
+      ]
+    }
+  },
+  {
+    "id": "wheelie-bin-cache-v1",
+    "name": "带轮垃圾桶货筒",
+    "tileWidth": 0.245,
+    "unsearched": {
+      "file": "wheelie-bin-cache",
+      "contacts": [
+        [
+          405,
+          896
+        ],
+        [
+          641,
+          1024
+        ],
+        [
+          982,
+          923
+        ]
+      ]
+    },
+    "searched": {
+      "file": "wheelie-bin-cache-searched",
+      "contacts": [
+        [
+          405,
+          896
+        ],
+        [
+          641,
+          1024
+        ],
+        [
+          982,
+          923
+        ]
+      ]
+    },
+    "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 62px; compare against existing player and boss in board review"
+  },
+  {
+    "id": "postbox-cache-v1",
+    "name": "旧邮筒藏物柜",
+    "tileWidth": 0.327,
+    "unsearched": {
+      "file": "postbox-cache",
+      "contacts": [
+        [
+          368,
+          894
+        ],
+        [
+          765,
+          1078
+        ],
+        [
+          959,
+          975
+        ]
+      ]
+    },
+    "searched": {
+      "file": "postbox-cache-searched",
+      "contacts": [
+        [
+          368,
+          894
+        ],
+        [
+          765,
+          1078
+        ],
+        [
+          959,
+          975
+        ]
+      ]
+    },
+    "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 74px; compare against existing player and boss in board review"
+  },
+  {
+    "id": "factory-locker-cache-v1",
+    "name": "旧更衣柜",
+    "tileWidth": 0.397,
+    "unsearched": {
+      "file": "factory-locker-cache",
+      "contacts": [
+        [
+          409,
+          930
+        ],
+        [
+          688,
+          1080
+        ],
+        [
+          918,
+          948
+        ]
+      ]
+    },
+    "searched": {
+      "file": "factory-locker-cache-searched",
+      "contacts": [
+        [
+          409,
+          930
+        ],
+        [
+          688,
+          1080
+        ],
+        [
+          918,
+          948
+        ]
+      ]
+    },
+    "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 90px; compare against existing player and boss in board review"
+  },
+  {
+    "id": "vending-machine-cupboard-v1",
+    "name": "旧售货机货柜",
+    "tileWidth": 0.51,
+    "unsearched": {
+      "file": "vending-machine-cupboard",
+      "contacts": [
+        [
+          318,
+          928
+        ],
+        [
+          691,
+          1124
+        ],
+        [
+          932,
+          959
+        ]
+      ]
+    },
+    "searched": {
+      "file": "vending-machine-cupboard-searched",
+      "contacts": [
+        [
+          318,
+          928
+        ],
+        [
+          691,
+          1124
+        ],
+        [
+          932,
+          959
+        ]
+      ]
+    },
+    "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 90px; compare against existing player and boss in board review"
+  },
+  {
+    "id": "pram-cargo-basket-v1",
+    "name": "旧婴儿车货篮",
+    "tileWidth": 0.314,
+    "unsearched": {
+      "file": "pram-cargo-basket",
+      "contacts": [
+        [
+          357,
+          877
+        ],
+        [
+          647,
+          1033
+        ],
+        [
+          1103,
+          854
+        ]
+      ]
+    },
+    "searched": {
+      "file": "pram-cargo-basket-searched",
+      "contacts": [
+        [
+          357,
+          877
+        ],
+        [
+          647,
+          1033
+        ],
+        [
+          1103,
+          854
+        ]
+      ]
+    },
+    "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 56px; compare against existing player and boss in board review"
+  },
+  {
+    "id": "wire-cage-trolley-v1",
+    "name": "铁网周转货笼",
+    "tileWidth": 0.707,
+    "unsearched": {
+      "file": "wire-cage-trolley",
+      "contacts": [
+        [
+          219,
+          878
+        ],
+        [
+          643,
+          1119
+        ],
+        [
+          1040,
+          911
+        ]
+      ]
+    },
+    "searched": {
+      "file": "wire-cage-trolley-searched",
+      "contacts": [
+        [
+          223,
+          878
+        ],
+        [
+          642,
+          1116
+        ],
+        [
+          1050,
+          908
+        ]
+      ]
+    },
+    "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 85px; compare against existing player and boss in board review"
+  },
+  {
+    "id": "stacked-plastic-crates-v1",
+    "name": "叠放周转筐",
+    "tileWidth": 0.446,
+    "unsearched": {
+      "file": "stacked-plastic-crates",
+      "contacts": [
+        [
+          264,
+          907
+        ],
+        [
+          675,
+          1121
+        ],
+        [
+          1055,
+          930
+        ]
+      ]
+    },
+    "searched": {
+      "file": "stacked-plastic-crates-searched",
+      "contacts": [
+        [
+          257,
+          870
+        ],
+        [
+          661,
+          1114
+        ],
+        [
+          1049,
+          898
+        ]
+      ]
+    },
+    "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 64px; compare against existing player and boss in board review"
+  },
+  {
+    "id": "sideways-oil-drum-cabinet-v1",
+    "name": "横置铁桶柜",
+    "tileWidth": 0.601,
+    "unsearched": {
+      "file": "sideways-oil-drum-cabinet",
+      "contacts": [
+        [
+          417,
+          677
+        ],
+        [
+          821,
+          876
+        ],
+        [
+          1066,
+          713
+        ]
+      ]
+    },
+    "searched": {
+      "file": "sideways-oil-drum-cabinet-searched",
+      "contacts": [
+        [
+          411,
+          696
+        ],
+        [
+          831,
+          873
+        ],
+        [
+          1143,
+          720
+        ]
+      ]
+    },
+    "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 58px; compare against existing player and boss in board review"
+  },
+  {
+    "id": "cable-spool-shelf-v1",
+    "name": "电缆卷盘货架",
+    "tileWidth": 0.683,
+    "unsearched": {
+      "file": "cable-spool-shelf",
+      "contacts": [
+        [
+          267,
+          826
+        ],
+        [
+          653,
+          1008
+        ],
+        [
+          1045,
+          826
+        ]
+      ]
+    },
+    "searched": {
+      "file": "cable-spool-shelf-searched",
+      "contacts": [
+        [
+          261,
+          863
+        ],
+        [
+          663,
+          1012
+        ],
+        [
+          1060,
+          863
+        ]
+      ]
+    },
+    "contactKind": "round silhouette",
+    "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 55px; compare against existing player and boss in board review"
+  },
+  {
+    "id": "milk-churn-storage-v1",
+    "name": "旧奶罐",
+    "tileWidth": 0.225,
+    "unsearched": {
+      "file": "milk-churn-storage",
+      "contacts": [
+        [
+          357,
+          935
+        ],
+        [
+          605,
+          1050
+        ],
+        [
+          858,
+          935
+        ]
+      ]
+    },
+    "searched": {
+      "file": "milk-churn-storage-searched",
+      "contacts": [
+        [
+          357,
+          941
+        ],
+        [
+          613,
+          1060
+        ],
+        [
+          875,
+          942
+        ]
+      ]
+    },
+    "contactKind": "round silhouette",
+    "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 38px; compare against existing player and boss in board review"
+  },
+  {
+    "id": "motorcycle-topbox-cache-v1",
+    "name": "旧摩托尾箱",
+    "tileWidth": 0.298,
+    "unsearched": {
+      "file": "motorcycle-topbox-cache",
+      "contacts": [
+        [
+          304,
+          739
+        ],
+        [
+          747,
+          961
+        ],
+        [
+          1123,
+          786
+        ]
+      ]
+    },
+    "searched": {
+      "file": "motorcycle-topbox-cache-searched",
+      "contacts": [
+        [
+          292,
+          776
+        ],
+        [
+          736,
+          1041
+        ],
+        [
+          1114,
+          820
+        ]
+      ]
+    },
+    "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 28px; compare against existing player and boss in board review"
+  },
+  {
+    "id": "tire-storage-basket-v1",
+    "name": "轮胎储物筐",
+    "tileWidth": 0.504,
+    "unsearched": {
+      "file": "tire-storage-basket",
+      "contacts": [
+        [
+          247,
+          891
+        ],
+        [
+          649,
+          1060
+        ],
+        [
+          1131,
+          891
+        ]
+      ]
+    },
+    "searched": {
+      "file": "tire-storage-basket-searched",
+      "contacts": [
+        [
+          227,
+          896
+        ],
+        [
+          679,
+          1056
+        ],
+        [
+          1122,
+          896
+        ]
+      ]
+    },
+    "contactKind": "round silhouette",
+    "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 36px; compare against existing player and boss in board review"
+  },
+  {
+    "id": "aluminum-flight-case-v1",
+    "name": "旧器材航空箱",
+    "tileWidth": 0.469,
+    "unsearched": {
+      "file": "aluminum-flight-case",
+      "contacts": [
+        [
+          263,
+          715
+        ],
+        [
+          828,
+          991
+        ],
+        [
+          1161,
+          792
+        ]
+      ]
+    },
+    "searched": {
+      "file": "aluminum-flight-case-searched",
+      "contacts": [
+        [
+          247,
+          731
+        ],
+        [
+          811,
+          1023
+        ],
+        [
+          1165,
+          799
+        ]
+      ]
+    },
+    "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 30px; compare against existing player and boss in board review"
+  },
+  {
+    "id": "marine-buoy-cache-v1",
+    "name": "浮球藏物罐",
+    "tileWidth": 0.413,
+    "unsearched": {
+      "file": "marine-buoy-cache",
+      "contacts": [
+        [
+          391,
+          835
+        ],
+        [
+          702,
+          970
+        ],
+        [
+          1028,
+          835
+        ]
+      ]
+    },
+    "searched": {
+      "file": "marine-buoy-cache-searched",
+      "contacts": [
+        [
+          365,
+          910
+        ],
+        [
+          688,
+          1012
+        ],
+        [
+          1019,
+          916
+        ]
+      ]
+    },
+    "contactKind": "round silhouette",
+    "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 42px; compare against existing player and boss in board review"
+  },
+  {
+    "id": "patched-bulk-sack-v1",
+    "name": "补缀吨袋",
+    "tileWidth": 0.574,
+    "unsearched": {
+      "file": "patched-bulk-sack",
+      "contacts": [
+        [
+          264,
+          873
+        ],
+        [
+          654,
+          1060
+        ],
+        [
+          1060,
+          883
+        ]
+      ]
+    },
+    "searched": {
+      "file": "patched-bulk-sack-searched",
+      "contacts": [
+        [
+          235,
+          880
+        ],
+        [
+          679,
+          1098
+        ],
+        [
+          1089,
+          916
+        ]
+      ]
+    },
+    "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 85px; compare against existing player and boss in board review"
+  },
+  {
+    "id": "timber-rack",
+    "name": "旧料架",
+    "category": "decor",
+    "tileWidth": 0.686,
+    "logicalFootprint": [
+      1,
+      1
+    ],
+    "normal": {
+      "file": "timber-rack",
+      "contacts": [
+        [
+          242,
+          927
+        ],
+        [
+          544,
+          1116
+        ],
+        [
+          1091,
+          810
+        ]
+      ]
+    },
+    "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 70px; compare against existing player and boss in board review"
+  },
+  {
+    "id": "broken-chair",
+    "name": "修补旧椅",
+    "category": "decor",
+    "tileWidth": 0.34,
+    "logicalFootprint": [
+      1,
+      1
+    ],
+    "normal": {
+      "file": "broken-chair",
+      "contacts": [
+        [
+          326,
+          975
+        ],
+        [
+          670,
+          1171
+        ],
+        [
+          939,
+          990
+        ]
+      ]
+    }
+  },
+  {
+    "id": "old-radiator",
+    "name": "旧暖气片",
+    "category": "decor",
+    "tileWidth": 0.324,
+    "logicalFootprint": [
+      1,
+      1
+    ],
+    "normal": {
+      "file": "old-radiator",
+      "contacts": [
+        [
+          396,
+          871
+        ],
+        [
+          651,
+          1008
+        ],
+        [
+          1100,
+          748
+        ]
+      ]
+    },
+    "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 46px; compare against existing player and boss in board review"
+  },
+  {
+    "id": "tire-pair",
+    "name": "旧轮胎堆",
+    "category": "decor",
+    "tileWidth": 0.441,
+    "logicalFootprint": [
+      1,
+      1
+    ],
+    "normal": {
+      "file": "tire-pair",
+      "contacts": [
+        [
+          286,
+          878
+        ],
+        [
+          633,
+          1032
+        ],
+        [
+          974,
+          875
+        ]
+      ]
+    },
+    "contactKind": "round silhouette",
+    "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 42px; compare against existing player and boss in board review"
+  },
+  {
+    "id": "sealed-cargo-obstacle-v1",
+    "name": "封存货堆",
+    "category": "decor",
+    "tileWidth": 1.798,
+    "logicalFootprint": [
+      2,
+      2
+    ],
+    "normal": {
+      "file": "sealed-cargo-obstacle-v1",
+      "contacts": [
+        [
+          220,
+          767
+        ],
+        [
+          746,
+          1083
+        ],
+        [
+          1185,
+          800
+        ]
+      ]
+    }
+  },
+  {
+    "id": "collapsed-rubble-obstacle-v1",
+    "name": "塌落砖石",
+    "category": "decor",
+    "tileWidth": 1.85,
+    "logicalFootprint": [
+      2,
+      2
+    ],
+    "normal": {
+      "file": "collapsed-rubble-obstacle-v1",
+      "contacts": [
+        [
+          323,
+          685
+        ],
+        [
+          750,
+          914
+        ],
+        [
+          1190,
+          700
+        ]
+      ]
+    }
+  },
+  {
+    "id": "timber-stone-barricade-v1",
+    "name": "拼装挡路架",
+    "category": "decor",
+    "tileWidth": 1.164,
+    "logicalFootprint": [
+      2,
+      1
+    ],
+    "normal": {
+      "file": "timber-stone-barricade-v1",
+      "contacts": [
+        [
+          250,
+          532
+        ],
+        [
+          1153,
+          936
+        ],
+        [
+          1323,
+          826
+        ]
+      ]
+    }
+  },
+  {
+    "id": "workshop-machine-v1",
+    "name": "旧车间机组",
+    "category": "decor",
+    "tileWidth": 2.105,
+    "logicalFootprint": [
+      3,
+      2
+    ],
+    "normal": {
+      "file": "workshop-machine-v1",
+      "contacts": [
+        [
+          264,
+          690
+        ],
+        [
+          1005,
+          1008
+        ],
+        [
+          1325,
+          838
+        ]
+      ]
+    }
+  },
+  {
+    "id": "workshop-bench-v1",
+    "name": "车间工作台",
+    "category": "decor",
+    "tileWidth": 1.295,
+    "logicalFootprint": [
+      2,
+      1
+    ],
+    "normal": {
+      "file": "workshop-bench-v1",
+      "contacts": [
+        [
+          272,
+          650
+        ],
+        [
+          960,
+          997
+        ],
+        [
+          1181,
+          860
+        ]
+      ]
+    }
+  },
+  {
+    "id": "canteen-table-v1",
+    "name": "旧食堂长桌",
+    "category": "decor",
+    "tileWidth": 1.311,
+    "logicalFootprint": [
+      2,
+      1
+    ],
+    "normal": {
+      "file": "canteen-table-v1",
+      "contacts": [
+        [
+          262,
+          527
+        ],
+        [
+          1016,
+          953
+        ],
+        [
+          1271,
+          803
+        ]
+      ]
+    }
+  },
+  {
+    "id": "canteen-counter-v1",
+    "name": "食堂备餐台",
+    "category": "decor",
+    "tileWidth": 1.276,
+    "logicalFootprint": [
+      2,
+      1
+    ],
+    "normal": {
+      "file": "canteen-counter-v1",
+      "contacts": [
+        [
+          296,
+          612
+        ],
+        [
+          1024,
+          950
+        ],
+        [
+          1244,
+          814
+        ]
+      ]
+    }
+  },
+  {
+    "id": "clinic-bed-v1",
+    "name": "临时诊疗床",
+    "category": "decor",
+    "tileWidth": 1.332,
+    "logicalFootprint": [
+      2,
+      1
+    ],
+    "normal": {
+      "file": "clinic-bed-v1",
+      "contacts": [
+        [
+          220,
+          532
+        ],
+        [
+          1034,
+          961
+        ],
+        [
+          1326,
+          778
+        ]
+      ]
+    }
+  },
+  {
+    "id": "clinic-bench-v1",
+    "name": "候诊长凳",
+    "category": "decor",
+    "tileWidth": 1.25,
+    "logicalFootprint": [
+      2,
+      1
+    ],
+    "normal": {
+      "file": "clinic-bench-v1",
+      "contacts": [
+        [
+          185,
+          504
+        ],
+        [
+          1070,
+          972
+        ],
+        [
+          1314,
+          831
+        ]
+      ]
+    }
+  },
+  {
+    "id": "old-water-filter",
+    "name": "旧净水桶",
+    "category": "recovery",
+    "tileWidth": 0.36,
+    "logicalFootprint": [
+      1,
+      1
+    ],
+    "normal": {
+      "file": "old-water-filter",
+      "contacts": [
+        [
+          377,
+          976
+        ],
+        [
+          642,
+          1166
+        ],
+        [
+          901,
+          1052
+        ]
+      ]
+    },
+    "used": {
+      "file": "old-water-filter-used",
+      "contacts": [
+        [
+          377,
+          976
+        ],
+        [
+          642,
+          1166
+        ],
+        [
+          901,
+          1052
+        ]
+      ]
+    }
+  },
+  {
+    "id": "barrel-cooking-stove",
+    "name": "铁桶小灶",
+    "category": "recovery",
+    "tileWidth": 0.283,
+    "logicalFootprint": [
+      1,
+      1
+    ],
+    "normal": {
+      "file": "barrel-cooking-stove",
+      "contacts": [
+        [
+          382,
+          981
+        ],
+        [
+          653,
+          1083
+        ],
+        [
+          871,
+          991
+        ]
+      ]
+    },
+    "used": {
+      "file": "barrel-cooking-stove-used",
+      "contacts": [
+        [
+          382,
+          981
+        ],
+        [
+          653,
+          1083
+        ],
+        [
+          871,
+          991
+        ]
+      ]
+    },
+    "contactKind": "round silhouette",
+    "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 55px; compare against existing player and boss in board review"
+  },
+  {
+    "id": "first-aid-trolley",
+    "name": "急救推车",
+    "category": "recovery",
+    "tileWidth": 0.359,
+    "logicalFootprint": [
+      1,
+      1
+    ],
+    "normal": {
+      "file": "first-aid-trolley",
+      "contacts": [
+        [
+          272,
+          946
+        ],
+        [
+          677,
+          1171
+        ],
+        [
+          994,
+          978
+        ]
+      ]
+    },
+    "used": {
+      "file": "first-aid-trolley-used",
+      "contacts": [
+        [
+          272,
+          946
+        ],
+        [
+          677,
+          1171
+        ],
+        [
+          994,
+          978
+        ]
+      ]
+    },
+    "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 55px; compare against existing player and boss in board review"
+  },
+  {
+    "id": "car-seat-rest-berth",
+    "name": "车座铺位",
+    "category": "recovery",
+    "tileWidth": 0.279,
+    "logicalFootprint": [
+      1,
+      1
+    ],
+    "normal": {
+      "file": "car-seat-rest-berth",
+      "contacts": [
+        [
+          330,
+          968
+        ],
+        [
+          683,
+          1122
+        ],
+        [
+          948,
+          962
+        ]
+      ]
+    },
+    "used": {
+      "file": "car-seat-rest-berth-used",
+      "contacts": [
+        [
+          330,
+          968
+        ],
+        [
+          683,
+          1122
+        ],
+        [
+          948,
+          962
+        ]
+      ]
+    },
+    "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 60px; compare against existing player and boss in board review"
+  },
+  {
+    "id": "campfire-small-pot",
+    "name": "篝火小锅",
+    "category": "recovery",
+    "tileWidth": 0.307,
+    "logicalFootprint": [
+      1,
+      1
+    ],
+    "normal": {
+      "file": "campfire-small-pot",
+      "contacts": [
+        [
+          290,
+          847
+        ],
+        [
+          670,
+          1000
+        ],
+        [
+          1012,
+          821
+        ]
+      ]
+    },
+    "used": {
+      "file": "campfire-small-pot-used",
+      "contacts": [
+        [
+          290,
+          847
+        ],
+        [
+          670,
+          1000
+        ],
+        [
+          1012,
+          821
+        ]
+      ]
+    },
+    "contactKind": "round silhouette",
+    "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 28px; compare against existing player and boss in board review"
+  },
+  {
+    "id": "small-enamel-water-jug",
+    "name": "旧提水壶",
+    "category": "recovery",
+    "tileWidth": 0.176,
+    "logicalFootprint": [
+      1,
+      1
+    ],
+    "normal": {
+      "file": "small-enamel-water-jug",
+      "contacts": [
+        [
+          392,
+          893
+        ],
+        [
+          669,
+          1001
+        ],
+        [
+          931,
+          898
+        ]
+      ]
+    },
+    "used": {
+      "file": "small-enamel-water-jug-used",
+      "contacts": [
+        [
+          392,
+          893
+        ],
+        [
+          669,
+          1001
+        ],
+        [
+          931,
+          898
+        ]
+      ]
+    },
+    "contactKind": "round silhouette",
+    "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 24px; compare against existing player and boss in board review"
+  },
+  {
+    "id": "fragment-desk",
+    "name": "残页书桌",
+    "category": "insight",
+    "tileWidth": 0.49,
+    "logicalFootprint": [
+      1,
+      1
+    ],
+    "normal": {
+      "file": "fragment-desk",
+      "contacts": [
+        [
+          264,
+          848
+        ],
+        [
+          734,
+          1102
+        ],
+        [
+          1002,
+          919
+        ]
+      ]
+    },
+    "used": {
+      "file": "fragment-desk-used",
+      "contacts": [
+        [
+          264,
+          848
+        ],
+        [
+          734,
+          1102
+        ],
+        [
+          1002,
+          919
+        ]
+      ]
+    }
+  },
+  {
+    "id": "practice-stump",
+    "name": "练武残桩",
+    "category": "insight",
+    "tileWidth": 0.202,
+    "logicalFootprint": [
+      1,
+      1
+    ],
+    "normal": {
+      "file": "practice-stump",
+      "contacts": [
+        [
+          486,
+          942
+        ],
+        [
+          711,
+          1054
+        ],
+        [
+          936,
+          942
+        ]
+      ]
+    },
+    "used": {
+      "file": "practice-stump-used",
+      "contacts": [
+        [
+          486,
+          942
+        ],
+        [
+          711,
+          1054
+        ],
+        [
+          936,
+          942
+        ]
+      ]
+    },
+    "contactKind": "round silhouette",
+    "heightReference": "144px grid; closed/normal rear-ground height estimate capped at 46px; compare against existing player and boss in board review"
+  },
+  {
+    "id": "exit-waypost",
+    "name": "撤离路牌",
+    "category": "decor",
+    "tileWidth": 0.19,
+    "logicalFootprint": [
+      1,
+      1
+    ],
+    "normal": {
+      "file": "exit-waypost",
+      "contacts": [
+        [
+          399,
+          978
+        ],
+        [
+          696,
+          1130
+        ],
+        [
+          750,
+          1101
+        ]
+      ]
+    }
+  },
+  {
+    "id": "canteen-food-crate",
+    "name": "食材筐",
+    "category": "container",
+    "tileWidth": 0.8,
+    "logicalFootprint": [
+      1,
+      1
+    ],
+    "normal": {
+      "file": "canteen-food-crate",
+      "contacts": [
+        [
+          203,
+          794
+        ],
+        [
+          687,
+          1096
+        ],
+        [
+          1143,
+          799
+        ]
+      ]
+    },
+    "partial": {
+      "file": "canteen-food-crate-partial",
+      "contacts": [
+        [
+          203,
+          794
+        ],
+        [
+          687,
+          1096
+        ],
+        [
+          1143,
+          799
+        ]
+      ]
+    },
+    "low": {
+      "file": "canteen-food-crate-low",
+      "contacts": [
+        [
+          203,
+          794
+        ],
+        [
+          687,
+          1096
+        ],
+        [
+          1143,
+          799
+        ]
+      ]
+    },
+    "searched": {
+      "file": "canteen-food-crate-searched",
+      "contacts": [
+        [
+          203,
+          794
+        ],
+        [
+          687,
+          1096
+        ],
+        [
+          1143,
+          799
+        ]
+      ]
+    }
+  },
+  {
+    "id": "broken-fan",
+    "name": "停转旧风扇",
+    "category": "decor",
+    "tileWidth": 0.22,
+    "logicalFootprint": [
+      1,
+      1
+    ],
+    "normal": {
+      "file": "broken-fan",
+      "contacts": [
+        [
+          436,
+          955
+        ],
+        [
+          650,
+          1060
+        ],
+        [
+          865,
+          950
+        ]
+      ]
+    },
+    "reuse": "approved room v6"
+  },
+  {
+    "id": "worn-mat",
+    "name": "磨旧地垫",
+    "category": "decor",
+    "tileWidth": 0.726,
+    "logicalFootprint": [
+      1,
+      1
+    ],
+    "normal": {
+      "file": "worn-mat",
+      "contacts": [
+        [
+          63,
+          493
+        ],
+        [
+          818,
+          1029
+        ],
+        [
+          1182,
+          791
+        ]
+      ]
+    },
+    "reuse": "approved room v6"
+  }
+]

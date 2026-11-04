@@ -1,0 +1,22 @@
+[
+  {
+    "file": "factory-desk-low",
+    "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-601c499c-fb16-47aa-9c1c-f3e3a1da6350.png",
+    "prompt": "Use case: precise-object-edit.\nMake this existing desk genuinely lower while preserving its floor footprint, square tabletop size, camera, style and base foot coordinates. Shorten ONLY the vertical steel legs and drawer carcass by 30%. Lower the tabletop and all tabletop objects together by about80 pixels in this1254square. Keep all three visible foot contact points exactly where they currently are; do not resize the whole sprite. The desk is knee-to-waist high beside the game character, not a tall counter. Lower the tucked red stool if needed so it fits. Keep the thick cartoon lines and broad paint, same cream and teal, true transparent background. Ground edge slopes and tabletop width unchanged."
+  },
+  {
+    "file": "metal-sideboard-low",
+    "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-b3299f7f-e84a-4c04-bb2a-d2523094d089.png",
+    "prompt": "Use case: precise-object-edit.\nMake the metal cabinet body noticeably lower: shorten ONLY its vertical door/body height by30%, bringing the counter and its basin, flask, kettle, towel and lantern downward together by about80sourcepixels. Keep the same horizontal ground footprint and every foot base at the same coordinates. Do not scale the entire image, change the countertop size, move doors to another face, change lighting or change the cartoon paint. Keep front doors on visibleLEFTface. Same1254square transparent framing. Aim for a low waist-height washing cabinet rather than a tall cube."
+  },
+  {
+    "file": "private-cache-low",
+    "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-24088f08-0437-4f12-8307-dc4709eeddff.png",
+    "prompt": "Use case: precise-object-edit.\nMake this closed square lockbox much shallower, retaining exactly the existing floor footprint and three visible bottom corner positions. Reduce ONLY vertical body wall height by35%; move the entire flat lid downward by about110 sourcepixels without changing lid width, projected depth or direction. Shorten the green vertical straps and the wooden side panels correspondingly. Keep latch/lock and white two-stroke mark appropriately sized on shortened panels. Same cartoon painting, color, top-left light, camera and1254square transparent frame. This is a low broad chest, not a cube. Do not rescale/recenter the whole asset."
+  },
+  {
+    "file": "private-cache-searched-low",
+    "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a17b42-6e6e-7e22-a6af-27970fdf58ae\\exec-73843ac1-eea1-4e0b-996e-a1a46d4c4a03.png",
+    "prompt": "Use case: precise-object-edit.\nMake the lower BODY of this open lockbox much shallower while preserving exactly its floor footprint and three visible bottom corner coordinates. Reduce ONLY vertical body wall height by35%, lower the top rim and attached open lid assembly together by about110 sourcepixels. Keep lid open, lower internal floor, emptyinterior, green straps, unlockedpadlock andwhite two-stroke mark. Shorten panels/straps appropriately. Do NOTchange the ground footprint or whole image scale. Same cartoonpainting, illumination,camera,1254square transparent framing. It must be the opened version of a low broad chest, not a tall cube."
+  }
+]

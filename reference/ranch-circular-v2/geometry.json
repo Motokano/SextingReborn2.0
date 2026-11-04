@@ -1,0 +1,14 @@
+{
+  "logicalFootprint": [
+    5,
+    5
+  ],
+  "radiusCells": 2.35,
+  "tileWidth": 144,
+  "tileHeight": 101.82337649086284,
+  "ellipseRadiiAt144": [
+    239.28493475352772,
+    169.20000000000002
+  ],
+  "note": "Circle inscribed in square ground footprint; source art retains native projection."
+}

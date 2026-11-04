@@ -1,0 +1,91 @@
+{
+  "version": 1,
+  "approvedOn": "2026-10-31",
+  "userConfirmation": "可以，就这一版",
+  "scope": "箭步第一版视觉、节奏和接摆拳预览；不代表玩法已接入",
+  "status": "visual_approved_pending_gameplay_integration",
+  "preview": "tools/combat-dash-preview.html",
+  "display": {
+    "tileWidth": 144,
+    "pawnScale": 1.25,
+    "playbackRate": 1.5,
+    "maxGhosts": 2,
+    "audio": "none"
+  },
+  "animationMilliseconds": {
+    "push": 90,
+    "travelMin": 180,
+    "travelPerExtraStep": 52.5,
+    "brake": 90,
+    "dustLife": 330,
+    "ghostDelay": 57,
+    "ghostLife": 135
+  },
+  "boundary": "真实AI、寻路、冷却、攻击机会、视野合成待接入；maxPathSteps=4仍为玩法提案",
+  "immutable": "Do not update this baseline alongside later runtime changes.",
+  "files": [
+    {
+      "source": "js/combat-fx-dash.js",
+      "snapshot": "combat-fx-dash.js",
+      "sha256": "467726b81f13c281c0b271519fa4b7f68e9326339aa6ccb410eade4758205ac3"
+    },
+    {
+      "source": "tools/combat-dash-preview.mjs",
+      "snapshot": "combat-dash-preview.mjs",
+      "sha256": "b154eb98c4b8d55572b23cb334165106a5a4a0904a328f452dfa8971463c29d3"
+    },
+    {
+      "source": "tools/combat-dash-preview.html",
+      "snapshot": "combat-dash-preview.html",
+      "sha256": "9b75b65731650a3e14161e8c6f424ea99e9576379a5bd95cf8419ba204d1107f"
+    },
+    {
+      "source": "tools/combat-dash-preview.css",
+      "snapshot": "combat-dash-preview.css",
+      "sha256": "9d49f33ff769a1ccce6614f5ef63976d692cd3cb7c64be399dd2ea0bdab67042"
+    },
+    {
+      "source": "reference/combat-fx/dash-v1-preview.png",
+      "snapshot": "dash-v1-preview.png",
+      "sha256": "dcb0f021b1466a64bdcb7bc614a220e0de8e7fe8d0b9209e3ce4ed12c92f6201"
+    }
+  ],
+  "dependencies": [
+    {
+      "source": "js/core/map-projection.js",
+      "sha256": "250f45cf3f3c7ad7eca6873742132139c29ba8b95fb1dbc94ceb60b59078ed23"
+    },
+    {
+      "source": "js/core/tile-renderer-v2.js",
+      "sha256": "604c4f43f362dd52d29306cdec872b656ffad85bb25941f40da0c98d50462e0e"
+    },
+    {
+      "source": "js/combat-fx-paint.js",
+      "sha256": "2df0441ea7a3d01a180c8ac71bdc59768e45887fe7f7b67761a9a6a1837fe98d"
+    },
+    {
+      "source": "js/combat-fx-presentation.js",
+      "sha256": "ef438d3d597d7bd1d83b71a62b37d157d3613ad7dc18ef83384d1f778fc6d7e2"
+    },
+    {
+      "source": "assets/map/isometric/street-thug-veteran-v1/standing.png",
+      "sha256": "87ddf77f502995211e069527582c15212ebc111b46b4d9c212449cb143441965"
+    },
+    {
+      "source": "assets/map/isometric/player-atlas-v1/manifest.json",
+      "sha256": "7b644946f7ce286229e7881c95c86163bbea86e19680caec6bb5142defd7e193"
+    },
+    {
+      "source": "assets/map/isometric/player-atlas-v1/L00.png",
+      "sha256": "934754c154ce2defd6505dc269f89e2f1722a3ee8ae259d6f53ffa33d34aa4b8"
+    },
+    {
+      "source": "assets/dungeon/grid-scene-v1/manifest.json",
+      "sha256": "0898e7b8705df15378663bbfb652cfbf9111ca97bf8655472b634ccd6ea460b7"
+    },
+    {
+      "source": "assets/dungeon/containers-v2/abandoned-chest.png",
+      "sha256": "7b73a1e314c6fa92f9dc24b41d27ddb755b50b1276eddc06fa3d7ea724f80ec8"
+    }
+  ]
+}

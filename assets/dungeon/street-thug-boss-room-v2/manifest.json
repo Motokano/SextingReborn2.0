@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "status": "lived-in-room-art-preview",
+  "date": "2026-10-29",
+  "referenceTileWidth": 144,
+  "note": "Standalone room proposal, not a runtime room or collision layout. Original generated PNGs preserved. Existing boss and two searchable containers reused unchanged.",
+  "props": [
+    {"id":"dining","name":"收账吃喝桌","src":"drinking-table.png","crop":[126,20,1318,979],"anchor":[780,735],"width":158,"groundSlopes":[0.49,-0.66],"detail":"账册与钱袋靠一端；酒壶、碗盘和两条长凳围成日常吃喝的位置。"},
+    {"id":"sleeping","name":"帘后铺位","src":"sleeping-nook.png","crop":[197,0,1128,1007],"anchor":[750,810],"width":170,"groundSlopes":[0.51,-0.58],"detail":"打结的旧布帘、掀开的薄被、搭着的外衣和成双的布鞋。"},
+    {"id":"sideboard","name":"茶水洗漱柜","src":"serving-sideboard.png","crop":[80,0,1278,1103],"anchor":[740,857],"width":112,"groundSlopes":[0.52,-0.64],"detail":"灯、洗脸盆、水壶与碗叠放在一起；敞开的层板只作为生活布景。"}
+  ],
+  "reuse": {"timberFloor":"assets/dungeon/outpost-decor-v1/floor-timber.png"},
+  "room": {"width":7,"depth":8,"clearArea":[1,2,5,5],"searchableContainers":2,"bosses":1},
+  "registrationNote":"Ground axes estimated from straight furniture edges and checked against the preview grid. Vertical-preserving affine transform is applied once by the shared preview sprite renderer. Crops discard distant faint alpha noise, never rewrite PNG pixels. Anchor/width are art-review values pending runtime collision and occlusion integration."
+}

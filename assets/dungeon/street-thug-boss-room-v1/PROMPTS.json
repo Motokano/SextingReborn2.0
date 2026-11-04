@@ -1,0 +1,36 @@
+{
+  "tool": "built-in image_gen",
+  "created": "2026-10-29",
+  "desk": {
+    "transparent_background": true,
+    "referenced_image_paths": [
+      "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/outpost-decor-v1/canteen-table-v1.png",
+      "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/outpost-decor-v1/broken-chair.png",
+      "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/baseless/abandoned-chest-baseless-v1.png"
+    ],
+    "prompt": "Use case: precise-object-edit. Asset: an individual transparent PNG furniture sprite for the existing Chinese post-apocalyptic hand-painted isometric game. Image 1 is the table design to remodel into a thug boss's tally desk; images 2 and 3 are style references only. Preserve the reference game's oblique C/45 degree viewing angle, crisp dark outline, hand-painted solid volumes, restrained worn wood and dull oxidized olive-green iron, upper-left neutral-warm light. The new desk is compact 2-by-1 map cells, long axis from upper-left to lower-right, with short sturdy legs and an open knee space, not a huge dining table. Worn ochre-brown planks, green-painted iron corner braces, modest chips only at contact edges, a single shallow drawer. On the top draw exactly a closed dark olive cloth ledger tied by a thin cord, a small chipped off-white enamel mug, and a few squat counters clustered beside the ledger. No readable writing. Keep silhouette clean and details legible when shown about 100px wide beside a 74px tall character. Wood grain and rust rendered as selective broad brush marks, not photoreal texture noise or shiny golden edge-lighting. Complete desk with all its own legs visible, centered with generous transparent margins. Truly transparent background including between legs, no floor, pedestal, oval pawn base, vignette, glow, ground shadow, other furniture, people, scene, diagram or labels. Keep the source references intact; output just this new desk sprite."
+  },
+  "seat": {
+    "transparent_background": true,
+    "referenced_image_paths": [
+      "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/outpost-decor-v1/broken-chair.png",
+      "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/street-thug-boss-room-v1/watch-desk.png"
+    ],
+    "prompt": "Use case: precise-object-edit. Image 1 is the existing game chair to redesign as the thug boss's personal repaired armchair. Image 2 is the matching newly designed tally desk, direct style/material reference only, do not include desk. Output one complete individual furniture sprite on truly transparent alpha. Preserve existing C/45 degree slightly overhead orthographic three-quarter view, hand-painted cartoon volumes, crisp dark outer contours, upper-left lighting. A sturdy compact wooden chair with square medium-height back, two simple armrests, four short legs. Same worn ochre-brown wood and matte faded olive-green iron braces as the desk. An old dark olive fabric pad on seat and back, just one ochre canvas repair patch and visible broad seams. Used but structurally sound; seat is intact. Rectangular practical silhouette, neither royal throne nor fantasy furniture nor luxury leather sofa. The sitter would face diagonally toward screen bottom-left; show the seat and inner back clearly. Readable at about 46px wide beside a 74px character, with selective large marks instead of tiny all-over scratches. Entire object, all feet, comfortable transparent margins. No person, no base, no floor, no scenery, no unrelated objects or text. Absolutely no brown atmospheric halo or glow, no vignette, no cast ground shadow. Preserve transparency between the legs and armrests."
+  },
+  "cargo": {
+    "transparent_background": true,
+    "referenced_image_paths": [
+      "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/outpost-decor-v1/sealed-cargo-obstacle-v1.png",
+      "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/street-thug-boss-room-v1/watch-desk.png"
+    ],
+    "prompt": "Use case: precise-object-edit. Remodel image 1's tall square cargo obstacle into one low narrow 2-by-1-cell sealed stash pile for the same thug den as image 2's desk. Image 2 is style/material reference only, exclude the desk. Individual isolated sprite, genuine transparent alpha. Exactly two battered squat wooden shipping crates SIDE BY SIDE, no stacked upper crate, covered partly by one folded dark olive coarse canvas bundle and a small flattened sack, tied shut across the group with thick tan rope. Cross-nailed planks clearly show it is a fixed non-searchable obstacle: no chest lid, handle, lock plate, or openable door. Keep the total pile knee-to-waist height relative to a game character. Long axis from upper-left to lower-right, matching reference C/45 degree overhead orthographic three-quarter view. Same hand-painted warm old wood, dull olive iron patches, readable dark outlines and broad volume shading as desk; spare controlled scuffs, no photoreal grains. Narrow rectangular 2:1 ground footprint, complete object, no protruding items outside footprint, transparent gaps and outer background, no display base or ground tile. Upper-left neutral-warm illumination without golden glow. No floor, cast shadow, atmospheric brown halo, vignette, people, text, labels, extra objects or scenery."
+  },
+  "mark": {
+    "transparent_background": true,
+    "referenced_image_paths": [
+      "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/street-thug-boss-room-v1/watch-desk.png"
+    ],
+    "prompt": "Use case: precise-object-edit. From the supplied desk take ONLY the style of its olive-green iron corner plates and worn hand-painted edges, and design one small wall-mounted scavenged iron sign plate for the same street-thug den. No desk parts or furniture in output. Asset is an isolated flat front-facing rectangular sheet metal plaque, a flat decal source so the game's wall renderer can project it; no perspective baked in. Width roughly 1.4 times height, bent/chipped outline, faded very dark olive green paint, a little dull ochre rust concentrated along edges, four rough bolt holes. In its center a single crudely painted OFF-WHITE territory mark: three thick short parallel slashes crossed by one rough horizontal stroke, no letters, words, numerals, skulls or arrows. Same crisp dark hand-drawn outline, painterly solid shading and restrained wear as the reference. Mark legible at 28px wide, bold and simple, visually quiet rather than a quest badge. True transparent alpha outside the complete plaque and in small bolt holes. No wall, floor, backing slab, pedestal, scenery, shadows outside the plaque, glow, brown haze, text labels or watermarks. Generous clean transparent margin."
+  }
+}

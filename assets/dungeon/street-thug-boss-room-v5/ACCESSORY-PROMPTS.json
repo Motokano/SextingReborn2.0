@@ -1,0 +1,14 @@
+[
+  {
+    "file": "factory-desk-final",
+    "src": "factory-desk-low.png",
+    "prompt": "Use case: precise-object-edit. Edit ONLY the three small tabletop objects. Make the open ledger, enamel mug and green glass bottle each 50% of its current linear size, still resting on the same tabletop at its existing contact location. These are normal hand-held props beside a 70px-tall game character, not huge statues. The cream tabletop should have generous empty surface. Keep the desk body, legs, red stool, ground feet, overall camera, 1254-square framing, bold dark outline, broad cartoon brushwork, colors, lighting and transparent background exactly unchanged. Do NOT resize or recenter the desk. No new objects, no shadows on background.",
+    "source": "C:/Users/haoxian.huang/.codex/generated_images/01a17b42-6e6e-7e22-a6af-27970fdf58ae/exec-2f40b431-d598-4985-acc7-f9f7e2aa04bf.png"
+  },
+  {
+    "file": "metal-sideboard-final",
+    "src": "metal-sideboard-low.png",
+    "prompt": "Use case: precise-object-edit. Edit ONLY the five accessories on this cabinet top. Make the thermos, lantern, kettle, washbasin and folded towel each 45% of its current linear size, retaining its placement on the countertop. They must be believable ordinary household objects for a character about 70px tall when the cabinet base is144px wide: thermos ~28px tall, basin ~25px wide, kettle ~22px overall. Leave generous empty counter surface. Keep the whole low teal cabinet body, feet, top slab, door handles, door face on LEFT, exact ground corners and square footprint, camera, 1254-square frame, bold dark outline, broad cartoon paint, colors, illumination and transparent background unchanged. Do NOT resize or recenter the cabinet. No extra objects or background shadow.",
+    "source": "C:/Users/haoxian.huang/.codex/generated_images/01a17b42-6e6e-7e22-a6af-27970fdf58ae/exec-b68dacbe-13fd-401f-b15a-881d3ed0c39e.png"
+  }
+]

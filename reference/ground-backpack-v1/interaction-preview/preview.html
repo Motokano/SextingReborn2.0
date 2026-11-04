@@ -1,0 +1,2843 @@
+<!doctype html>
+<html lang="en" data-visualize-standalone>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; style-src 'unsafe-inline' blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; img-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; font-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; media-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; worker-src blob:; connect-src blob: data:; frame-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Ground Backpack Flow</title>
+<style>:root{color-scheme:light dark;background:light-dark(rgb(255 255 255), rgb(24 24 24))}html,body{margin:0}body{box-sizing:border-box;padding:1rem;background:inherit}iframe{display:block;width:100%;height:calc(100vh - 2rem);margin:0 auto;border:0}</style>
+
+</head>
+<body>
+<iframe id="codex-visualization" sandbox="allow-scripts" referrerpolicy="no-referrer" title="Ground Backpack Flow" data-srcdoc="&lt;!doctype html&gt;
+&lt;html lang=&quot;en&quot; data-visualize-standalone&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;utf-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
+&lt;meta name=&quot;referrer&quot; content=&quot;no-referrer&quot;&gt;
+&lt;meta http-equiv=&quot;Content-Security-Policy&quot; content=&quot;default-src &#x27;none&#x27;; script-src &#x27;unsafe-inline&#x27; &#x27;unsafe-eval&#x27; &#x27;wasm-unsafe-eval&#x27; blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; style-src &#x27;unsafe-inline&#x27; blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; img-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; font-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; media-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; worker-src blob:; connect-src blob: data:; frame-src &#x27;none&#x27;; object-src &#x27;none&#x27;; base-uri &#x27;none&#x27;; form-action &#x27;none&#x27;&quot;&gt;
+&lt;title&gt;Ground Backpack Flow&lt;/title&gt;
+&lt;style&gt;:root {
+  color-scheme: light dark;
+  background-color: var(
+    --background,
+    var(--color-background-primary, light-dark(rgb(255 255 255), rgb(24 24 24)))
+  ) !important;
+
+  /* Agent-facing contract; keep in sync with SKILL.md. */
+  --background: var(
+    --color-background-primary,
+    light-dark(rgb(255 255 255), rgb(24 24 24))
+  );
+  --foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --card: color-mix(in oklab, var(--foreground) 5%, var(--background));
+  --card-foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --popover: var(
+    --color-background-secondary,
+    light-dark(rgb(255 255 255), rgb(45 45 45))
+  );
+  --popover-foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --primary: var(
+    --color-text-info,
+    light-dark(rgb(51 156 255), rgb(131 195 255))
+  );
+  --primary-foreground: var(
+    --color-text-inverse,
+    light-dark(rgb(255 255 255), rgb(13 13 13))
+  );
+  --secondary: var(
+    --color-background-secondary,
+    light-dark(rgb(255 255 255 / 96%), rgb(54 54 54 / 96%))
+  );
+  --secondary-foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --muted: color-mix(in srgb, var(--foreground) 10%, transparent);
+  --muted-foreground: var(
+    --color-text-secondary,
+    light-dark(rgb(26 28 31 / 49.4%), rgb(255 255 255 / 49.8%))
+  );
+  --accent: var(
+    --color-background-info,
+    light-dark(rgb(229 242 255), rgb(13 39 63))
+  );
+  --accent-foreground: var(
+    --color-text-info,
+    light-dark(rgb(51 156 255), rgb(131 195 255))
+  );
+  --destructive: var(
+    --color-text-warning,
+    light-dark(rgb(226 85 7), rgb(255 133 73))
+  );
+  --border: var(
+    --color-border-secondary,
+    light-dark(rgb(26 28 31 / 8%), rgb(255 255 255 / 8.2%))
+  );
+  --input: var(
+    --color-border-primary,
+    light-dark(
+      rgb(26 28 31 / 11.8%),
+      color-mix(in oklab, rgb(0 0 0) 10%, transparent)
+    )
+  );
+  --ring: var(
+    --color-ring-primary,
+    light-dark(rgb(51 156 255), rgb(131 195 255 / 76%))
+  );
+  --font-size-base: var(--font-text-md-size, 16px);
+  --blue: light-dark(rgb(51 156 255), rgb(51 156 255));
+  --orange: light-dark(rgb(226 85 7), rgb(251 106 34));
+  --green: light-dark(rgb(0 162 64), rgb(64 201 119));
+  --red: light-dark(rgb(224 46 42), rgb(255 103 100));
+  --purple: light-dark(rgb(146 79 247), rgb(173 123 249));
+  --yellow: light-dark(rgb(255 195 0), rgb(255 210 64));
+  --viz-series-1: var(--primary);
+  --viz-series-2: light-dark(rgb(243 136 59), rgb(245 154 86));
+  --viz-series-3: light-dark(rgb(93 201 119), rgb(116 213 139));
+  --viz-series-4: light-dark(rgb(235 119 177), rgb(240 143 192));
+  --viz-series-5: light-dark(rgb(155 121 236), rgb(170 145 239));
+  --viz-series-6: light-dark(rgb(58 185 177), rgb(90 203 194));
+
+  /* Internal implementation variables; not part of the agent contract. */
+  --font-sans:
+    -apple-system-body, ui-sans-serif, -apple-system, system-ui, &quot;Segoe UI&quot;,
+    Helvetica, &quot;Apple Color Emoji&quot;, Arial, sans-serif, &quot;Segoe UI Emoji&quot;,
+    &quot;Segoe UI Symbol&quot;;
+  --font-mono:
+    ui-monospace, SFMono-Regular, &quot;SF Mono&quot;, Menlo, Consolas, &quot;Liberation Mono&quot;,
+    monospace;
+  --font-size-normal: max(11px, var(--font-size-base));
+  --font-size-tooltip: calc(var(--font-size-base) - 1px);
+  --font-size-small: max(11px, calc(var(--font-size-base) - 2px));
+  --font-size-h1: calc(var(--font-size-normal) * 1.7142857143);
+  --font-size-h2: calc(var(--font-size-normal) * 1.4285714286);
+  --font-size-h3: calc(var(--font-size-normal) * 1.2857142857);
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --icon-size: 16px;
+  --line-height-normal: calc(var(--font-size-normal) * 1.5);
+  --line-height-tooltip: calc(var(--font-size-tooltip) * 1.4285714286);
+  --line-height-small: calc(var(--font-size-small) + 4px);
+  --corner-shape: round;
+  --radius: var(--border-radius-lg, 8px);
+  --radius-sm: calc(var(--radius) * 0.5);
+  --radius-md: calc(var(--radius) * 0.75);
+  --radius-lg: var(--radius);
+  --radius-2xl: calc(var(--radius) * 2);
+  --radius-full: 9999px;
+  --shadow-sm: 0 1px 2px -1px rgb(0 0 0 / 8%);
+  --checkmark-image: url(&quot;data:image/svg+xml,%3Csvg xmlns=&#x27;http://www.w3.org/2000/svg&#x27; viewBox=&#x27;0 0 17 17&#x27;%3E%3Cpath d=&#x27;M12.8961 3.64101C13.1297 3.41418 13.4984 3.37523 13.7779 3.56581C14.0571 3.75635 14.1554 4.11331 14.0299 4.41347L13.9615 4.53847L7.71151 13.7045C7.59411 13.8767 7.4063 13.9877 7.19881 14.0072C6.99136 14.0267 6.78564 13.9533 6.63826 13.806L2.88826 10.056L2.79842 9.9457C2.6192 9.67407 2.64927 9.30496 2.88826 9.06581C3.12738 8.82669 3.49647 8.79676 3.76815 8.97597L3.8785 9.06581L7.03084 12.2182L12.8053 3.74941L12.8961 3.64101Z&#x27;/%3E%3C/svg%3E&quot;);
+
+  /* Legacy aliases; not part of the current agent contract. */
+  --viz-bg: transparent;
+  --viz-panel: var(--card);
+  --viz-border: var(--border);
+  --viz-text: var(--foreground);
+  --viz-muted: var(--muted-foreground);
+  --viz-accent: var(--primary);
+  --viz-accent-text: var(--primary-foreground);
+  --viz-accent-bg: var(--accent);
+  --viz-font-size: var(--font-size-base);
+  --viz-warning: var(--destructive);
+}
+
+:root[data-theme=&quot;light&quot;] {
+  color-scheme: light;
+}
+
+:root[data-theme=&quot;dark&quot;] {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html &gt; body {
+  /* Preserve MCP aliases for older inline renderers without creating :root cycles. */
+  --color-background-primary: var(
+    --background,
+    light-dark(rgb(255 255 255), rgb(24 24 24))
+  );
+  --color-text-primary: var(
+    --foreground,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --color-border-secondary: var(
+    --border,
+    light-dark(rgb(26 28 31 / 8%), rgb(255 255 255 / 8.2%))
+  );
+
+  margin: 0;
+  padding: var(--visualize-paint-gutter, 0px);
+  color: var(--foreground);
+  background: transparent !important;
+  font-family: var(--font-sans) !important;
+  -webkit-font-smoothing: antialiased;
+  font-size: var(--font-size-base);
+  line-height: calc(var(--font-size-base) * 1.625);
+  font-weight: var(--font-weight-normal);
+}
+
+.cursor-interaction {
+  cursor: var(--cursor-interaction, pointer);
+}
+
+a {
+  color: color-mix(in srgb, var(--viz-accent) 80%, var(--viz-text) 20%);
+  cursor: var(--cursor-interaction, pointer);
+  text-decoration: none;
+  text-underline-offset: 2px;
+  font-weight: inherit;
+}
+
+a:is(:hover, :focus-visible) {
+  text-decoration-line: underline;
+  text-decoration-style: dashed;
+  text-decoration-thickness: 0.5px;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  margin-block: 0;
+}
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+li,
+.table {
+  font-family: var(--font-sans);
+}
+
+h1 {
+  font-size: calc(var(--font-size-base) * 1.5);
+  line-height: 1.3333333333;
+}
+
+h2 {
+  font-size: calc(var(--font-size-base) * 1.25);
+  line-height: 1.4;
+}
+h3 {
+  font-size: calc(var(--font-size-base) * 1.125);
+  line-height: 1.5555555556;
+}
+h4 {
+  font-size: var(--font-size-base);
+  line-height: 1.5;
+}
+h5,
+h6 {
+  font-size: var(--font-size-base);
+  line-height: calc(var(--font-size-base) * 1.625);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+b,
+strong,
+th {
+  font-weight: 600;
+}
+
+code:not(pre code) {
+  display: inline;
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  corner-shape: var(--corner-shape);
+  background: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  overflow-wrap: anywhere;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  word-break: break-word;
+}
+pre,
+pre code {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 20px;
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.table {
+  width: 100%;
+  color: var(--foreground);
+  font: inherit;
+  text-align: start;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: calc(var(--font-size-base) * 0.875);
+  line-height: calc(var(--font-size-base) * 1.625);
+  font-family: var(--font-sans);
+}
+
+.table :is(th, td) {
+  padding-block: 10px;
+  padding-inline: 0 24px;
+  overflow-wrap: anywhere;
+  border-bottom: 1px solid var(--border);
+  text-align: start;
+  vertical-align: top;
+  border-bottom-color: color-mix(in srgb, var(--foreground) 5%, transparent);
+}
+.table :is(th, td):not(:last-child) {
+  padding-inline-end: calc(var(--font-size-base) * 1.5);
+}
+
+.table-responsive &gt; .table :is(th, td) {
+  overflow-wrap: break-word;
+}
+
+.table :is(th, td):last-child {
+  padding-inline-end: 0;
+}
+
+.table :is(caption, thead th) {
+  font-weight: 600;
+}
+
+.table thead :is(th, td) {
+  border-bottom-color: var(--border-strong, var(--input));
+  padding-block: calc(var(--font-size-base) / 2);
+  line-height: var(--font-size-base);
+}
+
+.table tbody tr:last-child :is(th, td) {
+  border-bottom: 0;
+}
+.table tbody :is(th, td) {
+  padding-block: calc(var(--font-size-base) * 0.625);
+}
+
+.table.table-sm :is(th, td) {
+  padding-block: 8px;
+}
+
+.table.table-sm :is(th, td):not(:last-child) {
+  padding-inline-end: 16px;
+}
+
+.table :is(.text-end, [align=&quot;right&quot;]) {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+
+.table :is(.text-center, [align=&quot;center&quot;]) {
+  text-align: center;
+}
+
+.table .text-nowrap {
+  white-space: nowrap;
+}
+
+#widget {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  padding: 0;
+  background: transparent !important;
+}
+
+.card {
+  min-width: 0;
+  padding: 12px;
+  overflow: hidden;
+  overflow-wrap: break-word;
+  border-radius: var(--radius-2xl);
+  corner-shape: var(--corner-shape);
+  color: var(--card-foreground);
+  background: var(--card);
+}
+
+.widget {
+  min-width: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--radius-lg);
+  corner-shape: var(--corner-shape);
+  box-shadow: 0 0 0 0.5px var(--border-strong, var(--border));
+  color: var(--foreground);
+  background: var(--background);
+}
+
+#widget &gt; :not(.card, .widget, .progress) {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.tooltip {
+  position: fixed;
+  z-index: 50;
+  top: 0;
+  left: 0;
+  width: max-content;
+  max-width: min(
+    20rem,
+    var(--tooltip-available-width, calc(100vw - 10px)),
+    calc(100vw - 10px)
+  );
+  max-height: min(
+    var(--tooltip-available-height, calc(100vh - 10px)),
+    calc(100vh - 10px)
+  );
+  border: 1px solid var(--border);
+  corner-shape: var(--corner-shape);
+  overflow-wrap: break-word;
+  white-space: normal;
+  pointer-events: none;
+  user-select: none;
+  font-family: var(--font-sans);
+  padding: 5px 12px;
+  border-color: color-mix(
+    in oklab,
+    light-dark(var(--primary-foreground), var(--foreground)) 5%,
+    transparent
+  );
+  border-radius: var(--radius-2xl);
+  color: light-dark(var(--primary-foreground), var(--foreground));
+  background: light-dark(var(--foreground), var(--popover));
+  box-shadow: 0 8px 18px rgb(15 23 42 / 20%);
+  letter-spacing: -0.15px;
+  font-size: calc(var(--font-size-base) * 14 / 16);
+  font-size: round(nearest, calc(var(--font-size-base) * 14 / 16), 1px);
+  font-weight: 600;
+  line-height: 18px;
+  text-align: center;
+}
+
+.viz-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(max(180px, 24%), 1fr));
+  gap: 10px;
+}
+
+.viz-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.viz-stat-value {
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+.viz-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+hr {
+  width: 100%;
+  height: 1px;
+  margin-block: 6px;
+  border: 0;
+  background: var(--border);
+}
+
+.nav {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 4px;
+}
+
+.progress {
+  display: flex;
+  height: 8px;
+  margin-block: calc((var(--line-height-normal, 1.5em) - 8px) / 2);
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--muted);
+}
+
+.progress-bar:only-child {
+  border-radius: var(--radius-full);
+}
+
+.progress-bar {
+  height: 100%;
+  flex-shrink: 0;
+  border: 0;
+  background: var(--viz-series-1);
+}
+
+.viz-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  color: color-mix(in srgb, var(--foreground) 40%, var(--muted-foreground));
+  background: color-mix(in srgb, var(--foreground) 5%, transparent);
+  font-family: var(--font-sans);
+  font-size: calc(var(--font-size-base) * 14 / 16);
+  font-size: round(nearest, calc(var(--font-size-base) * 14 / 16), 1px);
+  font-weight: var(--font-weight-normal);
+  line-height: 1;
+}
+
+small,
+.text-small {
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-small);
+}
+
+.text-muted {
+  color: var(--muted-foreground);
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.viz-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.viz-controls &gt; .form-label {
+  display: grid;
+  min-width: min(100%, 260px);
+  flex: 1 1 280px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 2px 12px;
+  margin-bottom: 0;
+}
+
+.viz-controls &gt; .form-label &gt; :is(.form-control, .form-range, .form-select) {
+  grid-column: 1 / -1;
+}
+
+.btn,
+.nav-link,
+.form-check-input,
+.form-control,
+.form-range,
+.form-select {
+  font: inherit;
+}
+
+/* Match inline alignment without overriding a containing flex or grid layout. */
+.btn,
+.nav-link,
+.form-control,
+.form-select,
+.form-range,
+.form-check {
+  vertical-align: middle;
+}
+
+.btn,
+.nav-link {
+  appearance: button;
+  display: inline-flex;
+  inline-size: fit-content;
+  max-inline-size: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin: 0;
+  padding: 0 8px;
+  -webkit-app-region: no-drag;
+  border: 1px solid var(--input);
+  corner-shape: var(--corner-shape);
+  cursor: var(--cursor-interaction, pointer);
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  user-select: none;
+  -webkit-font-smoothing: inherit;
+  font-family: var(--font-sans);
+  height: fit-content;
+  min-height: calc(12px + 2 * var(--control-spacing, 12px));
+  padding-inline: var(--control-spacing, 12px);
+  border-color: transparent;
+  border-radius: var(--radius-full);
+  color: var(--foreground);
+  background: color-mix(in srgb, var(--foreground) 5%, transparent);
+  font-size: calc(var(--font-size-base) * 14 / 16);
+  font-size: round(nearest, calc(var(--font-size-base) * 14 / 16), 1px);
+  font-weight: var(--font-weight-normal);
+  line-height: 18px;
+}
+
+.btn {
+  border-color: var(--border);
+  color: var(--secondary-foreground);
+  background: var(--secondary);
+}
+
+.btn:is(.btn-block, .viz-tile) {
+  inline-size: 100%;
+}
+
+.btn.viz-tile {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+a.btn {
+  cursor: var(--cursor-interaction, pointer);
+  text-decoration: none;
+}
+
+.btn:not(:disabled):hover {
+  background: light-dark(
+    color-mix(in srgb, var(--foreground) 5.5%, transparent),
+    color-mix(in srgb, var(--foreground) 8%, transparent)
+  );
+}
+
+.nav-link:not(:disabled):not([aria-disabled=&quot;true&quot;]):hover {
+  background: color-mix(in srgb, var(--foreground) 10%, transparent);
+}
+
+.btn-primary {
+  border-color: var(--border);
+  color: var(--primary-foreground);
+  background: var(--foreground);
+  background-clip: border-box;
+}
+
+.btn-primary .text-muted {
+  color: color-mix(in srgb, var(--primary-foreground) 50%, transparent);
+}
+
+.btn-primary:not(:disabled):hover {
+  background: color-mix(in srgb, var(--foreground) 80%, transparent);
+  background-clip: border-box;
+}
+
+.btn-ghost {
+  border-color: transparent;
+  color: var(--muted-foreground);
+  background: transparent;
+}
+
+.btn-ghost:not(:disabled):hover {
+  color: var(--muted-foreground);
+  background: light-dark(
+    color-mix(in srgb, var(--foreground) 5.5%, transparent),
+    color-mix(in srgb, var(--foreground) 8%, transparent)
+  );
+}
+
+.nav-pills .nav-link {
+  min-width: 0;
+  border-color: transparent;
+  color: var(--muted-foreground);
+  background: transparent;
+}
+
+.nav-justified .nav-link {
+  flex: 1 1 0;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.nav-pills .nav-link.active {
+  color: var(--foreground);
+  background: var(--muted);
+}
+
+/* Shared preview chrome; product styles stay inside each variant. */
+.viz-dotted-background {
+  background-image: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--foreground) 14%, transparent) 0.8px,
+    transparent 0.8px
+  );
+  background-position: center;
+  background-size: 16px 16px;
+}
+
+.viz-carousel {
+  position: relative;
+  min-width: 0;
+}
+
+.viz-carousel:has(&gt; .viz-carousel-controls) {
+  min-height: calc(60px + var(--viz-carousel-picker-height, 0px));
+  padding-bottom: 60px;
+}
+
+.viz-carousel &gt; [data-variant][hidden] {
+  display: none !important;
+}
+
+.viz-carousel &gt; [data-variant] {
+  isolation: isolate;
+}
+
+.viz-carousel-controls {
+  --viz-carousel-hover: light-dark(
+    color-mix(in srgb, var(--foreground) 5.4%, transparent),
+    color-mix(in srgb, var(--foreground) 7.8%, transparent)
+  );
+  position: absolute;
+  z-index: 2;
+  bottom: 8px;
+  left: 50%;
+  display: flex;
+  width: max-content;
+  /* Leave room for the host&#x27;s design-controls launcher at the trailing edge. */
+  max-width: calc(100% - 96px);
+  align-items: center;
+  gap: 0;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  color: var(--foreground);
+  background: var(--background);
+  font-family: var(--font-sans);
+  /* Match the settings dropdown chrome independently of the content font size. */
+  font-size: 13px;
+  font-weight: var(--font-weight-normal);
+  line-height: 18px;
+  transform: translateX(-50%);
+  user-select: none;
+}
+
+/* Keep authored mockup button styles out of the shared carousel chrome. */
+.viz-carousel-controls button,
+.viz-carousel-picker &gt; summary {
+  display: flex !important;
+  height: auto !important;
+  min-height: 30px;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 4px;
+  padding: 0 6px !important;
+  -webkit-app-region: no-drag;
+  border: 0 !important;
+  border-radius: 14px !important;
+  color: inherit !important;
+  background: transparent !important;
+  font: inherit !important;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.viz-carousel-controls &gt; button,
+.viz-carousel-picker &gt; summary {
+  position: relative;
+  isolation: isolate;
+}
+
+.viz-carousel-controls &gt; button {
+  --icon-size: 16px;
+  width: 30px !important;
+  padding: 0 !important;
+}
+
+.viz-carousel-picker &gt; summary {
+  padding-inline: 12px !important;
+}
+
+.viz-carousel-controls .viz-carousel-caret {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  margin: 0;
+  color: inherit;
+  transform: rotate(180deg);
+}
+
+.viz-carousel-controls &gt; button &gt; svg,
+.viz-carousel-controls .viz-carousel-caret,
+.viz-carousel-count {
+  opacity: 0.5;
+}
+
+.viz-carousel-controls &gt; button::before,
+.viz-carousel-picker &gt; summary::before {
+  position: absolute;
+  z-index: -1;
+  inset: 3px;
+  border-radius: 12px;
+  content: &quot;&quot;;
+  pointer-events: none;
+}
+
+.viz-carousel-controls &gt; button:hover::before,
+.viz-carousel-picker &gt; summary:hover::before {
+  background: var(--viz-carousel-hover);
+}
+
+.viz-carousel-controls &gt; button,
+.viz-carousel-controls [data-lucide],
+.viz-carousel-controls .lucide {
+  flex-shrink: 0;
+}
+
+.viz-carousel-picker {
+  min-width: 0;
+}
+
+.viz-carousel-picker &gt; summary {
+  min-width: 0;
+  list-style: none;
+}
+
+.viz-carousel-picker &gt; summary::-webkit-details-marker {
+  display: none;
+}
+
+.viz-carousel-count {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.viz-carousel-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.viz-carousel-options {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 4px);
+  left: 0;
+  display: flex;
+  max-height: 240px;
+  flex-direction: column;
+  gap: 2px;
+  overflow: auto;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--background);
+  box-shadow: 0 4px 12px light-dark(rgb(0 0 0 / 6%), rgb(0 0 0 / 25%));
+}
+
+.viz-carousel-options &gt; button {
+  border-radius: max(0px, calc(var(--radius-lg) - 5px)) !important;
+  width: 100% !important;
+  min-height: 28px;
+  justify-content: flex-start !important;
+  padding: 4px 8px !important;
+  font-size: var(--font-size-small) !important;
+  text-align: start;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.viz-carousel-options &gt; [aria-current=&quot;true&quot;],
+.viz-carousel-options &gt; button:hover {
+  background: var(--viz-carousel-hover) !important;
+}
+
+.btn:disabled,
+.nav-link:disabled,
+.nav-link[aria-disabled=&quot;true&quot;] {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+[data-lucide] {
+  stroke-width: 1.6;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--foreground);
+}
+
+.form-control {
+  display: block;
+  width: 100%;
+  padding: 0 8px;
+  outline: none;
+  border: 1px solid var(--input);
+  corner-shape: var(--corner-shape);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  height: calc(12px + 2 * var(--control-spacing, 12px));
+  min-height: calc(12px + 2 * var(--control-spacing, 12px));
+  padding-inline: calc(4px + var(--control-spacing, 12px) / 2);
+  border-color: var(--input);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--popover) 96%, transparent);
+  font-size: calc(var(--font-size-base) * 14 / 16);
+  font-size: round(nearest, calc(var(--font-size-base) * 14 / 16), 1px);
+  font-weight: var(--font-weight-normal);
+  line-height: 1.4285714286;
+}
+.form-control:is(
+  [type=&quot;file&quot;],
+  [type=&quot;date&quot;],
+  [type=&quot;datetime-local&quot;],
+  [type=&quot;month&quot;],
+  [type=&quot;week&quot;],
+  [type=&quot;color&quot;]
+) {
+  height: calc(12px + 2 * var(--control-spacing, 12px));
+  min-height: calc(12px + 2 * var(--control-spacing, 12px));
+  line-height: 18px;
+}
+.form-control:is(
+  [type=&quot;date&quot;],
+  [type=&quot;datetime-local&quot;],
+  [type=&quot;month&quot;],
+  [type=&quot;week&quot;]
+) {
+  padding-inline: var(--control-spacing, 12px);
+}
+
+.form-control::placeholder {
+  color: var(--muted-foreground);
+}
+
+.form-control[type=&quot;file&quot;] {
+  overflow: hidden;
+  cursor: var(--cursor-interaction, pointer);
+  padding: 0;
+}
+
+.form-control[type=&quot;file&quot;]::file-selector-button {
+  padding: 0 8px;
+  border: 0;
+  border-right: 1px solid var(--input);
+  color: var(--secondary-foreground);
+  background: var(--secondary);
+  cursor: inherit;
+  font: inherit;
+  min-height: calc(10px + 2 * var(--control-spacing, 12px));
+  padding-inline: var(--control-spacing, 12px);
+  margin-inline-end: var(--control-spacing, 12px);
+}
+
+.form-control[type=&quot;file&quot;]:not(:disabled):hover::file-selector-button {
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.form-control-color[type=&quot;color&quot;] {
+  width: 40px;
+  height: calc(12px + 2 * var(--control-spacing, 12px));
+  padding: 3px;
+  cursor: var(--cursor-interaction, pointer);
+}
+
+.form-control-color[type=&quot;color&quot;]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.form-control-color[type=&quot;color&quot;]::-webkit-color-swatch {
+  border: 0;
+  border-radius: calc(var(--radius-lg) - 4px);
+  corner-shape: var(--corner-shape);
+}
+
+textarea.form-control {
+  height: auto;
+  resize: vertical;
+  min-height: 96px;
+  padding: 8px 10px;
+}
+
+.form-control:focus-visible {
+  border-color: var(--ring);
+  box-shadow: none;
+}
+.form-control:disabled {
+  color: var(--muted-foreground);
+  background: color-mix(in srgb, var(--foreground) 5%, transparent);
+  opacity: 1;
+}
+.form-control[aria-invalid=&quot;true&quot;] {
+  border-color: var(--red);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--red) 20%, transparent);
+}
+
+.form-control:disabled,
+.form-select:disabled {
+  cursor: not-allowed;
+}
+
+.form-select {
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: fit-content;
+  min-height: calc(12px + 2 * var(--control-spacing, 12px));
+  margin: 0;
+  /* The secondary icon role is 14px at compact density and 16px at web density. */
+  --icon-size: calc(10px + var(--control-spacing, 12px) / 2);
+  /* Settings dropdowns retain a 12px inset and a 4px text-to-chevron gap. */
+  padding: 0 calc(16px + var(--icon-size)) 0 12px;
+  outline: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  corner-shape: var(--corner-shape);
+  color: var(--foreground);
+  background-color: var(--secondary);
+  background-image:
+    linear-gradient(
+      45deg,
+      transparent calc(50% - 0.6px),
+      var(--muted-foreground) calc(50% - 0.6px) calc(50% + 0.6px),
+      transparent calc(50% + 0.6px)
+    ),
+    linear-gradient(
+      135deg,
+      transparent calc(50% - 0.6px),
+      var(--muted-foreground) calc(50% - 0.6px) calc(50% + 0.6px),
+      transparent calc(50% + 0.6px)
+    );
+  background-position:
+    calc(100% - 12px - var(--icon-size) / 2) 50%,
+    calc(100% - 12px - var(--icon-size) * 0.18) 50%;
+  background-repeat: no-repeat;
+  background-size: calc(var(--icon-size) * 0.32) calc(var(--icon-size) * 0.32);
+  cursor: var(--cursor-interaction, default);
+  font-size: calc(var(--font-size-base) * 14 / 16);
+  font-size: round(nearest, calc(var(--font-size-base) * 14 / 16), 1px);
+  font-weight: var(--font-weight-normal);
+  line-height: 18px;
+}
+
+.form-select option {
+  color: var(--popover-foreground);
+  background-color: var(--popover);
+}
+
+.form-select:not(:disabled):hover {
+  background-color: light-dark(
+    color-mix(in srgb, var(--foreground) 5.5%, transparent),
+    color-mix(in srgb, var(--foreground) 8%, transparent)
+  );
+}
+
+.form-select:focus-visible {
+  box-shadow: 0 0 0 2px var(--ring);
+}
+.form-select:disabled {
+  opacity: 0.4;
+}
+
+.form-check {
+  display: flex;
+  min-height: calc(12px + 2 * var(--control-spacing, 12px));
+  align-items: center;
+  gap: 6px;
+}
+
+.form-check-input {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  margin: 0;
+  border: 1px solid var(--input);
+  color: var(--primary-foreground);
+  background-color: transparent;
+  cursor: var(--cursor-interaction, default);
+  transition:
+    background-color 150ms,
+    border-color 150ms,
+    box-shadow 150ms;
+}
+
+.form-check:not(.form-switch) .form-check-input[type=&quot;checkbox&quot;] {
+  corner-shape: round;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  width: calc(10px + var(--control-spacing, 12px) / 2);
+  height: calc(10px + var(--control-spacing, 12px) / 2);
+  border-color: var(--border-strong, var(--input));
+  border-radius: calc(var(--radius-sm) / 2);
+  background-color: transparent;
+  color: var(--foreground);
+}
+
+.form-check:not(.form-switch)
+  .form-check-input:not(:disabled):not(:checked):hover {
+  background-color: var(--card);
+}
+
+.form-check:not(.form-switch)
+  .form-check-input[type=&quot;checkbox&quot;]:is(:checked, :indeterminate) {
+  border-color: var(--border-strong, var(--input));
+  background-color: color-mix(in srgb, var(--popover) 96%, transparent);
+}
+
+.form-check:not(.form-switch)
+  .form-check-input[type=&quot;checkbox&quot;]:checked::before {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--primary-foreground);
+  content: &quot;&quot;;
+  mask: var(--checkmark-image) center / 12px 12px no-repeat;
+  background-color: var(--foreground);
+}
+.form-check:not(.form-switch)
+  .form-check-input[type=&quot;checkbox&quot;]:indeterminate::before {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 65%;
+  height: 6.65%;
+  margin: auto;
+  border-radius: var(--radius-full);
+  background: var(--foreground);
+  mask: none;
+  content: &quot;&quot;;
+}
+
+.form-check-input[type=&quot;radio&quot;] {
+  border-radius: var(--radius-full);
+  width: 16px;
+  height: 16px;
+  border: 0;
+  box-shadow: inset 0 0 0 1px var(--input);
+}
+
+.form-check-input[type=&quot;radio&quot;]:checked {
+  border: 0;
+  background: radial-gradient(
+    circle,
+    var(--primary-foreground) 0 3px,
+    var(--foreground) 3px
+  );
+  box-shadow: none;
+}
+
+.form-check:not(.form-switch) .form-check-input:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+.form-check:not(.form-switch) .form-check-input[type=&quot;checkbox&quot;]:focus-visible {
+  border-color: var(--ring);
+  outline: none;
+  box-shadow: 0 0 0 2px var(--ring);
+}
+
+.form-check:not(.form-switch) .form-check-input:disabled {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.form-check:not(.form-switch) .form-check-input:disabled + .form-check-label {
+  cursor: not-allowed;
+}
+.form-check:not(.form-switch) .form-check-input[type=&quot;radio&quot;]:disabled,
+.form-check:not(.form-switch)
+  .form-check-input[type=&quot;radio&quot;]:disabled
+  + .form-check-label {
+  opacity: 0.5;
+}
+
+.form-switch .form-check-input:disabled,
+.form-switch .form-check-input:disabled + .form-check-label {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.form-check-label {
+  color: var(--foreground);
+  cursor: var(--cursor-interaction, default);
+}
+
+.form-switch .form-check-input {
+  position: relative;
+  width: 32px;
+  height: 20px;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--muted);
+  box-shadow: none;
+  transition: background-color 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.form-switch .form-check-input::before {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 16px;
+  height: 16px;
+  box-sizing: border-box;
+  border: 1px solid light-dark(var(--primary-foreground), var(--foreground));
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-sm);
+  content: &quot;&quot;;
+  transform: translate(2px, -50%);
+  transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
+  border-color: #fff;
+  background: #fff;
+}
+
+.form-switch .form-check-input:checked {
+  background: var(--blue);
+}
+
+.form-switch .form-check-input:checked::before {
+  transform: translate(14px, -50%);
+}
+
+.form-switch .form-check-input:focus-visible {
+  box-shadow: 0 0 0 2px var(--ring);
+  outline: none;
+}
+
+.form-range {
+  appearance: none;
+  display: block;
+  width: 100%;
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  accent-color: var(--primary);
+  height: calc(12px + 2 * var(--control-spacing, 12px));
+  min-height: calc(12px + 2 * var(--control-spacing, 12px));
+  outline: none;
+  border-radius: var(--radius-full);
+  color: var(--foreground);
+  background: transparent;
+}
+
+.form-range::-webkit-slider-runnable-track {
+  background: var(--form-range-track, var(--border));
+  height: 2px;
+  border-radius: var(--radius-full);
+}
+
+.form-range::-webkit-slider-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  margin-top: -9px;
+  border-color: transparent;
+  background: currentColor;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Outline the native track and thumb, preserving the larger input hit area. */
+.form-range:focus-visible::-webkit-slider-runnable-track {
+  outline: 2px auto Highlight;
+  outline-color: -webkit-focus-ring-color;
+}
+
+.form-range::-moz-range-track {
+  background: var(--form-range-track, var(--border));
+  height: 2px;
+  border-radius: var(--radius-full);
+}
+
+.form-range::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  border-color: transparent;
+  background: currentColor;
+  box-shadow: var(--shadow-sm);
+}
+
+.form-range:focus-visible::-moz-range-thumb {
+  outline: 2px solid Highlight;
+  outline-offset: 2px;
+}
+
+.form-range:disabled {
+  opacity: 1;
+  cursor: default;
+}
+
+.btn:not(.btn-primary, .viz-tile):is(
+  [aria-pressed=&quot;true&quot;],
+  [aria-selected=&quot;true&quot;],
+  .is-selected
+) {
+  border-color: transparent;
+  color: var(--primary-foreground);
+  background: var(--blue);
+}
+
+.btn.viz-tile:is([aria-pressed=&quot;true&quot;], [aria-selected=&quot;true&quot;], .is-selected) {
+  border-color: var(--primary);
+  box-shadow: inset 0 0 0 1px var(--primary);
+}
+
+.btn:focus-visible,
+.nav-link:focus-visible {
+  outline-offset: 2px;
+  outline: none;
+  box-shadow: 0 0 0 2px var(--ring);
+}
+
+.viz-carousel-controls :is(button, summary):focus-visible {
+  outline: 2px solid var(--ring) !important;
+  outline-offset: 2px !important;
+}
+
+/* Web recipes are the default, including on renderers without inline style queries. */
+@supports (border-radius: if(style(--corner-shape: round): 1px; else: 2px)) {
+  /* Match the host&#x27;s proportional text-sm scale at every text preference. */
+  .tooltip,
+  .viz-badge,
+  .btn,
+  .nav-link,
+  .form-control,
+  .form-select {
+    font-size: if(
+      style(--corner-shape: round): round(
+          nearest,
+          calc(var(--font-size-base) * 14 / 16),
+          1px
+        );
+        else: round(nearest, calc(var(--font-size-base) * 13 / 14), 1px)
+    );
+  }
+
+  .btn,
+  .nav-link,
+  .form-select {
+    border-radius: if(
+      style(--corner-shape: round): var(--radius-full); else: var(--radius-lg)
+    );
+  }
+
+  .form-check:not(.form-switch) .form-check-input[type=&quot;checkbox&quot;] {
+    border-radius: if(
+      style(--corner-shape: round): calc(var(--radius-sm) / 2);
+        else: calc(var(--radius-lg) * 0.4)
+    );
+  }
+
+  .tooltip {
+    font-weight: if(
+      style(--corner-shape: round): 600; else: var(--font-weight-normal)
+    );
+  }
+}
+
+@media (pointer: coarse) {
+  .viz-carousel:has(&gt; .viz-carousel-controls) {
+    min-height: calc(76px + var(--viz-carousel-picker-height, 0px));
+    padding-bottom: 76px;
+  }
+
+  .btn,
+  .nav-link,
+  .viz-carousel-controls button,
+  .viz-carousel-picker &gt; summary,
+  .form-control,
+  .form-select {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  /* Keep small-screen WebKit from zooming when a text field receives focus. */
+  .form-control,
+  .form-select {
+    font-size: max(16px, calc(var(--font-size-base) * 14 / 16));
+    font-size: max(
+      16px,
+      round(nearest, calc(var(--font-size-base) * 14 / 16), 1px)
+    );
+  }
+  .form-control:is(
+    [type=&quot;file&quot;],
+    [type=&quot;date&quot;],
+    [type=&quot;datetime-local&quot;],
+    [type=&quot;month&quot;],
+    [type=&quot;week&quot;],
+    [type=&quot;time&quot;],
+    [type=&quot;color&quot;]
+  ) {
+    height: 44px;
+    min-height: 44px;
+    font-size: max(16px, calc(var(--font-size-base) * 14 / 16));
+    font-size: max(
+      16px,
+      round(nearest, calc(var(--font-size-base) * 14 / 16), 1px)
+    );
+  }
+
+  .form-control[type=&quot;file&quot;]::file-selector-button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .form-control-color[type=&quot;color&quot;] {
+    width: 44px;
+    height: 44px;
+  }
+
+  .form-control:is(
+    [type=&quot;date&quot;],
+    [type=&quot;datetime-local&quot;],
+    [type=&quot;month&quot;],
+    [type=&quot;time&quot;],
+    [type=&quot;week&quot;]
+  ) {
+    min-width: 0;
+    max-width: 100%;
+    padding-block: 8px;
+  }
+
+  .form-check {
+    min-height: 44px;
+    padding-inline: 15px;
+  }
+
+  .form-check-input {
+    position: relative;
+  }
+
+  .form-check-input::after {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 44px;
+    height: 44px;
+    content: &quot;&quot;;
+    transform: translate(-50%, -50%);
+  }
+
+  .form-check-label {
+    display: inline-flex;
+    min-width: 44px;
+    min-height: 44px;
+    align-items: center;
+  }
+
+  .form-range {
+    height: 44px;
+    touch-action: pan-y;
+  }
+}
+
+svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+#widget &gt; svg {
+  width: 100%;
+}
+
+/* Model-authored chart rules can otherwise stretch icons after these styles load. */
+svg.lucide {
+  display: block;
+  width: var(--icon-size) !important;
+  height: var(--icon-size) !important;
+  flex: none;
+  margin: 0 !important;
+  stroke-width: 1.6;
+}
+
+.text-warning,
+.text-destructive {
+  color: var(--destructive);
+}
+
+html&gt;body{padding:0}&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;script type=&quot;application/json&quot; id=&quot;codex-visualization-widget-state&quot;&gt;__CODEX_VISUALIZATION_WIDGET_STATE__&lt;/script&gt;
+&lt;script&gt;(() =&gt; {
+  const root = document.documentElement;
+  const mediaQuery = globalThis.matchMedia(&quot;(prefers-color-scheme: dark)&quot;);
+  const apply = Reflect.apply;
+  const isArray = Array.isArray;
+  const hasOwn = Object.hasOwn;
+  const parentWindow = globalThis.parent;
+  const stringify = JSON.stringify;
+  const parse = JSON.parse;
+  const encode = TextEncoder.prototype.encode.bind(new TextEncoder());
+  const initialStateElement = document.getElementById(
+    &quot;codex-visualization-widget-state&quot;,
+  );
+  const initialGlobals = parse(initialStateElement?.textContent ?? &quot;{}&quot;);
+  initialStateElement?.remove();
+  /** @type {Record&lt;string, unknown&gt; | null} */
+  let state = initialGlobals.widgetState ?? null;
+  const statePersistence = initialGlobals.statePersistence ?? &quot;none&quot;;
+  let nextStateRequestId = 0;
+  /** @type {Map&lt;number, { resolve: () =&gt; void; reject: (error: Error) =&gt; void; timeout: ReturnType&lt;typeof globalThis.setTimeout&gt;; serializedState: string }&gt;} */
+  const pendingStateWrites = new Map();
+  const persistenceError = () =&gt;
+    Object.assign(
+      new Error(&quot;The host could not persist the widget state update&quot;),
+      {
+        code: -32000,
+        data: { code: &quot;widget_state_persistence_failed&quot;, retryable: false },
+      },
+    );
+  /**
+   * @param {object} prototype
+   * @param {string} property
+   */
+  const getPrototypeGetter = (prototype, property) =&gt; {
+    // oxlint-disable-next-line typescript/unbound-method -- invoked through captured Reflect.apply
+    const getter = Object.getOwnPropertyDescriptor(prototype, property)?.get;
+    if (getter == null) {
+      throw new Error(`Missing ${property} getter`);
+    }
+    return getter;
+  };
+  const getMessageData = getPrototypeGetter(MessageEvent.prototype, &quot;data&quot;);
+  const getMessagePorts = getPrototypeGetter(MessageEvent.prototype, &quot;ports&quot;);
+  const getMessageSource = getPrototypeGetter(MessageEvent.prototype, &quot;source&quot;);
+  // oxlint-disable-next-line typescript/unbound-method -- captured before the untrusted fragment runs
+  const addHostMessageListener = MessagePort.prototype.addEventListener;
+  // oxlint-disable-next-line typescript/unbound-method -- captured before the untrusted fragment runs
+  const postHostMessage = MessagePort.prototype.postMessage;
+  // oxlint-disable-next-line typescript/unbound-method -- captured before the untrusted fragment runs
+  const startHostPort = MessagePort.prototype.start;
+  // oxlint-disable-next-line typescript/unbound-method -- captured before the untrusted fragment runs
+  const stopMessagePropagation = Event.prototype.stopImmediatePropagation;
+  /** @type {MessagePort | null} */
+  let hostPort = null;
+  const postToHost = (type, payload) =&gt; {
+    if (hostPort != null) {
+      apply(postHostMessage, hostPort, [{ type, ...payload }]);
+    }
+  };
+  const openExternal = ({ href }) =&gt; {
+    if (globalThis.navigator.userActivation?.isActive === true) {
+      postToHost(&quot;open-external&quot;, { href });
+    }
+  };
+  const sendFollowUpMessage = ({ context, prompt, title }) =&gt; {
+    if (globalThis.navigator.userActivation?.isActive === true) {
+      postToHost(&quot;follow-up&quot;, { context, prompt, title });
+    }
+    return Promise.resolve();
+  };
+  /**
+   * @param {Record&lt;string, unknown&gt; | ((previous: Record&lt;string, unknown&gt; | null) =&gt; Record&lt;string, unknown&gt;)} next
+   * @returns {Promise&lt;void&gt;}
+   */
+  const setWidgetState = async (next) =&gt; {
+    const nextState = typeof next === &quot;function&quot; ? next(state) : next;
+    if (
+      nextState == null ||
+      typeof nextState !== &quot;object&quot; ||
+      isArray(nextState)
+    ) {
+      throw new TypeError(&quot;Widget state must be a JSON object&quot;);
+    }
+    const inputState = stringify(
+      nextState,
+      (_key, /** @type {unknown} */ value) =&gt; {
+        if (
+          typeof value === &quot;undefined&quot; ||
+          typeof value === &quot;function&quot; ||
+          typeof value === &quot;symbol&quot; ||
+          (typeof value === &quot;number&quot; &amp;&amp; !Number.isFinite(value))
+        ) {
+          throw new TypeError(&quot;Widget state must be a JSON object&quot;);
+        }
+        return value;
+      },
+    );
+    const parsedState = parse(inputState);
+    if (
+      parsedState == null ||
+      typeof parsedState !== &quot;object&quot; ||
+      isArray(parsedState)
+    ) {
+      throw new TypeError(&quot;Widget state must be a JSON object&quot;);
+    }
+    const storedState = {
+      modelContent: null,
+      privateContent: null,
+      ...parsedState,
+    };
+    const serializedState = stringify(storedState);
+    if (encode(serializedState).length &gt; 16 * 1024) {
+      throw new TypeError(
+        &quot;Widget state must be a JSON object of at most 16 KiB&quot;,
+      );
+    }
+    if (
+      hasOwn(storedState, &quot;imageIds&quot;) &amp;&amp;
+      (!isArray(storedState.imageIds) ||
+        storedState.imageIds.some(
+          (/** @type {unknown} */ id) =&gt; typeof id !== &quot;string&quot;,
+        ))
+    ) {
+      throw new TypeError(&quot;Widget state imageIds must be an array of strings&quot;);
+    }
+    if (storedState.imageIds?.length &gt; 0) {
+      throw Object.assign(
+        new TypeError(&quot;Visualization state does not support image attachments&quot;),
+        { code: -32602, data: { code: &quot;images_unsupported&quot; } },
+      );
+    }
+    state = storedState;
+    globalThis.openai.widgetState = state;
+    globalThis.dispatchEvent(
+      new CustomEvent(&quot;openai:set_globals&quot;, {
+        detail: { globals: { widgetState: state } },
+      }),
+    );
+    if (statePersistence === &quot;none&quot;) {
+      throw persistenceError();
+    }
+    const id = ++nextStateRequestId;
+    return new Promise((resolve, reject) =&gt; {
+      const timeout = globalThis.setTimeout(() =&gt; {
+        pendingStateWrites.delete(id);
+        reject(persistenceError());
+      }, 30_000);
+      pendingStateWrites.set(id, { resolve, reject, timeout, serializedState });
+      postToHost(&quot;widget-state-write&quot;, { id, state: serializedState });
+    });
+  };
+  const syncTheme = () =&gt; {
+    const theme = mediaQuery.matches ? &quot;dark&quot; : &quot;light&quot;;
+    root.dataset.theme = theme;
+    globalThis.openai = {
+      ...globalThis.openai,
+      openExternal,
+      sendFollowUpMessage,
+      setWidgetState,
+      theme,
+      visualizationStyleVariables: {},
+      visualizationTheme: theme,
+      widgetState: state,
+      statePersistence,
+      stateModelContext: &quot;none&quot;,
+    };
+    globalThis.dispatchEvent(
+      new CustomEvent(&quot;openai:set_globals&quot;, {
+        detail: { globals: globalThis.openai },
+      }),
+    );
+  };
+  const sendHeight = () =&gt; {
+    postToHost(&quot;height&quot;, {
+      height: Math.ceil(
+        Math.max(
+          document.body.scrollHeight,
+          document.body.getBoundingClientRect().height,
+        ),
+      ),
+    });
+  };
+
+  globalThis.addEventListener(
+    &quot;message&quot;,
+    (event) =&gt; {
+      const data = apply(getMessageData, event, []);
+      const ports = apply(getMessagePorts, event, []);
+      const source = apply(getMessageSource, event, []);
+      if (
+        hostPort != null ||
+        source !== parentWindow ||
+        typeof data !== &quot;object&quot; ||
+        data?.type !== &quot;codex-visualization-initialize&quot; ||
+        !isArray(ports) ||
+        ports.length !== 1
+      ) {
+        return;
+      }
+      apply(stopMessagePropagation, event, []);
+      const nextHostPort = ports[0];
+      try {
+        apply(addHostMessageListener, nextHostPort, [
+          &quot;message&quot;,
+          (event) =&gt; {
+            const data = apply(getMessageData, event, []);
+            if (typeof data === &quot;object&quot; &amp;&amp; data?.type === &quot;measure&quot;) {
+              sendHeight();
+            } else if (
+              typeof data === &quot;object&quot; &amp;&amp;
+              data?.type === &quot;widget-state-result&quot;
+            ) {
+              /** @type {unknown} */
+              const id = data.id;
+              if (typeof id !== &quot;number&quot;) {
+                return;
+              }
+              const pending = pendingStateWrites.get(id);
+              if (pending != null) {
+                pendingStateWrites.delete(id);
+                globalThis.clearTimeout(pending.timeout);
+                if (data.ok === true) {
+                  pending.resolve();
+                } else {
+                  pending.reject(persistenceError());
+                }
+              }
+            }
+          },
+        ]);
+        apply(startHostPort, nextHostPort, []);
+      } catch {
+        return;
+      }
+      hostPort = nextHostPort;
+      for (const [id, { serializedState }] of pendingStateWrites) {
+        postToHost(&quot;widget-state-write&quot;, { id, state: serializedState });
+      }
+      sendHeight();
+    },
+    { capture: true },
+  );
+  document.currentScript?.remove();
+  mediaQuery.addEventListener(&quot;change&quot;, syncTheme);
+  globalThis.addEventListener(&quot;click&quot;, (event) =&gt; {
+    if (event.defaultPrevented) {
+      return;
+    }
+    let element = null;
+    if (event.target instanceof globalThis.Element) {
+      element = event.target;
+    } else if (event.target instanceof globalThis.Node) {
+      element = event.target.parentElement;
+    }
+    const link = element?.closest(&quot;a[href]&quot;);
+    const href = link?.getAttribute(&quot;href&quot;);
+    if (href == null) {
+      return;
+    }
+    if (href.startsWith(&quot;#&quot;)) {
+      let id;
+      try {
+        id = decodeURIComponent(href.slice(1));
+      } catch {
+        return;
+      }
+      const target = id.length === 0 ? root : document.getElementById(id);
+      if (
+        target == null ||
+        globalThis.navigator.userActivation?.isActive !== true
+      ) {
+        return;
+      }
+      event.preventDefault();
+      postToHost(&quot;scroll-to&quot;, {
+        top: target.getBoundingClientRect().top + globalThis.scrollY,
+      });
+      return;
+    }
+    event.preventDefault();
+    openExternal({ href });
+  });
+  new ResizeObserver(sendHeight).observe(document.body);
+  syncTheme();
+})();
+&lt;/script&gt;
+&lt;div id=&quot;ground-bag-flow-1101&quot;&gt;
+  &lt;style&gt;
+    #ground-bag-flow-1101 { color:var(--foreground); }
+    #ground-bag-flow-1101 .flow-head { display:flex;flex-wrap:wrap;align-items:end;gap:12px;padding-right:92px;margin-bottom:12px; }
+    #ground-bag-flow-1101 .flow-head label { flex:1;min-width:180px; }
+    #ground-bag-flow-1101 .flow-line { display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0; }
+    #ground-bag-flow-1101 .flow-columns { display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;margin:12px 0; }
+    #ground-bag-flow-1101 .flow-section { min-width:0; }
+    #ground-bag-flow-1101 .flow-slots { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:12px 0; }
+    #ground-bag-flow-1101 .flow-bag { display:flex;align-items:center;gap:10px;margin:8px 0;min-height:72px; }
+    #ground-bag-flow-1101 .flow-bag img { width:68px;height:68px;object-fit:contain;flex:none; }
+    #ground-bag-flow-1101 .flow-actions { display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:8px 0; }
+    #ground-bag-flow-1101 .flow-quantity { display:flex;gap:8px;align-items:center;margin:8px 0; }
+    #ground-bag-flow-1101 .flow-quantity input { max-width:88px; }
+    #ground-bag-flow-1101 .flow-detail { min-height:44px;overflow-wrap:anywhere; }
+    #ground-bag-flow-1101 .flow-message { margin:10px 0;min-height:24px; }
+    #ground-bag-flow-1101 details { margin-top:12px; }
+    #ground-bag-flow-1101 summary { color:var(--foreground); }
+    #ground-bag-flow-1101 .flow-rules { display:grid;grid-template-columns:90px minmax(0,1fr);gap:10px 12px;margin:12px 0; }
+    #ground-bag-flow-1101 .flow-rules dt { font-weight:500; }
+    #ground-bag-flow-1101 .flow-rules dd { margin:0; }
+    #ground-bag-flow-1101 [hidden] { display:none!important; }
+    @media(max-width:560px){#ground-bag-flow-1101 .flow-columns{grid-template-columns:minmax(0,1fr)}#ground-bag-flow-1101 .flow-slots{grid-template-columns:repeat(4,minmax(0,1fr))}}
+    @media(max-width:380px){#ground-bag-flow-1101 .flow-slots{grid-template-columns:repeat(3,minmax(0,1fr))}#ground-bag-flow-1101 .flow-rules{grid-template-columns:72px minmax(0,1fr)}}
+  &lt;/style&gt;
+  &lt;div class=&quot;flow-head&quot;&gt;
+    &lt;label class=&quot;form-label&quot;&gt;演示情境&lt;select id=&quot;gb-scenario&quot; class=&quot;form-select&quot; aria-label=&quot;演示情境&quot;&gt;
+      &lt;option value=&quot;normal&quot;&gt;从整包放下开始&lt;/option&gt;&lt;option value=&quot;transfer&quot;&gt;直接存取与数量选择&lt;/option&gt;&lt;option value=&quot;full&quot;&gt;满包与全部取出&lt;/option&gt;&lt;option value=&quot;swap&quot;&gt;两只背包换装&lt;/option&gt;&lt;option value=&quot;empty&quot;&gt;空包重新装物&lt;/option&gt;&lt;option value=&quot;vehicle&quot;&gt;整包收进载具与禁止套包&lt;/option&gt;&lt;option value=&quot;reach&quot;&gt;距离、遮挡与离开&lt;/option&gt;&lt;option value=&quot;expiry&quot;&gt;非地牢到期清理&lt;/option&gt;&lt;option value=&quot;dungeon&quot;&gt;地牢不按100刻清理&lt;/option&gt;&lt;option value=&quot;failure&quot;&gt;保存失败回退&lt;/option&gt;&lt;option value=&quot;death&quot;&gt;死亡时按物品归属处理&lt;/option&gt;
+    &lt;/select&gt;&lt;/label&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;flow-line text-small&quot; aria-label=&quot;主流程&quot;&gt;&lt;span&gt;随身&lt;/span&gt;&lt;span aria-hidden=&quot;true&quot;&gt;→&lt;/span&gt;&lt;span&gt;整包放下&lt;/span&gt;&lt;span aria-hidden=&quot;true&quot;&gt;→&lt;/span&gt;&lt;span&gt;打开&lt;/span&gt;&lt;span aria-hidden=&quot;true&quot;&gt;→&lt;/span&gt;&lt;span&gt;存取／背回&lt;/span&gt;&lt;/div&gt;
+  &lt;div class=&quot;flow-line tabular-nums&quot; id=&quot;gb-stats&quot;&gt;&lt;/div&gt;
+  &lt;div class=&quot;flow-actions&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;btn btn-primary&quot; data-act=&quot;drop-equipped&quot;&gt;整包放下&lt;/button&gt;&lt;span id=&quot;gb-equipped&quot;&gt;&lt;/span&gt;&lt;/div&gt;
+  &lt;div id=&quot;gb-message&quot; class=&quot;flow-message&quot; role=&quot;status&quot; aria-live=&quot;polite&quot;&gt;&lt;/div&gt;
+  &lt;div class=&quot;flow-columns&quot;&gt;
+    &lt;section class=&quot;card flow-section&quot; aria-label=&quot;地面背包&quot;&gt;
+      &lt;h3&gt;地面背包&lt;/h3&gt;
+      &lt;label id=&quot;gb-ground-picker-label&quot; class=&quot;form-label&quot;&gt;选择背包&lt;select id=&quot;gb-ground-picker&quot; class=&quot;form-select&quot;&gt;&lt;/select&gt;&lt;/label&gt;
+      &lt;div class=&quot;flow-bag&quot;&gt;&lt;img id=&quot;gb-art&quot; alt=&quot;已定稿的地面背包&quot; src=&quot;data:image/png;base64,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&quot;&gt;&lt;div id=&quot;gb-bag-meta&quot;&gt;&lt;/div&gt;&lt;/div&gt;
+      &lt;div class=&quot;text-small&quot; id=&quot;gb-access&quot;&gt;&lt;/div&gt;
+      &lt;div class=&quot;flow-actions&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;btn btn-primary&quot; data-act=&quot;open&quot;&gt;打开背包&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;btn&quot; data-act=&quot;equip&quot;&gt;背上&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;btn&quot; data-act=&quot;pickup-bag&quot;&gt;拾起整包&lt;/button&gt;&lt;/div&gt;
+      &lt;div id=&quot;gb-swap-note&quot; class=&quot;text-small&quot;&gt;&lt;/div&gt;
+      &lt;div id=&quot;gb-left-open&quot; hidden&gt;
+        &lt;div id=&quot;gb-left-slots&quot; class=&quot;flow-slots&quot; aria-label=&quot;包内格子&quot;&gt;&lt;/div&gt;
+        &lt;div id=&quot;gb-left-detail&quot; class=&quot;flow-detail text-small&quot;&gt;&lt;/div&gt;
+        &lt;label class=&quot;form-label flow-quantity&quot;&gt;转移数量&lt;input id=&quot;gb-left-qty&quot; type=&quot;number&quot; class=&quot;form-control&quot; min=&quot;1&quot; step=&quot;1&quot; value=&quot;1&quot;&gt;&lt;/label&gt;
+        &lt;div class=&quot;flow-actions&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;btn btn-primary&quot; data-act=&quot;take&quot;&gt;取出&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;btn&quot; data-act=&quot;ground-one&quot;&gt;放到地上&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;btn&quot; data-act=&quot;take-all&quot;&gt;全部取出&lt;/button&gt;&lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div id=&quot;gb-loose&quot; class=&quot;flow-actions&quot; aria-label=&quot;地面散物&quot;&gt;&lt;/div&gt;
+    &lt;/section&gt;
+    &lt;section class=&quot;card flow-section&quot; aria-label=&quot;接收和存入来源容器&quot;&gt;
+      &lt;h3&gt;随身物品&lt;/h3&gt;
+      &lt;label class=&quot;form-label&quot;&gt;目的容器／存入来源&lt;select id=&quot;gb-destination&quot; class=&quot;form-select&quot;&gt;&lt;/select&gt;&lt;/label&gt;
+      &lt;div class=&quot;flow-line text-small&quot; id=&quot;gb-right-meta&quot;&gt;&lt;/div&gt;
+      &lt;div id=&quot;gb-right-slots&quot; class=&quot;flow-slots&quot; aria-label=&quot;随身容器格子&quot;&gt;&lt;/div&gt;
+      &lt;div id=&quot;gb-right-detail&quot; class=&quot;flow-detail text-small&quot;&gt;&lt;/div&gt;
+      &lt;label class=&quot;form-label flow-quantity&quot;&gt;转移数量&lt;input id=&quot;gb-right-qty&quot; type=&quot;number&quot; class=&quot;form-control&quot; min=&quot;1&quot; step=&quot;1&quot; value=&quot;1&quot;&gt;&lt;/label&gt;
+      &lt;div class=&quot;flow-actions&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;btn btn-primary&quot; data-act=&quot;put&quot;&gt;放入地面背包&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;btn&quot; data-act=&quot;drop-carried&quot;&gt;放到脚下&lt;/button&gt;&lt;/div&gt;
+    &lt;/section&gt;
+  &lt;/div&gt;
+  &lt;details id=&quot;gb-conditions&quot;&gt;&lt;summary class=&quot;cursor-interaction&quot;&gt;时间与中断条件&lt;/summary&gt;&lt;div class=&quot;flow-actions&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;btn&quot; data-act=&quot;near&quot;&gt;走近&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;btn&quot; data-act=&quot;far&quot;&gt;走远两格&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;btn&quot; data-act=&quot;barrier&quot;&gt;模拟隔墙&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;btn&quot; data-act=&quot;tick&quot;&gt;经过1刻&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;btn&quot; data-act=&quot;ten-ticks&quot;&gt;经过10刻&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;btn&quot; data-act=&quot;travel&quot;&gt;离开地图&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;btn&quot; data-act=&quot;die&quot;&gt;模拟死亡&lt;/button&gt;&lt;/div&gt;&lt;/details&gt;
+  &lt;details&gt;&lt;summary class=&quot;cursor-interaction&quot;&gt;查看完整规则&lt;/summary&gt;
+    &lt;dl class=&quot;flow-rules text-small&quot;&gt;
+      &lt;dt&gt;放下&lt;/dt&gt;&lt;dd&gt;本体与内容一起落地；物品数量、格位、组合部件及水量保留。人物负重立即扣除整包。&lt;/dd&gt;
+      &lt;dt&gt;接近&lt;/dt&gt;&lt;dd&gt;同格或上下左右相邻一格可操作；必须同地图、可感知、无墙门等阻挡。远处先走近，移动照常耗时。&lt;/dd&gt;
+      &lt;dt&gt;打开&lt;/dt&gt;&lt;dd&gt;只打开这只地面包；不占装备槽，不把内容转成随身物品，不抽取奖励或重新搜索。&lt;/dd&gt;
+      &lt;dt&gt;查看&lt;/dt&gt;&lt;dd&gt;按原格位显示，沿用认知限制；显示占用格数、实际总重、词条与改造。打开窗口不重置物品状态。&lt;/dd&gt;
+      &lt;dt&gt;取出&lt;/dt&gt;&lt;dd&gt;进入右侧选定容器；按该容器类别、格数和数量限制检查。放不下时原位保留，不自动散投到别处。&lt;/dd&gt;
+      &lt;dt&gt;放入&lt;/dt&gt;&lt;dd&gt;由右侧存入左侧地面包；按现有规则合并或使用空格，满包不挤出旧物。装备先卸下，工作占用物不可移动。&lt;/dd&gt;
+      &lt;dt&gt;数量&lt;/dt&gt;&lt;dd&gt;选择本次转移数量，默认整份；实际堆叠上限沿用物品配置。请求数量不适配时整次拒绝，不吞余量。&lt;/dd&gt;
+      &lt;dt&gt;全部取出&lt;/dt&gt;&lt;dd&gt;按格序尝试完整物品／完整栈，放不下或被占用的留原格，后续可放项继续；报告移动与剩余占格数。&lt;/dd&gt;
+      &lt;dt&gt;单件放地上&lt;/dt&gt;&lt;dd&gt;物品出现在背包所在格。取空仍保留空背包，可继续装物；不自动拾起、销毁或一键倒空。&lt;/dd&gt;
+      &lt;dt&gt;背上与换包&lt;/dt&gt;&lt;dd&gt;目标包连自己的内容成为装备；旧包连原内容放在玩家脚下。两包内容不自动交换，操作后关闭原地面窗口。&lt;/dd&gt;
+      &lt;dt&gt;拾起整包&lt;/dt&gt;&lt;dd&gt;有物品的包可以整体收进可用载具；不能放进另一只背包、口袋或背心。空包可作为备用物品收纳。&lt;/dd&gt;
+      &lt;dt&gt;禁止套包&lt;/dt&gt;&lt;dd&gt;包内备用空包只能作为一件物品；必须先取出到地面或装备才能打开装物，不递归扩容或减重。&lt;/dd&gt;
+      &lt;dt&gt;使用物品&lt;/dt&gt;&lt;dd&gt;先取出再饮用、食用、施药或使用。打开地面包不把里面的材料加入制作、加工或快捷栏来源。&lt;/dd&gt;
+      &lt;dt&gt;重量与保鲜&lt;/dt&gt;&lt;dd&gt;地面包不计人物负重；取出后按目的容器重新计重。减重和包内保鲜仅在装备时生效，地面食物照常累计腐坏。&lt;/dd&gt;
+      &lt;dt&gt;时间&lt;/dt&gt;&lt;dd&gt;整理、开关、整包移动与换包首版沿用0刻；走路和使用物品按原动作耗时，窗口不新增冻结或免伤。&lt;/dd&gt;
+      &lt;dt&gt;中断&lt;/dt&gt;&lt;dd&gt;离开范围、跨图、失能、死亡，或包被拿走／清理时关闭窗口；旧选中项不能操作同格后来出现的另一只包。&lt;/dd&gt;
+      &lt;dt&gt;清理&lt;/dt&gt;&lt;dd&gt;非地牢落地100世界刻清理整包；开包和存取不刷新落地时间。地牢不走此计时分支，但仍受地牢实例生命周期约束。&lt;/dd&gt;
+      &lt;dt&gt;死亡&lt;/dt&gt;&lt;dd&gt;当时装备、随身容器和绑定载具中的整包丢失。此前主动放下的包按地面归属处理；家仓及已学方法保留，不新增死亡掉包。&lt;/dd&gt;
+      &lt;dt&gt;保存&lt;/dt&gt;&lt;dd&gt;每次操作立即保存；数量与唯一归属守恒。保存失败整次回退，批量操作也不留下半笔变化；读档不重新生成内容。&lt;/dd&gt;
+    &lt;/dl&gt;
+  &lt;/details&gt;
+  &lt;script&gt;
+  (()=&gt;{
+    const root=document.getElementById(&#x27;ground-bag-flow-1101&#x27;),q=id=&gt;root.querySelector(&#x27;#&#x27;+id),copy=x=&gt;JSON.parse(JSON.stringify(x));
+    const thumb=q(&#x27;gb-art&#x27;).src;
+    const models={light:{name:&#x27;轻便帆布包&#x27;,slots:12,kg:.5,factor:.75},collector:{name:&#x27;多袋搜集包&#x27;,slots:24,kg:1.5,factor:.9},hauler:{name:&#x27;框架搬运包&#x27;,slots:16,kg:3,factor:.5}};
+    const item=(id,type,name,kg,count=1,extra={})=&gt;({id,type,name,kg,count,max:20,pocket:true,...extra});
+    const supplies=()=&gt;[item(&#x27;ore&#x27;,&#x27;ore&#x27;,&#x27;矿料&#x27;,2,3,{pocket:false}),item(&#x27;food&#x27;,&#x27;food&#x27;,&#x27;干粮&#x27;,.2,2,{age:17.4}),item(&#x27;flask&#x27;,&#x27;flask&#x27;,&#x27;铁皮水壶&#x27;,.7,1,{max:1,water:125}),item(&#x27;knife&#x27;,&#x27;tool&#x27;,&#x27;折叠工具&#x27;,.5,1,{max:1})];
+    const bag=(id,model,items=[])=&gt;({id,kind:&#x27;bag&#x27;,model,...models[model],count:1,max:1,pocket:false,items:Array.from({length:models[model].slots},(_,i)=&gt;items[i]||null),affixes:[],modification:null,fresh:1});
+    function fresh(scenario){
+      const s={version:1,scenario,tick:0,serial:20,map:&#x27;home&#x27;,returnMap:null,x:1,y:1,barrier:false,dead:false,eq:bag(&#x27;a&#x27;,&#x27;light&#x27;,supplies()),pocket:[item(&#x27;cloth&#x27;,&#x27;cloth&#x27;,&#x27;棉布&#x27;,.1,1),item(&#x27;cloth2&#x27;,&#x27;cloth&#x27;,&#x27;棉布&#x27;,.1,1),null,null],vehicle:null,ground:[],target:null,opened:null,dest:&#x27;backpack&#x27;,left:null,right:null,message:&#x27;先点「整包放下」，查看包体和内容如何一起落地。&#x27;,failed:false,failNext:false};
+      const ground=(b,x=1,y=1)=&gt;{s.ground.push({item:b,x,y,map:&#x27;home&#x27;,drop:0});s.target=b.id;};
+      if(scenario===&#x27;normal&#x27;)return s;
+      if(scenario===&#x27;transfer&#x27;||scenario===&#x27;failure&#x27;||scenario===&#x27;expiry&#x27;||scenario===&#x27;dungeon&#x27;||scenario===&#x27;reach&#x27;){ground(s.eq,scenario===&#x27;reach&#x27;?4:1,1);s.eq=null;s.dest=&#x27;pocket&#x27;;s.opened=s.target;s.message=&#x27;选中左侧物品，再取出到右侧容器；也可以反向放入。&#x27;;}
+      if(scenario===&#x27;full&#x27;){s.eq=bag(&#x27;a&#x27;,&#x27;light&#x27;,Array.from({length:11},(_,i)=&gt;item(&#x27;occupied&#x27;+i,&#x27;tool&#x27;,&#x27;工具&#x27;+(i+1),.5,1,{max:1})));ground(bag(&#x27;b&#x27;,&#x27;collector&#x27;,supplies()));s.opened=&#x27;b&#x27;;s.message=&#x27;右侧只剩1格。点击「全部取出」，检查放不下的物品是否留在原包。&#x27;;}
+      if(scenario===&#x27;swap&#x27;){ground(bag(&#x27;b&#x27;,&#x27;hauler&#x27;,[item(&#x27;heavy&#x27;,&#x27;ore&#x27;,&#x27;矿料&#x27;,2,4,{pocket:false})]));s.opened=&#x27;b&#x27;;s.message=&#x27;两包内容不同。点击「换上此包」，旧包会连内容放在脚下。&#x27;;}
+      if(scenario===&#x27;empty&#x27;){ground(bag(&#x27;b&#x27;,&#x27;collector&#x27;));s.opened=&#x27;b&#x27;;s.message=&#x27;左侧是空包。选中右侧物品放入，取空后包体仍保留。&#x27;;}
+      if(scenario===&#x27;vehicle&#x27;){ground(s.eq);s.eq=null;s.dest=&#x27;vehicle&#x27;;s.vehicle=[bag(&#x27;b&#x27;,&#x27;hauler&#x27;,[item(&#x27;load&#x27;,&#x27;ore&#x27;,&#x27;矿料&#x27;,2,2,{pocket:false})]),null];s.opened=&#x27;a&#x27;;s.message=&#x27;可整包收进载具；选中右侧装有物品的包再尝试放入左侧，可检查禁止套包。&#x27;;}
+      if(scenario===&#x27;reach&#x27;){s.x=0;s.opened=null;s.message=&#x27;目标在4格外。先点「走近」；模拟隔墙后，再尝试打开。&#x27;;}
+      if(scenario===&#x27;expiry&#x27;){s.tick=98;s.message=&#x27;该包已落地98刻。开包或存取不会续期，再经过2刻整包清理。&#x27;;}
+      if(scenario===&#x27;dungeon&#x27;){s.tick=98;s.map=&#x27;dungeon&#x27;;s.ground.forEach(e=&gt;e.map=&#x27;dungeon&#x27;);s.message=&#x27;地牢地面不按100刻清理；这不代表结束出征后仍能找回。&#x27;;}
+      if(scenario===&#x27;failure&#x27;){s.failNext=true;s.message=&#x27;下一次有效物品移动将模拟保存失败；检查物品与数量是否恢复原位。&#x27;;}
+      if(scenario===&#x27;death&#x27;){ground(bag(&#x27;b&#x27;,&#x27;hauler&#x27;,[item(&#x27;cached&#x27;,&#x27;food&#x27;,&#x27;干粮&#x27;,.2,3,{age:5})]));s.vehicle=[item(&#x27;vtool&#x27;,&#x27;tool&#x27;,&#x27;备用工具&#x27;,1,1,{max:1})];s.opened=&#x27;b&#x27;;s.message=&#x27;地面有一只包，身上另有一只。模拟死亡，查看各自的去向。&#x27;;}
+      return s;
+    }
+    function restore(saved){const a=saved?.privateContent?.state;return a?.version===1&amp;&amp;Array.isArray(a.ground)&amp;&amp;Array.isArray(a.pocket)&amp;&amp;Number.isFinite(a.tick)?copy(a):null;}
+    let s=restore(window.openai?.widgetState)||fresh(&#x27;normal&#x27;);
+    function target(){return s.ground.find(e=&gt;e.item.id===s.target&amp;&amp;e.item.kind===&#x27;bag&#x27;&amp;&amp;e.map===s.map);}
+    function access(e=target()){if(s.dead)return&#x27;角色已死亡，不能继续操作&#x27;;if(!e)return&#x27;这只背包已不在当前地面&#x27;;if(e.map!==s.map)return&#x27;背包不在当前地图&#x27;;if(Math.abs(e.x-s.x)+Math.abs(e.y-s.y)&gt;1)return&#x27;距离太远，请先走近&#x27;;if(s.barrier)return&#x27;有墙或关闭的门阻挡&#x27;;return&#x27;&#x27;;}
+    function active(){const e=target();return e&amp;&amp;s.opened===e.item.id&amp;&amp;!access(e)?e.item:null;}
+    function count(a){return a.filter(Boolean).length;}
+    function mass(it){if(!it)return 0;if(it.kind===&#x27;bag&#x27;)return it.kg+it.items.reduce((n,x)=&gt;n+mass(x),0);return(it.kg+(it.water||0)*.005)*it.count;}
+    function burden(){return(s.eq?s.eq.kg+s.eq.items.reduce((n,x)=&gt;n+mass(x),0)*s.eq.factor:0)+s.pocket.reduce((n,x)=&gt;n+mass(x),0);}
+    function container(){if(s.dest===&#x27;backpack&#x27;)return s.eq?{array:s.eq.items,name:&#x27;装备背包&#x27;,kind:&#x27;bag&#x27;}:null;if(s.dest===&#x27;vehicle&#x27;)return s.vehicle?{array:s.vehicle,name:&#x27;载具&#x27;,kind:&#x27;vehicle&#x27;}:null;return{array:s.pocket,name:&#x27;口袋&#x27;,kind:&#x27;pocket&#x27;};}
+    function ensureDest(){if(s.dest===&#x27;backpack&#x27;&amp;&amp;!s.eq||s.dest===&#x27;vehicle&#x27;&amp;&amp;!s.vehicle)s.dest=s.eq?&#x27;backpack&#x27;:&#x27;pocket&#x27;;}
+    function validOpen(){if(s.opened&amp;&amp;(!target()||s.opened!==s.target||access())){s.opened=null;s.left=null;return false;}return true;}
+    function persist(){const snapshot={modelContent:{scenario:s.scenario,equipped:s.eq?.name||&#x27;未装备&#x27;,ground:s.ground.filter(e=&gt;e.item.kind===&#x27;bag&#x27;).map(e=&gt;({name:e.item.name,slots:count(e.item.items),map:e.map})),tick:s.tick,lastResult:s.message},privateContent:{state:s}};if(JSON.stringify(snapshot).length&lt;15500)window.openai?.setWidgetState?.(snapshot)?.catch(()=&gt;{});}
+    function invariant(){const ids=new Set();function visit(it){if(!it)return;if(ids.has(it.id))throw new Error(&#x27;物品身份重复，操作已撤回&#x27;);ids.add(it.id);if(it.kind===&#x27;bag&#x27;){if(count(it.items)&gt;it.slots)throw new Error(&#x27;背包容量超出&#x27;);it.items.forEach(visit);}else if(!Number.isInteger(it.count)||it.count&lt;1)throw new Error(&#x27;物品数量错误&#x27;);}visit(s.eq);s.pocket.forEach(visit);s.vehicle?.forEach(visit);s.ground.forEach(e=&gt;visit(e.item));}
+    function transact(fn){const before=copy(s);try{if(s.dead)throw new Error(&#x27;角色已死亡，不能继续操作&#x27;);const text=fn();invariant();if(s.failNext){s=before;s.failNext=false;s.message=&#x27;保存失败：本次物品、数量和格位全部恢复原位。可以重试。&#x27;;s.failed=true;}else{s.message=text;s.failed=false;}}catch(e){s=before;s.message=e.message;s.failed=true;}ensureDest();validOpen();render();persist();}
+    function selected(side){const a=side===&#x27;left&#x27;?active()?.items:container()?.array,id=s[side];return a?.find(it=&gt;it?.id===id)||null;}
+    function quantity(side,it){const n=Number(q(&#x27;gb-&#x27;+side+&#x27;-qty&#x27;).value);if(!Number.isInteger(n)||n&lt;1||n&gt;it.count)throw new Error(&#x27;请选择有效的转移数量&#x27;);return n;}
+    function put(dest,it){
+      if(it.kind===&#x27;bag&#x27;&amp;&amp;count(it.items)&gt;0&amp;&amp;dest.kind!==&#x27;vehicle&#x27;)throw new Error(&#x27;装有物品的背包不能塞进另一只背包或口袋；可以整包收进载具。&#x27;);
+      if(dest.kind===&#x27;pocket&#x27;&amp;&amp;(!it.pocket||it.kind===&#x27;bag&#x27;))throw new Error(&#x27;这件物品不能放入口袋，请换一个目的容器。&#x27;);
+      const arr=dest.array,cap=dest.kind===&#x27;pocket&#x27;?1:it.max,old=copy(arr);let remaining=it.count,placed=false;
+      if(it.kind!==&#x27;bag&#x27;&amp;&amp;it.max&gt;1&amp;&amp;dest.kind!==&#x27;pocket&#x27;)for(const cell of arr){if(cell&amp;&amp;cell.type===it.type&amp;&amp;cell.name===it.name&amp;&amp;cell.kg===it.kg&amp;&amp;!cell.locked){const n=Math.min(remaining,cap-cell.count);if(n&gt;0){cell.count+=n;remaining-=n;if(it.age!=null)cell.age=Math.max(cell.age||0,it.age);placed=true;}if(!remaining)break;}}
+      while(remaining&gt;0){let index=arr.findIndex(x=&gt;!x);if(index&lt;0&amp;&amp;dest.kind===&#x27;vehicle&#x27;){index=arr.length;arr.push(null);}if(index&lt;0){arr.splice(0,arr.length,...old);throw new Error(&#x27;目的容器空间不足，物品留在原处。&#x27;);}const n=Math.min(remaining,cap);const piece=copy(it);piece.count=n;if(placed||n&lt;it.count)piece.id=&#x27;split-&#x27;+(++s.serial);arr[index]=piece;remaining-=n;placed=true;}
+    }
+    function move(source,it,n,dest){const index=source.findIndex(x=&gt;x?.id===it.id);if(index&lt;0)throw new Error(&#x27;物品已移动，请重新选择&#x27;);if(it.locked)throw new Error(&#x27;物品正在使用，不能移动&#x27;);const portion=copy(it);portion.count=n;if(n&lt;it.count)portion.id=&#x27;split-&#x27;+(++s.serial);put(dest,portion);if(n===it.count)source[index]=null;else source[index].count-=n;}
+    function requireOpen(){const why=access();if(why)throw new Error(why);const b=active();if(!b)throw new Error(&#x27;请先打开地面背包&#x27;);return b;}
+    function ground(it,x=s.x,y=s.y){s.ground.push({item:it,map:s.map,x,y,drop:s.tick});if(it.kind===&#x27;bag&#x27;){s.target=it.id;s.opened=null;s.left=null;}}
+    function unlocked(it){if(it.locked)throw new Error(&#x27;背包或物品正在使用，不能移动&#x27;);it.items?.filter(Boolean).forEach(unlocked);}
+    function worldTick(n){for(let t=0;t&lt;n;t++){s.tick++;function age(it,factor=1){if(!it)return;if(it.age!=null)it.age+=factor;if(it.items)it.items.forEach(child=&gt;age(child,1));}s.eq?.items.forEach(it=&gt;age(it,it?.type===&#x27;food&#x27;?s.eq.fresh:1));s.pocket.forEach(it=&gt;age(it));s.vehicle?.forEach(it=&gt;age(it));s.ground.forEach(e=&gt;age(e.item));s.ground=s.ground.filter(e=&gt;e.map===&#x27;dungeon&#x27;||s.tick-e.drop&lt;100);}return validOpen();}
+    function environment(action){s.failed=false;if(s.dead&amp;&amp;action!==&#x27;tick&#x27;&amp;&amp;action!==&#x27;ten-ticks&#x27;){s.message=&#x27;角色已死亡；可切换演示情境重新查看。&#x27;;render();return;}
+      if(action===&#x27;tick&#x27;||action===&#x27;ten-ticks&#x27;){const id=s.target,was=!!target(),n=action===&#x27;tick&#x27;?1:10;worldTick(n);s.message=was&amp;&amp;!s.ground.some(e=&gt;e.item.id===id)?&#x27;背包达到100刻，已连内容一起清理；窗口关闭。&#x27;:&#x27;世界时间推进&#x27;+n+&#x27;刻；地面物品累计腐坏，存取不会重置落地时间。&#x27;;}
+      if(action===&#x27;near&#x27;){const e=target();if(!e){s.message=&#x27;当前地图没有选中的背包。&#x27;;}else if(s.barrier){s.message=&#x27;路径受阻，需要先移除遮挡。&#x27;;}else{const d=Math.abs(e.x-s.x)+Math.abs(e.y-s.y);const steps=Math.max(0,d-1);if(steps){s.x=e.x-1;s.y=e.y;}worldTick(steps);s.message=&#x27;已在背包交互范围内，移动耗时&#x27;+steps+&#x27;刻；现在可以选择打开。&#x27;;}}
+      if(action===&#x27;far&#x27;){const e=target();s.x+=e&amp;&amp;s.x&lt;=e.x?-2:2;const closed=!!s.opened;worldTick(2);s.message=closed&amp;&amp;!s.opened?&#x27;离开交互范围，地面窗口已关闭，背包留在原地。&#x27;:&#x27;移动两格，正常推进2刻。&#x27;;}
+      if(action===&#x27;barrier&#x27;){s.barrier=!s.barrier;validOpen();s.message=s.barrier?&#x27;模拟新增阻挡：隔墙无法存取，已打开的窗口关闭。&#x27;:&#x27;阻挡已移除，可重新打开。&#x27;;}
+      if(action===&#x27;travel&#x27;){if(s.map===&#x27;away&#x27;){s.map=s.returnMap||&#x27;home&#x27;;s.returnMap=null;}else{s.returnMap=s.map;s.map=&#x27;away&#x27;;}s.opened=null;s.left=null;s.message=&#x27;切换地图，原地面窗口关闭；背包没有随人物移动。&#x27;;}
+      if(action===&#x27;die&#x27;){s.eq=null;s.pocket=s.pocket.map(()=&gt;null);s.vehicle=null;s.opened=null;s.left=null;s.right=null;s.dead=true;s.message=&#x27;随身背包、口袋和载具内容丢失；主动放下的地面包仍按地面归属处理。&#x27;;}
+      ensureDest();render();persist();
+    }
+    function run(action){
+      if([&#x27;near&#x27;,&#x27;far&#x27;,&#x27;barrier&#x27;,&#x27;tick&#x27;,&#x27;ten-ticks&#x27;,&#x27;travel&#x27;,&#x27;die&#x27;].includes(action)){environment(action);return;}
+      if(action===&#x27;open&#x27;){const why=access();if(why){s.message=why;s.failed=true;}else{s.opened=s.opened===s.target?null:s.target;s.left=null;s.message=s.opened?&#x27;已打开地面背包。取出时使用右侧选定容器。&#x27;:&#x27;窗口已关闭，背包与剩余内容仍在原地。&#x27;;s.failed=false;}render();persist();return;}
+      transact(()=&gt;{
+        if(action===&#x27;drop-equipped&#x27;){if(!s.eq)throw new Error(&#x27;当前没有装备背包&#x27;);unlocked(s.eq);const b=s.eq;s.eq=null;ground(b);s.dest=&#x27;pocket&#x27;;s.right=null;return&#x27;整包已放在脚下，包内物品与格位保留；点击「打开背包」存取。&#x27;;}
+        if(action===&#x27;equip&#x27;||action===&#x27;pickup-bag&#x27;){const why=access();if(why)throw new Error(why);const e=target(),b=e.item;unlocked(b);
+          if(action===&#x27;equip&#x27;){if(s.eq)unlocked(s.eq);s.ground=s.ground.filter(x=&gt;x!==e);const old=s.eq;s.eq=b;if(old)ground(old);else s.target=null;s.opened=null;s.left=null;s.right=null;s.dest=&#x27;backpack&#x27;;return old?&#x27;已换上目标背包；旧包连原内容留在脚下，两包内容没有交换。&#x27;:&#x27;已背上背包，原内容恢复为随身物品。&#x27;;}
+          const dest=s.vehicle?{array:s.vehicle,name:&#x27;载具&#x27;,kind:&#x27;vehicle&#x27;}:s.eq?{array:s.eq.items,name:&#x27;装备背包&#x27;,kind:&#x27;bag&#x27;}:null;if(!dest)throw new Error(&#x27;没有合法位置收纳整包；可以直接背上。&#x27;);put(dest,b);s.ground=s.ground.filter(x=&gt;x!==e);s.opened=null;s.target=null;s.left=null;return&#x27;整包已收进&#x27;+dest.name+&#x27;，全部内容随包保留。&#x27;;
+        }
+        if(action===&#x27;take-all&#x27;){const b=requireOpen(),dest=container();if(!dest)throw new Error(&#x27;请选择可用的目的容器&#x27;);let moved=0,reasons=new Set();for(let i=0;i&lt;b.items.length;i++){const it=b.items[i];if(!it)continue;try{move(b.items,it,it.count,dest);moved++;}catch(e){reasons.add(e.message);}}if(!moved)throw new Error([...reasons][0]||&#x27;背包已空&#x27;);return&#x27;已转移&#x27;+moved+&#x27;个占格项到&#x27;+dest.name+&#x27;；包内剩余&#x27;+count(b.items)+&#x27;格有物品。&#x27;+(reasons.size?&#x27;无法接收的项目留在原格。&#x27;:&#x27;&#x27;);}
+        if(action===&#x27;take&#x27;||action===&#x27;ground-one&#x27;){const b=requireOpen(),it=selected(&#x27;left&#x27;);if(!it)throw new Error(&#x27;请先选中包内物品&#x27;);const n=quantity(&#x27;left&#x27;,it);if(action===&#x27;take&#x27;){const dest=container();if(!dest)throw new Error(&#x27;请选择可用的目的容器&#x27;);move(b.items,it,n,dest);return&#x27;已将&#x27;+it.name+&#x27;×&#x27;+n+&#x27;取出到&#x27;+dest.name+&#x27;。&#x27;;}const e=target();if(it.locked)throw new Error(&#x27;物品正在使用，不能移动&#x27;);const piece=copy(it);piece.count=n;if(n&lt;it.count)piece.id=&#x27;split-&#x27;+(++s.serial);const i=b.items.findIndex(x=&gt;x?.id===it.id);if(n===it.count)b.items[i]=null;else b.items[i].count-=n;s.ground.push({item:piece,map:s.map,x:e.x,y:e.y,drop:s.tick});return&#x27;物品已放在背包所在格，包体仍留在原地。&#x27;;}
+        if(action===&#x27;put&#x27;||action===&#x27;drop-carried&#x27;){const src=container(),it=selected(&#x27;right&#x27;);if(!src||!it)throw new Error(&#x27;请先选中右侧物品&#x27;);const n=quantity(&#x27;right&#x27;,it);if(action===&#x27;put&#x27;){const b=requireOpen();move(src.array,it,n,{array:b.items,kind:&#x27;bag&#x27;,name:b.name});return&#x27;已将&#x27;+it.name+&#x27;×&#x27;+n+&#x27;放入地面背包，人物负重已更新。&#x27;;}unlocked(it);const piece=copy(it);piece.count=n;if(n&lt;it.count)piece.id=&#x27;split-&#x27;+(++s.serial);const i=src.array.findIndex(x=&gt;x?.id===it.id);if(n===it.count)src.array[i]=null;else src.array[i].count-=n;ground(piece);return&#x27;已放到人物脚下，实例状态保留。&#x27;;}
+        throw new Error(&#x27;无效操作&#x27;);
+      });
+    }
+    const el=(tag,text,cls)=&gt;{const x=document.createElement(tag);if(text!=null)x.textContent=text;if(cls)x.className=cls;return x;};
+    function detail(it){if(!it)return&#x27;选择一个物品查看状态&#x27;;if(it.kind===&#x27;bag&#x27;)return it.name+&#x27; · &#x27;+count(it.items)+&#x27;/&#x27;+it.slots+&#x27;格 · 整包&#x27;+mass(it).toFixed(2)+&#x27;kg&#x27;;return it.name+&#x27; · 实际&#x27;+mass(it).toFixed(2)+&#x27;kg&#x27;+(it.water!=null?&#x27; · 存水&#x27;+it.water:&#x27;&#x27;)+(it.age!=null?&#x27; · 腐坏累计&#x27;+it.age.toFixed(1)+&#x27;刻&#x27;:&#x27;&#x27;)+(it.locked?&#x27; · 正在使用&#x27;:&#x27;&#x27;);}
+    function slots(host,array,side){host.replaceChildren();array.forEach((it,i)=&gt;{const b=el(&#x27;button&#x27;,it?it.name+(it.count&gt;1?&#x27; ×&#x27;+it.count:&#x27;&#x27;):&#x27;空&#x27;,&#x27;btn viz-tile&#x27;);b.type=&#x27;button&#x27;;b.disabled=!it;b.dataset.slot=side;b.dataset.item=it?.id||&#x27;&#x27;;b.setAttribute(&#x27;aria-label&#x27;,&#x27;第&#x27;+(i+1)+&#x27;格 &#x27;+(it?detail(it):&#x27;空&#x27;));b.setAttribute(&#x27;aria-pressed&#x27;,String(!!it&amp;&amp;s[side]===it.id));b.onclick=()=&gt;{s[side]=it.id;q(&#x27;gb-&#x27;+side+&#x27;-qty&#x27;).value=it.count;render();persist();};host.append(b);});}
+    function render(){ensureDest();validOpen();if(!target()){const first=s.ground.find(e=&gt;e.map===s.map&amp;&amp;e.item.kind===&#x27;bag&#x27;);if(first){s.target=first.item.id;s.opened=null;s.left=null;}}q(&#x27;gb-scenario&#x27;).value=s.scenario;const e=target(),b=e?.item,opened=active(),dest=container();
+      q(&#x27;gb-stats&#x27;).textContent=(s.dead?&#x27;已死亡&#x27;:s.map===&#x27;dungeon&#x27;?&#x27;地牢&#x27;:s.map===&#x27;away&#x27;?&#x27;另一张地图&#x27;:&#x27;非地牢&#x27;)+&#x27; · 世界第&#x27;+s.tick+&#x27;刻 · 随身计重 &#x27;+burden().toFixed(2)+&#x27;kg&#x27;;q(&#x27;gb-equipped&#x27;).textContent=s.eq?s.eq.name+&#x27; &#x27;+count(s.eq.items)+&#x27;/&#x27;+s.eq.slots+&#x27;格&#x27;:&#x27;未装备背包&#x27;;root.querySelector(&#x27;[data-act=&quot;drop-equipped&quot;]&#x27;).disabled=!s.eq||s.dead;
+      q(&#x27;gb-message&#x27;).textContent=s.message;q(&#x27;gb-message&#x27;).classList.toggle(&#x27;text-destructive&#x27;,s.failed);
+      const options=s.ground.filter(x=&gt;x.map===s.map&amp;&amp;x.item.kind===&#x27;bag&#x27;);q(&#x27;gb-ground-picker&#x27;).replaceChildren(...options.map(x=&gt;{const o=el(&#x27;option&#x27;,x.item.name+&#x27; · &#x27;+count(x.item.items)+&#x27;/&#x27;+x.item.slots+&#x27;格&#x27;);o.value=x.item.id;return o;}));q(&#x27;gb-ground-picker&#x27;).value=s.target||&#x27;&#x27;;q(&#x27;gb-ground-picker-label&#x27;).hidden=options.length&lt;2;
+      q(&#x27;gb-art&#x27;).hidden=!b;q(&#x27;gb-art&#x27;).src=thumb;q(&#x27;gb-bag-meta&#x27;).textContent=b?b.name+&#x27; · &#x27;+count(b.items)+&#x27;/&#x27;+b.slots+&#x27;格 · 实际总重&#x27;+mass(b).toFixed(2)+&#x27;kg&#x27;:&#x27;地面暂无选中的背包&#x27;;q(&#x27;gb-access&#x27;).textContent=b?(access()||&#x27;可以交互&#x27;)+&#x27; · &#x27;+(s.map===&#x27;dungeon&#x27;?&#x27;不适用100刻清理&#x27;:&#x27;剩余&#x27;+Math.max(0,100-(s.tick-e.drop))+&#x27;刻清理&#x27;):options.length?&#x27;请选择一只背包&#x27;:&#x27;整包放下后，可打开存取&#x27;;
+      root.querySelector(&#x27;[data-act=&quot;open&quot;]&#x27;).textContent=opened?&#x27;关闭背包&#x27;:&#x27;打开背包&#x27;;for(const a of [&#x27;open&#x27;,&#x27;equip&#x27;,&#x27;pickup-bag&#x27;])root.querySelector(&#x27;[data-act=&quot;&#x27;+a+&#x27;&quot;]&#x27;).disabled=!b||s.dead;root.querySelector(&#x27;[data-act=&quot;equip&quot;]&#x27;).textContent=s.eq?&#x27;换上此包&#x27;:&#x27;背上&#x27;;q(&#x27;gb-swap-note&#x27;).textContent=b&amp;&amp;s.eq?&#x27;换包后：旧包连内容放在玩家脚下。&#x27;:&#x27;&#x27;;q(&#x27;gb-left-open&#x27;).hidden=!opened;
+      if(opened)slots(q(&#x27;gb-left-slots&#x27;),opened.items,&#x27;left&#x27;);q(&#x27;gb-left-detail&#x27;).textContent=detail(selected(&#x27;left&#x27;));const li=selected(&#x27;left&#x27;);q(&#x27;gb-left-qty&#x27;).max=li?.count||1;
+      const destinations=[...(s.eq?[[&#x27;backpack&#x27;,&#x27;装备背包&#x27;]]:[]),[&#x27;pocket&#x27;,&#x27;口袋（示例4格）&#x27;],...(s.vehicle?[[&#x27;vehicle&#x27;,&#x27;载具&#x27;]]:[])];q(&#x27;gb-destination&#x27;).replaceChildren(...destinations.map(([value,label])=&gt;{const o=el(&#x27;option&#x27;,label);o.value=value;return o;}));q(&#x27;gb-destination&#x27;).value=s.dest;
+      q(&#x27;gb-right-meta&#x27;).textContent=dest?(dest.kind===&#x27;vehicle&#x27;?count(dest.array)+&#x27;个占格项 · 整包实际重量计入载具&#x27;:count(dest.array)+&#x27;/&#x27;+dest.array.length+&#x27;格 · 取出只放入此处&#x27;):&#x27;&#x27;;if(dest)slots(q(&#x27;gb-right-slots&#x27;),dest.kind===&#x27;vehicle&#x27;?[...dest.array,...(dest.array.some(x=&gt;!x)?[]:[null])]:dest.array,&#x27;right&#x27;);q(&#x27;gb-right-detail&#x27;).textContent=detail(selected(&#x27;right&#x27;));q(&#x27;gb-right-qty&#x27;).max=selected(&#x27;right&#x27;)?.count||1;root.querySelector(&#x27;[data-act=&quot;take&quot;]&#x27;).textContent=&#x27;取出到&#x27;+(dest?.name||&#x27;随身&#x27;);
+      for(const a of [&#x27;take&#x27;,&#x27;ground-one&#x27;])root.querySelector(&#x27;[data-act=&quot;&#x27;+a+&#x27;&quot;]&#x27;).disabled=!li||!opened||s.dead;root.querySelector(&#x27;[data-act=&quot;take-all&quot;]&#x27;).disabled=!opened||!count(opened.items)||s.dead;root.querySelector(&#x27;[data-act=&quot;put&quot;]&#x27;).disabled=!selected(&#x27;right&#x27;)||!opened||s.dead;root.querySelector(&#x27;[data-act=&quot;drop-carried&quot;]&#x27;).disabled=!selected(&#x27;right&#x27;)||s.dead;
+      q(&#x27;gb-loose&#x27;).replaceChildren();s.ground.filter(x=&gt;x.map===s.map&amp;&amp;x.item.kind!==&#x27;bag&#x27;).forEach(entry=&gt;{const button=el(&#x27;button&#x27;,&#x27;拾取地上：&#x27;+entry.item.name+&#x27; ×&#x27;+entry.item.count,&#x27;btn&#x27;);button.type=&#x27;button&#x27;;button.onclick=()=&gt;transact(()=&gt;{const why=access(entry);if(why)throw new Error(why);put(container(),entry.item);s.ground=s.ground.filter(x=&gt;x!==entry);return&#x27;散物已拾取到&#x27;+container().name+&#x27;。&#x27;;});q(&#x27;gb-loose&#x27;).append(button);});
+      root.querySelector(&#x27;[data-act=&quot;barrier&quot;]&#x27;).textContent=s.barrier?&#x27;移除模拟阻挡&#x27;:&#x27;模拟隔墙&#x27;;root.querySelector(&#x27;[data-act=&quot;travel&quot;]&#x27;).textContent=s.map===&#x27;away&#x27;?&#x27;返回原地图&#x27;:&#x27;离开地图&#x27;;if([&#x27;reach&#x27;,&#x27;expiry&#x27;,&#x27;dungeon&#x27;,&#x27;death&#x27;].includes(s.scenario))q(&#x27;gb-conditions&#x27;).open=true;
+      root.dataset.ready=&#x27;true&#x27;;
+    }
+    root.querySelectorAll(&#x27;[data-act]&#x27;).forEach(button=&gt;button.onclick=()=&gt;run(button.dataset.act));q(&#x27;gb-scenario&#x27;).onchange=e=&gt;{s=fresh(e.target.value);q(&#x27;gb-left-qty&#x27;).value=1;q(&#x27;gb-right-qty&#x27;).value=1;render();persist();};q(&#x27;gb-ground-picker&#x27;).onchange=e=&gt;{s.target=e.target.value;s.opened=null;s.left=null;s.message=&#x27;已选择另一只地面背包，点击打开查看。&#x27;;render();persist();};q(&#x27;gb-destination&#x27;).onchange=e=&gt;{s.dest=e.target.value;s.right=null;s.message=&#x27;目的容器已改为&#x27;+container().name+&#x27;。&#x27;;render();persist();};
+    window.addEventListener(&#x27;openai:set_globals&#x27;,event=&gt;{const next=restore(event.detail?.globals?.widgetState);if(next){s=next;render();}});
+    // Test-only view of the isolated demonstration; never references game globals.
+    root.__flow={snapshot:()=&gt;copy(s),audit:()=&gt;{invariant();return true;}};
+    render();
+  })();
+  &lt;/script&gt;
+&lt;/div&gt;
+
+&lt;script src=&quot;https://unpkg.com/@floating-ui/core@1.7.3/dist/floating-ui.core.umd.min.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;https://unpkg.com/@floating-ui/dom@1.7.4/dist/floating-ui.dom.umd.min.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+(() =&gt; {
+  if (window.FloatingUIDOM == null) {
+    return;
+  }
+  const { autoUpdate, computePosition, flip, offset, shift, size } =
+    window.FloatingUIDOM;
+  const tooltipPlacements = new Set([&quot;top&quot;, &quot;right&quot;, &quot;bottom&quot;, &quot;left&quot;]);
+  const tooltipId = `codex-visualization-tooltip-${
+    window.crypto?.randomUUID?.() ?? Date.now().toString(36)
+  }`;
+  const tooltipGap = 5;
+  const hoverDelay = 700;
+  const skipDelay = 300;
+  let activeTrigger = null;
+  let pendingTrigger = null;
+  let tooltip = null;
+  let openTimeout = null;
+  let autoUpdateCleanup = null;
+  let positionRequest = 0;
+  let skipDelayUntil = 0;
+  let lastPointerWasTouch = false;
+  let pinnedByTouch = false;
+
+  const getTrigger = (event) =&gt; {
+    for (const target of event.composedPath()) {
+      if (target?.nodeType === Node.ELEMENT_NODE) {
+        const trigger = target.closest(&quot;[data-tooltip]&quot;);
+        if (trigger) return trigger;
+      }
+    }
+    return null;
+  };
+  const containsTarget = (trigger, target) =&gt;
+    target?.nodeType != null &amp;&amp; trigger.contains(target);
+  const getContent = (trigger) =&gt;
+    trigger.getAttribute(&quot;data-tooltip&quot;)?.trim() ?? &quot;&quot;;
+  const getPlacement = (trigger) =&gt; {
+    const placement = trigger.getAttribute(&quot;data-tooltip-placement&quot;);
+    return tooltipPlacements.has(placement) ? placement : &quot;top&quot;;
+  };
+  const getTooltip = () =&gt; {
+    if (tooltip == null) {
+      tooltip = document.createElement(&quot;div&quot;);
+      tooltip.id = tooltipId;
+      tooltip.className = &quot;tooltip&quot;;
+      tooltip.setAttribute(&quot;role&quot;, &quot;tooltip&quot;);
+    }
+    return tooltip;
+  };
+  const setDescribedBy = (trigger, described) =&gt; {
+    const ids = new Set(
+      (trigger.getAttribute(&quot;aria-describedby&quot;) ?? &quot;&quot;)
+        .split(/\s+/)
+        .filter(Boolean),
+    );
+    if (described) {
+      ids.add(tooltipId);
+    } else {
+      ids.delete(tooltipId);
+    }
+    if (ids.size === 0) {
+      trigger.removeAttribute(&quot;aria-describedby&quot;);
+    } else {
+      trigger.setAttribute(&quot;aria-describedby&quot;, [...ids].join(&quot; &quot;));
+    }
+  };
+  const clearOpenTimeout = () =&gt; {
+    if (openTimeout != null) {
+      window.clearTimeout(openTimeout);
+      openTimeout = null;
+    }
+    pendingTrigger = null;
+  };
+  const closeTooltip = (activateSkipDelay = true) =&gt; {
+    clearOpenTimeout();
+    pinnedByTouch = false;
+    positionRequest += 1;
+    autoUpdateCleanup?.();
+    autoUpdateCleanup = null;
+    if (activeTrigger == null) {
+      return;
+    }
+    setDescribedBy(activeTrigger, false);
+    activeTrigger = null;
+    tooltip?.remove();
+    if (activateSkipDelay) {
+      skipDelayUntil = Date.now() + skipDelay;
+    }
+  };
+  const updatePosition = (trigger, floating) =&gt; {
+    const request = ++positionRequest;
+    void computePosition(trigger, floating, {
+      middleware: [
+        offset(tooltipGap),
+        flip({ padding: tooltipGap }),
+        shift({ padding: tooltipGap }),
+        size({
+          padding: tooltipGap,
+          apply({ availableHeight, availableWidth, elements }) {
+            elements.floating.style.setProperty(
+              &quot;--tooltip-available-width&quot;,
+              `${Math.max(0, availableWidth)}px`,
+            );
+            elements.floating.style.setProperty(
+              &quot;--tooltip-available-height&quot;,
+              `${Math.max(0, availableHeight)}px`,
+            );
+          },
+        }),
+      ],
+      placement: getPlacement(trigger),
+      strategy: &quot;fixed&quot;,
+    })
+      .then(({ x, y }) =&gt; {
+        if (activeTrigger !== trigger || request !== positionRequest) {
+          return;
+        }
+        const scale = window.devicePixelRatio || 1;
+        floating.style.transform = `translate(${Math.round(x * scale) / scale}px, ${Math.round(y * scale) / scale}px)`;
+        floating.style.visibility = &quot;visible&quot;;
+      })
+      .catch(() =&gt; {
+        if (activeTrigger === trigger &amp;&amp; request === positionRequest) {
+          closeTooltip(false);
+        }
+      });
+  };
+  const openTooltip = (trigger) =&gt; {
+    const content = getContent(trigger);
+    if (!trigger.isConnected || content.length === 0) {
+      return;
+    }
+    clearOpenTimeout();
+    if (activeTrigger === trigger) {
+      return;
+    }
+    closeTooltip();
+    const floating = getTooltip();
+    floating.textContent = content;
+    floating.style.visibility = &quot;hidden&quot;;
+    floating.style.transform = &quot;translate(0, 0)&quot;;
+    document.body.appendChild(floating);
+    activeTrigger = trigger;
+    setDescribedBy(trigger, true);
+    autoUpdateCleanup = autoUpdate(trigger, floating, () =&gt; {
+      updatePosition(trigger, floating);
+    });
+  };
+  const requestOpen = (trigger, immediate = false) =&gt; {
+    if (
+      getContent(trigger).length === 0 ||
+      activeTrigger === trigger ||
+      pendingTrigger === trigger
+    ) {
+      return;
+    }
+    clearOpenTimeout();
+    pendingTrigger = trigger;
+    const delay =
+      immediate || activeTrigger != null || Date.now() &lt; skipDelayUntil
+        ? 0
+        : hoverDelay;
+    if (delay === 0) {
+      openTooltip(trigger);
+      return;
+    }
+    openTimeout = window.setTimeout(() =&gt; {
+      openTimeout = null;
+      pendingTrigger = null;
+      openTooltip(trigger);
+    }, delay);
+  };
+  const handlePointerOpen = (event) =&gt; {
+    if (event.pointerType === &quot;touch&quot;) {
+      return;
+    }
+    const trigger = getTrigger(event);
+    if (trigger == null || containsTarget(trigger, event.relatedTarget)) {
+      return;
+    }
+    requestOpen(trigger);
+  };
+  const handlePointer = (event) =&gt; {
+    lastPointerWasTouch =
+      event.type === &quot;pointerdown&quot; &amp;&amp; event.pointerType === &quot;touch&quot;;
+  };
+  const handleTouchClick = (event) =&gt; {
+    const isTouch = event.pointerType === &quot;touch&quot; || lastPointerWasTouch;
+    lastPointerWasTouch = false;
+    if (!isTouch || event.detail === 0) {
+      return;
+    }
+    const trigger = getTrigger(event);
+    if (
+      trigger == null ||
+      !trigger.isConnected ||
+      getContent(trigger).length === 0 ||
+      (pinnedByTouch &amp;&amp; activeTrigger === trigger)
+    ) {
+      if (pinnedByTouch) {
+        closeTooltip();
+      }
+      return;
+    }
+    openTooltip(trigger);
+    pinnedByTouch = activeTrigger === trigger;
+    window.setTimeout(() =&gt; {
+      if (activeTrigger === trigger &amp;&amp; !trigger.isConnected) {
+        closeTooltip(false);
+      }
+    }, 0);
+  };
+  const handleLeave = (event) =&gt; {
+    if (pinnedByTouch) {
+      return;
+    }
+    const trigger = getTrigger(event);
+    if (trigger == null || containsTarget(trigger, event.relatedTarget)) {
+      return;
+    }
+    if (activeTrigger === trigger || pendingTrigger === trigger) {
+      closeTooltip();
+    }
+  };
+  const handleFocusIn = (event) =&gt; {
+    const trigger = getTrigger(event);
+    if (trigger?.matches(&quot;:focus-visible&quot;)) {
+      requestOpen(trigger, true);
+    }
+  };
+  const handleKeyDown = (event) =&gt; {
+    if (event.key === &quot;Escape&quot;) {
+      closeTooltip();
+    }
+  };
+  const handleContextMenu = (event) =&gt; {
+    lastPointerWasTouch = false;
+    const trigger = getTrigger(event);
+    if (activeTrigger === trigger || pendingTrigger === trigger) {
+      closeTooltip();
+    }
+  };
+  const handlers = {
+    pointerover: handlePointerOpen,
+    pointerdown: handlePointer,
+    pointercancel: handlePointer,
+    click: handleTouchClick,
+    pointerout: handleLeave,
+    focusin: handleFocusIn,
+    focusout: handleLeave,
+    keydown: handleKeyDown,
+    contextmenu: handleContextMenu,
+  };
+  const roots = new Map();
+  const handledEvents = new WeakSet();
+  const handleEvent = (event) =&gt; {
+    if (handledEvents.has(event)) return;
+    handledEvents.add(event);
+    handlers[event.type](event);
+  };
+  const discoverRoots = (node) =&gt; {
+    if (node.shadowRoot) listen(node.shadowRoot);
+    for (const element of node.querySelectorAll(&quot;*&quot;)) {
+      if (element.shadowRoot) listen(element.shadowRoot);
+    }
+  };
+  const listen = (root) =&gt; {
+    if (roots.has(root)) return;
+    for (const type of Object.keys(handlers)) root.addEventListener(type, handleEvent);
+    const observer = new window.MutationObserver((records) =&gt; {
+      for (const { addedNodes } of records) {
+        for (const node of addedNodes) {
+          if (node.nodeType === Node.ELEMENT_NODE) discoverRoots(node);
+        }
+      }
+      for (const [root, cleanup] of roots) {
+        if (root.host &amp;&amp; !root.host.isConnected) {
+          cleanup();
+          roots.delete(root);
+        }
+      }
+      if (activeTrigger &amp;&amp; !activeTrigger.isConnected) closeTooltip(false);
+    });
+    observer.observe(root, { childList: true, subtree: true });
+    roots.set(root, () =&gt; {
+      observer.disconnect();
+      for (const type of Object.keys(handlers)) root.removeEventListener(type, handleEvent);
+    });
+    discoverRoots(root);
+  };
+  const destroy = () =&gt; {
+    closeTooltip(false);
+    lastPointerWasTouch = false;
+    for (const cleanup of roots.values()) cleanup();
+    roots.clear();
+    tooltip = null;
+  };
+
+  // Events between children of one shadow root never reach the document.
+  listen(document);
+  window.addEventListener(&quot;pagehide&quot;, destroy, { once: true });
+})();
+&lt;/script&gt;
+&lt;script id=&quot;codex-visualization-tabs&quot;&gt;
+(() =&gt; {
+  const selector = &#x27;.nav[role=&quot;tablist&quot;] [role=&quot;tab&quot;]&#x27;;
+  const disabled = &#x27;:disabled,[aria-disabled=&quot;true&quot;]&#x27;;
+  const selectTab = (selected) =&gt; {
+    const panelId = selected.getAttribute(&quot;aria-controls&quot;);
+    for (const tab of selected.closest(&#x27;[role=&quot;tablist&quot;]&#x27;).querySelectorAll(&#x27;[role=&quot;tab&quot;]&#x27;)) {
+      const active = tab === selected;
+      tab.classList.toggle(&quot;active&quot;, active);
+      tab.setAttribute(&quot;aria-selected&quot;, String(active));
+      const id = tab.getAttribute(&quot;aria-controls&quot;);
+      const panel = id &amp;&amp; document.getElementById(id);
+      if (panel != null) {
+        panel.hidden = id !== panelId;
+        if (!panel.hidden &amp;&amp; selected.id) {
+          panel.setAttribute(&quot;aria-labelledby&quot;, selected.id);
+        }
+      }
+    }
+  };
+  const interact = (event) =&gt; {
+    const tab = event.target?.closest?.(selector);
+    if (event.defaultPrevented || tab == null || tab.matches(disabled)) {
+      return;
+    }
+    if (event.type === &quot;click&quot;) {
+      selectTab(tab);
+      return;
+    }
+    const tabs = Array.from(
+      tab.closest(&#x27;[role=&quot;tablist&quot;]&#x27;).querySelectorAll(&#x27;[role=&quot;tab&quot;]&#x27;),
+    ).filter((candidate) =&gt; !candidate.matches(disabled));
+    const current = tabs.indexOf(tab);
+    let next;
+    if (event.key === &quot;ArrowRight&quot; || event.key === &quot;ArrowDown&quot;) {
+      next = (current + 1) % tabs.length;
+    } else if (event.key === &quot;ArrowLeft&quot; || event.key === &quot;ArrowUp&quot;) {
+      next = (current + tabs.length - 1) % tabs.length;
+    } else if (event.key === &quot;Home&quot;) {
+      next = 0;
+    } else if (event.key === &quot;End&quot;) {
+      next = tabs.length - 1;
+    } else {
+      return;
+    }
+    event.preventDefault();
+    tabs[next].focus();
+    selectTab(tabs[next]);
+  };
+
+  for (const list of document.querySelectorAll(&#x27;.nav[role=&quot;tablist&quot;]&#x27;)) {
+    const selected =
+      list.querySelector(&#x27;[role=&quot;tab&quot;][aria-selected=&quot;true&quot;]&#x27;) ??
+      list.querySelector(&#x27;[role=&quot;tab&quot;].active&#x27;) ??
+      list.querySelector(&#x27;[role=&quot;tab&quot;]&#x27;);
+    if (selected != null) {
+      selectTab(selected);
+    }
+  }
+  document.addEventListener(&quot;click&quot;, interact);
+  document.addEventListener(&quot;keydown&quot;, interact);
+  window.addEventListener(&quot;pagehide&quot;, () =&gt; {
+    document.removeEventListener(&quot;click&quot;, interact);
+    document.removeEventListener(&quot;keydown&quot;, interact);
+  }, { once: true });
+})();
+&lt;/script&gt;
+&lt;script id=&quot;codex-visualization-carousel&quot;&gt;
+  (() =&gt; {
+    for (const root of document.querySelectorAll(&quot;.viz-carousel&quot;)) {
+      const panels = Array.from(
+        root.querySelectorAll(&quot;:scope &gt; [data-variant]&quot;),
+      );
+      if (panels.length === 0) {
+        continue;
+      }
+      root.setAttribute(&quot;role&quot;, &quot;group&quot;);
+      panels.forEach((panel, index) =&gt; {
+        panel.hidden = index !== 0;
+        panel.setAttribute(&quot;role&quot;, &quot;group&quot;);
+        if (!panel.hasAttribute(&quot;aria-label&quot;)) {
+          panel.setAttribute(&quot;aria-label&quot;, panel.dataset.variant);
+        }
+      });
+      root.dataset.activeVariant = panels[0].dataset.variant;
+      if (panels.length === 1) {
+        continue;
+      }
+
+      const controls = document.createElement(&quot;div&quot;);
+      controls.className = &quot;viz-carousel-controls&quot;;
+      // Portable copy of the settings dropdown&#x27;s legacy glyph; no 14px icon-package preset matches it.
+      // https://github.com/openai/openai/blob/master/codex/codex-apps/webview/src/icons/chevron.svg
+      controls.innerHTML = `
+      &lt;button type=&quot;button&quot; class=&quot;viz-carousel-previous cursor-interaction&quot;&gt;&lt;i data-lucide=&quot;chevron-left&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;/button&gt;
+      &lt;details class=&quot;viz-carousel-picker&quot;&gt;
+        &lt;summary class=&quot;cursor-interaction&quot;&gt;
+          &lt;span class=&quot;viz-carousel-count tabular-nums&quot;&gt;&lt;/span&gt;
+          &lt;span class=&quot;viz-carousel-name&quot;&gt;&lt;/span&gt;
+          &lt;svg class=&quot;viz-carousel-caret&quot; width=&quot;14&quot; height=&quot;14&quot; viewBox=&quot;0 0 20 21&quot; fill=&quot;none&quot; aria-hidden=&quot;true&quot; focusable=&quot;false&quot;&gt;
+            &lt;path d=&quot;M15.2793 7.71101C15.539 7.45131 15.961 7.45131 16.2207 7.71101C16.4804 7.97071 16.4804 8.39272 16.2207 8.65242L10.4707 14.4024C10.211 14.6621 9.78902 14.6621 9.52932 14.4024L3.77932 8.65242L3.69436 8.54792C3.52385 8.28979 3.55205 7.93828 3.77932 7.71101C4.00659 7.48374 4.3581 7.45554 4.61623 7.62605L4.72073 7.71101L10 12.9903L15.2793 7.71101Z&quot; fill=&quot;currentColor&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;0.6&quot; /&gt;
+          &lt;/svg&gt;
+        &lt;/summary&gt;
+        &lt;div class=&quot;viz-carousel-options&quot;&gt;&lt;/div&gt;
+      &lt;/details&gt;
+      &lt;button type=&quot;button&quot; class=&quot;viz-carousel-next cursor-interaction&quot;&gt;&lt;i data-lucide=&quot;chevron-right&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;/button&gt;`;
+      const previous = controls.querySelector(&quot;.viz-carousel-previous&quot;);
+      const next = controls.querySelector(&quot;.viz-carousel-next&quot;);
+      const picker = controls.querySelector(&quot;.viz-carousel-picker&quot;);
+      const summary = picker.querySelector(&quot;summary&quot;);
+      const count = controls.querySelector(&quot;.viz-carousel-count&quot;);
+      const name = controls.querySelector(&quot;.viz-carousel-name&quot;);
+      const options = controls.querySelector(&quot;.viz-carousel-options&quot;);
+      const status = document.createElement(&quot;span&quot;);
+      status.className = &quot;sr-only&quot;;
+      status.setAttribute(&quot;role&quot;, &quot;status&quot;);
+      status.setAttribute(&quot;aria-live&quot;, &quot;polite&quot;);
+      status.setAttribute(&quot;aria-atomic&quot;, &quot;true&quot;);
+      previous.setAttribute(
+        &quot;aria-label&quot;,
+        root.dataset.previousLabel ?? &quot;Previous variant&quot;,
+      );
+      next.setAttribute(&quot;aria-label&quot;, root.dataset.nextLabel ?? &quot;Next variant&quot;);
+
+      let active = 0;
+      let mousePointerId = null;
+      let summaryPointerHandled = false;
+      summary.addEventListener(&quot;pointerdown&quot;, (event) =&gt; {
+        summaryPointerHandled =
+          event.pointerType === &quot;mouse&quot; &amp;&amp; event.button === 0 &amp;&amp; !event.ctrlKey;
+        if (!summaryPointerHandled) {
+          return;
+        }
+        event.preventDefault();
+        summary.focus({ preventScroll: true });
+        picker.open = !picker.open;
+        mousePointerId = picker.open ? event.pointerId : null;
+      });
+      summary.addEventListener(&quot;click&quot;, (event) =&gt; {
+        if (summaryPointerHandled &amp;&amp; event.detail &gt; 0) {
+          event.preventDefault();
+        }
+      });
+      const choices = panels.map((panel, index) =&gt; {
+        const choice = document.createElement(&quot;button&quot;);
+        choice.type = &quot;button&quot;;
+        choice.className = &quot;cursor-interaction&quot;;
+        choice.textContent = panel.dataset.variant;
+        choice.addEventListener(&quot;click&quot;, () =&gt; {
+          select(index);
+          summary.focus();
+        });
+        choice.addEventListener(&quot;pointerup&quot;, (event) =&gt; {
+          if (
+            picker.open &amp;&amp;
+            event.pointerType === &quot;mouse&quot; &amp;&amp;
+            event.button === 0 &amp;&amp;
+            event.pointerId === mousePointerId
+          ) {
+            choice.click();
+          }
+        });
+        options.appendChild(choice);
+        return choice;
+      });
+      const select = (index) =&gt; {
+        const changed = active !== index;
+        active = index;
+        panels.forEach((panel, position) =&gt; {
+          panel.hidden = position !== active;
+          choices[position].setAttribute(
+            &quot;aria-current&quot;,
+            String(position === active),
+          );
+        });
+        root.dataset.activeVariant = panels[active].dataset.variant;
+        count.textContent = `${active + 1} / ${panels.length}`;
+        name.textContent = panels[active].dataset.variant;
+        picker.open = false;
+        mousePointerId = null;
+        if (changed) {
+          status.textContent = `${count.textContent}: ${name.textContent}`;
+        }
+      };
+      previous.addEventListener(&quot;click&quot;, () =&gt;
+        select((active + panels.length - 1) % panels.length),
+      );
+      next.addEventListener(&quot;click&quot;, () =&gt;
+        select((active + 1) % panels.length),
+      );
+      picker.addEventListener(&quot;keydown&quot;, (event) =&gt; {
+        if (event.key === &quot;Escape&quot; &amp;&amp; picker.open) {
+          event.preventDefault();
+          picker.open = false;
+          mousePointerId = null;
+          summary.focus();
+          return;
+        }
+        if (event.altKey || event.ctrlKey || event.metaKey) {
+          return;
+        }
+        const index = choices.indexOf(document.activeElement);
+        let nextIndex;
+        if (event.key === &quot;ArrowDown&quot;) {
+          nextIndex = index &lt; 0 ? active : (index + 1) % choices.length;
+        } else if (event.key === &quot;ArrowUp&quot;) {
+          nextIndex = index &lt; 0 ? active : (index + choices.length - 1) % choices.length;
+        } else if (picker.open &amp;&amp; event.key === &quot;Home&quot;) {
+          nextIndex = 0;
+        } else if (picker.open &amp;&amp; event.key === &quot;End&quot;) {
+          nextIndex = choices.length - 1;
+        } else {
+          return;
+        }
+        event.preventDefault();
+        picker.open = true;
+        choices[nextIndex].focus();
+      });
+      picker.addEventListener(&quot;focusout&quot;, (event) =&gt; {
+        if (!picker.contains(event.relatedTarget)) {
+          picker.open = false;
+          mousePointerId = null;
+        }
+      });
+      const dismiss = (event) =&gt; {
+        if (!summary.contains(event.target)) {
+          mousePointerId = null;
+        }
+        if (!picker.contains(event.target)) {
+          picker.open = false;
+        }
+      };
+      const endPointerSelection = () =&gt; {
+        mousePointerId = null;
+      };
+      const sizePicker = () =&gt; {
+        root.style.setProperty(
+          &quot;--viz-carousel-picker-height&quot;,
+          `${picker.open ? options.offsetHeight : 0}px`,
+        );
+      };
+      picker.addEventListener(&quot;toggle&quot;, sizePicker);
+      window.addEventListener(&quot;resize&quot;, sizePicker);
+      document.addEventListener(&quot;pointerdown&quot;, dismiss);
+      document.addEventListener(&quot;pointerup&quot;, endPointerSelection);
+      document.addEventListener(&quot;pointercancel&quot;, endPointerSelection);
+      window.addEventListener(&quot;blur&quot;, endPointerSelection);
+      window.addEventListener(
+        &quot;pagehide&quot;,
+        () =&gt; {
+          document.removeEventListener(&quot;pointerdown&quot;, dismiss);
+          document.removeEventListener(&quot;pointerup&quot;, endPointerSelection);
+          document.removeEventListener(&quot;pointercancel&quot;, endPointerSelection);
+          window.removeEventListener(&quot;blur&quot;, endPointerSelection);
+          window.removeEventListener(&quot;resize&quot;, sizePicker);
+        },
+        { once: true },
+      );
+      root.append(controls, status);
+      select(0);
+    }
+  })();
+&lt;/script&gt;
+&lt;script id=&quot;codex-visualization-lucide&quot; async src=&quot;https://unpkg.com/lucide@1.17.0/dist/umd/lucide.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+(() =&gt; {
+  const initialize = () =&gt; {
+    globalThis.lucide?.createIcons({ attrs: { width: 16, height: 16 } });
+  };
+  if (globalThis.lucide != null) {
+    initialize();
+    return;
+  }
+  document
+    .getElementById(&quot;codex-visualization-lucide&quot;)
+    ?.addEventListener(&quot;load&quot;, initialize, { once: true });
+})();
+&lt;/script&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;
+"></iframe>
+
+<script>(() => {
+  const frame = document.getElementById("codex-visualization");
+  if (!(frame instanceof HTMLIFrameElement)) {
+    return;
+  }
+  const isShare = document.documentElement.classList.contains(
+    "visualization-share-root",
+  );
+  let viewportHeight = globalThis.innerHeight;
+  let sizeFingerprint = null;
+  let sizeWriteTimeout;
+  let lastSize = null;
+  let pendingSize = null;
+  const storageKey = `codex:visualization-widget-state-v2:${JSON.stringify([
+    globalThis.location.pathname,
+    globalThis.location.search,
+  ])}`;
+  const sizeStorageKey = `${storageKey}:share-size-v1`;
+  const parseState = (serializedState) => {
+    if (
+      typeof serializedState !== "string" ||
+      new TextEncoder().encode(serializedState).length > 16 * 1024
+    ) {
+      throw new TypeError(
+        "Widget state must be a JSON object of at most 16 KiB",
+      );
+    }
+    /** @type {unknown} */
+    const state = JSON.parse(serializedState);
+    if (
+      state == null ||
+      typeof state !== "object" ||
+      Array.isArray(state) ||
+      ("imageIds" in state &&
+        (!Array.isArray(state.imageIds) || state.imageIds.length > 0))
+    ) {
+      throw new TypeError("Widget state must be a JSON object");
+    }
+    const storedState = { modelContent: null, privateContent: null, ...state };
+    const canonicalState = JSON.stringify(
+      storedState,
+      (_key, /** @type {unknown} */ value) => {
+        if (typeof value === "number" && !Number.isFinite(value)) {
+          throw new TypeError("Widget state must contain finite numbers");
+        }
+        return value;
+      },
+    );
+    if (new TextEncoder().encode(canonicalState).length > 16 * 1024) {
+      throw new TypeError(
+        "Widget state must be a JSON object of at most 16 KiB",
+      );
+    }
+    return storedState;
+  };
+  let storage = null;
+  let state = null;
+  try {
+    const localStorage = globalThis.localStorage;
+    const probeKey = `${storageKey}:probe`;
+    localStorage.setItem(probeKey, "1");
+    localStorage.removeItem(probeKey);
+    storage = localStorage;
+    const savedState = storage.getItem(storageKey);
+    if (savedState != null) {
+      try {
+        state = parseState(savedState);
+      } catch {
+        // Invalid saved state does not disable future writes.
+      }
+    }
+  } catch {
+    storage = null;
+  }
+  const persistSize = () => {
+    globalThis.clearTimeout(sizeWriteTimeout);
+    if (pendingSize == null) {
+      return;
+    }
+    try {
+      storage?.setItem(sizeStorageKey, pendingSize);
+    } catch {
+      // A denied or full cache must not affect the visualization.
+    }
+    pendingSize = null;
+  };
+  if (isShare) {
+    globalThis.addEventListener("pagehide", persistSize);
+  }
+  const initialGlobals = {
+    widgetState: state,
+    statePersistence: storage == null ? "none" : "local",
+  };
+
+  const channel = new MessageChannel();
+  channel.port1.addEventListener("message", (event) => {
+    const data = event.data;
+    if (typeof data !== "object" || data == null) {
+      return;
+    }
+    if (data.type === "widget-state-write") {
+      if (!Number.isSafeInteger(data.id) || data.id <= 0) {
+        return;
+      }
+      let ok = false;
+      try {
+        if (storage != null) {
+          const state = parseState(data.state);
+          storage.setItem(storageKey, JSON.stringify(state));
+          ok = true;
+        }
+      } catch {
+        // Storage denial, quota limits, and invalid state return a failed receipt.
+      }
+      channel.port1.postMessage({
+        type: "widget-state-result",
+        id: data.id,
+        ok,
+      });
+      return;
+    }
+    if (data.type === "height") {
+      const height = data.height;
+      if (
+        typeof height !== "number" ||
+        !Number.isFinite(height) ||
+        height < 0
+      ) {
+        return;
+      }
+      if (height <= 10_000) {
+        const width = isShare && storage != null ? frame.clientWidth : null;
+        frame.style.height = Math.ceil(height) + "px";
+        if (isShare && storage != null) {
+          const size = JSON.stringify({
+            fingerprint: sizeFingerprint,
+            width,
+            viewportHeight: globalThis.innerHeight,
+            dark: globalThis.matchMedia("(prefers-color-scheme: dark)").matches,
+            scale: globalThis.devicePixelRatio,
+            height: Math.ceil(height),
+          });
+          if (size !== lastSize) {
+            lastSize = size;
+            pendingSize = size;
+            globalThis.clearTimeout(sizeWriteTimeout);
+            sizeWriteTimeout = globalThis.setTimeout(persistSize, 100);
+          }
+        }
+      }
+      if (isShare) {
+        // Keep unusually tall content accessible without accepting an unbounded height.
+        if (height > 10_000 && Number.parseFloat(frame.style.height) === 0) {
+          frame.style.removeProperty("height");
+        }
+        frame.scrolling = height > 10_000 ? "auto" : "no";
+        document.documentElement.classList.add("visualization-share-ready");
+      }
+      return;
+    }
+    if (data.type === "scroll-to") {
+      const top = data.top;
+      if (
+        typeof top === "number" &&
+        Number.isFinite(top) &&
+        top >= 0 &&
+        globalThis.navigator.userActivation?.isActive === true
+      ) {
+        globalThis.scrollTo({
+          top: Math.ceil(
+            globalThis.scrollY + frame.getBoundingClientRect().top + top,
+          ),
+        });
+      }
+      return;
+    }
+    if (data.type === "open-external") {
+      const rawHref = data.href;
+      if (typeof rawHref !== "string") {
+        return;
+      }
+      let href;
+      try {
+        const url = new URL(rawHref, document.baseURI);
+        if (url.protocol !== "https:") {
+          return;
+        }
+        href = url.href;
+      } catch {
+        return;
+      }
+      if (globalThis.navigator.userActivation?.isActive === true) {
+        const anchor = document.createElement("a");
+        anchor.href = href;
+        anchor.rel = "noopener noreferrer";
+        anchor.target = "_blank";
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+      }
+      return;
+    }
+    if (data.type === "follow-up") {
+      const prompt = data.prompt;
+      if (
+        typeof prompt !== "string" ||
+        globalThis.navigator.userActivation?.isActive !== true
+      ) {
+        return;
+      }
+      const title = data.title;
+      globalThis.prompt(typeof title === "string" ? title : prompt, prompt);
+    }
+  });
+  channel.port1.start();
+  const srcdoc = frame.dataset.srcdoc;
+  if (srcdoc == null) {
+    return;
+  }
+  globalThis.addEventListener("resize", () => {
+    const height = Number.parseFloat(frame.style.height);
+    if (!isShare && (!Number.isFinite(height) || height <= viewportHeight)) {
+      frame.style.removeProperty("height");
+    }
+    viewportHeight = globalThis.innerHeight;
+    channel.port1.postMessage({ type: "measure" });
+  });
+  frame.addEventListener(
+    "load",
+    () => {
+      frame.contentWindow?.postMessage(
+        { type: "codex-visualization-initialize" },
+        "*",
+        [channel.port2],
+      );
+    },
+    { once: true },
+  );
+  // Match the trusted bootstrap element, not the same text in an authored title.
+  const frameHtml = srcdoc.replace(
+    '<script type="application/json" id="codex-visualization-widget-state">__CODEX_VISUALIZATION_WIDGET_STATE__<\/script>',
+    () =>
+      '<script type="application/json" id="codex-visualization-widget-state">' +
+      JSON.stringify(initialGlobals).replaceAll("<", "\\u003c") +
+      "<\/script>",
+  );
+  if (isShare && storage != null) {
+    // Fingerprint the rendered document, including restored widget state, without
+    // storing its content. This is a layout cache, not a security identity.
+    let hash = 5381;
+    for (let index = 0; index < frameHtml.length; index += 1) {
+      hash = (hash * 33 + frameHtml.charCodeAt(index)) % 4_294_967_296;
+    }
+    sizeFingerprint = hash.toString(36);
+    try {
+      const size = JSON.parse(storage.getItem(sizeStorageKey) ?? "null");
+      if (
+        size?.fingerprint === sizeFingerprint &&
+        size.width === frame.clientWidth &&
+        size.viewportHeight === globalThis.innerHeight &&
+        size.dark ===
+          globalThis.matchMedia("(prefers-color-scheme: dark)").matches &&
+        size.scale === globalThis.devicePixelRatio &&
+        typeof size.height === "number" &&
+        Number.isFinite(size.height) &&
+        size.height >= 0 &&
+        size.height <= 10_000
+      ) {
+        frame.style.height = size.height + "px";
+      }
+    } catch {
+      // Ignore missing or invalid cache entries and measure the live frame.
+    }
+  }
+  frame.srcdoc = frameHtml;
+  delete frame.dataset.srcdoc;
+})();
+</script>
+</body>
+</html>

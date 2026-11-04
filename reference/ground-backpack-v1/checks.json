@@ -1,0 +1,46 @@
+{
+  "status": "automated-checks-passed-not-user-art-approval",
+  "origin": "http://127.0.0.1:8036",
+  "board": {
+    "tileWidth": 144,
+    "tileHeight": 101.82337649086284,
+    "playerBaseWidth": 57.5,
+    "bagBodyWidth": 32,
+    "bagBoundsWidth": 1018,
+    "scale": 0.04426002766251729
+  },
+  "map": {
+    "map": "M0_Base_Inside_lv_1",
+    "player": {
+      "mapId": "M0_Base_Inside_lv_1",
+      "x": 9,
+      "y": 12
+    },
+    "bag": {
+      "x": 10,
+      "y": 12,
+      "sameCellOffsetAt144": [
+        0,
+        0
+      ]
+    },
+    "tileWidth": 142.8355697996826,
+    "playerScale": 1.25,
+    "bagBodyWidth": 31.741237733262796,
+    "source": "assets/map/isometric/ground-backpack-v1/closed.png"
+  },
+  "alpha": {
+    "width": 1312,
+    "height": 1199,
+    "transparent": 888144,
+    "opaque": 690,
+    "partial": 684254,
+    "bounds": [
+      235,
+      69,
+      1253,
+      1105
+    ]
+  },
+  "errors": []
+}

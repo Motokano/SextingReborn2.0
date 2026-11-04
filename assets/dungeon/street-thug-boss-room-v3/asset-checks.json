@@ -1,0 +1,104 @@
+[
+  {
+    "file": "factory-desk.png",
+    "size": [
+      1536,
+      1024
+    ],
+    "mode": "RGBA",
+    "body_bbox": [
+      197,
+      11,
+      1459,
+      1000
+    ],
+    "transparent_pixels": 898434,
+    "near_opaque_pixels": 638072,
+    "sha256": "47bc9314d77d5d128e669b47aa303ddb7a78bda32337e7be1bdc2f899256408e"
+  },
+  {
+    "file": "metal-sideboard.png",
+    "size": [
+      1424,
+      1105
+    ],
+    "mode": "RGBA",
+    "body_bbox": [
+      100,
+      115,
+      1346,
+      1085
+    ],
+    "transparent_pixels": 805934,
+    "near_opaque_pixels": 749910,
+    "sha256": "955f879d46d98d8f098ff8d9941d347463caaba72656ff754507af576b28e8e7"
+  },
+  {
+    "file": "steel-cot.png",
+    "size": [
+      1536,
+      1024
+    ],
+    "mode": "RGBA",
+    "body_bbox": [
+      218,
+      10,
+      1338,
+      1002
+    ],
+    "transparent_pixels": 921244,
+    "near_opaque_pixels": 624548,
+    "sha256": "6826f74836edf58d5945ce529cf5bf8a93bb8b83e80c3c058b02dca763c63cb0"
+  },
+  {
+    "file": "transit-rack.png",
+    "size": [
+      1536,
+      1024
+    ],
+    "mode": "RGBA",
+    "body_bbox": [
+      92,
+      26,
+      1467,
+      1010
+    ],
+    "transparent_pixels": 760643,
+    "near_opaque_pixels": 796468,
+    "sha256": "5a374d2483a5626a76898d5a5a1d0ab5d341e55529b2fe3a6e75682c1211d3d5"
+  },
+  {
+    "file": "vinyl-armchair.png",
+    "size": [
+      1293,
+      1216
+    ],
+    "mode": "RGBA",
+    "body_bbox": [
+      212,
+      48,
+      1132,
+      1164
+    ],
+    "transparent_pixels": 961051,
+    "near_opaque_pixels": 593121,
+    "sha256": "d1cbd18aab09f2782f8c7cda83f9dc77f52cc0bd1c36e8d1bd3e0e8a7f9bc816"
+  },
+  {
+    "file": "broken-fan.png",
+    "size": [
+      1293,
+      1216
+    ],
+    "mode": "RGBA",
+    "body_bbox": [
+      162,
+      103,
+      1187,
+      1052
+    ],
+    "transparent_pixels": 940741,
+    "near_opaque_pixels": 617106,
+    "sha256": "b71ad7d0be3d7dffe324042e6b95fec21d4e2b52cc2d5f49250d1795ff1e4293"
+  }
+]

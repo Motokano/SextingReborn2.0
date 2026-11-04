@@ -1,0 +1,26 @@
+[
+  {
+    "file": "drinking-table.png",
+    "sha256": "663bcff5471b5a6e0d10d2804c4cbde1124c734299b9147c2fe1ffbd7d9f7972",
+    "original_matches": true
+  },
+  {
+    "file": "sleeping-nook.png",
+    "sha256": "1cd1594cc4ff3363917881719d158674a8f3ffe57ea766f9783f094b2148ec88",
+    "original_matches": true
+  },
+  {
+    "file": "serving-sideboard.png",
+    "sha256": "f8d4559f0325b10c7c17565851a448a295204d10fc357e6d00ae2bc40a5ef23c",
+    "original_matches": true
+  },
+  {
+    "ground_axes": "3 / 3 mapped to +/-1/sqrt(2)",
+    "widths": [
+      158,
+      170,
+      112
+    ],
+    "preview_only": true
+  }
+]

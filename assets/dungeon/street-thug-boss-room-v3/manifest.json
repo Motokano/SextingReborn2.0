@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "status": "old-factory-duty-room-art-preview",
+  "date": "2026-10-29",
+  "referenceTileWidth": 144,
+  "note": "Standalone art proposal. Mixed surviving industrial and household furniture fits the existing story. No runtime room, collision, loot, recovery or electricity changes.",
+  "props": [
+    {"id":"dining","name":"钢架收账桌","src":"factory-desk.png","crop":[189,3,1278,1005],"anchor":[800,740],"width":118,"groundSlopes":[0.50,-0.60],"detail":"贴面桌板、钢架抽屉、账本与玻璃酒瓶；两把不同来路的凳子围在桌边。"},
+    {"id":"sleeping","name":"帘后铁架床","src":"steel-cot.png","crop":[210,2,1136,1008],"anchor":[790,804],"width":144,"groundSlopes":[0.51,-0.58],"detail":"钢管床、蓝色薄被、搭着的拉链外套和橡胶拖鞋，留下过夜的痕迹。"},
+    {"id":"sideboard","name":"茶水洗漱铁柜","src":"metal-sideboard.png","crop":[92,107,1262,986],"anchor":[745,828],"width":90,"groundSlopes":[0.50,-0.63],"detail":"塑料脸盆、暖水瓶、铁皮水壶和水桶；小电池工作灯只照亮这一角。"},
+    {"id":"chair","name":"旧人造革扶手椅","src":"vinyl-armchair.png","crop":[204,40,936,1132],"anchor":[682,978],"width":54,"groundSlopes":[0.54,-0.73],"detail":"磨裂的酒红色人造革、灰色钢架和胶带补角，被头目留作自己的座位。"},
+    {"id":"cargo","name":"门边周转货架","src":"transit-rack.png","crop":[84,18,1391,1000],"anchor":[780,805],"width":124,"groundSlopes":[0.48,-0.55],"detail":"角钢货架上压着塑料周转筐、纸箱和捆带；它们只作房间布景。"}
+  ],
+  "reuse": {
+    "fan":{"id":"fan","name":"停转的旧电扇","src":"assets/dungeon/outpost-decor-v1/broken-fan.png","crop":[154,95,1041,965],"anchor":[770,985],"width":42,"groundSlopes":[0.43,-0.74]}
+  },
+  "room":{"width":7,"depth":8,"clearArea":[1,2,5,5],"searchableContainers":2,"bosses":1},
+  "registrationNote":"Ground axes estimated from straight furniture edges for a vertical-preserving affine registration applied once. Display crops and anchors do not modify original PNG pixels. Art-preview positions are not runtime occupancy.",
+  "loreReferences":["docs/design/30-story-outline-blackout.md","docs/design/45-battery-economy.md","docs/design/city-guangzhou-working-notes.md"]
+}
