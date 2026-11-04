@@ -16,6 +16,7 @@
     var musclesByGroup = {};
     var muscleById = {};
     var unlocked = {};
+    var progress = {};
     var passives = [];
     var passiveById = {};
     /** 肌群槽装配表：groupId → passiveId（同肌群 1 槽，见 34 §2.4/§3.2） */
@@ -138,7 +139,7 @@
             useFallbackData();
             return;
         }
-        fetch('data/muscles.json', { cache: 'no-cache' })
+        return fetch('data/muscles.json', { cache: 'no-cache' })
             .then(function (resp) {
                 if (!resp.ok) throw new Error('failed to load');
                 return resp.json();
@@ -163,7 +164,7 @@
             });
     }
 
-    loadFromJson();
+    var ready = loadFromJson();
 
     /** 汇总已解锁肌肉的效果：{ maxQi, acquired: {jingu,flexibility,breath,dexterity,focus} }（focus 恒为 0，见 34 §2.3） */
     function computeStatBonus() {
@@ -271,6 +272,7 @@
     }
 
     var Muscles = {
+        ready: ready,
         getGroups: function () { return groups.slice(); },
         getMusclesByGroup: function (groupId) { return (musclesByGroup[groupId] || []).slice(); },
         getMuscleById: function (id) { return muscleById[id] || null; },
@@ -283,11 +285,18 @@
             unlocked[muscleId] = true;
             return { ok: true, reason: null };
         },
+        getProgress: function(id) { return unlocked[id] ? 100 : progress[id] || 0; },
+        addGrowth: function(id, amount) {
+            if(!muscleById[id] || !Number.isFinite(amount) || amount < 0) throw Error('Invalid muscle growth');
+            var before=Muscles.getProgress(id),after=Math.min(100,Math.round((before+amount)*1000000)/1000000);
+            progress[id]=after;var lit=before<100&&after===100&&Muscles.unlock(id).ok;
+            return {id:id,before:before,after:after,gain:after-before,lit:lit};
+        },
         getUnlockedIds: function () { return Object.keys(unlocked); },
         getStatBonus: function () { return computeStatBonus(); },
         /** 存档快照：解锁记录 + 肌群槽被动装配（数据表由 data/muscles.json 提供，不入档） */
         getState: function () {
-            return { unlocked: unlocked, equipped: equipped };
+            return { unlocked: Object.assign({},unlocked), equipped: Object.assign({},equipped), progress: Object.assign({},progress) };
         },
         /** 从存档恢复解锁/装配记录；数据表可能尚未加载完成，效果由下一次重算 / muscles:data-loaded 事件收敛 */
         setState: function (state) {
@@ -304,6 +313,8 @@
                 });
             }
             unlocked = nextUnlocked;
+            progress={};
+            Object.keys(state.progress||{}).forEach(function(id){var n=state.progress[id];if(Number.isFinite(n)&&n>=0)progress[id]=Math.min(100,n);});
             var nextEquipped = {};
             var eq = state.equipped;
             // 注意：此处不过滤 passiveById —— 数据表可能尚未加载完成；未知 id 留到读取时（getEquippedPassiveIds）再剔除

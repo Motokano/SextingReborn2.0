@@ -583,6 +583,8 @@
             weather: global.Weather && global.Weather.getState(),
             dungeon: global.DungeonRuntime ? global.DungeonRuntime.getState() : null,
             death: global.DeathSystem ? global.DeathSystem.getState() : null,
+            bed_sleep: global.BedSleep ? global.BedSleep.getState() : null,
+            gym: global.GymSystem ? global.GymSystem.getState() : null,
             manufacturing_knowledge: global.ManufacturingKnowledge ? global.ManufacturingKnowledge.getState() : null,
             combat_enemies: global.CombatEnemies && global.CombatEnemies.getState ? global.CombatEnemies.getState() : null,
             player: {
@@ -611,7 +613,9 @@
 
     function applySnapshot(snapshot, options) {
         var M = global.CombatMetaSkills;
+        if (global.GymSystem && !global.GymSystem.validate(snapshot && snapshot.gym)) return false;
         if (global.DeathSystem && !global.DeathSystem.validate(snapshot && snapshot.death)) return false;
+        if (global.BedSleep && !global.BedSleep.validate(snapshot && snapshot.bed_sleep)) return false;
         if (M && !M.validate(snapshot && snapshot.metaskills)) return false;
         if (M) M.beginRestore();
         snapshotRestoreDepth++;
@@ -619,6 +623,8 @@
             var applied = applySnapshotContents(snapshot, options);
             if (applied && M) M.setState(snapshot.metaskills || null);
             if (applied && global.DeathSystem) global.DeathSystem.restore(snapshot.death || null);
+            if (applied && global.GymSystem) global.GymSystem.restore(snapshot.gym || null, !!(options && options.rollback));
+            if (applied && global.BedSleep) global.BedSleep.restore(snapshot.bed_sleep || null, !!(options && options.rollback));
             return applied;
         } finally { snapshotRestoreDepth--; if (M) M.endRestore(); }
     }

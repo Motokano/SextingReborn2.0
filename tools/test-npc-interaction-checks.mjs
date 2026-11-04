@@ -84,6 +84,11 @@ test('real scene entry opens exempt facilities, blocks ordinary NPCs, and retain
     for (const def of facilities) {
       assert.deepEqual(def.interactionChecks, { thirst: false, dirtyness: false }, def.id);
       g.GameEngine.setState(def.location.sceneId, def.location.x, def.location.y + 1);
+      if(def.gymStation){
+        const {x,y}=def.location,[w,h]=def.gymStation.footprint,candidates=[];
+        for(let dy=0;dy<h;dy++)for(let dx=0;dx<w;dx++)for(const [ax,ay] of [[1,0],[-1,0],[0,1],[0,-1]])candidates.push({x:x+dx+ax,y:y+dy+ay});
+        const p=candidates.find(p=>g.GameEngine.isWalkable(p.x,p.y));assert.ok(p,def.id+' accessible');g.GameEngine.setState(def.location.sceneId,p.x,p.y);
+      }
       g.Survival.setState({ thirst: 0, dirtyness: 100 });
       g.SceneCtx.actions.interactNpc(def.id);
       await h.drain();

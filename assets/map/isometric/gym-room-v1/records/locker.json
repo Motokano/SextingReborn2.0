@@ -1,0 +1,15 @@
+{
+  "id": "locker",
+  "file": "assets/map/isometric/gym-room-v1/locker.png",
+  "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a19ed0-9c8b-7de3-a1fe-c84088bef24a\\exec-8b935de4-16ed-4c5f-ab24-be8605ac264b.png",
+  "tool": "built-in image_gen",
+  "prompt": "Use case: stylized-concept. Production game environment sprite following the three approved style references, strong dark variable-weight outlines, hand painted broad light/shadow planes, warm muted industrial colors, small purposeful wear, light from upper left. Not photorealistic, not PBR, not plastic 3D, not a flat vector icon. Reference image 1 is character rendering style ONLY (do not include the person or circular base). Image 2 is approved furniture material style ONLY (no circular base). Image 3 is approved scene furniture style. Image 4 is the object's exact geometric camera/size template: ground axes slope +0.7071 and -0.7071, upright verticals, parallel orthographic lines, no vanishing point. Image 5 is ONLY mood/layout inspiration from a makeshift underground gym, do not copy its photography or logos. Single isolated subject, fully inside canvas with margin, true alpha transparency around it, no background, no cast shadow, no floor, no pedestal, no grid, no text labels. Match geometry template camera and aspect before adding detail.\nSubject: A salvaged narrow double-door steel locker, desaturated dark blue-green paint, ventilation slots, two small plain latches, a few dents and pale worn edges, one folded ochre towel and small canvas pouch on top. It stands on four short feet. Floor footprint .85 by .65 cells, steel box top95px and total top106px at144px tile. Practical domestic sports equipment storage. Doors shut. No logos.",
+  "references": [
+    "reference/street-thugs-v1/tier-1.png",
+    "assets/map/isometric/interactive-devices-v1/toolbench.png",
+    "assets/dungeon/street-thug-boss-room-v6/transit-rack.png",
+    "reference/gym-room-v1/locker-geometry.png",
+    "reference/gym-room-v1/tarkov-gym-reference.jpg"
+  ],
+  "transparent": true
+}

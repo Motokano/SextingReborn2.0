@@ -1,0 +1,16 @@
+{
+  "key": "neck",
+  "level": 1,
+  "revision": 2,
+  "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a19ed0-9c8b-7de3-a1fe-c84088bef24a\\exec-6c06eb24-bf04-4628-9fc8-c26ed5775ca5.png",
+  "file": "assets/map/isometric/gym-facilities-v1/neck-1-real-camera.png",
+  "mode": "built-in image_gen",
+  "prompt": "Edit the FIRST PNG. Keep this exact recognizable real fitness machine design, parts, functional connections, material colors and thin steel construction. Change ONLY its native drawn CAMERA to match the SECOND geometry template. Orthographic elevated view: camera elevation 45 degrees above ground, yaw45 degrees; rectangular ground rails must run along screen vectors (1, +0.7071) and (-1,+0.7071), not the current shallow product-photography perspective. Vertical uprights exactly vertical. Align ground corner feet to the corresponding geometry-template corners; seat plane matches guide surface. Redraw from this steeper elevated camera, do NOT stretch or skew the raster. Reference3 is outline/paint style only, reference4/5 are approved furniture material style only. Bold dark contour, hand-painted planes, upper-left light, desaturated blue-gray steel and olive pads. One whole object, no labels/logos/person/template markings, no floor or platform or cast shadow. True transparent PNG, generous transparent margin. Preserve open press pad and real pivots on neck machine OR actual thigh/ankle rollers and movable loading lever on leg machine. No fantasy additions.",
+  "references": [
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/map/isometric/gym-facilities-v1/neck-1-real.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/gym-facilities-v1/neck-geometry.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/street-thugs-v1/tier-1.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/map/isometric/interactive-devices-v1/toolbench.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/street-thug-boss-room-v6/transit-rack.png"
+  ]
+}

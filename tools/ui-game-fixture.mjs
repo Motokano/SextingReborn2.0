@@ -7,7 +7,7 @@ const scripts = [...source.matchAll(/<script\s+src="([^"]+)"[^>]*>/g)].map(x => 
 const html = source.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '').replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, '');
 const settle = () => new Promise(resolve => setTimeout(resolve, 0));
 
-export async function boot(full, { storage = {} } = {}) {
+export async function boot(full, { storage = {}, beforeScripts } = {}) {
   const errors = [], pending = new Set(), vc = new VirtualConsole();
   vc.on('jsdomError', e => errors.push(String(e.stack)));
   vc.on('error', (...args) => errors.push(args.map(String).join(' ')));
@@ -36,7 +36,13 @@ export async function boot(full, { storage = {} } = {}) {
   };
   async function drain() { for (let i = 0; i < 6; i++) { await Promise.allSettled([...pending]); await settle(); } }
   try {
-    for (const file of scripts) g.eval(fs.readFileSync(file, 'utf8') + '\n//# sourceURL=' + file);
+    if (beforeScripts) beforeScripts(g);
+    for (const file of scripts) {
+      // JSDOM cannot decode raster art or import browser modules. Gameplay and
+      // persistence run here; the production artwork is checked in-browser.
+      if (file === 'js/gym-scene.js') { g.GymSceneArt={ready:Promise.resolve(),objects:()=>[]}; continue; }
+      g.eval(fs.readFileSync(file, 'utf8') + '\n//# sourceURL=' + file);
+    }
     await settle(); await g.AppBoot.ready; await drain();
     assert.deepEqual(errors, [], 'fresh game initializes without runtime errors');
   } catch (e) { g.SvelteCombat?.dispose(); g.SvelteInteractions?.dispose(); g.SvelteHUD?.dispose(); dom.window.close(); throw e; }

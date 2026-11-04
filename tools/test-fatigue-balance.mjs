@@ -84,9 +84,9 @@ assert.equal(Survival.getFatigue(), 1.025, 'direct effects must preserve accumul
 Survival.changeFatigue(-1);
 assert.equal(Survival.getFatigue(), 0.025);
 Survival.clearFatigue();
-assert.equal(Survival.getFatigue(), 0, 'sleep clears fractional fatigue too');
+assert.equal(Survival.getFatigue(), 0, 'explicit clearing API clears fractional fatigue too');
 Survival.consumeStamina(config.move_stamina_base, { raw: true, source: 'movement' });
-assert.equal(Survival.getFatigue(), 0.025, 'no pre-sleep remainder survives');
+assert.equal(Survival.getFatigue(), 0.025, 'no pre-clear remainder survives');
 Survival.setState({ stamina: 0.1, fatigue: 0 });
 Survival.consumeStamina(10, { raw: true });
 assert.equal(Survival.getFatigue(), 0.01, 'charge only stamina actually spent');

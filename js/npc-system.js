@@ -998,11 +998,26 @@
                 return;
             }
             if (global.DungeonCheckpoint && global.DungeonCheckpoint.isKeeper(npcId)) { global.DungeonCheckpoint.open(def); return; }
-            var isFacility = !!def.bathroom;
+            var isFacility = !!def.bathroom || !!def.gymStation;
             menuState = { open: true, title: def.displayTitle || def.name || 'NPC', compact: isFacility, hint: isFacility ? '' : tUi('npc.menu.close_hint', '需要靠近才能操作。'), buttons: [] };
             function addButton(button) { menuState.buttons.push(button); publishMenu(); }
             function mkBtn(text, onClick, icon) { return { text: text, run: onClick, disabled: false, icon: isFacility ? (icon || 'point') : '' }; }
             function hint(text) { if (epoch !== menuEpoch) return; menuState.hint = text; publishMenu(); }
+
+            if (def.gymStation) {
+                var gym = global.GymFacility;
+                if (!gym || !gym.isAt(def)) { closeMenu(); return; }
+                gym.actions(def).forEach(function (entry) {
+                    var button = mkBtn(entry.text, function () {
+                        if (epoch !== menuEpoch || !sameLocation() || !gym.isAt(def)) return;
+                        if (gym.open(def, entry.id)) closeMenu();
+                    }, entry.icon);
+                    button.disabled = entry.disabled;
+                    menuState.buttons.push(button);
+                });
+                publishMenu();
+                return;
+            }
 
             if (def.bathroom && global.BathroomFacility) {
                 var bathroom = global.BathroomFacility;

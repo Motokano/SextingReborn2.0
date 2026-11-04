@@ -1,0 +1,15 @@
+{
+  "id": "crate",
+  "file": "assets/map/isometric/gym-room-v1/crate.png",
+  "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a19ed0-9c8b-7de3-a1fe-c84088bef24a\\exec-de3c0afd-62f9-413a-9af1-5889dc4ab936.png",
+  "tool": "built-in image_gen",
+  "prompt": "Use case: stylized-concept. Production game environment sprite following the three approved style references, strong dark variable-weight outlines, hand painted broad light/shadow planes, warm muted industrial colors, small purposeful wear, light from upper left. Not photorealistic, not PBR, not plastic 3D, not a flat vector icon. Reference image 1 is character rendering style ONLY (do not include the person or circular base). Image 2 is approved furniture material style ONLY (no circular base). Image 3 is approved scene furniture style. Image 4 is the object's exact geometric camera/size template: ground axes slope +0.7071 and -0.7071, upright verticals, parallel orthographic lines, no vanishing point. Image 5 is ONLY mood/layout inspiration from a makeshift underground gym, do not copy its photography or logos. Single isolated subject, fully inside canvas with margin, true alpha transparency around it, no background, no cast shadow, no floor, no pedestal, no grid, no text labels. Match geometry template camera and aspect before adding detail.\nSubject: A low open wooden supply crate containing one battered metal tool box, chalk tin, two small rolls of cloth wrap and a few ordinary tools arranged usefully. Footprint .75 by .65 cells, crate top25px, contents top38px at144px tile. No weapons, no extra scattered floor items, no display base.",
+  "references": [
+    "reference/street-thugs-v1/tier-1.png",
+    "assets/map/isometric/interactive-devices-v1/toolbench.png",
+    "assets/dungeon/street-thug-boss-room-v6/transit-rack.png",
+    "reference/gym-room-v1/crate-geometry.png",
+    "reference/gym-room-v1/tarkov-gym-reference.jpg"
+  ],
+  "transparent": true
+}

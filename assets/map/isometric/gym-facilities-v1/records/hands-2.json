@@ -1,0 +1,16 @@
+{
+  "key": "hands",
+  "level": 2,
+  "revision": 2,
+  "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a19ed0-9c8b-7de3-a1fe-c84088bef24a\\exec-e88e2224-caa7-468a-8d0e-cabad0b0570d.png",
+  "file": "assets/map/isometric/gym-facilities-v1/hands-2-real.png",
+  "mode": "built-in image_gen",
+  "prompt": "Edit FIRST PNG into LEVEL 2. Preserve camera, flat kit footprint, scale and position. Second image geometry-only; last three approved references maintain outlined hand-painted style, never copy display bases/person. Ordinary real hand exercise tools, as previous real-reference base. Transparent background, no floor/shadows/text/person. No mechanical metallic finger arms, only normal torsion grippers and soft elastic accessories.\nKeep original gripper/ring/putty and rectangular kit footprint. Add a second ordinary metal torsion-spring gripper with thicker spring for higher resistance, as in reference photo. Two independent tools, not mechanically linked.",
+  "references": [
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/map/isometric/gym-facilities-v1/hands-1-real.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/gym-facilities-v1/hands-geometry.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/street-thugs-v1/tier-1.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/map/isometric/interactive-devices-v1/toolbench.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/street-thug-boss-room-v6/transit-rack.png"
+  ]
+}

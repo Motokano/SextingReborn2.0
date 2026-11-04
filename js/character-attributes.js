@@ -891,6 +891,8 @@
             }
         }
         if (s.attribute_experience && typeof s.attribute_experience === 'object') {
+            // A restored snapshot may precede a failed settlement at the same tick.
+            attrExpRuntime.lastSettledTickByOwner = {};
             for (var ae = 0; ae < ATTRIBUTE_EXP_IDS.length; ae++) {
                 var aid = ATTRIBUTE_EXP_IDS[ae];
                 if (Object.prototype.hasOwnProperty.call(s.attribute_experience, aid)) {

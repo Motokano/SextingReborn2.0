@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "id": "npc.station.gym_dumbbell_base",
+  "name": "可调哑铃组",
+  "displayTitle": "可调哑铃组",
+  "npcLabel": "可调哑铃组",
+  "appearanceSchedule": {
+    "start": "00:00",
+    "end": "00:00"
+  },
+  "location": {
+    "sceneId": "M0_Base_Inside_lv_1",
+    "x": 7,
+    "y": 2
+  },
+  "interactionChecks": {
+    "thirst": false,
+    "dirtyness": false
+  },
+  "mainMenu": {
+    "showChat": false,
+    "showWorkWhen": "never",
+    "showLeave": true
+  },
+  "gymStation": {
+    "id": "dumbbell",
+    "footprint": [
+      1,
+      1
+    ]
+  },
+  "behavior": {
+    "type": "workbench",
+    "origin": "base_hideout"
+  },
+  "tags": [
+    "workbench",
+    "gym_station",
+    "non_combat",
+    "base_facility"
+  ]
+}

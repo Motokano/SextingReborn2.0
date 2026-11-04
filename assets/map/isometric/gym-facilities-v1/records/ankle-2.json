@@ -1,0 +1,15 @@
+{
+  "key": "ankle",
+  "level": 2,
+  "revision": 2,
+  "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a19ed0-9c8b-7de3-a1fe-c84088bef24a\\exec-5e9f51c4-dc8c-4676-a943-7dab3ace86b0.png",
+  "file": "assets/map/isometric/gym-facilities-v1/ankle-2-real.png",
+  "mode": "built-in image_gen",
+  "prompt": "Edit the FIRST supplied PNG into its LEVEL 2 upgrade. Preserve original native camera, ground footprint, scale, silhouette position and art style. Do not redesign or rotate the base object. This is an ordinary slant board and resistance-band kit. Transparent background, no floor, shadows, text or people.\nKeep slant board and loose resistance band. Add thicker black anti-slip rubber top, steel angle brackets at wooden side supports, and a second band of slightly different muted color/resistance. No foot straps, pedals, springs or levers.",
+  "references": [
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/map/isometric/gym-facilities-v1/ankle-1-real.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/gym-facilities-v1/real-equipment/slant-board.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/map/isometric/interactive-devices-v1/toolbench.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/street-thug-boss-room-v6/transit-rack.png"
+  ]
+}

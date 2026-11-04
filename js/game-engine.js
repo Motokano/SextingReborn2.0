@@ -76,6 +76,7 @@
     }
 
     function getMap() {
+        if (MAPS[state.mapId] && global.GymSystem) MAPS[state.mapId] = global.GymSystem.applyEntranceToMap(MAPS[state.mapId]);
         return MAPS[state.mapId] || null;
     }
 
@@ -110,6 +111,8 @@
         if (isCompostFacilityNpcBlockingWalk(x, y)) return false;
         if (isBedStationCell(x, y)) return false;
         if (isWarehouseStationCell(x, y)) return false;
+        if (map.gym_station_interact_npc_by_cell && map.gym_station_interact_npc_by_cell[x+','+y]) return false;
+        if ((map.gym_scenery_cells || []).some(function(p){return p.x===x&&p.y===y;})) return false;
         return true;
     }
 
@@ -412,6 +415,8 @@
 
     /** 格上实体 NPC，或灶/制药台格绑定的设施 NPC（供邻格点击与气泡逻辑统一） */
     function getInteractNpcIdAt(x, y) {
+        var map=getMap(),gym=map&&map.gym_station_interact_npc_by_cell;
+        if(gym&&gym[x+','+y])return gym[x+','+y];
         var nid = getNpcAt(x, y);
         if (nid) return nid;
         nid = getCookingStationInteractNpcId(x, y);
@@ -458,6 +463,15 @@
      * 蹑步等：切比雪夫距离 ∈ [1, maxRadius] 的跳跃；不消耗 tick（由调用方 advanceTick）。
      * @param {number} maxRadius 默认 2（身边两格）
      */
+    function crossesSealedRegion(map, nx, ny) {
+        return Object.keys(map.inspectable_walls || {}).some(function (key) {
+            var xy = key.split(',').map(Number), rect = map.inspectable_walls[key].sealed_region;
+            if (!rect || !isBlocked(map, xy[0], xy[1])) return false;
+            function inside(x, y) { return x >= rect[0] && y >= rect[1] && x <= rect[2] && y <= rect[3]; }
+            return inside(state.x, state.y) !== inside(nx, ny);
+        });
+    }
+
     function jumpTo(nx, ny, maxRadius) {
         var map = getMap();
         if (!map) return false;
@@ -468,6 +482,7 @@
         var cheb = Math.max(Math.abs(nx - state.x), Math.abs(ny - state.y));
         if (cheb < 1 || cheb > r) return false;
         if (!canStandAt(nx, ny)) return false;
+        if (crossesSealedRegion(map, nx, ny)) return false;
 
         state.x = nx;
         state.y = ny;
@@ -494,6 +509,7 @@
         nx = clamp(nx, 0, map.width - 1);
         ny = clamp(ny, 0, map.height - 1);
         if (!isWalkable(nx, ny)) return false;
+        if (crossesSealedRegion(map, nx, ny)) return false;
 
         state.x = nx;
         state.y = ny;

@@ -1,0 +1,231 @@
+{
+  "version": 1,
+  "status": "candidate",
+  "standard": "docs/design/77-grid-scene-art-standard.md",
+  "tileWidth": 144,
+  "pawnScale": 1.25,
+  "assets": [
+    {
+      "id": "locker",
+      "file": "assets/map/isometric/gym-room-v1/locker.png",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a19ed0-9c8b-7de3-a1fe-c84088bef24a\\exec-8b935de4-16ed-4c5f-ab24-be8605ac264b.png",
+      "contentSha256": "6cb928bcbf036c13c3973bc1401c765cfb4b517d7be2b6ab3946b233f6ab1c54",
+      "material": false,
+      "width": 1254,
+      "height": 1254,
+      "crop": [
+        307,
+        75,
+        642,
+        1154
+      ],
+      "anchor": [
+        637,
+        1030
+      ],
+      "transparentFraction": 0.6212788931877322,
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "scaleAt144": 0.13,
+      "groundContacts": [
+        [
+          595,
+          841
+        ],
+        [
+          938,
+          1046
+        ],
+        [
+          674,
+          1218
+        ],
+        [
+          341,
+          1047
+        ]
+      ],
+      "heightReference": {
+        "name": "柜体",
+        "px": 93.34
+      }
+    },
+    {
+      "id": "bench",
+      "file": "assets/map/isometric/gym-room-v1/bench.png",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a19ed0-9c8b-7de3-a1fe-c84088bef24a\\exec-f0c4e8a9-d848-4016-95e6-b358d4f2c1e2.png",
+      "contentSha256": "01e590040131417bdebad4bb75e77744fbbe553f489907de190377ca05a45f30",
+      "material": false,
+      "width": 1488,
+      "height": 1057,
+      "crop": [
+        145,
+        118,
+        1174,
+        903
+      ],
+      "anchor": [
+        745,
+        692
+      ],
+      "transparentFraction": 0.7207289345988342,
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "scaleAt144": 0.13,
+      "groundContacts": [
+        [
+          216,
+          577
+        ],
+        [
+          433,
+          485
+        ],
+        [
+          1264,
+          876
+        ],
+        [
+          1015,
+          984
+        ]
+      ],
+      "openFootprint": true,
+      "heightReference": {
+        "name": "座面",
+        "px": 28
+      }
+    },
+    {
+      "id": "crate",
+      "file": "assets/map/isometric/gym-room-v1/crate.png",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a19ed0-9c8b-7de3-a1fe-c84088bef24a\\exec-de3c0afd-62f9-413a-9af1-5889dc4ab936.png",
+      "contentSha256": "e5fade53990fa7c0d21dec4b6e7b309b4d5da0cf540f3a0b1e4be2cd1651ecd0",
+      "material": false,
+      "width": 1254,
+      "height": 1254,
+      "crop": [
+        106,
+        172,
+        1030,
+        965
+      ],
+      "anchor": [
+        620,
+        825
+      ],
+      "transparentFraction": 0.5940575485400467,
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "scaleAt144": 0.078,
+      "groundContacts": [
+        [
+          600,
+          511
+        ],
+        [
+          1106,
+          792
+        ],
+        [
+          584,
+          1125
+        ],
+        [
+          125,
+          793
+        ]
+      ],
+      "heightReference": {
+        "name": "箱体",
+        "px": 25
+      }
+    },
+    {
+      "id": "fittings_x",
+      "file": "assets/map/isometric/gym-room-v1/fittings_x.png",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a19ed0-9c8b-7de3-a1fe-c84088bef24a\\exec-bebba33d-e30b-4893-8730-489e0e455800.png",
+      "contentSha256": "7346a07e746fe0ad5e9070e3a3729526ad82f371d9333e259c32963bc6459dc6",
+      "material": false,
+      "width": 1254,
+      "height": 1254,
+      "crop": [
+        54,
+        102,
+        1129,
+        1087
+      ],
+      "anchor": [
+        620,
+        500
+      ],
+      "transparentFraction": 0.6629814895365135,
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "scaleAt144": 0.16,
+      "wallMounted": true
+    },
+    {
+      "id": "fittings_y",
+      "file": "assets/map/isometric/gym-room-v1/fittings_y.png",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a19ed0-9c8b-7de3-a1fe-c84088bef24a\\exec-10341afb-659b-4e63-b7a8-4d35de53a5e1.png",
+      "contentSha256": "ae559a4956a4c31ec5601df0697f90c22d84b2f69efcc0a6ba3e323d1d1975ee",
+      "material": false,
+      "width": 1254,
+      "height": 1254,
+      "crop": [
+        75,
+        82,
+        1130,
+        1090
+      ],
+      "anchor": [
+        625,
+        500
+      ],
+      "transparentFraction": 0.6937678217582524,
+      "cornerAlpha": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "scaleAt144": 0.16,
+      "wallMounted": true
+    },
+    {
+      "id": "wall_material",
+      "file": "assets/map/isometric/gym-room-v1/wall_material.png",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a19ed0-9c8b-7de3-a1fe-c84088bef24a\\exec-d94c5a65-4f0e-43dd-815d-c917b3f0ff65.png",
+      "contentSha256": "33abd78db97fc51c0d831ee09fbab56aea9b206a907591047fabbc9381476346",
+      "material": true,
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "id": "floor_material",
+      "file": "assets/map/isometric/gym-room-v1/floor_material.png",
+      "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a19ed0-9c8b-7de3-a1fe-c84088bef24a\\exec-6a81661b-a880-4e6b-abfb-61dd302d758b.png",
+      "contentSha256": "f6584087a69d0cfca7b89c17ef71535517179a3008e8c2084128e9f4b1d2a025",
+      "material": true,
+      "width": 1254,
+      "height": 1254
+    }
+  ]
+}

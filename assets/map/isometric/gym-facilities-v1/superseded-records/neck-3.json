@@ -1,0 +1,15 @@
+{
+  "key": "neck",
+  "level": 3,
+  "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a19ed0-9c8b-7de3-a1fe-c84088bef24a\\exec-f92abeee-ad45-4b3f-afe6-d764fb84b904.png",
+  "file": "assets/map/isometric/gym-facilities-v1/neck-3.png",
+  "mode": "built-in image_gen",
+  "prompt": "Edit the FIRST supplied PNG to create LEVEL 3 of the exact same gym facility. Preserve native camera, orientation, ground footprint, support feet positions, canvas framing, proportions, object identity and major colors. Other images are ORIGINAL APPROVED style references: bold dark outlines, painted volume, sparsely placed wear. Apply ALL upgrades below cumulatively, no later upgrades. One isolated game pawn, no people, no words, no extra floor or pedestal. True transparent PNG, clean alpha outside the actual object and in frame openings; remove any background glow/cast shadow. Game renders contact shadows separately.\nBASE IDENTITY: LEVEL 1 NECK RESISTANCE FRAME. Compact seated rehabilitation-style resistance station with a simple low olive padded seat, two upright iron posts and top crossbar, a small padded fabric head harness hanging above the seat on an elastic resistance strap. NO human head or person. Slim small resistance attachments at side; clear gentle neck-training identity. Top85px, seat28px, ground0.8x0.9cell. No weights worn by a person. Initial single headband, simple ties, no adjustment knobs yet.\nUPGRADES REQUIRED: 2: Improve hanging headband into a visibly padded broad adjustable harness with secure buckles and joined resistance straps. Keep seat and plain support frame.\n3: Keep better harness; add dedicated side directional resistance arms and triangular braces to existing iron uprights; maintain top height and empty harness position.\nLight upper-left, practical salvaged contemporary wood/steel/olive fabric style, substantial readable changes at144px tile. Do not resize or reorient whole object.",
+  "references": [
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/map/isometric/gym-facilities-v1/neck-1.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/street-thugs-v1/tier-1.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/map/isometric/interactive-devices-v1/toolbench.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/street-thug-boss-room-v6/transit-rack.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/gym-facilities-v1/neck-geometry.png"
+  ]
+}

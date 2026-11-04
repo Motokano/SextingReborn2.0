@@ -1707,7 +1707,7 @@
         if (actualCost > 0) {
             // Walking pays stamina only; time-based metabolism remains in advanceTick.
             if (foodConfig() && !(options && options.source === 'movement')) foodState.pendingStamina += actualCost;
-            var gainPerStamina = Number(get('fatigue_gain_per_stamina_spent', 0.5));
+            var gainPerStamina = Number(options && Number.isFinite(options.fatiguePerStamina) ? options.fatiguePerStamina : get('fatigue_gain_per_stamina_spent', 0.5));
             if (!isFinite(gainPerStamina) || gainPerStamina < 0) gainPerStamina = 0.5;
             state.fatigue = roundFatigue(clamp(
                 state.fatigue + actualCost * gainPerStamina,
@@ -1810,6 +1810,8 @@
         if (state.isDead) return;
         state.isDead = true;
         state.deathReason = reason ? String(reason) : 'unknown';
+        if (global.BedSleep) global.BedSleep.interrupt();
+        if (global.GymSystem) global.GymSystem.interrupt();
         if (global.CombatEngagement && typeof global.CombatEngagement.clear === 'function') {
             global.CombatEngagement.clear('player_dead');
         }
@@ -1850,6 +1852,10 @@
     /** 单 tick 结算；返回 { death: string|null, coma: boolean } */
     function advanceTick(options) {
         var movementTick = !!(options && options.source === 'movement');
+        var sleeping = !!(options && options.source === 'sleep');
+        var sleepSatietyCost = sleeping ? Math.max(0, Number(get('sleep_satiety_cost_per_tick', 1)) || 0) : 0;
+        var sleepThirstCost = sleeping ? Math.max(0, Number(get('sleep_thirst_cost_per_tick', 1)) || 0) : 0;
+        var sleepPaid = false;
         var result = { death: null, coma: false };
         if (state.isDead) return result;
         var beforeSnapshot = buildSurvivalStateSnapshot();
@@ -1911,6 +1917,8 @@
         var satDecay = Number(get('satiety_tick_decay', 1));
         if (!isFinite(satDecay) || satDecay < 0) satDecay = 1;
         var metabolismCfg = foodConfig();
+        // Sleep has its own fixed food/water cost; digestion and outstanding labor still settle.
+        if (sleeping && metabolismCfg) metabolismCfg = Object.assign({}, metabolismCfg, { base_expenditure: 0 });
         if (metabolismCfg) {
             var mealResult = global.FoodMetabolism.tick(foodState, { satiety: state.satiety, nutrition: state.nutrition, weight_kg: state.weight_kg, height_cm: getHeightCm() }, metabolismCfg, { preserveReserves: movementTick });
             state.satiety = mealResult.satiety;
@@ -1921,7 +1929,11 @@
             }
             syncMealBalanceBuff();
             syncNutritionStateBuff();
-        } else if (!movementTick && state.satiety > 0) state.satiety = round1(Math.max(0, state.satiety - satDecay));
+        } else if (!movementTick && !sleeping && state.satiety > 0) state.satiety = round1(Math.max(0, state.satiety - satDecay));
+        if (sleeping) {
+            sleepPaid = state.satiety >= sleepSatietyCost && state.thirst >= sleepThirstCost;
+            state.satiety = Math.max(0, state.satiety - sleepSatietyCost);
+        }
         var satietyRange = syncSatietyStateBuff();
         var severeHungerSatietyMax = getSevereHungerSatietyMax();
         if (state.satiety <= 0) state.starvationTicks += 1;
@@ -1953,7 +1965,9 @@
         // ---------- 饮水（基础衰减；主动恢复的额外消耗在体力段结算） ----------
         // 饮水即时恢复（thirst_restore）；衰减按 06 §6.1.2（每 thirst_tick_decay_interval tick -1）；死亡计时器仅在饮水为 0 时启动。
         var thirstInterval = get('thirst_tick_decay_interval', 2);
-        if (!movementTick && thirstInterval > 0 && tick % thirstInterval === 0) {
+        if (sleeping) {
+            state.thirst = round1(Math.max(0, state.thirst - sleepThirstCost));
+        } else if (!movementTick && thirstInterval > 0 && tick % thirstInterval === 0) {
             var thirstDecay = Number(get('thirst_tick_decay_amount', 1));
             if (!isFinite(thirstDecay) || thirstDecay < 0) thirstDecay = 1;
             if (state.thirst > 0) state.thirst = round1(Math.max(0, state.thirst - thirstDecay));
@@ -1970,8 +1984,14 @@
 
         // ---------- 体力恢复 ----------
         var staminaMax = get('stamina_max', 100);
-        // Ordinary recovery shares one paid conversion, including sleep and meditation.
-        if (!movementTick && (state.isResting || state.is_stamina_regen_action_active ||
+        // Sleep charges every tick even at full stamina/zero fatigue. Other recovery modes share one conversion.
+        if (sleeping) {
+            if (sleepPaid) {
+                state.stamina = roundStamina(clamp(state.stamina + Math.max(0, Number(get('sleep_stamina_gain_per_tick', 2)) || 0), 0, staminaMax));
+                state.fatigue = roundFatigue(clamp(state.fatigue - Math.max(0, Number(get('sleep_fatigue_reduction_per_tick', 2)) || 0), get('fatigue_min', 0), get('fatigue_max', 100)));
+                syncFatigueStateBuff();
+            }
+        } else if (!movementTick && (state.isResting || state.is_stamina_regen_action_active ||
             (state.is_sit_meditation_active && !state.sit_meditation_interrupt_this_tick))) {
             applyFoodConversion(get('rest_action_extra_satiety_decay_per_tick', 1),
                 get('rest_action_extra_thirst_decay_per_tick', 1),
@@ -1979,7 +1999,7 @@
         }
         // 站立基础代谢：不休息/不调息时每 tick 扣基础体力（时间流逝本身有代价；
         // 休息/调息正在恢复，豁免）。饱食/饮水走各自被动衰减（见上）。
-        if (!state.isResting && !state.is_sit_meditation_active) {
+        if (!sleeping && !state.isResting && !state.is_sit_meditation_active) {
             var passiveDrain = Number(get('stamina_passive_drain_per_tick', 0.2));
             if (isFinite(passiveDrain) && passiveDrain > 0) {
                 state.stamina = roundStamina(Math.max(0, state.stamina - passiveDrain));

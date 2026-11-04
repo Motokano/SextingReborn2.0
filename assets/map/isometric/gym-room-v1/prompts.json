@@ -1,0 +1,105 @@
+[
+  {
+    "id": "locker",
+    "file": "assets/map/isometric/gym-room-v1/locker.png",
+    "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a19ed0-9c8b-7de3-a1fe-c84088bef24a\\exec-8b935de4-16ed-4c5f-ab24-be8605ac264b.png",
+    "tool": "built-in image_gen",
+    "prompt": "Use case: stylized-concept. Production game environment sprite following the three approved style references, strong dark variable-weight outlines, hand painted broad light/shadow planes, warm muted industrial colors, small purposeful wear, light from upper left. Not photorealistic, not PBR, not plastic 3D, not a flat vector icon. Reference image 1 is character rendering style ONLY (do not include the person or circular base). Image 2 is approved furniture material style ONLY (no circular base). Image 3 is approved scene furniture style. Image 4 is the object's exact geometric camera/size template: ground axes slope +0.7071 and -0.7071, upright verticals, parallel orthographic lines, no vanishing point. Image 5 is ONLY mood/layout inspiration from a makeshift underground gym, do not copy its photography or logos. Single isolated subject, fully inside canvas with margin, true alpha transparency around it, no background, no cast shadow, no floor, no pedestal, no grid, no text labels. Match geometry template camera and aspect before adding detail.\nSubject: A salvaged narrow double-door steel locker, desaturated dark blue-green paint, ventilation slots, two small plain latches, a few dents and pale worn edges, one folded ochre towel and small canvas pouch on top. It stands on four short feet. Floor footprint .85 by .65 cells, steel box top95px and total top106px at144px tile. Practical domestic sports equipment storage. Doors shut. No logos.",
+    "references": [
+      "reference/street-thugs-v1/tier-1.png",
+      "assets/map/isometric/interactive-devices-v1/toolbench.png",
+      "assets/dungeon/street-thug-boss-room-v6/transit-rack.png",
+      "reference/gym-room-v1/locker-geometry.png",
+      "reference/gym-room-v1/tarkov-gym-reference.jpg"
+    ],
+    "transparent": true
+  },
+  {
+    "id": "bench",
+    "file": "assets/map/isometric/gym-room-v1/bench.png",
+    "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a19ed0-9c8b-7de3-a1fe-c84088bef24a\\exec-f0c4e8a9-d848-4016-95e6-b358d4f2c1e2.png",
+    "tool": "built-in image_gen",
+    "prompt": "Use case: stylized-concept. Production game environment sprite following the three approved style references, strong dark variable-weight outlines, hand painted broad light/shadow planes, warm muted industrial colors, small purposeful wear, light from upper left. Not photorealistic, not PBR, not plastic 3D, not a flat vector icon. Reference image 1 is character rendering style ONLY (do not include the person or circular base). Image 2 is approved furniture material style ONLY (no circular base). Image 3 is approved scene furniture style. Image 4 is the object's exact geometric camera/size template: ground axes slope +0.7071 and -0.7071, upright verticals, parallel orthographic lines, no vanishing point. Image 5 is ONLY mood/layout inspiration from a makeshift underground gym, do not copy its photography or logos. Single isolated subject, fully inside canvas with margin, true alpha transparency around it, no background, no cast shadow, no floor, no pedestal, no grid, no text labels. Match geometry template camera and aspect before adding detail.\nSubject: A low narrow reused wooden changing bench on simple old steel legs, folded blue exercise towel and one plain dull metal drinking flask near one end, scuffed planks and a small repair bracket. Long axis follows template +x, footprint1.65 by .55 cells, seat height28px and total40px at144px tile. Four visible or logically consistent feet. No backrest, no gym mechanism.",
+    "references": [
+      "reference/street-thugs-v1/tier-1.png",
+      "assets/map/isometric/interactive-devices-v1/toolbench.png",
+      "assets/dungeon/street-thug-boss-room-v6/transit-rack.png",
+      "reference/gym-room-v1/bench-geometry.png",
+      "reference/gym-room-v1/tarkov-gym-reference.jpg"
+    ],
+    "transparent": true
+  },
+  {
+    "id": "crate",
+    "file": "assets/map/isometric/gym-room-v1/crate.png",
+    "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a19ed0-9c8b-7de3-a1fe-c84088bef24a\\exec-de3c0afd-62f9-413a-9af1-5889dc4ab936.png",
+    "tool": "built-in image_gen",
+    "prompt": "Use case: stylized-concept. Production game environment sprite following the three approved style references, strong dark variable-weight outlines, hand painted broad light/shadow planes, warm muted industrial colors, small purposeful wear, light from upper left. Not photorealistic, not PBR, not plastic 3D, not a flat vector icon. Reference image 1 is character rendering style ONLY (do not include the person or circular base). Image 2 is approved furniture material style ONLY (no circular base). Image 3 is approved scene furniture style. Image 4 is the object's exact geometric camera/size template: ground axes slope +0.7071 and -0.7071, upright verticals, parallel orthographic lines, no vanishing point. Image 5 is ONLY mood/layout inspiration from a makeshift underground gym, do not copy its photography or logos. Single isolated subject, fully inside canvas with margin, true alpha transparency around it, no background, no cast shadow, no floor, no pedestal, no grid, no text labels. Match geometry template camera and aspect before adding detail.\nSubject: A low open wooden supply crate containing one battered metal tool box, chalk tin, two small rolls of cloth wrap and a few ordinary tools arranged usefully. Footprint .75 by .65 cells, crate top25px, contents top38px at144px tile. No weapons, no extra scattered floor items, no display base.",
+    "references": [
+      "reference/street-thugs-v1/tier-1.png",
+      "assets/map/isometric/interactive-devices-v1/toolbench.png",
+      "assets/dungeon/street-thug-boss-room-v6/transit-rack.png",
+      "reference/gym-room-v1/crate-geometry.png",
+      "reference/gym-room-v1/tarkov-gym-reference.jpg"
+    ],
+    "transparent": true
+  },
+  {
+    "id": "fittings_x",
+    "file": "assets/map/isometric/gym-room-v1/fittings_x.png",
+    "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a19ed0-9c8b-7de3-a1fe-c84088bef24a\\exec-bebba33d-e30b-4893-8730-489e0e455800.png",
+    "tool": "built-in image_gen",
+    "revision": 2,
+    "prompt": "Use case: stylized-concept. Production game environment sprite following the three approved style references, strong dark variable-weight outlines, hand painted broad light/shadow planes, warm muted industrial colors, small purposeful wear, light from upper left. Not photorealistic, not PBR, not plastic 3D, not a flat vector icon. Reference image 1 is character rendering style ONLY (do not include the person or circular base). Image 2 is approved furniture material style ONLY (no circular base). Image 3 is approved scene furniture style. Image 4 is the object's exact geometric camera/size template: ground axes slope +0.7071 and -0.7071, upright verticals, parallel orthographic lines, no vanishing point. Image 5 is ONLY mood/layout inspiration from a makeshift underground gym, do not copy its photography or logos. Single isolated subject, fully inside canvas with margin, true alpha transparency around it, no background, no cast shadow, no floor, no pedestal, no grid, no text labels. Match geometry template camera and aspect before adding detail.\nSubject: A wall-mounted service cluster only, with TWO narrow parallel old steel utility pipes running horizontally along the template +x wall axis, two pipe clamps, a short branching elbow, a small square vent grille, two torn paper workout diagrams with simple line drawings of an exercise pose (no readable words), and one small caged maintenance bulb with amber glass but NO glow. Wall-mounted objects occupy the plane shown by the template, about3 cells long and90px tall at144px tile. DO NOT draw a wall panel behind them. All empty spaces between fixtures are truly transparent. Single coherent wall fixture cluster.\nCRITICAL CAMERA CORRECTION: faithfully trace the fourth reference geometry plane. The long horizontal pipe must slope +0.7071 DOWN toward the RIGHT in the final raster, not a shallow 30-degree isometric pipe. For every 100 pixels of horizontal travel, the pipe rises/falls 70.71 pixels. Upright lines stay VERTICAL. Parallel horizontal edges of posters and boxes have this exact same steep slope. Prefer a square canvas. No haze, no glow, no background pixels anywhere between the objects. Every gap is pure transparent. The bulb is unlit amber glass. NO backdrop or contact/cast shadow at all.",
+    "references": [
+      "reference/street-thugs-v1/tier-1.png",
+      "assets/map/isometric/interactive-devices-v1/toolbench.png",
+      "assets/dungeon/street-thug-boss-room-v6/transit-rack.png",
+      "reference/gym-room-v1/fittings_x-geometry.png",
+      "reference/gym-room-v1/tarkov-gym-reference.jpg"
+    ]
+  },
+  {
+    "id": "fittings_y",
+    "file": "assets/map/isometric/gym-room-v1/fittings_y.png",
+    "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a19ed0-9c8b-7de3-a1fe-c84088bef24a\\exec-10341afb-659b-4e63-b7a8-4d35de53a5e1.png",
+    "tool": "built-in image_gen",
+    "revision": 2,
+    "prompt": "Use case: stylized-concept. Production game environment sprite following the three approved style references, strong dark variable-weight outlines, hand painted broad light/shadow planes, warm muted industrial colors, small purposeful wear, light from upper left. Not photorealistic, not PBR, not plastic 3D, not a flat vector icon. Reference image 1 is character rendering style ONLY (do not include the person or circular base). Image 2 is approved furniture material style ONLY (no circular base). Image 3 is approved scene furniture style. Image 4 is the object's exact geometric camera/size template: ground axes slope +0.7071 and -0.7071, upright verticals, parallel orthographic lines, no vanishing point. Image 5 is ONLY mood/layout inspiration from a makeshift underground gym, do not copy its photography or logos. Single isolated subject, fully inside canvas with margin, true alpha transparency around it, no background, no cast shadow, no floor, no pedestal, no grid, no text labels. Match geometry template camera and aspect before adding detail.\nSubject: A wall-mounted service cluster only, TWO narrow parallel old steel utility pipes following the template +y wall axis (opposite direction from +x), clamps, one plain junction box, one old small analog wall clock and one faded paper stretching diagram without readable words, plus a small caged maintenance bulb with amber glass but NO glow. Objects mounted on the plane shown by the template, about3 cells long and90px tall at144px tile. DO NOT draw a wall panel behind them. Empty spaces between fixtures are transparent. Single coherent fixture cluster.\nCRITICAL CAMERA CORRECTION: faithfully trace the fourth reference geometry plane. The long horizontal pipe must slope -0.7071 UP toward the RIGHT in the final raster, not a shallow 30-degree isometric pipe. For every 100 pixels of horizontal travel, the pipe rises/falls 70.71 pixels. Upright lines stay VERTICAL. Parallel horizontal edges of posters and boxes have this exact same steep slope. Prefer a square canvas. No haze, no glow, no background pixels anywhere between the objects. Every gap is pure transparent. The bulb is unlit amber glass. NO backdrop or contact/cast shadow at all.",
+    "references": [
+      "reference/street-thugs-v1/tier-1.png",
+      "assets/map/isometric/interactive-devices-v1/toolbench.png",
+      "assets/dungeon/street-thug-boss-room-v6/transit-rack.png",
+      "reference/gym-room-v1/fittings_y-geometry.png",
+      "reference/gym-room-v1/tarkov-gym-reference.jpg"
+    ]
+  },
+  {
+    "id": "wall_material",
+    "file": "assets/map/isometric/gym-room-v1/wall_material.png",
+    "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a19ed0-9c8b-7de3-a1fe-c84088bef24a\\exec-d94c5a65-4f0e-43dd-815d-c917b3f0ff65.png",
+    "tool": "built-in image_gen",
+    "prompt": "Use case: stylized-concept. Game scene material texture. Match dark hand-painted outlines and broad muted planes of approved style reference images 1-3. Image4 is mood only, never photographic fidelity. Square front-on flat wall surface material, rough muted grey-beige concrete with old olive paint on its lower half, patches of plaster chipped away and subtle hairline cracks, broad quiet hand-painted texture, no isolated decals, NO pipes, NO furniture, NO writing. Upper half concrete, lower half faded olive, horizontal transition near middle. No perspective. Opaque edge-to-edge square texture designed for mapping onto room architecture. Keep texture readable and quiet at144px per map cell; no photoreal PBR, no logos, no UI.",
+    "references": [
+      "reference/street-thugs-v1/tier-1.png",
+      "assets/map/isometric/interactive-devices-v1/toolbench.png",
+      "assets/dungeon/street-thug-boss-room-v6/transit-rack.png",
+      "reference/gym-room-v1/tarkov-gym-reference.jpg"
+    ],
+    "transparent": false
+  },
+  {
+    "id": "floor_material",
+    "file": "assets/map/isometric/gym-room-v1/floor_material.png",
+    "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a19ed0-9c8b-7de3-a1fe-c84088bef24a\\exec-6a81661b-a880-4e6b-abfb-61dd302d758b.png",
+    "tool": "built-in image_gen",
+    "prompt": "Use case: stylized-concept. Game scene material texture. Match dark hand-painted outlines and broad muted planes of approved style reference images 1-3. Image4 is mood only, never photographic fidelity. Square top-down flat ground surface material, worn dark charcoal rubber floor tiles, four-by-four broad square panels with thin quiet seams and a few subtle faded scuff marks, broad hand-painted texture not noisy, no props, no furniture, no writing. No bevel slabs, no raised platform, no perspective. Opaque edge-to-edge square material for a basement gym floor. Keep texture readable and quiet at144px per map cell; no photoreal PBR, no logos, no UI.",
+    "references": [
+      "reference/street-thugs-v1/tier-1.png",
+      "assets/map/isometric/interactive-devices-v1/toolbench.png",
+      "assets/dungeon/street-thug-boss-room-v6/transit-rack.png",
+      "reference/gym-room-v1/tarkov-gym-reference.jpg"
+    ],
+    "transparent": false
+  }
+]

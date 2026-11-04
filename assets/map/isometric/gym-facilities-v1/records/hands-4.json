@@ -1,0 +1,16 @@
+{
+  "key": "hands",
+  "level": 4,
+  "revision": 2,
+  "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a19ed0-9c8b-7de3-a1fe-c84088bef24a\\exec-32b12449-3bac-47d1-8ba2-18c48d1db107.png",
+  "file": "assets/map/isometric/gym-facilities-v1/hands-4-real.png",
+  "mode": "built-in image_gen",
+  "prompt": "Edit FIRST PNG into LEVEL 4. Preserve camera, flat kit footprint, scale and position. Second image geometry-only; last three approved references maintain outlined hand-painted style, never copy display bases/person. Ordinary real hand exercise tools, as previous real-reference base. Transparent background, no floor/shadows/text/person. No mechanical metallic finger arms, only normal torsion grippers and soft elastic accessories.\nKeep original gripper/ring/putty and rectangular kit footprint. Add a second ordinary metal torsion-spring gripper with thicker spring for higher resistance, as in reference photo. Two independent tools, not mechanically linked.\nKeep two grippers. Add a small real finger-extension exerciser following supplied Xtensor product photo: compact palm-size back plate with five soft elastic strands/loops, laid flat EMPTY without a hand. Replace plain ring with a thicker one. No metallic finger arms.\nKeep realistic grippers, putty and soft extension exerciser. Add a third stronger torsion gripper and a small plain pinch-grip block with short loading eye; arrange tools on a thin low wooden storage tray with simple compartments within original footprint. No fantasy machinery or brass dials.",
+  "references": [
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/map/isometric/gym-facilities-v1/hands-1-real.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/gym-facilities-v1/hands-geometry.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/street-thugs-v1/tier-1.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/map/isometric/interactive-devices-v1/toolbench.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/street-thug-boss-room-v6/transit-rack.png"
+  ]
+}

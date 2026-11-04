@@ -1,0 +1,76 @@
+{
+  "mode": "built-in image_gen",
+  "standard": "docs/design/77-grid-scene-art-standard.md",
+  "common": "Edit the supplied geometry-template image into ONE finished transparent PNG game-furniture pawn. The template is an edit target defining camera, ground-contact polygon and scale, not a style reference. Remove its background, markings, labels, grid and solid guide volume completely. Use the other supplied approved game images ONLY as style/material references: street thug = bold dark silhouette and lively hand-painted volume, toolbench = outline and wood/metal shading (DO NOT copy its circular pedestal), transit rack = reused contemporary industrial steel and repaired construction, mat = muted patched fabric. No people. No letters, numbers, UI, floor, scenic background, circular display base, added foundation slab, or cast shadow. True transparent background including openings between rails. \nExact orthographic game camera: horizontal ground axes slope +0.7071 and -0.7071, vertical posts straight vertical, no vanishing point. Native long direction and ground corners follow template. Keep generous transparent margin, entire object within image, no cropping. Painted 2.5D game art, bold near-black outer contour, thinner varied inner marks, broad sculpted shadow planes, light upper-left, warmer worn wood, desaturated olive padding and blue-gray iron, restrained rusty orange repairs. Distinct useful shapes, sparsely placed wear, not noisy scratches, not photo, not polished 3D, not vector icon. All equipment is functional salvaged modern gym apparatus in a resource-scarce hideout, visibly handmade/repaired but sturdy. Match the existing approved illustrations, no futuristic electronics.",
+  "descriptions": {
+    "floor": "LEVEL 1 BASIC TRAINING AREA. One flat long rectangular olive canvas exercise mat, stitched repaired edge, thick folded padding, a small rolled knee pad tucked along its back short edge. No holes in usable surface. No weights, handles, straps or machines at this initial level. Match 0.95 x 1.8-cell footprint; near-ground mat, not a table. Camera/rectangle as template.",
+    "pullup": "LEVEL 1 PULL-UP FRAME. Open freestanding welded gray iron frame with TWO upright posts, tall straight pull-up bar at top and one lower horizontal body-row bar behind. Two stabilizer foot rails on ground, plainly bolted connections, chipped muted steel. No back wall or filled panel; see transparent gaps. Frame high enough above character head: top 120px on144px worldcell, midway bar60px. Ground footprint 1.3x0.9cells. Simple basic structure without weights, braces or elaborate grips yet.",
+    "dumbbell": "LEVEL 1 ADJUSTABLE DUMBBELL SET. Two short adjustable dumbbells with a single small iron plate on each end, plain rod grips and simple threaded collars, resting securely on a low squat reclaimed-wood stand with four feet. One spare small plate leaning against a foot. Surface28px world height, top43px. Footprint1.0x0.7cell. No big plate stacks, no high shelving, no high-tech rack.",
+    "barbell": "LEVEL 1 BARBELL TRAINING STATION. A simple freestanding two-upright squat/bench support rack, one long metal barbell with modest single iron plates at each end resting securely on hooks, narrow low olive padded bench extending along the long ground axis toward front, four bench feet. Clear functional proportions, no wall. Rack top96px, bench25px, ground1.35x1.85cells. Same ground directions as template. Basic simple load-bearing steel, no extra storage rack or giant weight stacks yet.",
+    "cable": "LEVEL 1 CABLE PULLEY FRAME. Tall open welded steel single-column cable exercise frame with top pulley, visible routed rope descending to a hanging wide pull-down handle, small stack of four rectangular iron weights at back, low olive padded seat near front, ground stabilizer rails. Functional cable route connects handle/pulley/stack. Top120px, seat27px, footprint1x1.4cells. Low side pulley for rowing. No enclosure, no wall, no electronics. Plain initial pulley and rope, modest weights.",
+    "leg": "LEVEL 1 LEG RESISTANCE MACHINE. Compact welded iron seated leg-extension/curl machine, simple olive seat and low backrest, front pivoted lever ending in a wide padded shin roller, basic small plate resistance at side and two stabilizing foot rails. Mechanically connected joints. Top78px including backrest, seat28px, ground0.95x1.5cells. Simple initial thin rollers, no vast rack or electronics.",
+    "neck": "LEVEL 1 NECK RESISTANCE FRAME. Compact seated rehabilitation-style resistance station with a simple low olive padded seat, two upright iron posts and top crossbar, a small padded fabric head harness hanging above the seat on an elastic resistance strap. NO human head or person. Slim small resistance attachments at side; clear gentle neck-training identity. Top85px, seat28px, ground0.8x0.9cell. No weights worn by a person. Initial single headband, simple ties, no adjustment knobs yet.",
+    "handsfeet": "SHARED FRAME OF HAND/FOOT TRAINING STATION. ONE small empty worktable only, four short legs, simple thick worn wood surface with muted gray iron corner brackets and lower crossbars. No tools or equipment on surface or underneath; transparent around and through legs. It will receive separately drawn modular hand equipment on its tabletop and foot devices on ground beside it. Worktop38px high, footprint0.9x0.7cell. Native orientation matches template. This shared table frame stays unchanged while modules upgrade.",
+    "hands": "LEVEL 1 HAND EXERCISE KIT, sports equipment only. One small shallow wooden tray holding two portable squeeze-grip exercisers with rounded padded handles and curved metal springs, a rubber finger-stretch exercise ring and a small rounded thumb-pinch block. Ordinary gym hand-strength tools. No human body parts and no person. No tabletop or table legs, only the small removable kit. Tray follows template ground rectangle0.5x0.35cell, top14px worldheight. Simple first-level attachments with no adjustment dials.",
+    "ankle": "LEVEL 1 REMOVABLE ANKLE TRAINING MODULE. ONE low independent foot-size ankle rocker on its own functional wooden footplate: one rectangular pivoting pedal with simple fabric fastening strap, metal hinge on squat frame with two side resistance bands. No foot or person, no table, no surrounding flooring. Footprint0.65x0.6cell maximum15px height atworldscale. Clear physical exercise mechanism rather than shoe or box.",
+    "toes": "LEVEL 1 REMOVABLE TOE TRAINING MODULE. ONE flat short rectangular foot board for foot-arch and toe training, small curved wooden arch support at rear, five clearly simplified fabric toe loops at front on light resistance strands. No toes or feet or person, no table, no extra floor. Footprint0.6x0.45cell maximum9px height atworldscale. Plain wood and olive fabric, small modest original module."
+  },
+  "upgrades": {
+    "floor": [
+      "Replace the mat surface with thicker dark olive ribbed anti-slip rubber sections and reinforced stitched border. Preserve outline footprint and knee pad. No other additions.",
+      "Keep the improved rubber mat; add two low push-up support handles securely on sides and two functional adjustable anchoring straps. Preserve footprint and all existing upgrades.",
+      "Keep rubber, handles and straps; add a folded rugged weighted training vest with iron inserts and a matched pair of compact weight cuffs neatly at the back end. Keep usable central surface clear."
+    ],
+    "pullup": [
+      "Add conspicuous triangular iron knee braces at upright feet and bolted broad foot fastening plates; keep height and top bar unchanged.",
+      "Keep braces; add wrapped dark olive multi-position grip sleeves on top bar and substantial bolted clamp connectors, better reinforced lower-bar sockets.",
+      "Keep upgraded grips/braces; add attached hook-and-chain loading point, a visibly suspended pair of iron weight plates and a sturdy weight belt hung at one side. Do not add a person."
+    ],
+    "dumbbell": [
+      "Increase removable iron plates on BOTH dumbbells from one to three at each end; add a small spare plate stack beside stand. Same dumbbell length/stand footprint.",
+      "Keep more plates; replace simple collars with robust locking collars and conspicuous textured/wrapped reinforced handles. Add metal edge protection to stand, keep stand size.",
+      "Keep all improvements; turn low stand into reinforced two-tier plate support within SAME footprint, add several sorted spare iron plates on lower tier and thicker load-bearing supports. Keep paired dumbbells clear on top."
+    ],
+    "barbell": [
+      "Keep exactly same rack/bench proportions and bar height; add diagonal gussets, substantial bolt plates to rack and cross-braces beneath bench, reupholster bench in reinforced olive padding.",
+      "Keep reinforced structure; add visibly more matched iron plates to each barbell end and spare plates on newly attached low side storage pegs within existing footprint.",
+      "Keep plate capacity; thicken central bar and rack uprights, add strong safety arms, substantial bolted corner reinforcements and extra stable under-bench bracing. Same recognizable station, no cage wall."
+    ],
+    "cable": [
+      "Replace basic pulleys with larger recognizable metal pulley wheels in sturdy bearing housings, including low-row pulley. Preserve rope route, frame height, seat and modest stack.",
+      "Keep upgraded pulleys; replace worn rope with taut dark steel cable, add clear guide rollers and tidy protective cable guides. Keep handle, seat, scale and camera.",
+      "Keep new cable guides; add strong diagonal braces and bolted frame supports, double the small weight stack to eight substantial plates. Preserve exact ground footprint and seat."
+    ],
+    "leg": [
+      "Add welded bracing beneath seat, broad fastening plates and sturdy reinforced backrest support. Same seat/roller locations.",
+      "Keep reinforced seat; replace shin roller with thicker paired padded rollers and upgrade connecting lever with bolted pivot hubs and substantial steel linkage. Preserve camera and scale.",
+      "Keep rollers/linkage; add several extra iron resistance plates and an adjustable side loading arm with robust mounting collar. No person. Preserve station footprint."
+    ],
+    "neck": [
+      "Improve hanging headband into a visibly padded broad adjustable harness with secure buckles and joined resistance straps. Keep seat and plain support frame.",
+      "Keep better harness; add dedicated side directional resistance arms and triangular braces to existing iron uprights; maintain top height and empty harness position.",
+      "Keep harness and directional arms; add clear small brass adjustment knobs, tension selector mechanism and neatly routed multiple elastic resistance cables. Preserve support/frame/seat identity."
+    ],
+    "hands": [
+      "Add improved cushioned paired grip handles and distinct thumb-opposition lever to the module. Preserve mounting board size and camera.",
+      "Keep grip/thumb improvements; strengthen finger resistance with four individual metal spring arms and sturdy mounting brackets, all on original board.",
+      "Keep all mechanics; add small brass calibrated adjustment knobs at spring mounts and neat tension screws. Same tiny module, no text and no hand."
+    ],
+    "ankle": [
+      "Reinforce the small pedal frame with metal edge brackets and broad new adjustable olive foot strap. Same dimensions.",
+      "Keep straps/brackets; replace basic hinge with stronger paired pivot links and side transmission cam, clearly connected to resistance spring.",
+      "Keep mechanism; add fine tension wheel and small selectable resistance-spring bank alongside pedal within same footprint. No foot."
+    ],
+    "toes": [
+      "Improve arch support padding and five distinct comfortable toe-loop holders on existing board. Keep same footprint.",
+      "Keep support; replace weak strands with five small tidy resistance springs and secure adjustable attachment rail.",
+      "Keep springs/support; add a small arch-training rocker section plus compact fine-tension knobs at rail. No foot, no letters."
+    ]
+  },
+  "refs": [
+    "reference/street-thugs-v1/tier-1.png",
+    "assets/map/isometric/interactive-devices-v1/toolbench.png",
+    "assets/dungeon/street-thug-boss-room-v6/transit-rack.png",
+    "assets/dungeon/street-thug-boss-room-v6/worn-mat.png"
+  ]
+}

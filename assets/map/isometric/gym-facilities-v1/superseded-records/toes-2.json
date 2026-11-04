@@ -1,0 +1,15 @@
+{
+  "key": "toes",
+  "level": 2,
+  "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a19ed0-9c8b-7de3-a1fe-c84088bef24a\\exec-75dd92c0-244f-44ba-b53b-ba12c47cf93e.png",
+  "file": "assets/map/isometric/gym-facilities-v1/toes-2.png",
+  "mode": "built-in image_gen",
+  "prompt": "Edit the FIRST supplied PNG to create LEVEL 2 of the exact same sports exercise module. Preserve native camera, orientation, ground footprint, positions, canvas framing, proportions, identity and colors. Other images are ORIGINAL APPROVED style references: bold dark outlines and painted volume. Apply ALL upgrades below cumulatively, no later upgrades. One isolated sports equipment module, no people or body parts, no words, no extra floor or pedestal. True transparent PNG, clean alpha outside object; remove any background glow/cast shadow. Game renders contact shadows separately.\nBASE IDENTITY: LEVEL 1 REMOVABLE TOE TRAINING MODULE. ONE flat short rectangular foot board for foot-arch and toe training, small curved wooden arch support at rear, five clearly simplified fabric toe loops at front on light resistance strands. No toes or feet or person, no table, no extra floor. Footprint0.6x0.45cell maximum9px height atworldscale. Plain wood and olive fabric, small modest original module.\nUPGRADES REQUIRED: 2: Improve arch support padding and five distinct comfortable toe-loop holders on existing board. Keep same footprint.\nLight upper-left, practical salvaged contemporary wood/steel/olive fabric, substantial changes visible at small game scale. Do not resize or reorient whole object.",
+  "references": [
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/map/isometric/gym-facilities-v1/toes-1.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/street-thugs-v1/tier-1.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/map/isometric/interactive-devices-v1/toolbench.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/street-thug-boss-room-v6/transit-rack.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/gym-facilities-v1/toes-geometry.png"
+  ]
+}

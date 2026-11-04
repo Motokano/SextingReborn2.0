@@ -1,0 +1,15 @@
+{
+  "key": "leg",
+  "level": 2,
+  "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a19ed0-9c8b-7de3-a1fe-c84088bef24a\\exec-e75cad46-ce0d-4e11-b2ee-f979ff7e4914.png",
+  "file": "assets/map/isometric/gym-facilities-v1/leg-2.png",
+  "mode": "built-in image_gen",
+  "prompt": "Edit the FIRST supplied PNG to create LEVEL 2 of the exact same gym facility. Preserve native camera, orientation, ground footprint, support feet positions, canvas framing, proportions, object identity and major colors. Other images are ORIGINAL APPROVED style references: bold dark outlines, painted volume, sparsely placed wear. Apply ALL upgrades below cumulatively, no later upgrades. One isolated game pawn, no people, no words, no extra floor or pedestal. True transparent PNG, clean alpha outside the actual object and in frame openings; remove any background glow/cast shadow. Game renders contact shadows separately.\nBASE IDENTITY: LEVEL 1 LEG RESISTANCE MACHINE. Compact welded iron seated leg-extension/curl machine, simple olive seat and low backrest, front pivoted lever ending in a wide padded shin roller, basic small plate resistance at side and two stabilizing foot rails. Mechanically connected joints. Top78px including backrest, seat28px, ground0.95x1.5cells. Simple initial thin rollers, no vast rack or electronics.\nUPGRADES REQUIRED: 2: Add welded bracing beneath seat, broad fastening plates and sturdy reinforced backrest support. Same seat/roller locations.\nLight upper-left, practical salvaged contemporary wood/steel/olive fabric style, substantial readable changes at144px tile. Do not resize or reorient whole object.",
+  "references": [
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/map/isometric/gym-facilities-v1/leg-1.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/street-thugs-v1/tier-1.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/map/isometric/interactive-devices-v1/toolbench.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/street-thug-boss-room-v6/transit-rack.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/gym-facilities-v1/leg-geometry.png"
+  ]
+}

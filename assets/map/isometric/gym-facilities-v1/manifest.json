@@ -1,0 +1,3157 @@
+{
+  "version": 1,
+  "status": "candidate",
+  "standard": "docs/design/77-grid-scene-art-standard.md",
+  "tileWidth": 144,
+  "pawnScale": 1.25,
+  "assets": [
+    {
+      "key": "ankle",
+      "level": 1,
+      "file": "assets/map/isometric/gym-facilities-v1/ankle-1-real.png",
+      "crop": [
+        111,
+        240,
+        1047,
+        830
+      ],
+      "anchor": [
+        585,
+        730
+      ],
+      "groundCenter": [
+        585,
+        730
+      ],
+      "groundContacts": [
+        [
+          650,
+          484
+        ],
+        [
+          1058,
+          682
+        ],
+        [
+          520,
+          980
+        ],
+        [
+          112,
+          768
+        ]
+      ],
+      "scaleAt144": 0.055,
+      "width": 57.585,
+      "logicalFootprint": [
+        0,
+        0
+      ],
+      "openFootprint": false,
+      "groundSpanPx": [
+        52.03,
+        27.28
+      ],
+      "heightReference": {
+        "kind": "slant-board-high-end",
+        "points": [
+          [
+            145,
+            550
+          ],
+          [
+            145,
+            768
+          ]
+        ],
+        "pixels": 11.99
+      },
+      "contentSha256": "ebb09ed843c91d7b79e3af063946f2fb7f729124559d5604d5dbeabb79d6e9fc",
+      "sourceSha256": "ebb09ed843c91d7b79e3af063946f2fb7f729124559d5604d5dbeabb79d6e9fc",
+      "png": {
+        "width": 1254,
+        "height": 1254,
+        "transparentFraction": 0.6679327905089678,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "registrationNote": "Manual ground contacts / native orientation / uniform scale. Geometry and character comparison reviewed separately; candidate art, not user-approved."
+    },
+    {
+      "key": "ankle",
+      "level": 2,
+      "file": "assets/map/isometric/gym-facilities-v1/ankle-2-real.png",
+      "crop": [
+        112,
+        237,
+        1070,
+        914
+      ],
+      "anchor": [
+        585,
+        741
+      ],
+      "groundCenter": [
+        585,
+        741
+      ],
+      "groundContacts": [
+        [
+          660,
+          484
+        ],
+        [
+          1065,
+          685
+        ],
+        [
+          500,
+          995
+        ],
+        [
+          115,
+          779
+        ]
+      ],
+      "scaleAt144": 0.055,
+      "width": 58.85,
+      "logicalFootprint": [
+        0,
+        0
+      ],
+      "openFootprint": false,
+      "groundSpanPx": [
+        52.25,
+        28.105
+      ],
+      "heightReference": {
+        "kind": "slant-board-high-end",
+        "points": [
+          [
+            145,
+            550
+          ],
+          [
+            145,
+            779
+          ]
+        ],
+        "pixels": 12.595
+      },
+      "contentSha256": "0e8af4e401f671c1e3b9bdb78ceb105e539687eaada2a6c91f33c65b138dcf0f",
+      "sourceSha256": "0e8af4e401f671c1e3b9bdb78ceb105e539687eaada2a6c91f33c65b138dcf0f",
+      "png": {
+        "width": 1254,
+        "height": 1254,
+        "transparentFraction": 0.628219363109819,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "registrationNote": "Manual ground contacts / native orientation / uniform scale. Geometry and character comparison reviewed separately; candidate art, not user-approved."
+    },
+    {
+      "key": "ankle",
+      "level": 3,
+      "file": "assets/map/isometric/gym-facilities-v1/ankle-3-real.png",
+      "crop": [
+        89,
+        226,
+        1090,
+        896
+      ],
+      "anchor": [
+        583,
+        735
+      ],
+      "groundCenter": [
+        583,
+        735
+      ],
+      "groundContacts": [
+        [
+          650,
+          486
+        ],
+        [
+          1070,
+          675
+        ],
+        [
+          500,
+          992
+        ],
+        [
+          90,
+          805
+        ]
+      ],
+      "scaleAt144": 0.055,
+      "width": 59.95,
+      "logicalFootprint": [
+        0,
+        0
+      ],
+      "openFootprint": false,
+      "groundSpanPx": [
+        53.9,
+        27.830000000000002
+      ],
+      "heightReference": {
+        "kind": "slant-board-high-end",
+        "points": [
+          [
+            145,
+            525
+          ],
+          [
+            145,
+            805
+          ]
+        ],
+        "pixels": 15.4
+      },
+      "contentSha256": "1d5b88a1491677007b5e136f3a1660fcb3b2bd9a1d82414b18a551c59dee1dd8",
+      "sourceSha256": "1d5b88a1491677007b5e136f3a1660fcb3b2bd9a1d82414b18a551c59dee1dd8",
+      "png": {
+        "width": 1254,
+        "height": 1254,
+        "transparentFraction": 0.6161266403648675,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "registrationNote": "Manual ground contacts / native orientation / uniform scale. Geometry and character comparison reviewed separately; candidate art, not user-approved."
+    },
+    {
+      "key": "ankle",
+      "level": 4,
+      "file": "assets/map/isometric/gym-facilities-v1/ankle-4-real.png",
+      "crop": [
+        52,
+        139,
+        1157,
+        1053
+      ],
+      "anchor": [
+        568,
+        725
+      ],
+      "groundCenter": [
+        568,
+        725
+      ],
+      "groundContacts": [
+        [
+          631,
+          479
+        ],
+        [
+          1040,
+          640
+        ],
+        [
+          500,
+          967
+        ],
+        [
+          53,
+          851
+        ]
+      ],
+      "scaleAt144": 0.055,
+      "width": 63.635,
+      "logicalFootprint": [
+        0,
+        0
+      ],
+      "openFootprint": false,
+      "groundSpanPx": [
+        54.285000000000004,
+        26.84
+      ],
+      "heightReference": {
+        "kind": "slant-board-high-end",
+        "points": [
+          [
+            145,
+            448
+          ],
+          [
+            145,
+            851
+          ]
+        ],
+        "pixels": 22.165
+      },
+      "contentSha256": "2b78c058f5fb9f04a3428a64f37d466039e799feb230d0cd61367fd301ff7fa9",
+      "sourceSha256": "2b78c058f5fb9f04a3428a64f37d466039e799feb230d0cd61367fd301ff7fa9",
+      "png": {
+        "width": 1254,
+        "height": 1254,
+        "transparentFraction": 0.5304442053371794,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "registrationNote": "Manual ground contacts / native orientation / uniform scale. Geometry and character comparison reviewed separately; candidate art, not user-approved."
+    },
+    {
+      "key": "barbell",
+      "level": 1,
+      "file": "assets/map/isometric/gym-facilities-v1/barbell-1.png",
+      "crop": [
+        210,
+        80,
+        989,
+        1109
+      ],
+      "anchor": [
+        655,
+        917
+      ],
+      "groundCenter": [
+        655,
+        917
+      ],
+      "groundContacts": [
+        [
+          646,
+          656
+        ],
+        [
+          1064,
+          886
+        ],
+        [
+          790,
+          1049
+        ],
+        [
+          380,
+          1178
+        ],
+        [
+          250,
+          1114
+        ],
+        [
+          398,
+          781
+        ]
+      ],
+      "scaleAt144": 0.16666666666666666,
+      "width": 164.83333333333331,
+      "logicalFootprint": [
+        2,
+        2
+      ],
+      "openFootprint": true,
+      "groundSpanPx": [
+        135.66666666666666,
+        87
+      ],
+      "heightReference": {
+        "kind": "rack",
+        "points": [
+          [
+            646,
+            130
+          ],
+          [
+            646,
+            706
+          ]
+        ],
+        "pixels": 96
+      },
+      "contentSha256": "ba5c1c22dff506e36d2d155e6dab1bdd31685f592be1785bf5107c9fe1d7a977",
+      "sourceSha256": "ba5c1c22dff506e36d2d155e6dab1bdd31685f592be1785bf5107c9fe1d7a977",
+      "png": {
+        "width": 1254,
+        "height": 1254,
+        "transparentFraction": 0.7280549132727425,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "registrationNote": "Manual ground contacts / native orientation / uniform scale. Geometry and character comparison reviewed separately; candidate art, not user-approved."
+    },
+    {
+      "key": "barbell",
+      "level": 2,
+      "file": "assets/map/isometric/gym-facilities-v1/barbell-2.png",
+      "crop": [
+        205,
+        78,
+        995,
+        1113
+      ],
+      "anchor": [
+        655,
+        917
+      ],
+      "groundCenter": [
+        655,
+        917
+      ],
+      "groundContacts": [
+        [
+          646,
+          656
+        ],
+        [
+          1064,
+          886
+        ],
+        [
+          790,
+          1049
+        ],
+        [
+          380,
+          1178
+        ],
+        [
+          250,
+          1114
+        ],
+        [
+          398,
+          781
+        ]
+      ],
+      "scaleAt144": 0.16666666666666666,
+      "width": 165.83333333333331,
+      "logicalFootprint": [
+        2,
+        2
+      ],
+      "openFootprint": true,
+      "groundSpanPx": [
+        135.66666666666666,
+        87
+      ],
+      "heightReference": {
+        "kind": "rack",
+        "points": [
+          [
+            646,
+            130
+          ],
+          [
+            646,
+            706
+          ]
+        ],
+        "pixels": 96
+      },
+      "contentSha256": "8060816d96dc52b4e32eead2101054774c8b3e4afb141a19df7f1fc60c2a86b6",
+      "sourceSha256": "8060816d96dc52b4e32eead2101054774c8b3e4afb141a19df7f1fc60c2a86b6",
+      "png": {
+        "width": 1254,
+        "height": 1254,
+        "transparentFraction": 0.6942186915745213,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "registrationNote": "Manual ground contacts / native orientation / uniform scale. Geometry and character comparison reviewed separately; candidate art, not user-approved."
+    },
+    {
+      "key": "barbell",
+      "level": 3,
+      "file": "assets/map/isometric/gym-facilities-v1/barbell-3.png",
+      "crop": [
+        202,
+        79,
+        1009,
+        1118
+      ],
+      "anchor": [
+        655,
+        917
+      ],
+      "groundCenter": [
+        655,
+        917
+      ],
+      "groundContacts": [
+        [
+          646,
+          656
+        ],
+        [
+          1064,
+          886
+        ],
+        [
+          790,
+          1049
+        ],
+        [
+          380,
+          1178
+        ],
+        [
+          250,
+          1114
+        ],
+        [
+          398,
+          781
+        ]
+      ],
+      "scaleAt144": 0.16666666666666666,
+      "width": 168.16666666666666,
+      "logicalFootprint": [
+        2,
+        2
+      ],
+      "openFootprint": true,
+      "groundSpanPx": [
+        135.66666666666666,
+        87
+      ],
+      "heightReference": {
+        "kind": "rack",
+        "points": [
+          [
+            646,
+            130
+          ],
+          [
+            646,
+            706
+          ]
+        ],
+        "pixels": 96
+      },
+      "contentSha256": "9363b04d0b930429380f1fd83792f99d0c8e83d81a91bd3b4af08784dee12d0e",
+      "sourceSha256": "9363b04d0b930429380f1fd83792f99d0c8e83d81a91bd3b4af08784dee12d0e",
+      "png": {
+        "width": 1254,
+        "height": 1254,
+        "transparentFraction": 0.6474585950158853,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "registrationNote": "Manual ground contacts / native orientation / uniform scale. Geometry and character comparison reviewed separately; candidate art, not user-approved."
+    },
+    {
+      "key": "barbell",
+      "level": 4,
+      "file": "assets/map/isometric/gym-facilities-v1/barbell-4.png",
+      "crop": [
+        179,
+        54,
+        1028,
+        1163
+      ],
+      "anchor": [
+        640,
+        933
+      ],
+      "groundCenter": [
+        640,
+        933
+      ],
+      "groundContacts": [
+        [
+          642,
+          660
+        ],
+        [
+          1075,
+          905
+        ],
+        [
+          768,
+          1108
+        ],
+        [
+          355,
+          1210
+        ],
+        [
+          226,
+          1149
+        ],
+        [
+          371,
+          793
+        ]
+      ],
+      "scaleAt144": 0.16666666666666666,
+      "width": 171.33333333333331,
+      "logicalFootprint": [
+        2,
+        2
+      ],
+      "openFootprint": true,
+      "groundSpanPx": [
+        141.5,
+        91.66666666666666
+      ],
+      "heightReference": {
+        "kind": "rack",
+        "points": [
+          [
+            646,
+            114
+          ],
+          [
+            646,
+            706
+          ]
+        ],
+        "pixels": 98.66666666666666
+      },
+      "contentSha256": "7c87b5d7aa10adf6fac72351cdc463a514b7e9af97dae63522bce9c325f7fce1",
+      "sourceSha256": "7c87b5d7aa10adf6fac72351cdc463a514b7e9af97dae63522bce9c325f7fce1",
+      "png": {
+        "width": 1254,
+        "height": 1254,
+        "transparentFraction": 0.5919946124554536,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "registrationNote": "Manual ground contacts / native orientation / uniform scale. Geometry and character comparison reviewed separately; candidate art, not user-approved."
+    },
+    {
+      "key": "cable",
+      "level": 1,
+      "file": "assets/map/isometric/gym-facilities-v1/cable-1.png",
+      "crop": [
+        96,
+        25,
+        869,
+        1436
+      ],
+      "anchor": [
+        538,
+        1216
+      ],
+      "groundCenter": [
+        538,
+        1216
+      ],
+      "groundContacts": [
+        [
+          668,
+          994
+        ],
+        [
+          921,
+          1138
+        ],
+        [
+          408,
+          1440
+        ],
+        [
+          155,
+          1296
+        ]
+      ],
+      "scaleAt144": 0.109,
+      "width": 94.721,
+      "logicalFootprint": [
+        1,
+        2
+      ],
+      "openFootprint": true,
+      "groundSpanPx": [
+        83.494,
+        48.614
+      ],
+      "heightReference": {
+        "kind": "seat",
+        "points": [
+          [
+            485,
+            1085
+          ],
+          [
+            485,
+            1333
+          ]
+        ],
+        "pixels": 27.032
+      },
+      "contentSha256": "7c28e809f4ef81719062e58536838bac250fbc59471b1ef2385832a270a0db90",
+      "sourceSha256": "7c28e809f4ef81719062e58536838bac250fbc59471b1ef2385832a270a0db90",
+      "png": {
+        "width": 1060,
+        "height": 1484,
+        "transparentFraction": 0.6702887402736103,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "registrationNote": "Manual ground contacts / native orientation / uniform scale. Geometry and character comparison reviewed separately; candidate art, not user-approved."
+    },
+    {
+      "key": "cable",
+      "level": 2,
+      "file": "assets/map/isometric/gym-facilities-v1/cable-2.png",
+      "crop": [
+        85,
+        25,
+        880,
+        1436
+      ],
+      "anchor": [
+        538,
+        1216
+      ],
+      "groundCenter": [
+        538,
+        1216
+      ],
+      "groundContacts": [
+        [
+          668,
+          994
+        ],
+        [
+          921,
+          1138
+        ],
+        [
+          408,
+          1440
+        ],
+        [
+          155,
+          1296
+        ]
+      ],
+      "scaleAt144": 0.109,
+      "width": 95.92,
+      "logicalFootprint": [
+        1,
+        2
+      ],
+      "openFootprint": true,
+      "groundSpanPx": [
+        83.494,
+        48.614
+      ],
+      "heightReference": {
+        "kind": "seat",
+        "points": [
+          [
+            485,
+            1085
+          ],
+          [
+            485,
+            1333
+          ]
+        ],
+        "pixels": 27.032
+      },
+      "contentSha256": "d44ab5411ce955375aa2927a86f9ea14e8b0f7e4623e60d23b56faea673d0b38",
+      "sourceSha256": "d44ab5411ce955375aa2927a86f9ea14e8b0f7e4623e60d23b56faea673d0b38",
+      "png": {
+        "width": 1060,
+        "height": 1484,
+        "transparentFraction": 0.6502428418857753,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "registrationNote": "Manual ground contacts / native orientation / uniform scale. Geometry and character comparison reviewed separately; candidate art, not user-approved."
+    },
+    {
+      "key": "cable",
+      "level": 3,
+      "file": "assets/map/isometric/gym-facilities-v1/cable-3.png",
+      "crop": [
+        88,
+        24,
+        881,
+        1444
+      ],
+      "anchor": [
+        538,
+        1216
+      ],
+      "groundCenter": [
+        538,
+        1216
+      ],
+      "groundContacts": [
+        [
+          668,
+          994
+        ],
+        [
+          921,
+          1138
+        ],
+        [
+          408,
+          1440
+        ],
+        [
+          155,
+          1296
+        ]
+      ],
+      "scaleAt144": 0.109,
+      "width": 96.029,
+      "logicalFootprint": [
+        1,
+        2
+      ],
+      "openFootprint": true,
+      "groundSpanPx": [
+        83.494,
+        48.614
+      ],
+      "heightReference": {
+        "kind": "seat",
+        "points": [
+          [
+            485,
+            1085
+          ],
+          [
+            485,
+            1333
+          ]
+        ],
+        "pixels": 27.032
+      },
+      "contentSha256": "a3b2a43f469ab943360d9d9a8938779453ec36ca71fcf9d1b335f8c16c8bf0ca",
+      "sourceSha256": "a3b2a43f469ab943360d9d9a8938779453ec36ca71fcf9d1b335f8c16c8bf0ca",
+      "png": {
+        "width": 1060,
+        "height": 1484,
+        "transparentFraction": 0.6461234297919951,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "registrationNote": "Manual ground contacts / native orientation / uniform scale. Geometry and character comparison reviewed separately; candidate art, not user-approved."
+    },
+    {
+      "key": "cable",
+      "level": 4,
+      "file": "assets/map/isometric/gym-facilities-v1/cable-4.png",
+      "crop": [
+        85,
+        24,
+        881,
+        1442
+      ],
+      "anchor": [
+        538,
+        1216
+      ],
+      "groundCenter": [
+        538,
+        1216
+      ],
+      "groundContacts": [
+        [
+          668,
+          994
+        ],
+        [
+          921,
+          1138
+        ],
+        [
+          408,
+          1440
+        ],
+        [
+          155,
+          1296
+        ]
+      ],
+      "scaleAt144": 0.109,
+      "width": 96.029,
+      "logicalFootprint": [
+        1,
+        2
+      ],
+      "openFootprint": true,
+      "groundSpanPx": [
+        83.494,
+        48.614
+      ],
+      "heightReference": {
+        "kind": "seat",
+        "points": [
+          [
+            485,
+            1085
+          ],
+          [
+            485,
+            1333
+          ]
+        ],
+        "pixels": 27.032
+      },
+      "contentSha256": "42e86d096abd631494f93340294f7c4ffbde74558f689dae1115c9462445376a",
+      "sourceSha256": "42e86d096abd631494f93340294f7c4ffbde74558f689dae1115c9462445376a",
+      "png": {
+        "width": 1060,
+        "height": 1484,
+        "transparentFraction": 0.6368267812643035,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "registrationNote": "Manual ground contacts / native orientation / uniform scale. Geometry and character comparison reviewed separately; candidate art, not user-approved."
+    },
+    {
+      "key": "dumbbell",
+      "level": 1,
+      "file": "assets/map/isometric/gym-facilities-v1/dumbbell-1.png",
+      "crop": [
+        202,
+        64,
+        1059,
+        935
+      ],
+      "anchor": [
+        742.5,
+        742.5
+      ],
+      "groundCenter": [
+        742.5,
+        742.5
+      ],
+      "groundContacts": [
+        [
+          670,
+          499
+        ],
+        [
+          1195,
+          802
+        ],
+        [
+          815,
+          986
+        ],
+        [
+          290,
+          683
+        ]
+      ],
+      "scaleAt144": 0.129,
+      "width": 136.611,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "openFootprint": false,
+      "groundSpanPx": [
+        116.745,
+        62.823
+      ],
+      "heightReference": {
+        "kind": "stand",
+        "points": [
+          [
+            811,
+            768
+          ],
+          [
+            811,
+            985
+          ]
+        ],
+        "pixels": 27.993000000000002
+      },
+      "contentSha256": "6259ebe1b71efc56bc237d1587489db270f6ddcf6510cf8884b85d0bc68c45ed",
+      "sourceSha256": "6259ebe1b71efc56bc237d1587489db270f6ddcf6510cf8884b85d0bc68c45ed",
+      "png": {
+        "width": 1499,
+        "height": 1049,
+        "transparentFraction": 0.6172891873896229,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "registrationNote": "Manual ground contacts / native orientation / uniform scale. Geometry and character comparison reviewed separately; candidate art, not user-approved."
+    },
+    {
+      "key": "dumbbell",
+      "level": 2,
+      "file": "assets/map/isometric/gym-facilities-v1/dumbbell-2.png",
+      "crop": [
+        204,
+        55,
+        1055,
+        948
+      ],
+      "anchor": [
+        742.5,
+        742.5
+      ],
+      "groundCenter": [
+        742.5,
+        742.5
+      ],
+      "groundContacts": [
+        [
+          670,
+          499
+        ],
+        [
+          1195,
+          802
+        ],
+        [
+          815,
+          986
+        ],
+        [
+          290,
+          683
+        ]
+      ],
+      "scaleAt144": 0.129,
+      "width": 136.095,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "openFootprint": false,
+      "groundSpanPx": [
+        116.745,
+        62.823
+      ],
+      "heightReference": {
+        "kind": "stand",
+        "points": [
+          [
+            811,
+            768
+          ],
+          [
+            811,
+            985
+          ]
+        ],
+        "pixels": 27.993000000000002
+      },
+      "contentSha256": "7a53ab0ee22e6ea2b4cebc8504f50720eb53221c206bfc8eade598b21e3ddedf",
+      "sourceSha256": "7a53ab0ee22e6ea2b4cebc8504f50720eb53221c206bfc8eade598b21e3ddedf",
+      "png": {
+        "width": 1500,
+        "height": 1049,
+        "transparentFraction": 0.5925878614553544,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "registrationNote": "Manual ground contacts / native orientation / uniform scale. Geometry and character comparison reviewed separately; candidate art, not user-approved."
+    },
+    {
+      "key": "dumbbell",
+      "level": 3,
+      "file": "assets/map/isometric/gym-facilities-v1/dumbbell-3.png",
+      "crop": [
+        194,
+        58,
+        1094,
+        941
+      ],
+      "anchor": [
+        742.5,
+        742.5
+      ],
+      "groundCenter": [
+        742.5,
+        742.5
+      ],
+      "groundContacts": [
+        [
+          670,
+          499
+        ],
+        [
+          1195,
+          802
+        ],
+        [
+          815,
+          986
+        ],
+        [
+          290,
+          683
+        ]
+      ],
+      "scaleAt144": 0.129,
+      "width": 141.126,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "openFootprint": false,
+      "groundSpanPx": [
+        116.745,
+        62.823
+      ],
+      "heightReference": {
+        "kind": "stand",
+        "points": [
+          [
+            811,
+            768
+          ],
+          [
+            811,
+            985
+          ]
+        ],
+        "pixels": 27.993000000000002
+      },
+      "contentSha256": "0357fc6d60485430af5c0279464aac1b387aaa245545b57ae13b9e7203f057a6",
+      "sourceSha256": "0357fc6d60485430af5c0279464aac1b387aaa245545b57ae13b9e7203f057a6",
+      "png": {
+        "width": 1500,
+        "height": 1049,
+        "transparentFraction": 0.5817642198919606,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "registrationNote": "Manual ground contacts / native orientation / uniform scale. Geometry and character comparison reviewed separately; candidate art, not user-approved."
+    },
+    {
+      "key": "dumbbell",
+      "level": 4,
+      "file": "assets/map/isometric/gym-facilities-v1/dumbbell-4.png",
+      "crop": [
+        191,
+        17,
+        1095,
+        1026
+      ],
+      "anchor": [
+        750,
+        823
+      ],
+      "groundCenter": [
+        750,
+        823
+      ],
+      "groundContacts": [
+        [
+          654,
+          616
+        ],
+        [
+          1235,
+          863
+        ],
+        [
+          847,
+          1030
+        ],
+        [
+          266,
+          783
+        ]
+      ],
+      "scaleAt144": 0.129,
+      "width": 141.255,
+      "logicalFootprint": [
+        1,
+        1
+      ],
+      "openFootprint": false,
+      "groundSpanPx": [
+        125.001,
+        53.406
+      ],
+      "heightReference": {
+        "kind": "stand",
+        "points": [
+          [
+            848,
+            730
+          ],
+          [
+            848,
+            1024
+          ]
+        ],
+        "pixels": 37.926
+      },
+      "contentSha256": "923e1cfc56c2b373879ebecf1604047d8b2a5e728b6b3098d6005559bbcd25a9",
+      "sourceSha256": "923e1cfc56c2b373879ebecf1604047d8b2a5e728b6b3098d6005559bbcd25a9",
+      "png": {
+        "width": 1500,
+        "height": 1049,
+        "transparentFraction": 0.5126850969176994,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "registrationNote": "Manual ground contacts / native orientation / uniform scale. Geometry and character comparison reviewed separately; candidate art, not user-approved."
+    },
+    {
+      "key": "floor",
+      "level": 1,
+      "file": "assets/map/isometric/gym-facilities-v1/floor-1.png",
+      "crop": [
+        133,
+        58,
+        1308,
+        936
+      ],
+      "anchor": [
+        787,
+        572
+      ],
+      "groundCenter": [
+        787,
+        572
+      ],
+      "groundContacts": [
+        [
+          1030,
+          152
+        ],
+        [
+          1436,
+          419
+        ],
+        [
+          544,
+          993
+        ],
+        [
+          138,
+          726
+        ]
+      ],
+      "scaleAt144": 0.12,
+      "width": 156.96,
+      "logicalFootprint": [
+        1,
+        2
+      ],
+      "openFootprint": false,
+      "groundSpanPx": [
+        155.76,
+        100.92
+      ],
+      "heightReference": {
+        "kind": "mat",
+        "points": [
+          [
+            544,
+            955
+          ],
+          [
+            544,
+            990
+          ]
+        ],
+        "pixels": 4.2
+      },
+      "contentSha256": "09dd18579fba91fb9abe156da8beb0d1d91cebe7173bde6544b0de249562fe71",
+      "sourceSha256": "09dd18579fba91fb9abe156da8beb0d1d91cebe7173bde6544b0de249562fe71",
+      "png": {
+        "width": 1536,
+        "height": 1024,
+        "transparentFraction": 0.6124172210693359,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "registrationNote": "Manual ground contacts / native orientation / uniform scale. Geometry and character comparison reviewed separately; candidate art, not user-approved."
+    },
+    {
+      "key": "floor",
+      "level": 2,
+      "file": "assets/map/isometric/gym-facilities-v1/floor-2.png",
+      "crop": [
+        133,
+        50,
+        1309,
+        944
+      ],
+      "anchor": [
+        787,
+        572
+      ],
+      "groundCenter": [
+        787,
+        572
+      ],
+      "groundContacts": [
+        [
+          1030,
+          152
+        ],
+        [
+          1436,
+          419
+        ],
+        [
+          544,
+          993
+        ],
+        [
+          138,
+          726
+        ]
+      ],
+      "scaleAt144": 0.12,
+      "width": 157.07999999999998,
+      "logicalFootprint": [
+        1,
+        2
+      ],
+      "openFootprint": false,
+      "groundSpanPx": [
+        155.76,
+        100.92
+      ],
+      "heightReference": {
+        "kind": "mat",
+        "points": [
+          [
+            544,
+            955
+          ],
+          [
+            544,
+            990
+          ]
+        ],
+        "pixels": 4.2
+      },
+      "contentSha256": "aa92396ef568072c92c7fccb007736e97218d5cdbb96e72eda8aef9347bfb134",
+      "sourceSha256": "aa92396ef568072c92c7fccb007736e97218d5cdbb96e72eda8aef9347bfb134",
+      "png": {
+        "width": 1536,
+        "height": 1024,
+        "transparentFraction": 0.6094735463460287,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "registrationNote": "Manual ground contacts / native orientation / uniform scale. Geometry and character comparison reviewed separately; candidate art, not user-approved."
+    },
+    {
+      "key": "floor",
+      "level": 3,
+      "file": "assets/map/isometric/gym-facilities-v1/floor-3.png",
+      "crop": [
+        118,
+        36,
+        1338,
+        979
+      ],
+      "anchor": [
+        785,
+        581
+      ],
+      "groundCenter": [
+        785,
+        581
+      ],
+      "groundContacts": [
+        [
+          1025,
+          140
+        ],
+        [
+          1448,
+          422
+        ],
+        [
+          552,
+          1005
+        ],
+        [
+          122,
+          742
+        ]
+      ],
+      "scaleAt144": 0.12,
+      "width": 160.56,
+      "logicalFootprint": [
+        1,
+        2
+      ],
+      "openFootprint": false,
+      "groundSpanPx": [
+        159.12,
+        103.8
+      ],
+      "heightReference": {
+        "kind": "mat",
+        "points": [
+          [
+            544,
+            955
+          ],
+          [
+            544,
+            990
+          ]
+        ],
+        "pixels": 4.2
+      },
+      "contentSha256": "18725559fc27ff24c79ee52d27cb0f04634bc40b101711b9def59d9f08bed4e6",
+      "sourceSha256": "18725559fc27ff24c79ee52d27cb0f04634bc40b101711b9def59d9f08bed4e6",
+      "png": {
+        "width": 1536,
+        "height": 1024,
+        "transparentFraction": 0.5867195129394531,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "registrationNote": "Manual ground contacts / native orientation / uniform scale. Geometry and character comparison reviewed separately; candidate art, not user-approved."
+    },
+    {
+      "key": "floor",
+      "level": 4,
+      "file": "assets/map/isometric/gym-facilities-v1/floor-4.png",
+      "crop": [
+        130,
+        57,
+        1309,
+        935
+      ],
+      "anchor": [
+        787,
+        572
+      ],
+      "groundCenter": [
+        787,
+        572
+      ],
+      "groundContacts": [
+        [
+          1030,
+          152
+        ],
+        [
+          1436,
+          419
+        ],
+        [
+          544,
+          993
+        ],
+        [
+          138,
+          726
+        ]
+      ],
+      "scaleAt144": 0.12,
+      "width": 157.07999999999998,
+      "logicalFootprint": [
+        1,
+        2
+      ],
+      "openFootprint": false,
+      "groundSpanPx": [
+        155.76,
+        100.92
+      ],
+      "heightReference": {
+        "kind": "mat",
+        "points": [
+          [
+            544,
+            955
+          ],
+          [
+            544,
+            990
+          ]
+        ],
+        "pixels": 4.2
+      },
+      "contentSha256": "553857fa05efab978bae1d95016f1ab1341eb4f501d56aab9076cd772abfc376",
+      "sourceSha256": "553857fa05efab978bae1d95016f1ab1341eb4f501d56aab9076cd772abfc376",
+      "png": {
+        "width": 1536,
+        "height": 1024,
+        "transparentFraction": 0.6045239766438802,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "registrationNote": "Manual ground contacts / native orientation / uniform scale. Geometry and character comparison reviewed separately; candidate art, not user-approved."
+    },
+    {
+      "key": "hands",
+      "level": 1,
+      "file": "assets/map/isometric/gym-facilities-v1/hands-1-real.png",
+      "crop": [
+        143,
+        124,
+        1151,
+        849
+      ],
+      "anchor": [
+        720,
+        550
+      ],
+      "groundCenter": [
+        720,
+        550
+      ],
+      "groundContacts": [
+        [
+          590,
+          145
+        ],
+        [
+          1285,
+          550
+        ],
+        [
+          830,
+          965
+        ],
+        [
+          145,
+          525
+        ]
+      ],
+      "scaleAt144": 0.05,
+      "width": 57.550000000000004,
+      "logicalFootprint": [
+        0,
+        0
+      ],
+      "openFootprint": false,
+      "groundSpanPx": [
+        57,
+        41
+      ],
+      "heightReference": {
+        "kind": "gripper",
+        "points": [
+          [
+            700,
+            190
+          ],
+          [
+            700,
+            320
+          ]
+        ],
+        "pixels": 6.5
+      },
+      "contentSha256": "e7f2be4cb2fbf30f42b2a77945cc1f708753185056123884f6bafa4058a249c8",
+      "sourceSha256": "e7f2be4cb2fbf30f42b2a77945cc1f708753185056123884f6bafa4058a249c8",
+      "png": {
+        "width": 1499,
+        "height": 1049,
+        "transparentFraction": 0.6304081971393704,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "registrationNote": "Manual ground contacts / native orientation / uniform scale. Geometry and character comparison reviewed separately; candidate art, not user-approved."
+    },
+    {
+      "key": "hands",
+      "level": 2,
+      "file": "assets/map/isometric/gym-facilities-v1/hands-2-real.png",
+      "crop": [
+        145,
+        121,
+        1160,
+        856
+      ],
+      "anchor": [
+        720,
+        550
+      ],
+      "groundCenter": [
+        720,
+        550
+      ],
+      "groundContacts": [
+        [
+          590,
+          145
+        ],
+        [
+          1285,
+          550
+        ],
+        [
+          830,
+          965
+        ],
+        [
+          145,
+          525
+        ]
+      ],
+      "scaleAt144": 0.05,
+      "width": 58,
+      "logicalFootprint": [
+        0,
+        0
+      ],
+      "openFootprint": false,
+      "groundSpanPx": [
+        57,
+        41
+      ],
+      "heightReference": {
+        "kind": "gripper",
+        "points": [
+          [
+            700,
+            190
+          ],
+          [
+            700,
+            320
+          ]
+        ],
+        "pixels": 6.5
+      },
+      "contentSha256": "d8b87cd0c5d1918e53d7b63ceff0e4d4e88c828f1df9c871c001e52ec88f12f6",
+      "sourceSha256": "d8b87cd0c5d1918e53d7b63ceff0e4d4e88c828f1df9c871c001e52ec88f12f6",
+      "png": {
+        "width": 1500,
+        "height": 1049,
+        "transparentFraction": 0.6304207181442644,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "registrationNote": "Manual ground contacts / native orientation / uniform scale. Geometry and character comparison reviewed separately; candidate art, not user-approved."
+    },
+    {
+      "key": "hands",
+      "level": 3,
+      "file": "assets/map/isometric/gym-facilities-v1/hands-3-real.png",
+      "crop": [
+        143,
+        105,
+        1150,
+        889
+      ],
+      "anchor": [
+        720,
+        553
+      ],
+      "groundCenter": [
+        720,
+        553
+      ],
+      "groundContacts": [
+        [
+          590,
+          145
+        ],
+        [
+          1285,
+          550
+        ],
+        [
+          830,
+          965
+        ],
+        [
+          145,
+          525
+        ]
+      ],
+      "scaleAt144": 0.05,
+      "width": 57.5,
+      "logicalFootprint": [
+        0,
+        0
+      ],
+      "openFootprint": false,
+      "groundSpanPx": [
+        57,
+        41
+      ],
+      "heightReference": {
+        "kind": "gripper",
+        "points": [
+          [
+            700,
+            190
+          ],
+          [
+            700,
+            320
+          ]
+        ],
+        "pixels": 6.5
+      },
+      "contentSha256": "09e43df886451a11e1371ddb5e6155c9b0df7e74f6081550698ca34db9316042",
+      "sourceSha256": "09e43df886451a11e1371ddb5e6155c9b0df7e74f6081550698ca34db9316042",
+      "png": {
+        "width": 1500,
+        "height": 1049,
+        "transparentFraction": 0.6134184938036225,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "registrationNote": "Manual ground contacts / native orientation / uniform scale. Geometry and character comparison reviewed separately; candidate art, not user-approved."
+    },
+    {
+      "key": "hands",
+      "level": 4,
+      "file": "assets/map/isometric/gym-facilities-v1/hands-4-real.png",
+      "crop": [
+        101,
+        99,
+        1236,
+        913
+      ],
+      "anchor": [
+        720,
+        557
+      ],
+      "groundCenter": [
+        720,
+        557
+      ],
+      "groundContacts": [
+        [
+          590,
+          145
+        ],
+        [
+          1285,
+          550
+        ],
+        [
+          830,
+          965
+        ],
+        [
+          145,
+          525
+        ]
+      ],
+      "scaleAt144": 0.05,
+      "width": 61.800000000000004,
+      "logicalFootprint": [
+        0,
+        0
+      ],
+      "openFootprint": false,
+      "groundSpanPx": [
+        57,
+        41
+      ],
+      "heightReference": {
+        "kind": "gripper",
+        "points": [
+          [
+            700,
+            190
+          ],
+          [
+            700,
+            320
+          ]
+        ],
+        "pixels": 6.5
+      },
+      "contentSha256": "2ff7db3d9eb389335bd3c217cd9618996be32de92b7ae9360e51b6703c7c8fe5",
+      "sourceSha256": "2ff7db3d9eb389335bd3c217cd9618996be32de92b7ae9360e51b6703c7c8fe5",
+      "png": {
+        "width": 1500,
+        "height": 1049,
+        "transparentFraction": 0.5711642834445504,
+        "cornerAlpha": [
+          0,
+          0,
+          1,
+          0
+        ]
+      },
+      "registrationNote": "Manual ground contacts / native orientation / uniform scale. Geometry and character comparison reviewed separately; candidate art, not user-approved."
+    },
+    {
+      "key": "handsfeet",
+      "level": 1,
+      "file": "assets/map/isometric/gym-facilities-v1/handsfeet-1.png",
+      "crop": [
+        133,
+        81,
+        1046,
+        1036
+      ],
+      "anchor": [
+        660,
+        852
+      ],
+      "groundCenter": [
+        660,
+        852
+      ],
+      "groundContacts": [
+        [
+          587,
+          592
+        ],
+        [
+          1095,
+          889
+        ],
+        [
+          729,
+          1112
+        ],
+        [
+          222,
+          815
+        ]
+      ],
+      "scaleAt144": 0.1,
+      "width": 104.60000000000001,
+      "logicalFootprint": [
+        2,
+        2
+      ],
+      "openFootprint": false,
+      "groundSpanPx": [
+        87.30000000000001,
+        52
+      ],
+      "heightReference": {
+        "kind": "worktop",
+        "points": [
+          [
+            732,
+            710
+          ],
+          [
+            732,
+            1100
+          ]
+        ],
+        "pixels": 39
+      },
+      "contentSha256": "07723e81882bbea56d7596d8fa7fc3e165ab37e10c8473d5fe85b928f0e03078",
+      "sourceSha256": "07723e81882bbea56d7596d8fa7fc3e165ab37e10c8473d5fe85b928f0e03078",
+      "png": {
+        "width": 1312,
+        "height": 1199,
+        "transparentFraction": 0.5898334994609329,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "registrationNote": "Manual ground contacts / native orientation / uniform scale. Geometry and character comparison reviewed separately; candidate art, not user-approved."
+    },
+    {
+      "key": "leg",
+      "level": 1,
+      "file": "assets/map/isometric/gym-facilities-v1/leg-1-real-camera.png",
+      "crop": [
+        159,
+        58,
+        1008,
+        1123
+      ],
+      "anchor": [
+        620,
+        885
+      ],
+      "groundCenter": [
+        620,
+        885
+      ],
+      "groundContacts": [
+        [
+          620,
+          624
+        ],
+        [
+          1040,
+          884
+        ],
+        [
+          620,
+          1153
+        ],
+        [
+          205,
+          887
+        ]
+      ],
+      "scaleAt144": 0.09,
+      "width": 90.72,
+      "logicalFootprint": [
+        1,
+        2
+      ],
+      "openFootprint": true,
+      "groundSpanPx": [
+        75.14999999999999,
+        47.61
+      ],
+      "heightReference": {
+        "kind": "seat",
+        "points": [
+          [
+            568,
+            679
+          ],
+          [
+            568,
+            990
+          ]
+        ],
+        "pixels": 27.99
+      },
+      "contentSha256": "225ba0913e6de716e2529f8f12e161c1631f6f75ded516babdb837d36d31f3e5",
+      "sourceSha256": "225ba0913e6de716e2529f8f12e161c1631f6f75ded516babdb837d36d31f3e5",
+      "png": {
+        "width": 1312,
+        "height": 1199,
+        "transparentFraction": 0.6229257358774588,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "registrationNote": "Manual ground contacts / native orientation / uniform scale. Geometry and character comparison reviewed separately; candidate art, not user-approved."
+    },
+    {
+      "key": "leg",
+      "level": 2,
+      "file": "assets/map/isometric/gym-facilities-v1/leg-2-real.png",
+      "crop": [
+        161,
+        57,
+        1006,
+        1125
+      ],
+      "anchor": [
+        620,
+        885
+      ],
+      "groundCenter": [
+        620,
+        885
+      ],
+      "groundContacts": [
+        [
+          620,
+          624
+        ],
+        [
+          1040,
+          884
+        ],
+        [
+          620,
+          1153
+        ],
+        [
+          205,
+          887
+        ]
+      ],
+      "scaleAt144": 0.09,
+      "width": 90.53999999999999,
+      "logicalFootprint": [
+        1,
+        2
+      ],
+      "openFootprint": true,
+      "groundSpanPx": [
+        75.14999999999999,
+        47.61
+      ],
+      "heightReference": {
+        "kind": "seat",
+        "points": [
+          [
+            568,
+            679
+          ],
+          [
+            568,
+            990
+          ]
+        ],
+        "pixels": 27.99
+      },
+      "contentSha256": "55fb77457da4e62c6ee9117f2518ae4236c74709d03856676e90e71956a79c8d",
+      "sourceSha256": "55fb77457da4e62c6ee9117f2518ae4236c74709d03856676e90e71956a79c8d",
+      "png": {
+        "width": 1312,
+        "height": 1199,
+        "transparentFraction": 0.6112124687239366,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "registrationNote": "Manual ground contacts / native orientation / uniform scale. Geometry and character comparison reviewed separately; candidate art, not user-approved."
+    },
+    {
+      "key": "leg",
+      "level": 3,
+      "file": "assets/map/isometric/gym-facilities-v1/leg-3-real.png",
+      "crop": [
+        159,
+        45,
+        1009,
+        1137
+      ],
+      "anchor": [
+        620,
+        885
+      ],
+      "groundCenter": [
+        620,
+        885
+      ],
+      "groundContacts": [
+        [
+          620,
+          624
+        ],
+        [
+          1040,
+          884
+        ],
+        [
+          620,
+          1153
+        ],
+        [
+          205,
+          887
+        ]
+      ],
+      "scaleAt144": 0.09,
+      "width": 90.81,
+      "logicalFootprint": [
+        1,
+        2
+      ],
+      "openFootprint": true,
+      "groundSpanPx": [
+        75.14999999999999,
+        47.61
+      ],
+      "heightReference": {
+        "kind": "seat",
+        "points": [
+          [
+            568,
+            679
+          ],
+          [
+            568,
+            990
+          ]
+        ],
+        "pixels": 27.99
+      },
+      "contentSha256": "06d60bfa9bfaaa789a377ed6305909f7241513da9198bf6cc9ed8b449b76f1d3",
+      "sourceSha256": "06d60bfa9bfaaa789a377ed6305909f7241513da9198bf6cc9ed8b449b76f1d3",
+      "png": {
+        "width": 1312,
+        "height": 1199,
+        "transparentFraction": 0.5796026668565267,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "registrationNote": "Manual ground contacts / native orientation / uniform scale. Geometry and character comparison reviewed separately; candidate art, not user-approved."
+    },
+    {
+      "key": "leg",
+      "level": 4,
+      "file": "assets/map/isometric/gym-facilities-v1/leg-4-real.png",
+      "crop": [
+        158,
+        36,
+        1077,
+        1154
+      ],
+      "anchor": [
+        620,
+        885
+      ],
+      "groundCenter": [
+        620,
+        885
+      ],
+      "groundContacts": [
+        [
+          620,
+          624
+        ],
+        [
+          1040,
+          884
+        ],
+        [
+          620,
+          1153
+        ],
+        [
+          205,
+          887
+        ]
+      ],
+      "scaleAt144": 0.09,
+      "width": 96.92999999999999,
+      "logicalFootprint": [
+        1,
+        2
+      ],
+      "openFootprint": true,
+      "groundSpanPx": [
+        75.14999999999999,
+        47.61
+      ],
+      "heightReference": {
+        "kind": "seat",
+        "points": [
+          [
+            568,
+            679
+          ],
+          [
+            568,
+            990
+          ]
+        ],
+        "pixels": 27.99
+      },
+      "contentSha256": "8a8ac1e4a9bc235270c18a01a350be9af972dabe79ece94e4e1c032a21091500",
+      "sourceSha256": "8a8ac1e4a9bc235270c18a01a350be9af972dabe79ece94e4e1c032a21091500",
+      "png": {
+        "width": 1312,
+        "height": 1199,
+        "transparentFraction": 0.5530879391362721,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "registrationNote": "Manual ground contacts / native orientation / uniform scale. Geometry and character comparison reviewed separately; candidate art, not user-approved."
+    },
+    {
+      "key": "neck",
+      "level": 1,
+      "file": "assets/map/isometric/gym-facilities-v1/neck-1-real-camera.png",
+      "crop": [
+        136,
+        47,
+        1022,
+        1191
+      ],
+      "anchor": [
+        600,
+        900
+      ],
+      "groundCenter": [
+        600,
+        900
+      ],
+      "groundContacts": [
+        [
+          565,
+          600
+        ],
+        [
+          1012,
+          886
+        ],
+        [
+          633,
+          1205
+        ],
+        [
+          190,
+          903
+        ]
+      ],
+      "scaleAt144": 0.115,
+      "width": 117.53,
+      "logicalFootprint": [
+        2,
+        1
+      ],
+      "openFootprint": true,
+      "groundSpanPx": [
+        94.53,
+        69.575
+      ],
+      "heightReference": {
+        "kind": "seat",
+        "points": [
+          [
+            493,
+            674
+          ],
+          [
+            493,
+            918
+          ]
+        ],
+        "pixels": 28.060000000000002
+      },
+      "contentSha256": "2768227ab51c4477e3f8fae9de3520e7ea9221d8cf17e57df3611b08d10380f9",
+      "sourceSha256": "2768227ab51c4477e3f8fae9de3520e7ea9221d8cf17e57df3611b08d10380f9",
+      "png": {
+        "width": 1254,
+        "height": 1254,
+        "transparentFraction": 0.6839606083499309,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "registrationNote": "Manual ground contacts / native orientation / uniform scale. Geometry and character comparison reviewed separately; candidate art, not user-approved."
+    },
+    {
+      "key": "neck",
+      "level": 2,
+      "file": "assets/map/isometric/gym-facilities-v1/neck-2-real.png",
+      "crop": [
+        135,
+        45,
+        1023,
+        1194
+      ],
+      "anchor": [
+        600,
+        900
+      ],
+      "groundCenter": [
+        600,
+        900
+      ],
+      "groundContacts": [
+        [
+          565,
+          600
+        ],
+        [
+          1012,
+          886
+        ],
+        [
+          633,
+          1205
+        ],
+        [
+          190,
+          903
+        ]
+      ],
+      "scaleAt144": 0.115,
+      "width": 117.64500000000001,
+      "logicalFootprint": [
+        2,
+        1
+      ],
+      "openFootprint": true,
+      "groundSpanPx": [
+        94.53,
+        69.575
+      ],
+      "heightReference": {
+        "kind": "seat",
+        "points": [
+          [
+            493,
+            674
+          ],
+          [
+            493,
+            918
+          ]
+        ],
+        "pixels": 28.060000000000002
+      },
+      "contentSha256": "be253a4f5a952678642d1807d29af99c9a8450e38881220208832636c13c87b8",
+      "sourceSha256": "be253a4f5a952678642d1807d29af99c9a8450e38881220208832636c13c87b8",
+      "png": {
+        "width": 1254,
+        "height": 1254,
+        "transparentFraction": 0.6732586504684213,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "registrationNote": "Manual ground contacts / native orientation / uniform scale. Geometry and character comparison reviewed separately; candidate art, not user-approved."
+    },
+    {
+      "key": "neck",
+      "level": 3,
+      "file": "assets/map/isometric/gym-facilities-v1/neck-3-real.png",
+      "crop": [
+        136,
+        36,
+        1023,
+        1204
+      ],
+      "anchor": [
+        600,
+        900
+      ],
+      "groundCenter": [
+        600,
+        900
+      ],
+      "groundContacts": [
+        [
+          565,
+          600
+        ],
+        [
+          1012,
+          886
+        ],
+        [
+          633,
+          1205
+        ],
+        [
+          190,
+          903
+        ]
+      ],
+      "scaleAt144": 0.115,
+      "width": 117.64500000000001,
+      "logicalFootprint": [
+        2,
+        1
+      ],
+      "openFootprint": true,
+      "groundSpanPx": [
+        94.53,
+        69.575
+      ],
+      "heightReference": {
+        "kind": "seat",
+        "points": [
+          [
+            493,
+            674
+          ],
+          [
+            493,
+            918
+          ]
+        ],
+        "pixels": 28.060000000000002
+      },
+      "contentSha256": "0a0cac78b2138f1bfc409552f5bcde04a8a00b151d5a8cb4c98a00a858f6fe66",
+      "sourceSha256": "0a0cac78b2138f1bfc409552f5bcde04a8a00b151d5a8cb4c98a00a858f6fe66",
+      "png": {
+        "width": 1254,
+        "height": 1254,
+        "transparentFraction": 0.6589707195348092,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "registrationNote": "Manual ground contacts / native orientation / uniform scale. Geometry and character comparison reviewed separately; candidate art, not user-approved."
+    },
+    {
+      "key": "neck",
+      "level": 4,
+      "file": "assets/map/isometric/gym-facilities-v1/neck-4-real.png",
+      "crop": [
+        137,
+        36,
+        1064,
+        1206
+      ],
+      "anchor": [
+        600,
+        900
+      ],
+      "groundCenter": [
+        600,
+        900
+      ],
+      "groundContacts": [
+        [
+          565,
+          600
+        ],
+        [
+          1012,
+          886
+        ],
+        [
+          633,
+          1205
+        ],
+        [
+          190,
+          903
+        ]
+      ],
+      "scaleAt144": 0.115,
+      "width": 122.36,
+      "logicalFootprint": [
+        2,
+        1
+      ],
+      "openFootprint": true,
+      "groundSpanPx": [
+        94.53,
+        69.575
+      ],
+      "heightReference": {
+        "kind": "seat",
+        "points": [
+          [
+            493,
+            674
+          ],
+          [
+            493,
+            918
+          ]
+        ],
+        "pixels": 28.060000000000002
+      },
+      "contentSha256": "7732ab329f6339cc21419109b3a6a4880412a42487468cd5e349ac2381f86f01",
+      "sourceSha256": "7732ab329f6339cc21419109b3a6a4880412a42487468cd5e349ac2381f86f01",
+      "png": {
+        "width": 1254,
+        "height": 1254,
+        "transparentFraction": 0.6419750260092744,
+        "cornerAlpha": [
+          1,
+          0,
+          0,
+          0
+        ]
+      },
+      "registrationNote": "Manual ground contacts / native orientation / uniform scale. Geometry and character comparison reviewed separately; candidate art, not user-approved."
+    },
+    {
+      "key": "pullup",
+      "level": 1,
+      "file": "assets/map/isometric/gym-facilities-v1/pullup-1.png",
+      "crop": [
+        206,
+        60,
+        842,
+        1137
+      ],
+      "anchor": [
+        625,
+        963
+      ],
+      "groundCenter": [
+        625,
+        963
+      ],
+      "groundContacts": [
+        [
+          565,
+          744
+        ],
+        [
+          1010,
+          983
+        ],
+        [
+          680,
+          1182
+        ],
+        [
+          240,
+          936
+        ]
+      ],
+      "scaleAt144": 0.16666666666666666,
+      "width": 140.33333333333331,
+      "logicalFootprint": [
+        2,
+        1
+      ],
+      "openFootprint": true,
+      "groundSpanPx": [
+        128.33333333333331,
+        73
+      ],
+      "heightReference": {
+        "kind": "upright",
+        "points": [
+          [
+            397,
+            110
+          ],
+          [
+            397,
+            830
+          ]
+        ],
+        "pixels": 120
+      },
+      "contentSha256": "faeb94ca445fcb5e84fcf7ce362d2f25a58e9d1b16f5ec8a2532358ed1cd92c2",
+      "sourceSha256": "faeb94ca445fcb5e84fcf7ce362d2f25a58e9d1b16f5ec8a2532358ed1cd92c2",
+      "png": {
+        "width": 1254,
+        "height": 1254,
+        "transparentFraction": 0.8354878424130502,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "registrationNote": "Manual ground contacts / native orientation / uniform scale. Geometry and character comparison reviewed separately; candidate art, not user-approved."
+    },
+    {
+      "key": "pullup",
+      "level": 2,
+      "file": "assets/map/isometric/gym-facilities-v1/pullup-2.png",
+      "crop": [
+        144,
+        58,
+        966,
+        1174
+      ],
+      "anchor": [
+        625,
+        963
+      ],
+      "groundCenter": [
+        625,
+        963
+      ],
+      "groundContacts": [
+        [
+          556,
+          711
+        ],
+        [
+          1100,
+          990
+        ],
+        [
+          696,
+          1214
+        ],
+        [
+          151,
+          934
+        ]
+      ],
+      "scaleAt144": 0.16666666666666666,
+      "width": 161,
+      "logicalFootprint": [
+        2,
+        1
+      ],
+      "openFootprint": true,
+      "groundSpanPx": [
+        158.16666666666666,
+        83.83333333333333
+      ],
+      "heightReference": {
+        "kind": "upright",
+        "points": [
+          [
+            397,
+            110
+          ],
+          [
+            397,
+            830
+          ]
+        ],
+        "pixels": 120
+      },
+      "contentSha256": "9a30f4ea74cba4ca7101a142e7d50bac95ddf32a5a9484ccdd327befa80fcd5c",
+      "sourceSha256": "9a30f4ea74cba4ca7101a142e7d50bac95ddf32a5a9484ccdd327befa80fcd5c",
+      "png": {
+        "width": 1254,
+        "height": 1254,
+        "transparentFraction": 0.7866660816169756,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "registrationNote": "Manual ground contacts / native orientation / uniform scale. Geometry and character comparison reviewed separately; candidate art, not user-approved."
+    },
+    {
+      "key": "pullup",
+      "level": 3,
+      "file": "assets/map/isometric/gym-facilities-v1/pullup-3.png",
+      "crop": [
+        205,
+        51,
+        847,
+        1146
+      ],
+      "anchor": [
+        625,
+        963
+      ],
+      "groundCenter": [
+        625,
+        963
+      ],
+      "groundContacts": [
+        [
+          565,
+          744
+        ],
+        [
+          1010,
+          983
+        ],
+        [
+          680,
+          1182
+        ],
+        [
+          240,
+          936
+        ]
+      ],
+      "scaleAt144": 0.16666666666666666,
+      "width": 141.16666666666666,
+      "logicalFootprint": [
+        2,
+        1
+      ],
+      "openFootprint": true,
+      "groundSpanPx": [
+        128.33333333333331,
+        73
+      ],
+      "heightReference": {
+        "kind": "upright",
+        "points": [
+          [
+            397,
+            110
+          ],
+          [
+            397,
+            830
+          ]
+        ],
+        "pixels": 120
+      },
+      "contentSha256": "129bb894f2d39b9af43fef6f2de87b271f6489225a79695f1b627fbd9a683688",
+      "sourceSha256": "129bb894f2d39b9af43fef6f2de87b271f6489225a79695f1b627fbd9a683688",
+      "png": {
+        "width": 1254,
+        "height": 1254,
+        "transparentFraction": 0.806679232516553,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "registrationNote": "Manual ground contacts / native orientation / uniform scale. Geometry and character comparison reviewed separately; candidate art, not user-approved."
+    },
+    {
+      "key": "pullup",
+      "level": 4,
+      "file": "assets/map/isometric/gym-facilities-v1/pullup-4.png",
+      "crop": [
+        205,
+        49,
+        885,
+        1148
+      ],
+      "anchor": [
+        625,
+        963
+      ],
+      "groundCenter": [
+        625,
+        963
+      ],
+      "groundContacts": [
+        [
+          565,
+          744
+        ],
+        [
+          1010,
+          983
+        ],
+        [
+          680,
+          1182
+        ],
+        [
+          240,
+          936
+        ]
+      ],
+      "scaleAt144": 0.16666666666666666,
+      "width": 147.5,
+      "logicalFootprint": [
+        2,
+        1
+      ],
+      "openFootprint": true,
+      "groundSpanPx": [
+        128.33333333333331,
+        73
+      ],
+      "heightReference": {
+        "kind": "upright",
+        "points": [
+          [
+            397,
+            110
+          ],
+          [
+            397,
+            830
+          ]
+        ],
+        "pixels": 120
+      },
+      "contentSha256": "f2e524f4be89d5099871f1fe802c46d5370094e2188783b4d80e24ed1976f179",
+      "sourceSha256": "f2e524f4be89d5099871f1fe802c46d5370094e2188783b4d80e24ed1976f179",
+      "png": {
+        "width": 1254,
+        "height": 1254,
+        "transparentFraction": 0.7749600004069911,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "registrationNote": "Manual ground contacts / native orientation / uniform scale. Geometry and character comparison reviewed separately; candidate art, not user-approved."
+    },
+    {
+      "key": "toes",
+      "level": 1,
+      "file": "assets/map/isometric/gym-facilities-v1/toes-1-real.png",
+      "crop": [
+        142,
+        130,
+        1185,
+        826
+      ],
+      "anchor": [
+        740,
+        535
+      ],
+      "groundCenter": [
+        740,
+        535
+      ],
+      "groundContacts": [
+        [
+          615,
+          133
+        ],
+        [
+          1320,
+          616
+        ],
+        [
+          850,
+          939
+        ],
+        [
+          158,
+          476
+        ]
+      ],
+      "scaleAt144": 0.045,
+      "width": 53.324999999999996,
+      "logicalFootprint": [
+        0,
+        0
+      ],
+      "openFootprint": false,
+      "groundSpanPx": [
+        52.29,
+        36.269999999999996
+      ],
+      "heightReference": {
+        "kind": "towel",
+        "points": [
+          [
+            851,
+            920
+          ],
+          [
+            851,
+            939
+          ]
+        ],
+        "pixels": 0.855
+      },
+      "contentSha256": "508714ef828a8d861a82e0be2c07cfc378aace638f35a947dbbe3e67f4b03d79",
+      "sourceSha256": "508714ef828a8d861a82e0be2c07cfc378aace638f35a947dbbe3e67f4b03d79",
+      "png": {
+        "width": 1448,
+        "height": 1086,
+        "transparentFraction": 0.6373094787501399,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "registrationNote": "Manual ground contacts / native orientation / uniform scale. Geometry and character comparison reviewed separately; candidate art, not user-approved."
+    },
+    {
+      "key": "toes",
+      "level": 2,
+      "file": "assets/map/isometric/gym-facilities-v1/toes-2-real.png",
+      "crop": [
+        138,
+        15,
+        1172,
+        1022
+      ],
+      "anchor": [
+        740,
+        423
+      ],
+      "groundCenter": [
+        740,
+        423
+      ],
+      "groundContacts": [
+        [
+          614,
+          17
+        ],
+        [
+          1303,
+          500
+        ],
+        [
+          842,
+          819
+        ],
+        [
+          174,
+          367
+        ]
+      ],
+      "scaleAt144": 0.045,
+      "width": 52.739999999999995,
+      "logicalFootprint": [
+        0,
+        0
+      ],
+      "openFootprint": false,
+      "groundSpanPx": [
+        50.805,
+        36.089999999999996
+      ],
+      "heightReference": {
+        "kind": "towel",
+        "points": [
+          [
+            842,
+            800
+          ],
+          [
+            842,
+            819
+          ]
+        ],
+        "pixels": 0.855
+      },
+      "contentSha256": "e47f7ec8dd63aa2c668aa35aeea996b1810392b1106825abe45ad3901e008e03",
+      "sourceSha256": "e47f7ec8dd63aa2c668aa35aeea996b1810392b1106825abe45ad3901e008e03",
+      "png": {
+        "width": 1448,
+        "height": 1086,
+        "transparentFraction": 0.5662411098562314,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "registrationNote": "Manual ground contacts / native orientation / uniform scale. Geometry and character comparison reviewed separately; candidate art, not user-approved."
+    },
+    {
+      "key": "toes",
+      "level": 3,
+      "file": "assets/map/isometric/gym-facilities-v1/toes-3-real.png",
+      "crop": [
+        74,
+        87,
+        1311,
+        981
+      ],
+      "anchor": [
+        736,
+        485
+      ],
+      "groundCenter": [
+        736,
+        485
+      ],
+      "groundContacts": [
+        [
+          606,
+          78
+        ],
+        [
+          1314,
+          580
+        ],
+        [
+          850,
+          906
+        ],
+        [
+          156,
+          432
+        ]
+      ],
+      "scaleAt144": 0.045,
+      "width": 58.995,
+      "logicalFootprint": [
+        0,
+        0
+      ],
+      "openFootprint": false,
+      "groundSpanPx": [
+        52.11,
+        37.26
+      ],
+      "heightReference": {
+        "kind": "towel",
+        "points": [
+          [
+            850,
+            888
+          ],
+          [
+            850,
+            906
+          ]
+        ],
+        "pixels": 0.8099999999999999
+      },
+      "contentSha256": "3b7518711a3f93b7c08ae42293fa2657472ae0565893913d48e812b67bebf0a8",
+      "sourceSha256": "3b7518711a3f93b7c08ae42293fa2657472ae0565893913d48e812b67bebf0a8",
+      "png": {
+        "width": 1448,
+        "height": 1086,
+        "transparentFraction": 0.5266310043445968,
+        "cornerAlpha": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "registrationNote": "Manual ground contacts / native orientation / uniform scale. Geometry and character comparison reviewed separately; candidate art, not user-approved."
+    },
+    {
+      "key": "toes",
+      "level": 4,
+      "file": "assets/map/isometric/gym-facilities-v1/toes-4-real.png",
+      "crop": [
+        31,
+        7,
+        1379,
+        1066
+      ],
+      "anchor": [
+        668,
+        510
+      ],
+      "groundCenter": [
+        668,
+        510
+      ],
+      "groundContacts": [
+        [
+          554,
+          118
+        ],
+        [
+          1224,
+          593
+        ],
+        [
+          759,
+          906
+        ],
+        [
+          113,
+          435
+        ]
+      ],
+      "scaleAt144": 0.045,
+      "width": 62.055,
+      "logicalFootprint": [
+        0,
+        0
+      ],
+      "openFootprint": false,
+      "groundSpanPx": [
+        49.995,
+        35.46
+      ],
+      "heightReference": {
+        "kind": "towel",
+        "points": [
+          [
+            759,
+            886
+          ],
+          [
+            759,
+            906
+          ]
+        ],
+        "pixels": 0.8999999999999999
+      },
+      "contentSha256": "4aefbb5270bc23aa7579653d96d1abd330d97f3a08bef83377d9747e2a1cb2bd",
+      "sourceSha256": "4aefbb5270bc23aa7579653d96d1abd330d97f3a08bef83377d9747e2a1cb2bd",
+      "png": {
+        "width": 1448,
+        "height": 1086,
+        "transparentFraction": 0.4357111606279825,
+        "cornerAlpha": [
+          0,
+          0,
+          1,
+          0
+        ]
+      },
+      "registrationNote": "Manual ground contacts / native orientation / uniform scale. Geometry and character comparison reviewed separately; candidate art, not user-approved."
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "id": "npc.station.gym_leg_base",
+  "name": "腿部抗阻架",
+  "displayTitle": "腿部抗阻架",
+  "npcLabel": "腿部抗阻架",
+  "appearanceSchedule": {
+    "start": "00:00",
+    "end": "00:00"
+  },
+  "location": {
+    "sceneId": "M0_Base_Inside_lv_1",
+    "x": 1,
+    "y": 6
+  },
+  "interactionChecks": {
+    "thirst": false,
+    "dirtyness": false
+  },
+  "mainMenu": {
+    "showChat": false,
+    "showWorkWhen": "never",
+    "showLeave": true
+  },
+  "gymStation": {
+    "id": "leg",
+    "footprint": [
+      1,
+      2
+    ]
+  },
+  "behavior": {
+    "type": "workbench",
+    "origin": "base_hideout"
+  },
+  "tags": [
+    "workbench",
+    "gym_station",
+    "non_combat",
+    "base_facility"
+  ]
+}

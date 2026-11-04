@@ -1,0 +1,16 @@
+{
+  "key": "pullup",
+  "level": 4,
+  "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a19ed0-9c8b-7de3-a1fe-c84088bef24a\\exec-f64ce845-764d-413b-9310-2135d14aabaa.png",
+  "file": "assets/map/isometric/gym-facilities-v1/pullup-4.png",
+  "mode": "built-in image_gen",
+  "prompt": "Edit the first picture, an ordinary gym pull-up exercise frame, into its fourth upgrade. Keep the exact original steel frame, bars, wrapped grips, reinforcing braces, same camera, same image framing and same foot positions. Add a small side-mounted sports weight-loading pin with two round iron weight discs and a folded exercise weight belt stored neatly at the base. The added hardware is for weighted pull-up sports training. No person or body parts. No backdrop, no floor or display pedestal, no text. Transparent PNG. Use remaining references only for approved bold dark outlines, hand-painted wood/metal volume and sparse localized wear. Light upper left. Retain all prior features and native orientation.",
+  "references": [
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/map/isometric/gym-facilities-v1/pullup-3.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/street-thugs-v1/tier-1.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/map/isometric/interactive-devices-v1/toolbench.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/street-thug-boss-room-v6/transit-rack.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/gym-facilities-v1/pullup-geometry.png"
+  ],
+  "retry": "Previous output moderation error; ordinary gym weight-loading hardware clarified."
+}

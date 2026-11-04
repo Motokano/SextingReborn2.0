@@ -1,0 +1,15 @@
+{
+  "key": "dumbbell",
+  "level": 3,
+  "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a19ed0-9c8b-7de3-a1fe-c84088bef24a\\exec-06d66b54-9b73-42b0-83a8-d373f6750ada.png",
+  "file": "assets/map/isometric/gym-facilities-v1/dumbbell-3.png",
+  "mode": "built-in image_gen",
+  "prompt": "Edit the FIRST supplied PNG to create LEVEL 3 of the exact same gym facility. Preserve native camera, orientation, ground footprint, support feet positions, canvas framing, proportions, object identity and major colors. Other images are ORIGINAL APPROVED style references: bold dark outlines, painted volume, sparsely placed wear. Apply ALL upgrades below cumulatively, no later upgrades. One isolated game pawn, no people, no words, no extra floor or pedestal. True transparent PNG, clean alpha outside the actual object and in frame openings; remove any background glow/cast shadow. Game renders contact shadows separately.\nBASE IDENTITY: LEVEL 1 ADJUSTABLE DUMBBELL SET. Two short adjustable dumbbells with a single small iron plate on each end, plain rod grips and simple threaded collars, resting securely on a low squat reclaimed-wood stand with four feet. One spare small plate leaning against a foot. Surface28px world height, top43px. Footprint1.0x0.7cell. No big plate stacks, no high shelving, no high-tech rack.\nUPGRADES REQUIRED: 2: Increase removable iron plates on BOTH dumbbells from one to three at each end; add a small spare plate stack beside stand. Same dumbbell length/stand footprint.\n3: Keep more plates; replace simple collars with robust locking collars and conspicuous textured/wrapped reinforced handles. Add metal edge protection to stand, keep stand size.\nLight upper-left, practical salvaged contemporary wood/steel/olive fabric style, substantial readable changes at144px tile. Do not resize or reorient whole object.",
+  "references": [
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/map/isometric/gym-facilities-v1/dumbbell-1.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/street-thugs-v1/tier-1.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/map/isometric/interactive-devices-v1/toolbench.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/street-thug-boss-room-v6/transit-rack.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/gym-facilities-v1/dumbbell-geometry.png"
+  ]
+}

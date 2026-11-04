@@ -1,0 +1,15 @@
+{
+  "key": "barbell",
+  "level": 3,
+  "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a19ed0-9c8b-7de3-a1fe-c84088bef24a\\exec-9e368b15-5730-4f3c-81b7-1decabf3b4c1.png",
+  "file": "assets/map/isometric/gym-facilities-v1/barbell-3.png",
+  "mode": "built-in image_gen",
+  "prompt": "Edit the FIRST supplied PNG to create LEVEL 3 of the exact same gym facility. Preserve native camera, orientation, ground footprint, support feet positions, canvas framing, proportions, object identity and major colors. Other images are ORIGINAL APPROVED style references: bold dark outlines, painted volume, sparsely placed wear. Apply ALL upgrades below cumulatively, no later upgrades. One isolated game pawn, no people, no words, no extra floor or pedestal. True transparent PNG, clean alpha outside the actual object and in frame openings; remove any background glow/cast shadow. Game renders contact shadows separately.\nBASE IDENTITY: LEVEL 1 BARBELL TRAINING STATION. A simple freestanding two-upright squat/bench support rack, one long metal barbell with modest single iron plates at each end resting securely on hooks, narrow low olive padded bench extending along the long ground axis toward front, four bench feet. Clear functional proportions, no wall. Rack top96px, bench25px, ground1.35x1.85cells. Same ground directions as template. Basic simple load-bearing steel, no extra storage rack or giant weight stacks yet.\nUPGRADES REQUIRED: 2: Keep exactly same rack/bench proportions and bar height; add diagonal gussets, substantial bolt plates to rack and cross-braces beneath bench, reupholster bench in reinforced olive padding.\n3: Keep reinforced structure; add visibly more matched iron plates to each barbell end and spare plates on newly attached low side storage pegs within existing footprint.\nLight upper-left, practical salvaged contemporary wood/steel/olive fabric style, substantial readable changes at144px tile. Do not resize or reorient whole object.",
+  "references": [
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/map/isometric/gym-facilities-v1/barbell-1.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/street-thugs-v1/tier-1.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/map/isometric/interactive-devices-v1/toolbench.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/street-thug-boss-room-v6/transit-rack.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/gym-facilities-v1/barbell-geometry.png"
+  ]
+}

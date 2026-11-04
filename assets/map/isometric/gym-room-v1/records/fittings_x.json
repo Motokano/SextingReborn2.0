@@ -1,0 +1,15 @@
+{
+  "id": "fittings_x",
+  "file": "assets/map/isometric/gym-room-v1/fittings_x.png",
+  "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a19ed0-9c8b-7de3-a1fe-c84088bef24a\\exec-bebba33d-e30b-4893-8730-489e0e455800.png",
+  "tool": "built-in image_gen",
+  "revision": 2,
+  "prompt": "Use case: stylized-concept. Production game environment sprite following the three approved style references, strong dark variable-weight outlines, hand painted broad light/shadow planes, warm muted industrial colors, small purposeful wear, light from upper left. Not photorealistic, not PBR, not plastic 3D, not a flat vector icon. Reference image 1 is character rendering style ONLY (do not include the person or circular base). Image 2 is approved furniture material style ONLY (no circular base). Image 3 is approved scene furniture style. Image 4 is the object's exact geometric camera/size template: ground axes slope +0.7071 and -0.7071, upright verticals, parallel orthographic lines, no vanishing point. Image 5 is ONLY mood/layout inspiration from a makeshift underground gym, do not copy its photography or logos. Single isolated subject, fully inside canvas with margin, true alpha transparency around it, no background, no cast shadow, no floor, no pedestal, no grid, no text labels. Match geometry template camera and aspect before adding detail.\nSubject: A wall-mounted service cluster only, with TWO narrow parallel old steel utility pipes running horizontally along the template +x wall axis, two pipe clamps, a short branching elbow, a small square vent grille, two torn paper workout diagrams with simple line drawings of an exercise pose (no readable words), and one small caged maintenance bulb with amber glass but NO glow. Wall-mounted objects occupy the plane shown by the template, about3 cells long and90px tall at144px tile. DO NOT draw a wall panel behind them. All empty spaces between fixtures are truly transparent. Single coherent wall fixture cluster.\nCRITICAL CAMERA CORRECTION: faithfully trace the fourth reference geometry plane. The long horizontal pipe must slope +0.7071 DOWN toward the RIGHT in the final raster, not a shallow 30-degree isometric pipe. For every 100 pixels of horizontal travel, the pipe rises/falls 70.71 pixels. Upright lines stay VERTICAL. Parallel horizontal edges of posters and boxes have this exact same steep slope. Prefer a square canvas. No haze, no glow, no background pixels anywhere between the objects. Every gap is pure transparent. The bulb is unlit amber glass. NO backdrop or contact/cast shadow at all.",
+  "references": [
+    "reference/street-thugs-v1/tier-1.png",
+    "assets/map/isometric/interactive-devices-v1/toolbench.png",
+    "assets/dungeon/street-thug-boss-room-v6/transit-rack.png",
+    "reference/gym-room-v1/fittings_x-geometry.png",
+    "reference/gym-room-v1/tarkov-gym-reference.jpg"
+  ]
+}

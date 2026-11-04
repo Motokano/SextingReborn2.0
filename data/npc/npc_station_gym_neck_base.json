@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "id": "npc.station.gym_neck_base",
+  "name": "颈部训练机",
+  "displayTitle": "颈部训练机",
+  "npcLabel": "颈部训练机",
+  "appearanceSchedule": {
+    "start": "00:00",
+    "end": "00:00"
+  },
+  "location": {
+    "sceneId": "M0_Base_Inside_lv_1",
+    "x": 1,
+    "y": 4
+  },
+  "interactionChecks": {
+    "thirst": false,
+    "dirtyness": false
+  },
+  "mainMenu": {
+    "showChat": false,
+    "showWorkWhen": "never",
+    "showLeave": true
+  },
+  "gymStation": {
+    "id": "neck",
+    "footprint": [
+      2,
+      1
+    ]
+  },
+  "behavior": {
+    "type": "workbench",
+    "origin": "base_hideout"
+  },
+  "tags": [
+    "workbench",
+    "gym_station",
+    "non_combat",
+    "base_facility"
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "key": "neck",
+  "level": 2,
+  "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a19ed0-9c8b-7de3-a1fe-c84088bef24a\\exec-ad24952d-02ef-424f-b1a0-97d69c3bf465.png",
+  "file": "assets/map/isometric/gym-facilities-v1/neck-2.png",
+  "mode": "built-in image_gen",
+  "prompt": "Edit the FIRST supplied transparent gym-equipment illustration into level 2. This is a seated sports resistance-training machine for a game gym. Keep the same empty seat, support frame, native view, ground feet, image size and colors exactly. ONLY improve the soft olive exercise headband: thicker segmented cushioning, broader comfortable fabric, two adjustment buckles, and neat reinforced textile connections to its elastic exercise band. Retain the simple original side hand grips; do not add side arms, extra resistance controls, or weights. No person or human body part. One isolated apparatus on true transparent background, including gaps; no floor, background glow, cast shadow or pedestal. Other supplied images are approved hand-painted style/geometry references: bold outline, sculpted painted shading, upper-left light, localized wear. Same framing and scale as the first image.",
+  "references": [
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/map/isometric/gym-facilities-v1/neck-1.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/street-thugs-v1/tier-1.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/map/isometric/interactive-devices-v1/toolbench.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/street-thug-boss-room-v6/transit-rack.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/gym-facilities-v1/neck-geometry.png"
+  ],
+  "retry": "Previous output moderation error; ordinary empty sports apparatus and padded exercise headband clarified."
+}

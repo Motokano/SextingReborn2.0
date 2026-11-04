@@ -1,0 +1,15 @@
+{
+  "key": "cable",
+  "level": 2,
+  "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a19ed0-9c8b-7de3-a1fe-c84088bef24a\\exec-9987ad89-cfda-483c-bea4-4404009d8c8a.png",
+  "file": "assets/map/isometric/gym-facilities-v1/cable-2.png",
+  "mode": "built-in image_gen",
+  "prompt": "Edit the FIRST supplied PNG to create LEVEL 2 of the exact same gym facility. Preserve native camera, orientation, ground footprint, support feet positions, canvas framing, proportions, object identity and major colors. Other images are ORIGINAL APPROVED style references: bold dark outlines, painted volume, sparsely placed wear. Apply ALL upgrades below cumulatively, no later upgrades. One isolated game pawn, no people, no words, no extra floor or pedestal. True transparent PNG, clean alpha outside the actual object and in frame openings; remove any background glow/cast shadow. Game renders contact shadows separately.\nBASE IDENTITY: LEVEL 1 CABLE PULLEY FRAME. Tall open welded steel single-column cable exercise frame with top pulley, visible routed rope descending to a hanging wide pull-down handle, small stack of four rectangular iron weights at back, low olive padded seat near front, ground stabilizer rails. Functional cable route connects handle/pulley/stack. Top120px, seat27px, footprint1x1.4cells. Low side pulley for rowing. No enclosure, no wall, no electronics. Plain initial pulley and rope, modest weights.\nUPGRADES REQUIRED: 2: Replace basic pulleys with larger recognizable metal pulley wheels in sturdy bearing housings, including low-row pulley. Preserve rope route, frame height, seat and modest stack.\nLight upper-left, practical salvaged contemporary wood/steel/olive fabric style, substantial readable changes at144px tile. Do not resize or reorient whole object.",
+  "references": [
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/map/isometric/gym-facilities-v1/cable-1.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/street-thugs-v1/tier-1.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/map/isometric/interactive-devices-v1/toolbench.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/street-thug-boss-room-v6/transit-rack.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/gym-facilities-v1/cable-geometry.png"
+  ]
+}

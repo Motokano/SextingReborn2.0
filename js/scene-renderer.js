@@ -1418,6 +1418,8 @@
                 return {
                     x: gx,
                     y: gy,
+                    terrainVisible: canVisual,
+                    sceneryVisible: canVisual && canIdentify && !(occlusionUiCfgForMeta.enabled && occlusionUiCfgForMeta.stripDynamicOnRearAdjacent && facingCfgForVisionMeta.enabled && isRearAdjacentTriple(st, gx, gy)),
                     player: (gx === st.x && gy === st.y),
                     adjacent: adjacent,
                     leapTarget: leapTarget,

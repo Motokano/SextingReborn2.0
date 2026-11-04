@@ -66,7 +66,7 @@ export function combatPanel(g, publish, t) {
             const gr = getGroup(p.id), list = groupEntries(p.id), pages = Math.max(1, Math.ceil(list.length / 8));
             p.page = Math.max(0, Math.min(p.page || 0, pages - 1));
             Object.assign(result, { title: gr.name, count: countUnlocked(p.id), total: list.length, page: p.page, pages, complete: AP.isGroupComplete(p.id), passive: passiveName(AP.getPassiveById(AP.getEquippedPassiveForGroup(p.id))) });
-            result.items = list.slice(p.page * 8, p.page * 8 + 8).map(m => ({ id: m.id, name: gr.side === 'L' ? m.name.replace(/（左）$/, '') : gr.side === 'R' ? m.name.replace(/（右）$/, '') : m.name, fullName: m.name, unlocked: AP.isUnlocked(m.id), effects: (m.effects || []).filter(e => e.delta).map(e => ({ name: statLabels[e.type] || e.type, value: e.delta })) }));
+            result.items = list.slice(p.page * 8, p.page * 8 + 8).map(m => ({ id: m.id, name: gr.side === 'L' ? m.name.replace(/（左）$/, '') : gr.side === 'R' ? m.name.replace(/（右）$/, '') : m.name, fullName: m.name, unlocked: AP.isUnlocked(m.id), progress: AP.getProgress(m.id), effects: (m.effects || []).filter(e => e.delta).map(e => ({ name: statLabels[e.type] || e.type, value: e.delta })) }));
         } else if (p.kind === 'passive') {
             result.title = `${getGroup(p.id).name} · 大型被动`;
             const map = AP.getEquippedMap();
@@ -143,14 +143,7 @@ export function combatPanel(g, publish, t) {
         }
         closePicker();
     }
-    function unlock(id, session) {
-        if (!currentSession(session) || !validPicker() || picker.kind !== 'muscles') return;
-        const entry = groupEntries(picker.id).find(m => m.id === id);
-        if (!entry || !g.Muscles.unlock(id)?.ok) return;
-        g.GameLog?.log(t('log.system.muscle.unlocked', { id: entry.name }), 'system');
-        g.CharacterAttributes?.recalcCharacterStats({ getEquipmentState: () => IE.getState().equipment, getSkillsState: () => IE.getState().skills, getItemTemplate: IE.getItemTemplate, getEnchantEntry: IE.getEnchantEntry, getStrengthLevel: () => IE.getSkillLevel('survival_strength') });
-        g.SceneHud.refresh('status'); refresh();
-    }
+    function unlock() { /* Progress is awarded by completed training. */ }
     function passive(id, action, session) {
         if (!currentSession(session) || !validPicker() || picker.kind !== 'passive') return;
         const AP = g.Muscles, def = AP.getPassiveById(id), group = getGroup(picker.id);

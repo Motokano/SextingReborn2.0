@@ -1,0 +1,16 @@
+{
+  "key": "leg",
+  "level": 1,
+  "revision": 2,
+  "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a19ed0-9c8b-7de3-a1fe-c84088bef24a\\exec-fac7baa9-e875-4056-8dee-ce335b573534.png",
+  "file": "assets/map/isometric/gym-facilities-v1/leg-1-real.png",
+  "mode": "built-in image_gen",
+  "prompt": "Draw ONE transparent PNG game equipment pawn using the supplied real product photo for recognizable mechanically plausible structure. Render it in the established painted game style of the supplied furniture references, not as a photograph. Bold near-black outer outline, thinner inside lines, simple painted volumes, upper-left lighting; blue-gray painted tubular steel, muted olive upholstered pads, modest wear on edges. Modern secondhand fitness equipment: normal manufactured construction, clean joints, small realistic repairs only. No medieval ornament, excessive straps, rivet armor, unexplained machinery, text, logos, people, scenic floor, platform plinth or cast shadow. The separate geometry template defines the game camera and footprint only. Orthographic native camera with ground axes slopes +0.7071/-0.7071 and vertical posts upright. Clear transparent holes in frames. Remove template markings and background completely. Entire object with transparent margin; renderer will add shadow separately.\nLEVEL1 seated plate-loaded LEG EXTENSION / LEG CURL machine, following the supplied Titan product photo closely for structure. One ordinary rectangular padded seat and adjustable backrest, two side hand grips, an upper thigh hold-down cylindrical roller and a lower ankle roller connected to a pivoting lever. A real circular range-selector plate and pivot at knee level; plate-loading horn is attached to the MOVING lever beside the seat with ONE small iron plate. Weight must move with lever, not be fixed to support upright. Rectangular tubular steel frame, two ground stabilizer rails and normal rubber feet. Desaturated blue-gray paint and olive upholstery with limited wear. No ornate bronze brackets, wooden chair frame or random diagonal rods. Exact template camera, ground0.95x1.5cells,seat28px,top78pxworld. True transparent openings.",
+  "references": [
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/gym-facilities-v1/leg-geometry.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/gym-facilities-v1/real-equipment/titan-leg.jpg",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/street-thugs-v1/tier-1.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/map/isometric/interactive-devices-v1/toolbench.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/street-thug-boss-room-v6/transit-rack.png"
+  ]
+}

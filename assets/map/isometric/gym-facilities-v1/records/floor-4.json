@@ -1,0 +1,15 @@
+{
+  "key": "floor",
+  "level": 4,
+  "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a19ed0-9c8b-7de3-a1fe-c84088bef24a\\exec-65328f96-a19a-4121-8ab7-670fde7e0506.png",
+  "file": "assets/map/isometric/gym-facilities-v1/floor-4.png",
+  "mode": "built-in image_gen",
+  "prompt": "Edit the FIRST supplied PNG to create LEVEL 4 of the exact same gym facility. Preserve its native camera, orientation, ground footprint, positions of support feet, canvas framing, proportions, object identity and major colors. The other supplied images are ORIGINAL APPROVED style references; retain their bold dark outlines and hand-painted volumetric shading. Apply ALL upgrades below cumulatively, but no later upgrades. This is one isolated game pawn, no people, no words, no extra floor or pedestal. Transparent PNG with clean alpha outside the actual object; remove any background glow or cast shadow. Independent contact shadows will be rendered by the game.\nBASE IDENTITY: LEVEL 1 BASIC TRAINING AREA. One flat long rectangular olive canvas exercise mat, stitched repaired edge, thick folded padding, a small rolled knee pad tucked along its back short edge. No holes in usable surface. No weights, handles, straps or machines at this initial level. Match 0.95 x 1.8-cell footprint; near-ground mat, not a table. Camera/rectangle as template.\nUPGRADES REQUIRED: 2: Replace the mat surface with thicker dark olive ribbed anti-slip rubber sections and reinforced stitched border. Preserve outline footprint and knee pad. No other additions.\n3: Keep the improved rubber mat; add two low push-up support handles securely on sides and two functional adjustable anchoring straps. Preserve footprint and all existing upgrades.\n4: Keep rubber, handles and straps; add a folded rugged weighted training vest with iron inserts and a matched pair of compact weight cuffs neatly at the back end. Keep usable central surface clear.\nKeep light upper-left, salvaged practical contemporary wood/steel/olive fabric style, visible substantial changes readable on a144px tile. Do not resize or reorient the whole object.",
+  "references": [
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/map/isometric/gym-facilities-v1/floor-1.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/street-thugs-v1/tier-1.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/map/isometric/interactive-devices-v1/toolbench.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/street-thug-boss-room-v6/transit-rack.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/gym-facilities-v1/floor-geometry.png"
+  ]
+}

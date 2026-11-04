@@ -1,0 +1,15 @@
+{
+  "key": "ankle",
+  "level": 3,
+  "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a19ed0-9c8b-7de3-a1fe-c84088bef24a\\exec-fa8e3995-539b-4873-9389-48df229d28fc.png",
+  "file": "assets/map/isometric/gym-facilities-v1/ankle-3.png",
+  "mode": "built-in image_gen",
+  "prompt": "Edit the FIRST supplied PNG to create LEVEL 3 of the exact same sports exercise module. Preserve native camera, orientation, ground footprint, positions, canvas framing, proportions, identity and colors. Other images are ORIGINAL APPROVED style references: bold dark outlines and painted volume. Apply ALL upgrades below cumulatively, no later upgrades. One isolated sports equipment module, no people or body parts, no words, no extra floor or pedestal. True transparent PNG, clean alpha outside object; remove any background glow/cast shadow. Game renders contact shadows separately.\nBASE IDENTITY: LEVEL 1 REMOVABLE ANKLE TRAINING MODULE. ONE low independent foot-size ankle rocker on its own functional wooden footplate: one rectangular pivoting pedal with simple fabric fastening strap, metal hinge on squat frame with two side resistance bands. No foot or person, no table, no surrounding flooring. Footprint0.65x0.6cell maximum15px height atworldscale. Clear physical exercise mechanism rather than shoe or box.\nUPGRADES REQUIRED: 2: Reinforce the small pedal frame with metal edge brackets and broad new adjustable olive foot strap. Same dimensions.\n3: Keep straps/brackets; replace basic hinge with stronger paired pivot links and side transmission cam, clearly connected to resistance spring.\nLight upper-left, practical salvaged contemporary wood/steel/olive fabric, substantial changes visible at small game scale. Do not resize or reorient whole object.",
+  "references": [
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/map/isometric/gym-facilities-v1/ankle-1.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/street-thugs-v1/tier-1.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/map/isometric/interactive-devices-v1/toolbench.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/street-thug-boss-room-v6/transit-rack.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/gym-facilities-v1/ankle-geometry.png"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "key": "dumbbell",
+  "level": 1,
+  "source": "C:/Users/haoxian.huang/.codex/generated_images/01a19ed0-9c8b-7de3-a1fe-c84088bef24a/exec-d81ff1d6-9943-441a-a302-9c92c82c8e64.png",
+  "file": "assets/map/isometric/gym-facilities-v1/dumbbell-1.png",
+  "mode": "built-in image_gen",
+  "prompt": "Edit the supplied geometry-template image into ONE finished transparent PNG game-furniture pawn. The template is an edit target defining camera, ground-contact polygon and scale, not a style reference. Remove its background, markings, labels, grid and solid guide volume completely. Use the other supplied approved game images ONLY as style/material references: street thug = bold dark silhouette and lively hand-painted volume, toolbench = outline and wood/metal shading (DO NOT copy its circular pedestal), transit rack = reused contemporary industrial steel and repaired construction, mat = muted patched fabric. No people. No letters, numbers, UI, floor, scenic background, circular display base, added foundation slab, or cast shadow. True transparent background including openings between rails. \nExact orthographic game camera: horizontal ground axes slope +0.7071 and -0.7071, vertical posts straight vertical, no vanishing point. Native long direction and ground corners follow template. Keep generous transparent margin, entire object within image, no cropping. Painted 2.5D game art, bold near-black outer contour, thinner varied inner marks, broad sculpted shadow planes, light upper-left, warmer worn wood, desaturated olive padding and blue-gray iron, restrained rusty orange repairs. Distinct useful shapes, sparsely placed wear, not noisy scratches, not photo, not polished 3D, not vector icon. All equipment is functional salvaged modern gym apparatus in a resource-scarce hideout, visibly handmade/repaired but sturdy. Match the existing approved illustrations, no futuristic electronics.\nSUBJECT: LEVEL 1 ADJUSTABLE DUMBBELL SET. Two short adjustable dumbbells with a single small iron plate on each end, plain rod grips and simple threaded collars, resting securely on a low squat reclaimed-wood stand with four feet. One spare small plate leaning against a foot. Surface28px world height, top43px. Footprint1.0x0.7cell. No big plate stacks, no high shelving, no high-tech rack.",
+  "references": [
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/gym-facilities-v1/dumbbell-geometry.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/street-thugs-v1/tier-1.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/map/isometric/interactive-devices-v1/toolbench.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/street-thug-boss-room-v6/transit-rack.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/street-thug-boss-room-v6/worn-mat.png"
+  ]
+}

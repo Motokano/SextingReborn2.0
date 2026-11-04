@@ -25,6 +25,8 @@
     "dungeon.openBag": true,
     "dungeon.claimBag": true,
     "dungeon.claimBatch": true,
-    "checkpoint.task": true
+    "checkpoint.task": true,
+    "sleep": true,
+    "gym": true
   }
 }

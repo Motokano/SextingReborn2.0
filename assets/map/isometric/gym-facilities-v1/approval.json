@@ -1,0 +1,12 @@
+{
+  "date": "2026-11-03",
+  "status": "approved_for_production",
+  "userDecision": "可以，可以接进正式游戏了，设施的管线需要对好",
+  "layout": "data/gym-layout.json",
+  "scope": "现行紧凑地下室布局、原图及各设施四档外观，原生朝向、等比缩放和独立阴影保持",
+  "runtime": [
+    "js/gym-scene.js",
+    "js/gym-art.mjs",
+    "js/gym-room-art.mjs"
+  ]
+}

@@ -2292,7 +2292,7 @@
     {
       "buff_id": "survival_nutrition_abundant",
       "name": "营养充沛",
-      "desc": "营养监听状态：精力转潜能效率增益（由自修/学习链路读取）。",
+      "desc": "精力转潜能效率提升，锻炼效率提高10%。",
       "durationTicks": 1,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
@@ -2327,7 +2327,7 @@
     {
       "buff_id": "survival_nutrition_peak",
       "name": "营养极境",
-      "desc": "营养监听状态：底气上限加成。",
+      "desc": "底气上限提升，锻炼效率提高10%。",
       "durationTicks": 1,
       "maxStacks": 1,
       "stacksAddOnApply": 1,

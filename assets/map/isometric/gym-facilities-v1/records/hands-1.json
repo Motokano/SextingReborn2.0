@@ -1,0 +1,16 @@
+{
+  "key": "hands",
+  "level": 1,
+  "revision": 2,
+  "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a19ed0-9c8b-7de3-a1fe-c84088bef24a\\exec-e6fee70b-d2ea-441f-a632-95e8bda48296.png",
+  "file": "assets/map/isometric/gym-facilities-v1/hands-1-real.png",
+  "mode": "built-in image_gen",
+  "prompt": "Draw ONE transparent PNG game equipment pawn using the supplied real product photo for recognizable mechanically plausible structure. Render it in the established painted game style of the supplied furniture references, not as a photograph. Bold near-black outer outline, thinner inside lines, simple painted volumes, upper-left lighting; blue-gray painted tubular steel, muted olive upholstered pads, modest wear on edges. Modern secondhand fitness equipment: normal manufactured construction, clean joints, small realistic repairs only. No medieval ornament, excessive straps, rivet armor, unexplained machinery, text, logos, people, scenic floor, platform plinth or cast shadow. The separate geometry template defines the game camera and footprint only. Orthographic native camera with ground axes slopes +0.7071/-0.7071 and vertical posts upright. Clear transparent holes in frames. Remove template markings and background completely. Entire object with transparent margin; renderer will add shadow separately.\nBasic LEVEL 1 hand-training accessory kit on a small flat olive cloth tray liner, rectangular0.5x0.35cell. ONE ordinary torsion-spring hand gripper exactly like the real product photo: two separate cylindrical textured metal handles joined by a curved coil spring. Next to it place one simple circular rubber exercise ring and a soft putty ball. Small portable normal fitness objects; no four-hole knuckle handle, interconnected metal finger arms or invented equipment. No human hand. Low small kit, no furniture or stand, max14px in144pxworldtile.",
+  "references": [
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/gym-facilities-v1/hands-geometry.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/gym-facilities-v1/real-equipment/grippers.webp",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/gym-facilities-v1/real-equipment/finger-extensor.webp",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/map/isometric/interactive-devices-v1/toolbench.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/street-thug-boss-room-v6/transit-rack.png"
+  ]
+}

@@ -69,6 +69,38 @@
       "def": "data/npc/npc_checkpoint_ruins.json",
       "triggers": "data/npc/npc_checkpoint_ruins_triggers.json",
       "dialogue_pools": "data/npc/npc_checkpoint_ruins_dialogue_pools.json"
+    },
+    "npc.station.gym_floor_base": {
+      "def": "data/npc/npc_station_gym_floor_base.json",
+      "triggers": "data/npc/npc_gym_station_triggers.json"
+    },
+    "npc.station.gym_pullup_base": {
+      "def": "data/npc/npc_station_gym_pullup_base.json",
+      "triggers": "data/npc/npc_gym_station_triggers.json"
+    },
+    "npc.station.gym_dumbbell_base": {
+      "def": "data/npc/npc_station_gym_dumbbell_base.json",
+      "triggers": "data/npc/npc_gym_station_triggers.json"
+    },
+    "npc.station.gym_barbell_base": {
+      "def": "data/npc/npc_station_gym_barbell_base.json",
+      "triggers": "data/npc/npc_gym_station_triggers.json"
+    },
+    "npc.station.gym_cable_base": {
+      "def": "data/npc/npc_station_gym_cable_base.json",
+      "triggers": "data/npc/npc_gym_station_triggers.json"
+    },
+    "npc.station.gym_leg_base": {
+      "def": "data/npc/npc_station_gym_leg_base.json",
+      "triggers": "data/npc/npc_gym_station_triggers.json"
+    },
+    "npc.station.gym_handsfeet_base": {
+      "def": "data/npc/npc_station_gym_handsfeet_base.json",
+      "triggers": "data/npc/npc_gym_station_triggers.json"
+    },
+    "npc.station.gym_neck_base": {
+      "def": "data/npc/npc_station_gym_neck_base.json",
+      "triggers": "data/npc/npc_gym_station_triggers.json"
     }
   }
 }

@@ -1,0 +1,14 @@
+{
+  "id": "floor_material",
+  "file": "assets/map/isometric/gym-room-v1/floor_material.png",
+  "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a19ed0-9c8b-7de3-a1fe-c84088bef24a\\exec-6a81661b-a880-4e6b-abfb-61dd302d758b.png",
+  "tool": "built-in image_gen",
+  "prompt": "Use case: stylized-concept. Game scene material texture. Match dark hand-painted outlines and broad muted planes of approved style reference images 1-3. Image4 is mood only, never photographic fidelity. Square top-down flat ground surface material, worn dark charcoal rubber floor tiles, four-by-four broad square panels with thin quiet seams and a few subtle faded scuff marks, broad hand-painted texture not noisy, no props, no furniture, no writing. No bevel slabs, no raised platform, no perspective. Opaque edge-to-edge square material for a basement gym floor. Keep texture readable and quiet at144px per map cell; no photoreal PBR, no logos, no UI.",
+  "references": [
+    "reference/street-thugs-v1/tier-1.png",
+    "assets/map/isometric/interactive-devices-v1/toolbench.png",
+    "assets/dungeon/street-thug-boss-room-v6/transit-rack.png",
+    "reference/gym-room-v1/tarkov-gym-reference.jpg"
+  ],
+  "transparent": false
+}

@@ -1,0 +1,30 @@
+<!doctype html><meta charset="utf-8"><title>健身房 · 正式游戏验收</title>
+<script>
+(async()=>{
+ let source=await(await fetch('../index.html')).text();
+ const isolation=`<script>
+ const gymReviewStorage=new Map();Object.defineProperty(window,'localStorage',{value:{getItem:k=>gymReviewStorage.get(k)??null,setItem:(k,v)=>gymReviewStorage.set(k,String(v)),removeItem:k=>gymReviewStorage.delete(k)}});
+ // The review owns no live save or cross-tab game session lock.
+ Object.defineProperty(navigator,'locks',{value:undefined,configurable:true});
+ window.AppBoot={afterReady:[()=>{(async()=>{
+  DialogueUI.close();SceneApp.openCharacterCreationAfterIntro();
+  await new Promise(r=>setTimeout(r,50));
+  const name=document.getElementById('creation-name');name.value='健身验收';name.dispatchEvent(new Event('input',{bubbles:true}));
+  await new Promise(r=>setTimeout(r,50));document.getElementById('btn-confirm-creation').click();
+  await new Promise(r=>setTimeout(r,50));DialogueUI.close();
+  GameEngine.setState('M0_Base_Inside_lv_1',10,7);
+  Survival.setState({stamina:100,fatigue:0,satiety:100,thirst:100,isDead:false,isComa:false});
+  const state=GymSystem.getState();for(const s of GymData.STATIONS)state.levels[s.id]=1;GymSystem.restore(state,true);
+  const equipment={};const ids=await(await fetch('data/equipment-catalog-v2.json')).json();for(const id of Object.keys(ids.items))equipment[id]=InventoryEquipment.getItemTemplate(id);
+  equipment.gym_review_bag={item_id:'gym_review_bag',name:'测试背包',equip_slot:'backpack',backpack_slots:30,weight_kg:1};InventoryEquipment.setConfig({equipment});
+  const inv=InventoryEquipment.getState();inv.equipment.backpack={item_id:'gym_review_bag'};inv.inventory_backpack=[['wood_plank_soft',2],['textile_coir',2],['ore_steel_ingot',2],['mechanical_parts',2]].flatMap(([item_id,count])=>Array.from({length:count},()=>({item_id,count:1})));InventoryEquipment.setState(inv);
+  if(new URLSearchParams(location.search).get('anatomy')==='1'){const knowledge=InventoryEquipment.getState();knowledge.skills[InventoryEquipment.SPECIAL_ANATOMY_STUDIES_SKILL_ID].level=1;InventoryEquipment.setState(knowledge);}
+  if(new URLSearchParams(location.search).get('wallMaterials')==='1'){for(const row of GymData.ENTRANCE_COST)InventoryEquipment.giveCarriedItemsByTemplateId(row.id,row.count);}
+  NPCSystem.setDemoFlag('npc_station_bed_base_repaired',true);SceneRenderer.render();document.title='健身房 · 正式游戏验收';
+  document.body.dataset.gymRuntimeReady='true';
+ })();}]};
+ <\/script>`;
+ source=source.replace('<head>','<head><base href="../">'+isolation);
+ document.open();document.write(source);document.close();
+})();
+</script>

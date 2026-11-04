@@ -1,0 +1,16 @@
+{
+  "key": "neck",
+  "level": 1,
+  "revision": 2,
+  "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a19ed0-9c8b-7de3-a1fe-c84088bef24a\\exec-d45c90e5-aa39-40aa-8953-6d5ec995657c.png",
+  "file": "assets/map/isometric/gym-facilities-v1/neck-1-real.png",
+  "mode": "built-in image_gen",
+  "prompt": "Draw ONE transparent PNG game equipment pawn using the supplied real product photo for recognizable mechanically plausible structure. Render it in the established painted game style of the supplied furniture references, not as a photograph. Bold near-black outer outline, thinner inside lines, simple painted volumes, upper-left lighting; blue-gray painted tubular steel, muted olive upholstered pads, modest wear on edges. Modern secondhand fitness equipment: normal manufactured construction, clean joints, small realistic repairs only. No medieval ornament, excessive straps, rivet armor, unexplained machinery, text, logos, people, scenic floor, platform plinth or cast shadow. The separate geometry template defines the game camera and footprint only. Orthographic native camera with ground axes slopes +0.7071/-0.7071 and vertical posts upright. Clear transparent holes in frames. Remove template markings and background completely. Entire object with transparent margin; renderer will add shadow separately.\nBasic LEVEL 1 four-way neck exercise machine based directly on the Rogers/Atlantis product photos. One central height-adjustable padded SEAT, open waist-high side handles, ONE side-supported pivoting lever carrying an OPEN U-shaped thick face/head PRESS PAD at seated forehead height. Exactly like the real product: the user presses against this open cushion, nothing encloses or suspends a head. Frame has ordinary rectangular steel tubing, transverse floor rails and rubber foot caps. A simple connected pivot and short plate-loading horn with one modest small plate. Omit brand marks. NO overhead crossbar, hanging headband, fabric harness, cords around the seat, wooden throne or loop surrounding the head. Plausible real gym machine silhouette. Keep seat28px/top85px in144pxworldtile; ground footprint1.35x0.9cells. Reorient reference structure to template camera.",
+  "references": [
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/gym-facilities-v1/neck-geometry.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/gym-facilities-v1/real-equipment/rogers-4way-neck.jpg",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/gym-facilities-v1/real-equipment/atlantis-neck.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/map/isometric/interactive-devices-v1/toolbench.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/street-thug-boss-room-v6/transit-rack.png"
+  ]
+}

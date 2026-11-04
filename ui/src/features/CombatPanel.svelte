@@ -1,5 +1,4 @@
 <script lang="ts">
- import {tick} from 'svelte';
  import type {Readable} from 'svelte/store';
  import {paths} from '../runtime/icons';
  let {store,controller,overlays,t}=$props<{store:Readable<any>,controller:any,overlays:any,t:any}>();
@@ -7,14 +6,13 @@
  let open=$derived(!!$store.open), p=$derived($store.picker), pickerOpen=$derived(open&&!!p);
  $effect(()=>{if(open&&root)return overlays.enter(root,{escape:()=>controller.close('combat')});});
  $effect(()=>{if(pickerOpen&&pickerRoot)return overlays.enter(pickerRoot,{escape:()=>controller.closePicker(),dismissOutside:()=>controller.closePicker()});});
- async function unlock(id:string,session:number){controller.unlock(id,session);await tick();pickerRoot?.querySelector<HTMLElement>(`[data-muscle="${id}"] .muscle-tile`)?.focus({preventScroll:true});}
  function show(kind:string,id:string,index=0){controller.openPicker(kind,id,index);}
 </script>
 
 {#snippet lockIcon()}<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" aria-hidden="true"><rect x="3.5" y="7" width="9" height="7" rx="1.3"/><path d="M5.5 7V4a2.5 2.5 0 0 1 5 0v3"/></svg>{/snippet}
 {#snippet muscleContents(m:any)}
  <span class="muscle-tile-copy"><strong>{m.name}</strong><span class="muscle-tile-effects">{#each m.effects as effect}<span>{effect.name}<b>{effect.value>0?'+':''}{effect.value}</b></span>{/each}</span></span>
- <span class="muscle-tile-mark" aria-hidden="true"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d={m.unlocked?'m5 10 3.5 3.5L15 6.5':'M10 5v10M5 10h10'}/></svg>{#if !m.unlocked}<small>解锁</small>{/if}</span>
+ <span class="muscle-tile-mark"><small>{Number(m.progress||0).toFixed(2)}%</small></span>
 {/snippet}
 
 <div id="modal-combat" bind:this={root} class="combat-loadout" class:show={open} role="dialog" aria-modal="true" aria-label="技能装配" tabindex="-1" data-ui-owner="svelte">
@@ -56,7 +54,7 @@
   <header class="picker-head"><h2 id="combat-picker-title">{p.title}{#if p.kind==='muscles'}<small>肌肉</small>{/if}</h2>{#if p.kind==='muscles'}<div class="muscle-head-count"><span>已解锁</span><strong>{p.count}<small> / {p.total}</small></strong></div>{/if}<button class="close" aria-label="关闭选择面板" onclick={()=>controller.closePicker()}>×</button></header>
   {#if p.kind==='muscles'}
    <div class="muscle-detail-body"><div class="muscle-detail-track" role="progressbar" aria-label={p.title+'解锁进度'} aria-valuemin="0" aria-valuemax={p.total} aria-valuenow={p.count}><i style:width={(p.total?p.count/p.total*100:0)+'%'}></i></div>
-    <ul class="muscle-list" class:paged={p.pages>1}>{#each p.items as m (m.id)}<li data-muscle={m.id}>{#if m.unlocked}<div class="muscle-tile unlocked" tabindex="-1">{@render muscleContents(m)}<span class="sr-only">已解锁</span></div>{:else}<button class="muscle-tile" aria-label={'解锁'+m.fullName} data-session={p.session} onclick={e=>unlock(m.id,Number(e.currentTarget.dataset.session))}>{@render muscleContents(m)}</button>{/if}</li>{/each}</ul>
+    <ul class="muscle-list" class:paged={p.pages>1}>{#each p.items as m (m.id)}<li data-muscle={m.id}><div class="muscle-tile" class:unlocked={m.unlocked} aria-label={m.fullName+'成长进度'}>{@render muscleContents(m)}</div></li>{/each}</ul>
     <footer class="muscle-detail-footer"><div class="muscle-slot-summary" class:ready={p.complete}>{#if p.complete}<span class="slot-indicator" aria-hidden="true">◇</span><button onclick={()=>show('passive',p.id)}>{p.passive||'配置被动'} <span aria-hidden="true">↗</span></button>{:else}{@render lockIcon()}<span>被动槽</span><small>全通后开放</small>{/if}</div>{#if p.pages>1}<nav class="muscle-pagination" aria-label="肌肉列表分页"><button aria-label="上一页肌肉" disabled={p.page===0} onclick={()=>controller.page(-1)}>‹</button><span>{p.page+1}<small> / {p.pages}</small></span><button aria-label="下一页肌肉" disabled={p.page>=p.pages-1} onclick={()=>controller.page(1)}>›</button></nav>{/if}</footer>
    </div>
   {:else if p.kind==='passive'}

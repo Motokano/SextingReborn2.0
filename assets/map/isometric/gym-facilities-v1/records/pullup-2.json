@@ -1,0 +1,15 @@
+{
+  "key": "pullup",
+  "level": 2,
+  "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a19ed0-9c8b-7de3-a1fe-c84088bef24a\\exec-caa04455-415b-4ffe-97db-1ad728075afc.png",
+  "file": "assets/map/isometric/gym-facilities-v1/pullup-2.png",
+  "mode": "built-in image_gen",
+  "prompt": "Edit the FIRST supplied PNG to create LEVEL 2 of the exact same gym facility. Preserve its native camera, orientation, ground footprint, positions of support feet, canvas framing, proportions, object identity and major colors. The other supplied images are ORIGINAL APPROVED style references; retain their bold dark outlines and hand-painted volumetric shading. Apply ALL upgrades below cumulatively, but no later upgrades. This is one isolated game pawn, no people, no words, no extra floor or pedestal. Transparent PNG with clean alpha outside the actual object; remove any background glow or cast shadow. Independent contact shadows will be rendered by the game.\nBASE IDENTITY: LEVEL 1 PULL-UP FRAME. Open freestanding welded gray iron frame with TWO upright posts, tall straight pull-up bar at top and one lower horizontal body-row bar behind. Two stabilizer foot rails on ground, plainly bolted connections, chipped muted steel. No back wall or filled panel; see transparent gaps. Frame high enough above character head: top 120px on144px worldcell, midway bar60px. Ground footprint 1.3x0.9cells. Simple basic structure without weights, braces or elaborate grips yet.\nUPGRADES REQUIRED: 2: Add conspicuous triangular iron knee braces at upright feet and bolted broad foot fastening plates; keep height and top bar unchanged.\nKeep light upper-left, salvaged practical contemporary wood/steel/olive fabric style, visible substantial changes readable on a144px tile. Do not resize or reorient the whole object.",
+  "references": [
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/map/isometric/gym-facilities-v1/pullup-1.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/street-thugs-v1/tier-1.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/map/isometric/interactive-devices-v1/toolbench.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/street-thug-boss-room-v6/transit-rack.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/gym-facilities-v1/pullup-geometry.png"
+  ]
+}

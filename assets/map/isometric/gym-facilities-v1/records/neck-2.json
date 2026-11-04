@@ -1,0 +1,16 @@
+{
+  "key": "neck",
+  "level": 2,
+  "revision": 2,
+  "source": "C:\\Users\\haoxian.huang\\.codex\\generated_images\\01a19ed0-9c8b-7de3-a1fe-c84088bef24a\\exec-d4765f76-c38d-4e66-bff4-9677cba21aa8.png",
+  "file": "assets/map/isometric/gym-facilities-v1/neck-2-real.png",
+  "mode": "built-in image_gen",
+  "prompt": "Edit FIRST PNG into LEVEL 2 of this exact ordinary real fitness machine. Preserve its corrected steep orthographic camera, feet and native ground footprint, all main frame/seat positions and scale. Second reference = geometry-only; last three = approved outlined hand-painted art style, no character or display base. Transparent background, no floor/shadows/text/people. This is real steel gym equipment, no invented contraptions. Changes cumulative:\nKeep EXACT camera, seat/frame position, scale and open face pad. Replace worn seat and head PRESS PAD with thicker olive upholstery and visible stitched seams. Add a normal seat-height adjustment pin with short handle. All actual real-machine construction; no harness or extra arms.",
+  "references": [
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/map/isometric/gym-facilities-v1/neck-1-real-camera.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/gym-facilities-v1/neck-geometry.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/reference/street-thugs-v1/tier-1.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/map/isometric/interactive-devices-v1/toolbench.png",
+    "C:/Users/haoxian.huang/Desktop/work/Deepseek/SextingReborn2.0/assets/dungeon/street-thug-boss-room-v6/transit-rack.png"
+  ]
+}

@@ -318,6 +318,9 @@
     }
 
     function isStoryMovementLocked() {
+        if ((window.BedSleep && window.BedSleep.isActive()) || (window.GymSystem && window.GymSystem.isActive())) return true;
+        if (window.GymPanel && window.GymPanel.isOpen()) return true;
+        if (window.GymEntrancePanel && window.GymEntrancePanel.isOpen()) return true;
         if (window.ResetProgressDialog && window.ResetProgressDialog.isOpen()) return true;
         if (window.CookingRepairPanel && window.CookingRepairPanel.isOpen()) return true;
         if (window.ToolbenchPanel && window.ToolbenchPanel.isOpen()) return true;
@@ -2454,6 +2457,7 @@
     }
 
     function startRestIdleTimer() {
+        if ((window.BedSleep && window.BedSleep.isActive()) || (window.GymSystem && window.GymSystem.isActive())) return;
         if (restIdleTimer) return;
         restIdleTimer = setInterval(function () {
             var Surv = window.Survival;
@@ -2473,6 +2477,7 @@
     }
 
     function setRestingActionActive(active, opts) {
+        if (active && ((window.BedSleep && window.BedSleep.isActive()) || (window.GymSystem && window.GymSystem.isActive()))) return false;
         var options = opts || {};
         var Surv = window.Survival;
         if (!Surv || typeof Surv.setResting !== 'function' || typeof Surv.getState !== 'function') return false;
@@ -2620,6 +2625,7 @@
     }
 
     function guardPlayerComaBlocked() {
+        if ((window.BedSleep && window.BedSleep.isActive()) || (window.GymSystem && window.GymSystem.isActive())) return true;
         if (!isPlayerComaActive()) return false;
         showMsg(ui('intro.blocked.action'), 'info');
         return true;
@@ -2636,13 +2642,14 @@
         return false;
     }
 
-    function settleSleepAttributeExpOnce() {
+    function settleSleepAttributeExpOnce(rng) {
         var CA = window.CharacterAttributes;
         if (!CA || typeof CA.settleAttributeExpOnce !== 'function') return { ok: false, any_success: false };
-        return CA.settleAttributeExpOnce('player', { reason: 'bed_sleep', source: 'facility_bed' }) || { ok: false, any_success: false };
+        return CA.settleAttributeExpOnce('player', { reason: 'bed_sleep', source: 'facility_bed', rng: rng }) || { ok: false, any_success: false };
     }
 
     function executeBedSleepAction() {
+        if (!window.BedSleep || window.BedSleep.isActive()) return false;
         if (!StationContext.isOnBedStationTile()) {
             showMsg(ui('bed.sleep.not_on_tile'), 'info');
             return false;
@@ -2651,28 +2658,19 @@
             showMsg(ui('bed.sleep.require_fatigue_debuff'), 'info');
             return false;
         }
-        var ask = ui('bed.sleep.confirm');
-        if (typeof window.confirm === 'function' && !window.confirm(ask)) return false;
         var sleepSurvival = window.Survival;
-        var wasResting = sleepSurvival && sleepSurvival.getState().isResting;
-        if (sleepSurvival) sleepSurvival.setResting(true);
-        var i;
-        try { for (i = 0; i < 48; i++) {
-            if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
-            if (i === 47) {
-                if (window.Survival && typeof window.Survival.clearFatigue === 'function') window.Survival.clearFatigue();
-                var settleRet = settleSleepAttributeExpOnce();
-                if (settleRet && settleRet.ok && settleRet.any_success) {
-                    showMsg(ui('bed.sleep.attr_exp_upgraded'), 'success');
-                }
-            }
-        }
-        } finally { if (sleepSurvival) sleepSurvival.setResting(!!wasResting); }
-        showMsg(ui('bed.sleep.done'), 'success');
-        if (typeof updateStatusPanel === 'function') SceneHud.refresh('status');
-        if (typeof updateBackpackPanel === 'function') updateBackpackPanel();
-        if (window.SceneRenderer) window.SceneRenderer.render();
-        return true;
+        if (!sleepSurvival || sleepSurvival.isDead()) return false;
+        var sleepTicks = Math.max(1, Math.floor(Number(sleepSurvival.getConfigValue('sleep_duration_ticks', 48)) || 48));
+        var ask = ui('bed.sleep.confirm', {
+            ticks: sleepTicks,
+            seconds: sleepTicks * Math.max(1, Number(sleepSurvival.getConfigValue('sleep_tick_seconds', 1)) || 1),
+            satiety: sleepSurvival.getConfigValue('sleep_satiety_cost_per_tick', 1),
+            thirst: sleepSurvival.getConfigValue('sleep_thirst_cost_per_tick', 1),
+            stamina: sleepSurvival.getConfigValue('sleep_stamina_gain_per_tick', 2),
+            fatigue: sleepSurvival.getConfigValue('sleep_fatigue_reduction_per_tick', 2)
+        });
+        if (typeof window.confirm === 'function' && !window.confirm(ask)) return false;
+        return window.BedSleep.start(sleepTicks);
     }
 
     function trySleepAtBed() {
@@ -2700,6 +2698,7 @@
     }
 
     function isPlayerActionDisabledByBuff(actionType) {
+        if ((window.BedSleep && window.BedSleep.isActive()) || (window.GymSystem && window.GymSystem.isActive())) return true;
         var key = normalizeActionType(actionType);
         if (!key) return false;
         var Buff = window.BuffSystem;
@@ -2715,6 +2714,7 @@
 
     function guardPlayerActionBlocked(actionType, opts) {
         if (window.DeathSystem && window.DeathSystem.blocked()) return true;
+        if ((window.BedSleep && window.BedSleep.isActive()) || (window.GymSystem && window.GymSystem.isActive())) return true;
         if (window.Hunting && window.Hunting.isActive()) {
             showMsg(ui('hunting.reason.active'), 'info');
             return true;
@@ -3144,6 +3144,8 @@
         var oldAdvance = window.Survival.advanceTick;
         window.Survival.advanceTick = function () {
             if (window.DeathSystem && window.DeathSystem.blocked()) return { isDead: true };
+            if (window.BedSleep && !window.BedSleep.allowsTick(arguments[0])) return { sleeping: true };
+            if (window.GymSystem && !window.GymSystem.allowsTick(arguments[0])) return { training: true };
             var ret = oldAdvance.apply(this, arguments);
             try { resolveNpcHardOccupancyAfterWorldTick(); } catch (e2) { /* ignore */ }
             try { CookingStation.tickCookingTempStationsAfterWorldTick(); } catch (e1) { /* ignore */ }
@@ -6373,9 +6375,9 @@
         var btnDeploy = document.getElementById('btn-deploy-combat');
         if (btnDeploy) {
             var canDeploy = true;
-            btnDeploy.textContent = isMuscleMode ? ui('muscle.btn.unlock') : ui('combat.deploy');
+            btnDeploy.textContent = isMuscleMode ? (AP.getProgress(combatUIState.curMuscleId).toFixed(2) + '%') : ui('combat.deploy');
             if (isMuscleMode) {
-                canDeploy = !!combatUIState.curMuscleId;
+                canDeploy = false;
             } else if (combatUIState.curCat !== 'breath' && combatUIState.curCat !== 'footwork') {
                 if (!selSkill) {
                     canDeploy = false;
@@ -6510,26 +6512,6 @@
             var start = combatUIState.musclePage * pageSize;
             var end = Math.min(start + pageSize, total);
 
-            function unlockMuscleForCombat(muscleId, muscleName) {
-                if (!AP || !muscleId) return;
-                var unlockRes = AP.unlock(muscleId);
-                var changed = !!(unlockRes && unlockRes.ok);
-                if (changed && window.GameLog) {
-                    window.GameLog.log(ui('log.system.muscle.unlocked', { id: (muscleName || muscleId) }), 'system');
-                }
-                if (changed && window.CharacterAttributes && typeof window.CharacterAttributes.recalcCharacterStats === 'function' && window.InventoryEquipment) {
-                    window.CharacterAttributes.recalcCharacterStats({
-                        getEquipmentState: function () { return window.InventoryEquipment.getState().equipment; },
-                        getSkillsState: function () { return window.InventoryEquipment.getState().skills; },
-                        getItemTemplate: window.InventoryEquipment.getItemTemplate,
-                        getEnchantEntry: window.InventoryEquipment.getEnchantEntry,
-                        getStrengthLevel: function () { return window.InventoryEquipment.getSkillLevel('survival_strength'); }
-                    });
-                }
-                if (changed && typeof updateStatusPanel === 'function') SceneHud.refresh('status');
-                renderCombatModal();
-            }
-
             for (var i = start; i < end; i++) {
                 var a = listAp[i];
                 var div = document.createElement('div');
@@ -6541,14 +6523,9 @@
                 var unlockBtn = document.createElement('button');
                 unlockBtn.type = 'button';
                 unlockBtn.className = 'combat-pager-btn';
-                unlockBtn.textContent = isUnlocked ? ui('muscle.btn.unlocked') : ui('muscle.btn.unlock');
-                unlockBtn.disabled = !!isUnlocked;
-                unlockBtn.onclick = function (id, name) {
-                    return function (e) {
-                        if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
-                        unlockMuscleForCombat(id, name);
-                    };
-                }(a.id, a.name);
+                unlockBtn.textContent = AP.getProgress(a.id).toFixed(2) + '%';
+                unlockBtn.disabled = true;
+
                 div.appendChild(unlockBtn);
                 div.onclick = function (id) {
                     return function () {
@@ -6780,30 +6757,7 @@
         var CS = window.CombatSkills;
         var AP = window.Muscles;
 
-        if (combatUIState.mode === 'muscles') {
-            if (!AP || !combatUIState.curMuscleId) return;
-            // 防御：确认选中肌肉仍属于当前肌群（跨肌群残留时拒绝解锁）
-            var catList = AP.getMuscleEntriesByGroup(combatUIState.curMuscleCat);
-            var validMuscle = catList.some(function (x) { return x.id === combatUIState.curMuscleId; });
-            if (!validMuscle) return;
-            var unlockRes2 = AP.unlock(combatUIState.curMuscleId);
-            var changed = !!(unlockRes2 && unlockRes2.ok);
-            if (changed && window.GameLog) {
-                window.GameLog.log(ui('log.system.muscle.unlocked', { id: combatUIState.curMuscleId }), 'system');
-            }
-            if (changed && window.CharacterAttributes && typeof window.CharacterAttributes.recalcCharacterStats === 'function' && window.InventoryEquipment) {
-                window.CharacterAttributes.recalcCharacterStats({
-                    getEquipmentState: function () { return window.InventoryEquipment.getState().equipment; },
-                    getSkillsState: function () { return window.InventoryEquipment.getState().skills; },
-                    getItemTemplate: window.InventoryEquipment.getItemTemplate,
-                    getEnchantEntry: window.InventoryEquipment.getEnchantEntry,
-                    getStrengthLevel: function () { return window.InventoryEquipment.getSkillLevel('survival_strength'); }
-                });
-            }
-            if (changed && typeof updateStatusPanel === 'function') SceneHud.refresh('status');
-            renderCombatModal();
-            return;
-        }
+        if (combatUIState.mode === 'muscles') return;
 
         var skillId = combatUIState.curSkillId;
         if (!skillId || !IE || !IE.setCombatState) return;
@@ -7702,7 +7656,8 @@
         }
         registerUiWindows();
         return Promise.all([loadConfig(), window.DungeonRuntime ? window.DungeonRuntime.ready : null,
-            window.SaveSystem && window.SaveSystem.ready, window.DeathSystem && window.DeathSystem.ready]).then(function () {
+            window.SaveSystem && window.SaveSystem.ready, window.DeathSystem && window.DeathSystem.ready,
+            window.GymSystem && window.GymSystem.ready, window.GymSceneArt && window.GymSceneArt.ready]).then(function () {
             setupCombatEngagementFeedback();
             // i18n 已就绪（UIText.setDict 已完成）后再进行地图合并渲染
             if (window.SaveSystem && typeof window.SaveSystem.init === 'function') {
@@ -7738,7 +7693,7 @@
                 }
                 CookingStation.syncCookingTempStationsIntoMaps();
                 // 读档后：若存在进行中制作，恢复自动 tick 推进
-                if (!window.DeathSystem || !window.DeathSystem.blocked()) startCookingCraftIdleIfNeeded();
+                if ((!window.DeathSystem || !window.DeathSystem.blocked()) && (!window.BedSleep || !window.BedSleep.isActive()) && (!window.GymSystem || !window.GymSystem.isActive())) startCookingCraftIdleIfNeeded();
                 // 读档后再渲染一次，避免出现“短暂默认状态闪屏”。
                 render();
             }
@@ -8302,6 +8257,17 @@
                 }
                 var targetX = st.x + ddx;
                 var targetY = st.y + ddy;
+
+                // Inspection is deliberate: walking into the wall never reveals it.
+                var wallMap = E.getMap();
+                var wallInspection = wallMap && wallMap.inspectable_walls && wallMap.inspectable_walls[targetX + ',' + targetY];
+                if (wallInspection && !E.isWalkable(targetX, targetY)) {
+                    if (source === 'click' && !guardPlayerActionBlocked(ACTION_TYPES.NPC_INTERACT)) {
+                        if (window.GymEntrancePanel && window.GymEntrancePanel.show(targetX, targetY)) return;
+                        showMsg(ui(wallInspection.message_key), 'info');
+                    }
+                    return;
+                }
 
                 // 固定优先级：敌人攻击 > NPC 对话 > 烹饪台互动 > 制药台互动 > 制肥桶互动 > 普通移动
                 var enemyId = (typeof E.getEnemyAt === 'function') ? E.getEnemyAt(targetX, targetY) : null;
@@ -8895,6 +8861,13 @@
     window.SceneApp.openCompostStationPanel = CompostPanel.open;
     window.SceneApp.closeCompostStationPanel = CompostPanel.close;
     window.SceneApp.trySleepAtBed = trySleepAtBed;
+    if (window.BedSleep) window.BedSleep.configure({
+        settle: settleSleepAttributeExpOnce,
+        refresh: function () {
+            SceneHud.refresh('status');
+            if (window.SceneRenderer) window.SceneRenderer.render();
+        }
+    });
     window.SceneApp.getFacilityLaborTickMs = getIdleTickMs;
     window.SceneApp.canWorkFacilityLabor = function () {
         return !isPreCreationGameplayRestricted() && !(window.Survival && window.Survival.isDead())
@@ -8915,6 +8888,9 @@
     };
     window.SceneApp.prepareDungeonAction = window.SceneApp.prepareFacilityAction;
     window.SceneApp.prepareDeath = function () {
+        if (window.BedSleep) window.BedSleep.interrupt();
+        if (window.GymSystem) window.GymSystem.interrupt();
+        if (window.GymEntrancePanel) window.GymEntrancePanel.close();
         window.SceneApp.prepareFacilityAction();
         if (window.DialogueUI) window.DialogueUI.close();
         closeBackpackPanel({automatic:true}); closeCombatPanel(); closeSurvivalPanel(); closeSavePanel();
