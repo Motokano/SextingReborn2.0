@@ -12,7 +12,7 @@
 {#snippet lockIcon()}<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" aria-hidden="true"><rect x="3.5" y="7" width="9" height="7" rx="1.3"/><path d="M5.5 7V4a2.5 2.5 0 0 1 5 0v3"/></svg>{/snippet}
 {#snippet muscleContents(m:any)}
  <span class="muscle-tile-copy"><strong>{m.name}</strong><span class="muscle-tile-effects">{#each m.effects as effect}<span>{effect.name}<b>{effect.value>0?'+':''}{effect.value}</b></span>{/each}</span></span>
- <span class="muscle-tile-mark"><small>{Number(m.progress||0).toFixed(2)}%</small></span>
+ <span class="muscle-tile-mark"><small>{Number(m.progress||0).toFixed(3)}%</small></span>
 {/snippet}
 
 <div id="modal-combat" bind:this={root} class="combat-loadout" class:show={open} role="dialog" aria-modal="true" aria-label="技能装配" tabindex="-1" data-ui-owner="svelte">

@@ -1,6 +1,6 @@
 (function(g){
 'use strict';
-const axial = new Set(['chest', 'back', 'abdomen', 'neck']);
+const axial = new Set(['chest', 'back', 'abdomen', 'neck', 'pelvis']);
 const pair = (group, ...names) => names.flatMap(n => axial.has(group)
   ? [`${group}_${n}_L`, `${group}_${n}_R`] : [`${group}_l_${n}_l`, `${group}_r_${n}_r`]);
 const cat = (...sets) => sets.flat();
@@ -27,6 +27,16 @@ action('floor','back_extension','背伸',10,backExt,pair('back','multifidus'),.1
 action('floor','plank','平板支撑',10,transverse,cat(abs,obliques),.18,.04);
 action('floor','side_plank','侧桥',10,cat(obliques,lumbar),hipSide,.18,.04);
 action('floor','body_squat','自重蹲起',14,cat(quads,glutes),cat(hipSide,transverse),.16,.03);
+// Existing aggregate and regional muscle records keep their own saved progress.
+// These are explicit gameplay rewards, not a blanket award to a whole muscle group.
+action('floor','prone_extension','俯卧胸背伸展',10,pair('back','iliocostalis_lumborum','iliocostalis_thoracis','longissimus_thoracis','spinalis_thoracis','semispinalis_thoracis'),cat(backExt,pair('back','multifidus')),.18,.03);
+action('floor','bird_dog','鸟狗式支撑',8,pair('back','multifidus','rotatores','intertransversarii','interspinales'),cat(transverse,lumbar),.18,.03);
+action('floor','pelvic_tilt','仰卧骨盆卷动',6,cat(abs,pair('hip','psoas_minor')),transverse,.18,.03);
+action('floor','diaphragmatic_breathing','膈式呼吸',6,['chest_diaphragm'],[],.15);
+action('floor','rib_expansion','胸廓扩张呼吸',6,cat(pair('chest','external_intercostal'),pair('back','levatores_costarum')),pair('back','serratus_posterior_superior'),.15,.03);
+action('floor','controlled_exhalation','控制呼气',6,pair('chest','internal_intercostal','innermost_intercostal','transversus_thoracis'),cat(pair('back','subcostales','serratus_posterior_inferior'),pair('chest','sternalis')),.15,.03);
+action('floor','pelvic_floor_hold','盆底持续收缩',6,cat(pair('pelvis','iliococcygeus','pubococcygeus','puborectalis'),['pelvis_external_anal_sphincter']),pair('pelvis','coccygeus'),.15,.03);
+action('floor','perineal_control','会阴收缩控制',6,pair('pelvis','superficial_transversus_perinei','deep_transversus_perinei','ischiocavernosus','bulbospongiosus'),pair('pelvis','pubococcygeus'),.15,.03);
 action('pullup','pullup','引体向上',12,cat(lats,biceps),grip);
 action('pullup','inverted_row','反向划船',12,cat(lats,rhombs),cat(biceps,grip),.18,.04);
 action('pullup','knee_raise','悬垂举膝',10,hipFlex,cat(abs,grip),.18,.04);
@@ -49,6 +59,7 @@ action('cable','fly','滑轮夹胸',10,chest,delt,.25,.04);
 action('cable','shoulder_internal','肩内旋',6,pair('shoulder','subscapularis'),[],.25);
 action('cable','shoulder_external','肩外旋',6,pair('shoulder','infraspinatus','teres_minor'),[],.25);
 action('cable','cuff_raise','肩袖外展',6,pair('shoulder','supraspinatus'),delt,.25,.04);
+action('cable','scapular_depression','肩胛下压',8,pair('chest','pectoralis_minor'),cat(pair('chest','subclavius'),serratus),.2,.04);
 action('leg','leg_extension','伸膝',10,quads,[],.25);
 action('leg','leg_curl','屈膝',10,cat(hamstrings,pair('thigh','biceps_femoris_short')),pair('calf','gastrocnemius','popliteus'),.25,.04);
 action('leg','hip_flexion','屈髋',10,hipFlex,pair('thigh','sartorius','rectus_femoris'),.25,.04);
@@ -61,6 +72,12 @@ action('handsfeet','grip','握力训练',6,grip,pair('hand','flexor_pollicis_bre
 action('handsfeet','pinch','捏力训练',6,pair('hand','adductor_pollicis','flexor_pollicis_brevis'),pair('forearm','flexor_pollicis_longus'),.25,.05);
 action('handsfeet','finger_spread','张指训练',6,pair('hand','dorsal_interosseous_1','dorsal_interosseous_2','dorsal_interosseous_3','dorsal_interosseous_4','abductor_pollicis_brevis','abductor_digiti_minimi'),[],.2);
 action('handsfeet','opposition','对掌训练',6,pair('hand','opponens_pollicis','opponens_digiti_minimi'),[],.25);
+action('handsfeet','finger_extension','抗阻伸指',6,pair('forearm','extensor_digitorum','extensor_digiti_minimi','extensor_indicis'),[],.22);
+action('handsfeet','thumb_extension','抗阻伸拇',6,pair('forearm','extensor_pollicis_brevis','extensor_pollicis_longus'),[],.22);
+action('handsfeet','thumb_abduction','抗阻拇外展',6,pair('forearm','abductor_pollicis_longus'),pair('hand','abductor_pollicis_brevis'),.22,.04);
+action('handsfeet','finger_adduction','并指夹持',6,pair('hand','palmar_interosseous_1','palmar_interosseous_2','palmar_interosseous_3'),[],.2);
+action('handsfeet','intrinsic_grip','指根屈伸',6,pair('hand','lumbrical_1','lumbrical_2','lumbrical_3','lumbrical_4'),pair('hand','dorsal_interosseous_1','dorsal_interosseous_2','dorsal_interosseous_3','dorsal_interosseous_4'),.2,.04);
+action('handsfeet','palm_cup','掌缘收拢',6,pair('hand','palmaris_brevis'),pair('hand','opponens_digiti_minimi','flexor_digiti_minimi_brevis'),.2,.04);
 action('handsfeet','calf_raise','提踵',8,pair('calf','gastrocnemius','soleus'),pair('calf','plantaris'),.25,.04);
 action('handsfeet','ankle_flexion','踝背屈',8,pair('calf','tibialis_anterior'),pair('calf','extensor_hallucis_longus','extensor_digitorum_longus','peroneus_tertius'),.25,.05);
 action('handsfeet','ankle_inversion','踝内翻',8,pair('calf','tibialis_posterior','tibialis_anterior'),[],.25);
@@ -73,6 +90,26 @@ action('neck','neck_flexion','颈前屈',6,pair('neck','sternocleidomastoid','lo
 action('neck','neck_extension','颈后伸',6,pair('neck','splenius_capitis','splenius_cervicis'),pair('back','semispinalis_capitis','semispinalis_cervicis'),.15,.03);
 action('neck','neck_side','颈侧屈',6,pair('neck','sternocleidomastoid','scalenus_anterior','scalenus_medius','scalenus_posterior'),pair('neck','rectus_capitis_lateralis'),.15,.03);
 action('neck','neck_rotation','颈旋转',6,pair('neck','sternocleidomastoid','splenius_capitis','splenius_cervicis'),pair('back','obliquus_capitis_inferior'),.15,.03);
+action('neck','chin_tuck','颈部收颌',6,pair('neck','rectus_capitis_anterior','longus_capitis','longus_colli'),[],.15);
+action('neck','cervical_extension','颈段伸展',6,pair('back','iliocostalis_cervicis','longissimus_capitis','longissimus_cervicis','spinalis_capitis','spinalis_cervicis'),pair('back','semispinalis_capitis','semispinalis_cervicis'),.15,.03);
+action('neck','suboccipital_stability','枕下稳定',6,pair('back','rectus_capitis_posterior_major','rectus_capitis_posterior_minor','obliquus_capitis_superior'),pair('back','obliquus_capitis_inferior'),.15,.03);
+// Functional exercises use the station's seat/support, without adding loaded throat equipment.
+action('neck','chin_resistance','下颌抗阻',6,pair('neck','digastric','stylohyoid','mylohyoid','geniohyoid'),pair('neck','platysma'),.15,.03);
+action('neck','hyoid_control','舌骨升降控制',6,pair('neck','sternohyoid','sternothyroid','thyrohyoid','omohyoid'),[],.15);
+action('neck','pitch_glide','滑音练习',6,pair('neck','cricothyroid','thyroarytenoid','vocalis'),[],.15);
+action('neck','vocal_onset','轻声起音',6,cat(pair('neck','lateral_cricoarytenoid','oblique_arytenoid'),['neck_transverse_arytenoid']),pair('neck','vocalis'),.15,.03);
+action('neck','airway_control','呼吸与吞咽协调',6,pair('neck','posterior_cricoarytenoid','aryepiglotticus'),[],.15);
+
+const moduleActions = {
+  hands:['grip','pinch','finger_spread','opposition','finger_extension','thumb_extension','thumb_abduction','finger_adduction','intrinsic_grip','palm_cup'],
+  ankle:['calf_raise','ankle_flexion','ankle_inversion','ankle_eversion'],
+  toes:['toe_curl','toe_extension','toe_spread','foot_arch']
+};
+for (const a of rows.filter(a=>a.station==='handsfeet')) {
+  a.module=Object.keys(moduleActions).find(key=>moduleActions[key].includes(a.id));
+  if(!a.module)throw Error('Missing gym upgrade module: '+a.id);
+}
+function moduleKey(a) { return a.station==='handsfeet'?'handsfeet_'+a.module:a.station; }
 
 const ACTIONS = rows;
 const MATERIALS = { metal:'金属料', wood:'木料', parts:'零件', fiber:'纤维', plates:'配重片组' };
@@ -103,5 +140,5 @@ function trainingEfficiency(facilityLevel, anatomyLevel, host) {
 }
 
 const ENTRANCE_COST=[{id:'tool_repair_hammer',count:1},{id:'wood_plank_soft',count:2},{id:'supply_rope_hemp_short',count:2}];
-g.GymData={ACTIONS,STATIONS,MATERIALS,EFFICIENCY,TRAINING_FATIGUE_PER_STAMINA,ENTRANCE_COST,ANATOMY_EFFICIENCY_PER_LEVEL,NUTRITION_EFFICIENCY_BONUS,trainingEfficiency};
+g.GymData={ACTIONS,STATIONS,MATERIALS,EFFICIENCY,TRAINING_FATIGUE_PER_STAMINA,ENTRANCE_COST,ANATOMY_EFFICIENCY_PER_LEVEL,NUTRITION_EFFICIENCY_BONUS,trainingEfficiency,moduleKey};
 })(typeof window!=='undefined'?window:globalThis);

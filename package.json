@@ -29,7 +29,7 @@
     "prototype:water-flask:logic": "node tools/water-flask-prototype-cli.mjs",
     "test:compost": "node tools/test-compost-window-mechanism.js && node tools/test-compost-process.js && node tools/test-compost-panel.js",
     "build:food": "node tools/build-food-catalog.mjs && node tools/build-food-effects.mjs && node tools/build-items-json.mjs",
-    "test:food": "node tools/test-food-balance.mjs",
+    "test:food": "node tools/test-food-balance.mjs && node --test tools/test-food-muscles.mjs",
     "test:food-growth": "node tools/test-food-growth.mjs",
     "test:fatigue": "node tools/test-fatigue-balance.mjs",
     "test:sleep": "node tools/test-stamina-recovery.mjs && node tools/test-fatigue-balance.mjs && node --test tools/test-sleep-runtime.mjs",

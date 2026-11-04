@@ -6473,7 +6473,7 @@
         var btnDeploy = document.getElementById('btn-deploy-combat');
         if (btnDeploy) {
             var canDeploy = true;
-            btnDeploy.textContent = isMuscleMode ? (AP.getProgress(combatUIState.curMuscleId).toFixed(2) + '%') : ui('combat.deploy');
+            btnDeploy.textContent = isMuscleMode ? (AP.getProgress(combatUIState.curMuscleId).toFixed(3) + '%') : ui('combat.deploy');
             if (isMuscleMode) {
                 canDeploy = false;
             } else if (combatUIState.curCat !== 'breath' && combatUIState.curCat !== 'footwork') {
@@ -6621,7 +6621,7 @@
                 var unlockBtn = document.createElement('button');
                 unlockBtn.type = 'button';
                 unlockBtn.className = 'combat-pager-btn';
-                unlockBtn.textContent = AP.getProgress(a.id).toFixed(2) + '%';
+                unlockBtn.textContent = AP.getProgress(a.id).toFixed(3) + '%';
                 unlockBtn.disabled = true;
 
                 div.appendChild(unlockBtn);
@@ -8746,6 +8746,34 @@
     }
 
     function tryUseItemFromContainer(containerType, index, opts) {
+        var inv = window.InventoryEquipment, options = opts || {};
+        var arr = inv && (containerType === 'pocket' ? inv.getPocketArray() :
+            containerType === 'vest' ? inv.getVestArray() : containerType === 'backpack' ? inv.getBackpackArray() : []);
+        var cell = arr && arr[index], tpl = cell && inv.getItemTemplate(cell.item_id);
+        if (!ItemUse.isFoodTemplate(tpl)) return performItemUseFromContainer(containerType, index, options);
+        if (isPreCreationGameplayRestricted() || guardPlayerComaBlocked() ||
+            (window.Survival && (window.Survival.isDead() || window.Survival.isComa())) || guardPlayerActionBlocked(ACTION_TYPES.ITEM_USE, { level: 'warn' })) return false;
+        // Consumption, digestion, muscle growth and the existing use tick commit together.
+        var failed = {}, successMessage = '';
+        try {
+            if (!window.SaveSystem || !window.SaveSystem.runAtomicFor) throw Error('保存服务尚未就绪。');
+            var result = window.SaveSystem.runAtomicFor('inventory.transfer', function () {
+                var useOptions = Object.assign({}, options, { onSuccess: function (text) { successMessage = text; } });
+                if (!performItemUseFromContainer(containerType, index, useOptions)) throw failed;
+                return true;
+            });
+            if (!result.saved) throw Error('保存失败，食物、成长和时间已恢复。');
+            if (!options.silent) showMsg(successMessage, 'success');
+            return true;
+        } catch (error) {
+            if (error !== failed && !options.silent) showMsg(error.message, 'warn');
+            SceneHud.refresh('status');
+            if (backpackPanelOpen) updateBackpackPanel();
+            return false;
+        }
+    }
+
+    function performItemUseFromContainer(containerType, index, opts) {
         var inv = window.InventoryEquipment;
         if (!inv || typeof inv.takeItemFromContainer !== 'function') return false;
         var options = opts || {};
@@ -8822,7 +8850,8 @@
         if (chargesMax > 0 && chargesLeft > 0) useOkMsg += ' ' + ui('item.use.charges_left', { n: String(chargesLeft) });
         var expText = window.ItemUse.takeLastFoodExpGrantText();
         if (expText) useOkMsg += ' ' + expText;
-        if (!options.silent) showMsg(useOkMsg, 'success');
+        if (options.onSuccess) options.onSuccess(useOkMsg);
+        else if (!options.silent) showMsg(useOkMsg, 'success');
         // 47 §5.2：使用耗时按途径区分（口服/外敷 1 · 吸入 2 · 刺入 3；注射还需静止）
         var useTicks = (typeof ItemUse.getUseTickCost === 'function') ? ItemUse.getUseTickCost(tpl) : 1;
         if (useTicks > 1) advanceWorldTicks(useTicks);

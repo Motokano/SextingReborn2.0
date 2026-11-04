@@ -375,7 +375,7 @@
      * 应用物品模板的使用效果（edible/usable buff → 食物消化 → 生存量直加）。
      * 成功应用可食用/消化类后顺带 grantFoodAttributeExp（k79）。
      */
-    function applyItemUseEffectFromTemplate(itemId, tpl, opts) {
+    function applyItemUseEffectCore(itemId, tpl, opts) {
         if (tpl && tpl.food_profile && toBoolFlag(tpl.edible)) {
             var survival = global.Survival, buffs = global.BuffSystem;
             if (!survival || typeof survival.ingestFood !== 'function') return false;
@@ -430,6 +430,28 @@
             if (isFinite(n) && n !== 0) { Surv.addEnergy(n); any = true; }
         }
         return any;
+    }
+
+    function isFoodTemplate(tpl) {
+        return !!(tpl && !getUseActionRoute(tpl) &&
+            (toBoolFlag(tpl.edible) || tpl.category === 'food'));
+    }
+
+    function applyItemUseEffectFromTemplate(itemId, tpl, opts) {
+        var applied = applyItemUseEffectCore(itemId, tpl, opts);
+        if (applied && isFoodTemplate(tpl) && global.Muscles && global.Muscles.addFoodGrowth) {
+            var changes = global.Muscles.addFoodGrowth();
+            var CA = global.CharacterAttributes, IE = global.InventoryEquipment;
+            if (changes.some(function (c) { return c.lit; }) && CA && CA.recalcCharacterStats && IE) {
+                CA.recalcCharacterStats({
+                    getEquipmentState: function () { return IE.getState().equipment; },
+                    getSkillsState: function () { return IE.getState().skills; },
+                    getItemTemplate: IE.getItemTemplate, getEnchantEntry: IE.getEnchantEntry,
+                    getStrengthLevel: function () { return IE.getSkillLevel('survival_strength'); }
+                });
+            }
+        }
+        return applied;
     }
 
     /** k79：进食经验反馈文案（24 §24.5a 对齐餐位档 + 营养档位倍率）；供容器使用入口读取后清空。 */
@@ -495,6 +517,7 @@
         setUiDeps: setUiDeps,
         toBoolFlag: toBoolFlag,
         itemTemplateIsConsumable: itemTemplateIsConsumable,
+        isFoodTemplate: isFoodTemplate,
         USE_ACTION_IDS: USE_ACTION_IDS,
         BODY_PART_IDS: BODY_PART_IDS,
         getUseActionRoute: getUseActionRoute,

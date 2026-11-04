@@ -6,7 +6,7 @@ import {EFFICIENCY} from './gym-prototype-data.mjs';
 export async function mountGymPrototype({sceneFactory=createGymScene,initialScenario='fresh'}={}){
 const M=window.Muscles,S=window.Survival,$=id=>document.getElementById(id);
 const esc=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const pct=v=>Number(v).toFixed(2),gain=v=>Number(v).toFixed(4).replace(/0+$/,'').replace(/\.$/,'');
+const pct=v=>Number(v).toFixed(3),gain=v=>Number(v).toFixed(4).replace(/0+$/,'').replace(/\.$/,'');
 const dis=yes=>yes?'disabled':'';
 let demo,scene,texts,config,mode='',stationId='',selected='pushup',tab='train',group='chest',query='',batch=1,lastActions={};
 let timer=null,due=0,tickStarted=0,noticeTimer,moving=false;

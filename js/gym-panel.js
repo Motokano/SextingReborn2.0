@@ -4,7 +4,7 @@
  const G=g.GymSystem,D=g.GymData,M=g.Muscles;
  let root,body,id='',selected='',mode='train',batch=1,offer=null,forgeOffer=null,expectedLevel=0,message='';
  const esc=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
- const disabled=v=>v?'disabled':'',percent=v=>Number(v).toFixed(2);
+ const disabled=v=>v?'disabled':'',percent=v=>Number(v).toFixed(3);
  function ensure(){
   if(root)return;root=document.createElement('dialog');root.id='gym-panel';root.className='gym-panel';root.setAttribute('aria-labelledby','gym-title');
   root.innerHTML='<header class="window-head"><h2 id="gym-title"></h2><button type="button" data-close aria-label="关闭健身设施">×</button></header><div class="gym-content"></div>';

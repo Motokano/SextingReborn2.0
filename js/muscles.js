@@ -22,6 +22,19 @@
     /** 肌群槽装配表：groupId → passiveId（同肌群 1 槽，见 34 §2.4/§3.2） */
     var equipped = {};
 
+    // One consumed food item gives the same slow growth, regardless of food type.
+    var FOOD_GROWTH_PER_PORTION = 0.001;
+    var FOOD_GROWTH_TARGETS = [
+        'masseter', 'temporalis', 'medial_pterygoid', 'lateral_pterygoid',
+        'genioglossus', 'hyoglossus', 'styloglossus',
+        'tensor_veli_palatini', 'levator_veli_palatini', 'palatoglossus', 'palatopharyngeus',
+        'superior_pharyngeal_constrictor', 'middle_pharyngeal_constrictor', 'inferior_pharyngeal_constrictor',
+        'stylopharyngeus', 'salpingopharyngeus', 'buccinator', 'orbicularis_oris'
+    ].flatMap(function (name) { return ['head_' + name + '_L', 'head_' + name + '_R']; }).concat([
+        'head_musculus_uvulae', 'head_superior_longitudinal_lingual', 'head_inferior_longitudinal_lingual',
+        'head_transverse_lingual', 'head_vertical_lingual'
+    ]);
+
     /** 招式形态标签（required_limb_tags）→ 调用肌群（34 §4 映射表；中间态侧向近似口径，阶段四用 form.muscle_groups 严格化） */
     var FORM_GROUP_MAP = {
         '挥拳': { sides: ['shoulder', 'upperarm', 'forearm', 'hand'], axial: ['chest', 'abdomen'] },
@@ -291,6 +304,13 @@
             var before=Muscles.getProgress(id),after=Math.min(100,Math.round((before+amount)*1000000)/1000000);
             progress[id]=after;var lit=before<100&&after===100&&Muscles.unlock(id).ok;
             return {id:id,before:before,after:after,gain:after-before,lit:lit};
+        },
+        getFoodGrowthRewards: function () {
+            return FOOD_GROWTH_TARGETS.filter(function (id) { return !!muscleById[id]; })
+                .map(function (id) { return { id: id, pct: FOOD_GROWTH_PER_PORTION }; });
+        },
+        addFoodGrowth: function () {
+            return Muscles.getFoodGrowthRewards().map(function (r) { return Muscles.addGrowth(r.id, r.pct); });
         },
         getUnlockedIds: function () { return Object.keys(unlocked); },
         getStatBonus: function () { return computeStatBonus(); },

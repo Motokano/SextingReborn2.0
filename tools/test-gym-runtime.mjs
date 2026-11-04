@@ -3,8 +3,24 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {boot} from './ui-game-fixture.mjs';
 import {createGymPrototype} from './gym-prototype-model.mjs';
+import {ACTIONS,STATIONS,moduleKey} from './gym-prototype-data.mjs';
 const copy=v=>JSON.parse(JSON.stringify(v));
 const near=(a,b)=>assert.ok(Math.abs(a-b)<1e-6,`${a} != ${b}`);
+const addedActions=['prone_extension','bird_dog','pelvic_tilt','diaphragmatic_breathing','rib_expansion','controlled_exhalation','pelvic_floor_hold','perineal_control','scapular_depression','finger_extension','thumb_extension','thumb_abduction','finger_adduction','intrinsic_grip','palm_cup','chin_tuck','cervical_extension','suboccipital_stability','chin_resistance','hyoid_control','pitch_glide','vocal_onset','airway_control'];
+test('gym actions cover every existing non-head muscle and no head muscle',()=>{
+ const data=JSON.parse(fs.readFileSync('data/muscles.json','utf8')),muscles=new Map(data.muscles.map(m=>[m.id,m]));
+ const expected=data.muscles.filter(m=>m.group!=='head').map(m=>m.id).sort(),covered=new Set();
+ assert.equal(ACTIONS.length,75);assert.equal(new Set(ACTIONS.map(a=>a.id)).size,ACTIONS.length);
+ for(const a of ACTIONS){
+  assert.ok(STATIONS.some(s=>s.id===a.station),a.id+' has a facility');
+  const targets=[...a.main,...a.assist];assert.equal(new Set(targets).size,targets.length,a.id+' cannot pay a muscle twice');
+  assert.ok(a.main.length>0&&a.mainPct>0&&a.assistPct>0);
+  for(const id of targets){assert.ok(muscles.has(id),id+' exists');assert.notEqual(muscles.get(id).group,'head',id+' is not in head');covered.add(id);}
+ }
+ assert.deepEqual([...covered].sort(),expected);assert.equal(covered.size,381);
+ assert.equal(new Set([...covered].map(id=>muscles.get(id).group)).size,21);
+ for(const id of ['grip','pinch','finger_spread','opposition','finger_extension','thumb_extension','thumb_abduction','finger_adduction','intrinsic_grip','palm_cup'])assert.equal(moduleKey(ACTIONS.find(a=>a.id===id)),'handsfeet_hands',id);
+});
 async function setup(h){
  const g=h.g;g.DialogueUI.close();g.SceneApp.openCharacterCreationAfterIntro();await h.drain();
  const name=g.document.querySelector('#creation-name');name.value='健身验收';name.dispatchEvent(new g.Event('input',{bubbles:true}));await h.drain();g.document.querySelector('#btn-confirm-creation').click();await h.drain();g.DialogueUI.close();
@@ -17,6 +33,59 @@ async function setup(h){
  g.setTimeout=(fn,ms,...args)=>ms===3000?(timers.set(++n,fn),n):oldSet(fn,ms,...args);g.clearTimeout=id=>{if(!timers.delete(id))oldClear(id);};
  return {step(){assert.equal(timers.size,1,'one training timer');const [id,fn]=timers.entries().next().value;timers.delete(id);fn();},timers};
 }
+for(const mode of [false,true])test(`expanded gym ${mode?'Svelte':'classic'}: new actions through NPC, exact rewards, saved modules and group completion`,async()=>{
+ const h=await boot(mode),g=h.g;
+ try{
+  const clock=await setup(h),G=g.GymSystem,M=g.Muscles,S=g.Survival,E=g.GameEngine,SS=g.SaveSystem;
+  const state=G.getState();for(const s of G.stations)state.levels[s.id]=1;
+  Object.assign(state.levels,{handsfeet_hands:2,handsfeet_ankle:3,handsfeet_toes:4});G.restore(state,true);
+  const muscles=M.getGroups().flatMap(group=>M.getMusclesByGroup(group.id)),progress=()=>Object.fromEntries(muscles.map(m=>[m.id,M.getProgress(m.id)]));
+  async function enter(stationId){
+   g.GymPanel.close();const p=G.getLayout().stations.find(p=>p.id===stationId),[w,height]=G.footprints[stationId];let found=false;
+   for(let y=p.y-1;y<=p.y+height&&!found;y++)for(let x=p.x-1;x<=p.x+w&&!found;x++){
+    if(!E.isWalkable(x,y))continue;E.setState('M0_Base_Inside_lv_1',x,y);found=G.at(stationId);
+   }
+   assert.ok(found,'reachable '+stationId);await g.NPCSystem.openMenu(g.GymFacility.npcId(stationId));await h.drain();
+   assert.equal(g.NPCSystem.isMenuOpen(),true);g.NPCSystem.menu.choose(0);assert.equal(g.GymPanel.isOpen(),true);
+  }
+  let stationId='';
+  for(const id of addedActions){
+   const a=G.action(id);S.setState({stamina:100,fatigue:0,satiety:100,thirst:100,nutrition:20});
+   if(a.station!==stationId){await enter(a.station);stationId=a.station;}
+   g.document.querySelector(`#gym-panel [data-action="${id}"]`).click();
+   const before=progress(),rewards=G.rewards(a),cost=G.cost(a),tick=S.getState().tickCount;
+   if(a.station==='handsfeet'){
+    assert.equal(G.upgradeInfo(a).key,'handsfeet_hands');near(G.efficiency(a).equipment,1.15);
+    g.document.querySelector('#gym-panel [data-tab="upgrade"]').click();
+    assert.match(g.document.querySelector('#gym-panel .upgrade-summary').textContent,/手部用具 · 2级/);
+    g.document.querySelector('#gym-panel [data-tab="train"]').click();
+   }
+   const train=g.document.querySelector('#gym-panel [data-op="train"]');assert.equal(train.disabled,false,id+' available');train.click();
+   assert.equal(G.getState().job.actionId,id);near(S.getStamina(),100-cost);near(S.getFatigue(),cost*1.5);
+   clock.step();assert.deepEqual(progress(),before,id+' pays nothing before completion');
+   if(id==='finger_extension'){
+    const saved=copy(SS.buildSnapshotForDebug());assert.equal(SS.applySnapshotForDebug(saved),true);await h.drain();
+    assert.equal(G.getState().job.actionId,id);assert.equal(G.level(a),2);near(S.getFatigue(),cost*1.5);
+   }
+   clock.step();assert.equal(G.isActive(),false,id+' completed');assert.equal(S.getState().tickCount,tick+2,id+' advances world time');
+   const expected={...before};for(const r of rewards)expected[r.id]=Math.round((expected[r.id]+r.pct)*1e6)/1e6;
+   assert.deepEqual(progress(),expected,id+' changes exactly its targets once');
+  }
+  // A previously uncovered group can now light up through ordinary completed actions.
+  await enter('floor');const seeded=copy(M.getState());for(const m of M.getMusclesByGroup('pelvis'))seeded.progress[m.id]=99.99;M.setState(seeded);
+  assert.equal(M.isGroupComplete('pelvis'),false);
+  for(const id of ['pelvic_floor_hold','perineal_control']){
+   S.setState({stamina:100,fatigue:0});assert.equal(G.startTraining(id).ok,true);clock.step();clock.step();
+  }
+  assert.equal(M.isGroupComplete('pelvis'),true);assert.ok(M.getMusclesByGroup('head').every(m=>M.getProgress(m.id)===0));
+  // Prototype shares the hand module, instead of falling through to the toe module.
+  g.GymPanel.close();const demo=createGymPrototype({Muscles:M,Survival:S,GameTime:g.GameTime},JSON.parse(fs.readFileSync('data/survival-config.json','utf8')));
+  demo.reset('built');Object.assign(demo.state.levels,{handsfeet_hands:2,handsfeet_ankle:3,handsfeet_toes:4});demo.setNutrition(20);
+  const a=demo.getAction('finger_extension'),reward=demo.rewardPreview(a)[0];assert.equal(demo.upgradeInfo(a).key,'handsfeet_hands');near(reward.pct,.253);
+  demo.startTraining(a.id);demo.tick();near(demo.percent(reward.id),0);demo.tick();near(demo.percent(reward.id),.253);
+  assert.deepEqual(h.errors,[]);
+ }finally{await h.close();}
+});
 for(const mode of [false,true])test(`formal gym ${mode?'Svelte':'classic'}: NPC, real materials, growth, rollback and continuation`,async()=>{
  const h=await boot(mode),g=h.g;
  try{
@@ -51,7 +120,7 @@ for(const mode of [false,true])test(`formal gym ${mode?'Svelte':'classic'}: NPC,
   E.setState('M0_Base_Inside_lv_1',10,7);S.setState({isComa:true});assert.equal(entrance.show(9,7),false);S.setState({isComa:false});
   IE.setState(unlearned);
   g.GameLog.log=log;E.setState('M0_Base_Inside_lv_1',5,5);
-  assert.equal(M.getGroups().length,22);assert.equal(G.actions.length,52);assert.equal(G.getState().levels.floor,1);assert.equal(G.getState().levels.barbell,undefined);
+  assert.equal(M.getGroups().length,22);assert.equal(G.actions.length,75);assert.equal(G.getState().levels.floor,1);assert.equal(G.getState().levels.barbell,undefined);
   for(const s of G.getLayout().stations){const [w,hh]=G.footprints[s.id];for(let y=0;y<hh;y++)for(let x=0;x<w;x++){assert.equal(E.isWalkable(s.x+x,s.y+y),false);assert.equal(E.getInteractNpcIdAt(s.x+x,s.y+y),g.GymFacility.npcId(s.id));}}
   await g.NPCSystem.openMenu(g.GymFacility.npcId('floor'));await h.drain();assert.equal(g.NPCSystem.isMenuOpen(),true);g.NPCSystem.menu.choose(0);assert.equal(g.GymPanel.isOpen(),true,JSON.stringify({at:G.at('floor'),usable:G.usable('floor'),created:g.CharacterAttributes.isCharacterCreationCompleted(),error:G.getError()}));
   const ids=G.action('pushup').main,first=ids[0],initialFatigue=S.getFatigue();

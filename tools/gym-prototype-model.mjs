@@ -1,6 +1,6 @@
 // PROTOTYPE: percentage rewards after complete actions, using real Muscles and Survival.
 // Memory only. No SaveSystem, player inventory, production crafting, or production unlock UI.
-import { ACTIONS, STATIONS, MATERIALS, EFFICIENCY, TRAINING_FATIGUE_PER_STAMINA, trainingEfficiency } from './gym-prototype-data.mjs';
+import { ACTIONS, STATIONS, MATERIALS, EFFICIENCY, TRAINING_FATIGUE_PER_STAMINA, trainingEfficiency, moduleKey } from './gym-prototype-data.mjs';
 const clone = v => JSON.parse(JSON.stringify(v));
 const round = n => Math.round(n * 1000000) / 1000000;
 const handModules = {
@@ -23,11 +23,6 @@ export function createGymPrototype(g, config) {
   const station = id => STATIONS.find(s => s.id === id);
   const log = message => { state.log.unshift(message); state.log = state.log.slice(0,8); };
   function idle() { if (state.job) throw Error('请等待当前动作结束。'); }
-  function moduleKey(a) {
-    if (a.station !== 'handsfeet') return a.station;
-    return 'handsfeet_' + (['grip','pinch','finger_spread','opposition'].includes(a.id) ? 'hands'
-      : ['calf_raise','ankle_flexion','ankle_inversion','ankle_eversion'].includes(a.id) ? 'ankle' : 'toes');
-  }
   const level = a => state.levels[moduleKey(a)] ?? state.levels[a.station] ?? 0;
   const fatigueRate = () => S.getFatigue() >= 80 ? 0 : S.getFatigue() > 50 ? .5 : 1;
   const percent = id => M.isUnlocked(id) ? 100 : state.progress[id] || 0;
@@ -132,6 +127,7 @@ export function createGymPrototype(g, config) {
     if (n >= 100) throw Error(isFood ? '饱食已满。' : '饮水已满。');
     if (!state[kind]) throw Error('试玩补给不足。');
     state[kind]--; isFood ? S.addSatiety(25) : S.addThirst(25);
+    if (isFood) for (const c of M.addFoodGrowth()) state.progress[c.id] = c.after;
     log(isFood ? '消耗一份食物，补充饱食。' : '消耗一份饮水，补充饮水。');
   }
   function reset(scenario = 'fresh') {

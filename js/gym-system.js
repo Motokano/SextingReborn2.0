@@ -9,7 +9,7 @@
  const listeners=new Set(),S=()=>g.Survival,M=()=>g.Muscles;
  const action=id=>D.ACTIONS.find(a=>a.id===id),station=id=>D.STATIONS.find(s=>s.id===id);
  const position=()=>g.GameEngine.getState();
- const moduleKey=a=>a.station!=='handsfeet'?a.station:'handsfeet_'+(['grip','pinch','finger_spread','opposition'].includes(a.id)?'hands':['calf_raise','ankle_flexion','ankle_inversion','ankle_eversion'].includes(a.id)?'ankle':'toes');
+ const moduleKey=D.moduleKey;
  const level=a=>state.levels[moduleKey(a)]??state.levels[a.station]??0;
  const fatigueRate=()=>S().getFatigue()>=80?0:S().getFatigue()>50?.5:1;
  const cost=a=>S().getActionStaminaCost(a.cost);
