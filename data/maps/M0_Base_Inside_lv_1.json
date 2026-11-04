@@ -809,12 +809,8 @@
   "bed_station_interact_npc_by_cell": {
     "11,15": "npc.station.bed_base"
   },
-  "agriculture_station_interact_npc_by_cell": {
-    "10,15": "npc.station.agriculture_base"
-  },
-  "livestock_station_interact_npc_by_cell": {
-    "9,15": "npc.station.livestock_base"
-  },
+  "agriculture_station_interact_npc_by_cell": {},
+  "livestock_station_interact_npc_by_cell": {},
   "warehouse_station_interact_npc_id": "npc.station.warehouse_base",
   "warehouse_station_interact_npc_by_cell": {
     "14,12": "npc.station.warehouse_base"
@@ -831,8 +827,6 @@
     "12,15": "烹饪台",
     "13,15": "制肥桶",
     "7,11": "工具台",
-    "9,15": "畜牧",
-    "10,15": "农业",
     "11,15": "床",
     "13,6": "房屋升级",
     "14,12": "仓库",

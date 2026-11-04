@@ -6,11 +6,12 @@ for (const full of [false, true]) test(`${full ? 'Svelte' : 'native'} facility a
  const h=await boot(full),g=h.g;
  const ids=['cooking','pharmacy','forging','compost','bathroom','agriculture','livestock','sewing','observation'];
  const art=id=>g.TileRendererV2.getSpeakerPawn('npc.station.'+id+'_base').url;
- const unfinished=id=>assert.match(art(id),/hideout-facilities-v2\/.*-damaged\.png$/,id);
- const ready=id=>assert.match(art(id),/hideout-facilities-v2\/.*-ready\.png$/,id);
+ const outdoor=id=>id==='agriculture'||id==='livestock';
+ const unfinished=id=>assert.match(art(id),outdoor(id)?/farm-ranch-5x5-v1\/.*-(ready|approved)\.png$/:/hideout-facilities-v2\/.*-damaged\.png$/,id);
+ const ready=id=>assert.match(art(id),outdoor(id)?/farm-ranch-5x5-v1\/.*-(ready|approved)\.png$/:/hideout-facilities-v2\/.*-ready\.png$/,id);
  function supply(id) {
   const project=g.FacilityUnlock.get(id),[x,y]=project.spec.position;
-  g.GameEngine.setState('M0_Base_Inside_lv_1',x,y-1);
+  g.GameEngine.setState(project.spec.mapId||'M0_Base_Inside_lv_1',x,y-1);
   const items=Array.from(project.groups,c=>({item_id:g.FacilityUnlockConfig.materials.find(m=>m[1]===c.id&&m[0]!=='hus_wool')[0],count:100}));
   g.InventoryEquipment.setState({...g.InventoryEquipment.getState(),inventory_pocket:items,inventory_vest:[],inventory_backpack:[],inventory_vehicle:[]});
   assert.equal(project.inspect().ok,true,id+' material knowledge');

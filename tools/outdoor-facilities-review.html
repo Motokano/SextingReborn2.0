@@ -1,0 +1,23 @@
+<!doctype html><meta charset="utf-8"><title>农场与牧场</title>
+<script>
+(async()=>{
+ let source=await(await fetch('../index.html')).text();
+ const isolation=`<script>
+ const reviewStorage=new Map();Object.defineProperty(window,'localStorage',{value:{getItem:k=>reviewStorage.get(k)??null,setItem:(k,v)=>reviewStorage.set(k,String(v)),removeItem:k=>reviewStorage.delete(k)}});
+ Object.defineProperty(navigator,'locks',{value:undefined,configurable:true});
+ window.AppBoot={afterReady:[()=>{(async()=>{
+  DialogueUI.close();SceneApp.openCharacterCreationAfterIntro();await new Promise(r=>setTimeout(r,80));
+  const input=document.getElementById('creation-name');input.value='户外设施';input.dispatchEvent(new Event('input',{bubbles:true}));await new Promise(r=>setTimeout(r,80));
+  document.getElementById('btn-confirm-creation').click();await new Promise(r=>setTimeout(r,80));DialogueUI.close();
+  Survival.setState({stamina:100,fatigue:0,satiety:100,thirst:100,isDead:false,isComa:false});GameTime.reset({hour:12});
+  // Review-only restored facilities; this page owns no real player save.
+  for(const id of ['agriculture','livestock']){NPCSystem.setDemoFlag('facility_cleaned:'+id,true);NPCSystem.setDemoFlag('facility_restored:'+id,true);}
+  window.outdoorReviewGo=id=>{SceneApp.closeAgriculturePanel({automatic:true});SceneApp.closeLivestockPanel();NPCSystem.menu.close();const p=id==='farm'?[5,10]:id==='ranch'?[10,11]:[8,14];GameEngine.setState(id==='inside'?'M0_Base_Inside_lv_1':'M0_Base_Outside_lv_1',...p);PlayerFacing.setFromMove(id==='farm'?-1:1,id==='ranch'?-1:0);SceneRenderer.render();};
+  const bar=document.createElement('div');bar.style.cssText='position:fixed;left:50%;bottom:12px;transform:translateX(-50%);z-index:9999;display:flex;gap:8px';
+  for(const [id,label] of [['farm','农场'],['ranch','牧场'],['inside','回家']]){const b=document.createElement('button');b.className='btn';b.textContent=label;b.onclick=()=>outdoorReviewGo(id);bar.append(b);}document.body.append(bar);
+  outdoorReviewGo(new URLSearchParams(location.search).get('at')||'farm');document.title='农场与牧场';document.body.dataset.outdoorRuntimeReady='true';
+ })();}]};
+ <\/script>`;
+ source=source.replace('<head>','<head><base href="../">'+isolation);document.open();document.write(source);document.close();
+})();
+</script>

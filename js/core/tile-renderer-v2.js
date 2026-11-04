@@ -24,7 +24,7 @@
             var y = (crop[1] - spec.anchor[1]) * scale;
             var rx = footprint[0], depth = footprint[1];
             var shadow = document.createElement('canvas');
-            var bounds = spec.source ? [-112,-80,224,160] : [-64,-40,160,88];
+            var bounds = spec.shadowBounds || (spec.source ? [-112,-80,224,160] : [-64,-40,160,88]);
             shadow.width = bounds[2]*4; shadow.height = bounds[3]*4;
             shadow.drawBounds = bounds;
             var sc = shadow.getContext('2d');
@@ -201,7 +201,13 @@
             deviceFootprints[key] = [0,0];
         });
         // END GENERATED HIDEOUT FACILITIES V2
+        // BEGIN GENERATED OUTDOOR FACILITIES
+        var outdoorSpecs = {"ranchOutside":{"source":"assets/map/isometric/farm-ranch-5x5-v1/ranch-approved.png","crop":[26,1,1451,1054],"anchor":[747,591],"groundCenter":[747,591],"width":696.48,"label":"牧场","groundContacts":[[745,142],[1438,597],[745,1030],[60,597]],"openFootprint":true,"shadowBounds":[-380,-280,760,560]},"farmOutside":{"source":"assets/map/isometric/farm-ranch-5x5-v1/farm-ready.png","crop":[0,7,1486,1047],"anchor":[777,630],"groundCenter":[777,630],"width":698.42,"label":"农场","groundContacts":[[670,225],[1430,780],[770,1040],[123,590]],"openFootprint":true,"shadowBounds":[-380,-280,760,560]}};
+        Object.keys(outdoorSpecs).forEach(function(key){pawnSpecs[key]=outdoorSpecs[key];spriteSources[key]=outdoorSpecs[key].source;deviceFootprints[key]=[0,0];});
+        // END GENERATED OUTDOOR FACILITIES
         function deviceAppearanceKey(key, npcId) {
+            if(key==='farm'&&npcId==='npc.station.agriculture_base')return 'farmOutside';
+            if(key==='ranch'&&npcId==='npc.station.livestock_base')return 'ranchOutside';
             var state = deviceStates[key], npc = global.NPCSystem;
             // Only base IDs use this redraw; other maps keep their registered art.
             var baseId = 'npc.station.' + (state ? state.npc : key) + '_base';
@@ -508,7 +514,8 @@
             }
             var deviceKey = deviceKeyForMeta(m);
             entityCtx.textAlign='center';entityCtx.textBaseline='middle';
-            if(m.unknownPresence){entityCtx.fillStyle='rgba(245,222,179,.95)';entityCtx.font='bold 20px sans-serif';entityCtx.fillText('?',c.x,c.y-lift);}
+            if((scene.map.facility_footprints||[]).some(function(f){return gx>=f.x&&gx<f.x+f.width&&gy>=f.y&&gy<f.y+f.height;})){ /* Draw the complete facility once in the depth pass. */ }
+            else if(m.unknownPresence){entityCtx.fillStyle='rgba(245,222,179,.95)';entityCtx.font='bold 20px sans-serif';entityCtx.fillText('?',c.x,c.y-lift);}
             else if(projection.isIsometric && deviceKey && !m.enemy && (!m.npc || String(m.npcId || '').indexOf('npc.station.') === 0)) {
                 drawCalibratedPawn(entityCtx, deviceAppearanceKey(deviceKey, m.npcId), c.x, c.y, m.npcLabel);
             }
@@ -555,7 +562,7 @@
         function drawFullDynamic(nextScene){
             pawnPaints=[];
             foregroundCtx.clearRect(0,0,foregroundCanvas.width,foregroundCanvas.height);
-            dynamicCtx.clearRect(0,0,dynamicCanvas.width,dynamicCanvas.height);var vr=visibleRange(nextScene),cells=[];
+            dynamicCtx.clearRect(0,0,dynamicCanvas.width,dynamicCanvas.height);var vr=visibleRange(nextScene),cells=[],outdoorForeground=[];
             var buildingCells=baseArt&&baseArt.visibleBuildingCells?baseArt.visibleBuildingCells(scene.map,scene.dynamicMetaAt):null;
             if(usesGroundPass())groundEffectsRenderer(makeFrame(dynamicCtx,presentationNow));
             for(var gy=vr.minY;gy<=vr.maxY;gy++)for(var gx=vr.minX;gx<=vr.maxX;gx++){
@@ -564,8 +571,30 @@
                 cells.push({x:gx,y:gy,m:m});drawOverlay(gx,gy,m);
             }
             if(scene.map.dungeon)global.DungeonArt.ground(dynamicCtx,projection);
-            cells.sort(function(a,b){var ca=projection.cellCenter(a.x,a.y),cb=projection.cellCenter(b.x,b.y);return ca.y-cb.y||ca.x-cb.x;});for(var i=0;i<cells.length;i++)drawEntity(cells[i].x,cells[i].y,cells[i].m);
+            (scene.map.facility_footprints||[]).forEach(function(f){
+                var identified=false,visible=false;
+                for(var y=f.y;y<f.y+f.height;y++)for(var x=f.x;x<f.x+f.width;x++){
+                    var m=scene.dynamicMetaAt(x,y);
+                    if(m.agricultureStation||m.livestockStation)identified=true;
+                    if(m.unknownPresence)visible=true;
+                }
+                if(!identified&&!visible)return;
+                var x=f.x+(f.width-1)/2,y=f.y+(f.height-1)/2;
+                cells.push({x:x,y:y,outdoorFacility:true,draw:function(ctx){
+                    var c=projection.cellCenter(x,y);
+                    if(identified&&projection.isIsometric)drawCalibratedPawn(ctx,f.artKey,c.x,c.y,f.label);
+                    else drawSpriteLabel(ctx,identified?f.label:'?',c.x,c.y);
+                }});
+            });
+            cells.sort(function(a,b){var ca=projection.cellCenter(a.x,a.y),cb=projection.cellCenter(b.x,b.y);return ca.y-cb.y||ca.x-cb.x;});
+            for(var i=0;i<cells.length;i++){
+                var cell=cells[i];
+                if(cell.draw){var at=projection.cellCenter(cell.x,cell.y),actor=projection.cellCenter(scene.st.x,scene.st.y),front=at.y>actor.y||(at.y===actor.y&&at.x>actor.x);if(front&&cell.outdoorFacility)outdoorForeground.push(cell);else cell.draw(front?foregroundCtx:dynamicCtx);}
+                else drawEntity(cell.x,cell.y,cell.m);
+            }
             if(baseArt&&baseArt.revealPlayer)baseArt.revealPlayer(foregroundCtx,scene.map,projection,scene.st);
+            // Courtyard roof cutaways must not erase nearby farm/ranch fences.
+            outdoorForeground.forEach(function(cell){cell.draw(foregroundCtx);});
             // Same-cell belongings sit beside the pawn, above the architecture cutaway.
             var underPlayer=scene.dynamicMetaAt(scene.st.x,scene.st.y);
             if(underPlayer.player)drawGroundItems(foregroundCtx,scene.st.x,scene.st.y,underPlayer);
@@ -584,7 +613,7 @@
             if(baseArt && baseArt.supports(scene.map) && !baseSubscribed){baseSubscribed=true;baseArt.load(function(){staticMapKey='';if(lastInput)render(lastInput);});}
             projection=makeProjection(scene.map);if(scene.map.dungeon)projection=global.DungeonArt.viewport(projection,scene.st,nextScene.viewport);resize(projection.widthPx,projection.heightPx);ensureStatic(nextScene);
             var dirty=Array.isArray(nextScene.dirtyCells)?nextScene.dirtyCells:null;
-            if(!projection.isIsometric&&dirty&&dirty.length){var seen={};for(var i=0;i<dirty.length;i++){var d=dirty[i];if(!d||d.x==null||d.y==null)continue;var gx=d.x|0,gy=d.y|0,k=gx+','+gy;if(seen[k]||gx<0||gy<0||gx>=scene.map.width||gy>=scene.map.height)continue;seen[k]=1;dynamicCtx.clearRect(gx*cellPx-2,gy*cellPx-2,cellPx+4,cellPx+4);var m=scene.dynamicMetaAt(gx,gy);drawOverlay(gx,gy,m);drawEntity(gx,gy,m);}}else drawFullDynamic(nextScene);
+            if(!projection.isIsometric&&!(scene.map.facility_footprints||[]).length&&dirty&&dirty.length){var seen={};for(var i=0;i<dirty.length;i++){var d=dirty[i];if(!d||d.x==null||d.y==null)continue;var gx=d.x|0,gy=d.y|0,k=gx+','+gy;if(seen[k]||gx<0||gy<0||gx>=scene.map.width||gy>=scene.map.height)continue;seen[k]=1;dynamicCtx.clearRect(gx*cellPx-2,gy*cellPx-2,cellPx+4,cellPx+4);var m=scene.dynamicMetaAt(gx,gy);drawOverlay(gx,gy,m);drawEntity(gx,gy,m);}}else drawFullDynamic(nextScene);
             renderFxLayer(presentationNow);
         }
         function usesGroundPass(){return !!(groundEffectsRenderer&&projection&&projection.isIsometric&&baseArt&&baseArt.usesGroundVisibility&&baseArt.usesGroundVisibility(scene.map));}

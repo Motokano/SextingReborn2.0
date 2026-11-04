@@ -1,0 +1,108 @@
+{
+  "date": "2026-11-04",
+  "scope": "art preview only; no game state or runtime map changes",
+  "pageErrors": [],
+  "assets": [
+    {
+      "id": "ranch",
+      "originalPreserved": true,
+      "sha256": "763e2a947c99caaa3b83c389faffe40a10e3944a0bb1104eaedeb266a538edb6",
+      "width": 1491,
+      "height": 1055,
+      "transparentPixels": 1071997,
+      "opaquePixels": 2105,
+      "partialAlphaPixels": 498903,
+      "visibleBounds": [
+        26,
+        1,
+        1451,
+        1054
+      ],
+      "occupiedImageBorderPixels": 18,
+      "samples": [
+        {
+          "x": 500,
+          "y": 500,
+          "alpha": 0
+        },
+        {
+          "x": 900,
+          "y": 410,
+          "alpha": 3
+        },
+        {
+          "x": 750,
+          "y": 790,
+          "alpha": 0
+        },
+        {
+          "x": 1090,
+          "y": 530,
+          "alpha": 0
+        }
+      ],
+      "borderAlpha": {
+        "max": 1,
+        "atLeast32": 0
+      },
+      "scaleAt144": 0.48,
+      "logicalFootprint": [
+        5,
+        5
+      ],
+      "observedSupportEdgeSlopes": [
+        0.6565656565656566,
+        -0.6642335766423357
+      ],
+      "note": "Native projection retained; no shear or nonuniform rescale. Contacts are approximate visual estimates."
+    },
+    {
+      "id": "farm",
+      "originalPreserved": true,
+      "sha256": "077e8db3a8b4348cdeb897606fe8c74ff4a48242a99b7ac146102a2742550a72",
+      "width": 1492,
+      "height": 1054,
+      "transparentPixels": 846636,
+      "opaquePixels": 1047,
+      "partialAlphaPixels": 724885,
+      "visibleBounds": [
+        0,
+        7,
+        1486,
+        1047
+      ],
+      "occupiedImageBorderPixels": 62,
+      "samples": [
+        {
+          "x": 48,
+          "y": 48,
+          "alpha": 0
+        },
+        {
+          "x": 500,
+          "y": 290,
+          "alpha": 252
+        },
+        {
+          "x": 1450,
+          "y": 960,
+          "alpha": 0
+        }
+      ],
+      "borderAlpha": {
+        "max": 1,
+        "atLeast32": 0
+      },
+      "scaleAt144": 0.47,
+      "logicalFootprint": [
+        5,
+        5
+      ],
+      "observedSupportEdgeSlopes": [
+        0.7302631578947368,
+        -0.6672760511882998
+      ],
+      "note": "Native projection retained; no shear or nonuniform rescale. Contacts are approximate visual estimates."
+    }
+  ]
+}

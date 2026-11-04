@@ -4547,6 +4547,7 @@
 
     function tryAgricultureAction(actionId, params) {
         params = params || {};
+        if (!canUseOutdoorFacility('agriculture')) return { ok: false, reason: 'not_adjacent' };
         if (!isAgricultureUnlocked() || (window.FacilityLabor && !window.FacilityLabor.isUnlocked('agriculture'))) return { ok: false, reason: 'agriculture_locked' };
         var AM = window.AgricultureMap;
         var API = window.AgriculturePlayerItems;
@@ -4896,6 +4897,7 @@
 
     function tickAgriculturePanelWorldOnce() {
         if (!agriculturePanelOpen) return { ok: false, reason: 'panel_closed' };
+        if (!canUseOutdoorFacility('agriculture')) { closeAgriculturePanel({automatic:true}); return {ok:false,reason:'not_adjacent'}; }
         var Surv = window.Survival;
         if (!Surv || typeof Surv.advanceTick !== 'function') return { ok: false, reason: 'survival_missing' };
         if (typeof Surv.isDead === 'function' && Surv.isDead()) return { ok: false, reason: 'dead' };
@@ -4922,7 +4924,21 @@
         if (r.death) stopAgricultureAutoTick();
     }
 
+    function canUseOutdoorFacility(id) {
+        if (!window.FacilityLabor || !window.FacilityLabor.nearby(id)) return false;
+        if (isPlayerComaActive() || (window.Survival && window.Survival.isDead && window.Survival.isDead())) return false;
+        if ((window.BedSleep && window.BedSleep.isActive()) || (window.GymSystem && window.GymSystem.isActive())) return false;
+        if (window.CombatEngagement && window.CombatEngagement.isPlayerInCombat()) return false;
+        return !isPlayerActionDisabledByBuff(ACTION_TYPES.NPC_INTERACT);
+    }
+
+    function syncOutdoorFacilityPanels() {
+        if (agriculturePanelOpen && !canUseOutdoorFacility('agriculture')) closeAgriculturePanel({automatic:true});
+        if (livestockPanelOpen && !canUseOutdoorFacility('livestock')) closeLivestockPanel();
+    }
+
     function openAgriculturePanel() {
+        if (!canUseOutdoorFacility('agriculture')) return;
         if (isPreCreationGameplayRestricted()) {
             showIntroBlockedMsg();
             return;
@@ -4953,12 +4969,12 @@
         render();
     }
 
-    function closeAgriculturePanel() {
+    function closeAgriculturePanel(options) {
         if (!agriculturePanelOpen) return;
+        agriculturePanelOpen = false;
         stopAgricultureAutoTick();
         SceneUi.hideItemTooltip();
-        if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
-        agriculturePanelOpen = false;
+        if (!(options && options.automatic) && window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
         var modal = document.getElementById('modal-agriculture');
         if (modal) {
             modal.classList.remove('show');
@@ -5005,6 +5021,7 @@
     }
 
     function onLivestockAutoTick() {
+        if (livestockPanelOpen && !canUseOutdoorFacility('livestock')) { closeLivestockPanel(); return; }
         if (!livestockPanelOpen || !isLivestockAutoTickEnabled()) {
             stopLivestockAutoTick();
             return;
@@ -5015,6 +5032,7 @@
     }
 
     function openLivestockPanel() {
+        if (!canUseOutdoorFacility('livestock')) return;
         if (window.Hunting && window.Hunting.isActive()) return;
         if (isPreCreationGameplayRestricted()) {
             showIntroBlockedMsg();
@@ -8890,6 +8908,8 @@
     };
     window.SceneApp.prepareDungeonAction = window.SceneApp.prepareFacilityAction;
     window.SceneApp.openAgriculturePanel = openAgriculturePanel;
+    window.SceneApp.syncOutdoorFacilityPanels = syncOutdoorFacilityPanels;
+    window.SceneApp.canUseOutdoorFacility = canUseOutdoorFacility;
     window.SceneApp.closeAgriculturePanel = closeAgriculturePanel;
     window.SceneApp.openLivestockPanel = openLivestockPanel;
     window.SceneApp.closeLivestockPanel = closeLivestockPanel;

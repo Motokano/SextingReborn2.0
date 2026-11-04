@@ -1,0 +1,32 @@
+{
+  "tileWidth": 144,
+  "tileHeight": 101.82337649086284,
+  "footprint": [
+    5,
+    5
+  ],
+  "scale": 1.36,
+  "origin": [
+    620,
+    330
+  ],
+  "groundCorners": [
+    [
+      620,
+      330
+    ],
+    [
+      1109.6,
+      676.1994800689337
+    ],
+    [
+      620,
+      1022.3989601378673
+    ],
+    [
+      130.39999999999998,
+      676.1994800689337
+    ]
+  ],
+  "note": "Drawing target only; generated art needs separate ground-contact registration."
+}

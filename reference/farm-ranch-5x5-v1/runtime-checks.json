@@ -1,0 +1,55 @@
+{
+  "date": "2026-11-04",
+  "pageErrors": [],
+  "checks": [
+    {
+      "ui": "native",
+      "id": "farm",
+      "position": {
+        "mapId": "M0_Base_Outside_lv_1",
+        "x": 5,
+        "y": 10
+      },
+      "adjacent": true,
+      "art": "assets/map/isometric/farm-ranch-5x5-v1/farm-ready.png"
+    },
+    {
+      "ui": "native",
+      "id": "ranch",
+      "position": {
+        "mapId": "M0_Base_Outside_lv_1",
+        "x": 10,
+        "y": 11
+      },
+      "adjacent": true,
+      "art": "assets/map/isometric/farm-ranch-5x5-v1/ranch-approved.png"
+    },
+    {
+      "ui": "svelte",
+      "id": "farm",
+      "position": {
+        "mapId": "M0_Base_Outside_lv_1",
+        "x": 5,
+        "y": 10
+      },
+      "adjacent": true,
+      "art": "assets/map/isometric/farm-ranch-5x5-v1/farm-ready.png"
+    },
+    {
+      "ui": "svelte",
+      "id": "ranch",
+      "position": {
+        "mapId": "M0_Base_Outside_lv_1",
+        "x": 10,
+        "y": 11
+      },
+      "adjacent": true,
+      "art": "assets/map/isometric/farm-ranch-5x5-v1/ranch-approved.png"
+    }
+  ],
+  "legacyRegistrationCheck": {
+    "result": "pre-existing sealed-gym assertion",
+    "message": "npc.station.gym_pullup_base remains reachable",
+    "reproducedWithOldIndoorFarmRanchEntrances": true
+  }
+}

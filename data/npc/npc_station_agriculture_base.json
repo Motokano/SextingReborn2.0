@@ -10,9 +10,9 @@
     "end": "23:59"
   },
   "location": {
-    "sceneId": "M0_Base_Inside_lv_1",
-    "x": 10,
-    "y": 15
+    "sceneId": "M0_Base_Outside_lv_1",
+    "x": 0,
+    "y": 8
   },
   "interactionChecks": {
     "thirst": false,

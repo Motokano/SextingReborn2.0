@@ -127,6 +127,206 @@
     {
       "x": 5,
       "y": 11
+    },
+    {
+      "x": 0,
+      "y": 8
+    },
+    {
+      "x": 1,
+      "y": 8
+    },
+    {
+      "x": 2,
+      "y": 8
+    },
+    {
+      "x": 3,
+      "y": 8
+    },
+    {
+      "x": 4,
+      "y": 8
+    },
+    {
+      "x": 0,
+      "y": 9
+    },
+    {
+      "x": 1,
+      "y": 9
+    },
+    {
+      "x": 2,
+      "y": 9
+    },
+    {
+      "x": 3,
+      "y": 9
+    },
+    {
+      "x": 4,
+      "y": 9
+    },
+    {
+      "x": 0,
+      "y": 10
+    },
+    {
+      "x": 1,
+      "y": 10
+    },
+    {
+      "x": 2,
+      "y": 10
+    },
+    {
+      "x": 3,
+      "y": 10
+    },
+    {
+      "x": 4,
+      "y": 10
+    },
+    {
+      "x": 0,
+      "y": 11
+    },
+    {
+      "x": 1,
+      "y": 11
+    },
+    {
+      "x": 2,
+      "y": 11
+    },
+    {
+      "x": 3,
+      "y": 11
+    },
+    {
+      "x": 4,
+      "y": 11
+    },
+    {
+      "x": 0,
+      "y": 12
+    },
+    {
+      "x": 1,
+      "y": 12
+    },
+    {
+      "x": 2,
+      "y": 12
+    },
+    {
+      "x": 3,
+      "y": 12
+    },
+    {
+      "x": 4,
+      "y": 12
+    },
+    {
+      "x": 11,
+      "y": 7
+    },
+    {
+      "x": 12,
+      "y": 7
+    },
+    {
+      "x": 13,
+      "y": 7
+    },
+    {
+      "x": 14,
+      "y": 7
+    },
+    {
+      "x": 15,
+      "y": 7
+    },
+    {
+      "x": 11,
+      "y": 8
+    },
+    {
+      "x": 12,
+      "y": 8
+    },
+    {
+      "x": 13,
+      "y": 8
+    },
+    {
+      "x": 14,
+      "y": 8
+    },
+    {
+      "x": 15,
+      "y": 8
+    },
+    {
+      "x": 11,
+      "y": 9
+    },
+    {
+      "x": 12,
+      "y": 9
+    },
+    {
+      "x": 13,
+      "y": 9
+    },
+    {
+      "x": 14,
+      "y": 9
+    },
+    {
+      "x": 15,
+      "y": 9
+    },
+    {
+      "x": 11,
+      "y": 10
+    },
+    {
+      "x": 12,
+      "y": 10
+    },
+    {
+      "x": 13,
+      "y": 10
+    },
+    {
+      "x": 14,
+      "y": 10
+    },
+    {
+      "x": 15,
+      "y": 10
+    },
+    {
+      "x": 11,
+      "y": 11
+    },
+    {
+      "x": 12,
+      "y": 11
+    },
+    {
+      "x": 13,
+      "y": 11
+    },
+    {
+      "x": 14,
+      "y": 11
+    },
+    {
+      "x": 15,
+      "y": 11
     }
   ],
   "portals": [
@@ -150,51 +350,6 @@
   "entities": [
     {
       "x": 3,
-      "y": 8,
-      "entity_id": "gathering_grass"
-    },
-    {
-      "x": 4,
-      "y": 8,
-      "entity_id": "gathering_grass"
-    },
-    {
-      "x": 2,
-      "y": 9,
-      "entity_id": "gathering_grass"
-    },
-    {
-      "x": 3,
-      "y": 9,
-      "entity_id": "gathering_grass"
-    },
-    {
-      "x": 4,
-      "y": 9,
-      "entity_id": "gathering_grass"
-    },
-    {
-      "x": 2,
-      "y": 10,
-      "entity_id": "gathering_grass"
-    },
-    {
-      "x": 3,
-      "y": 10,
-      "entity_id": "gathering_grass"
-    },
-    {
-      "x": 3,
-      "y": 11,
-      "entity_id": "gathering_grass"
-    },
-    {
-      "x": 2,
-      "y": 11,
-      "entity_id": "gathering_grass"
-    },
-    {
-      "x": 3,
       "y": 13,
       "entity_id": "gathering_bush"
     },
@@ -205,27 +360,7 @@
     },
     {
       "x": 2,
-      "y": 12,
-      "entity_id": "gathering_grass"
-    },
-    {
-      "x": 3,
-      "y": 12,
-      "entity_id": "gathering_grass"
-    },
-    {
-      "x": 2,
       "y": 13,
-      "entity_id": "gathering_grass"
-    },
-    {
-      "x": 12,
-      "y": 11,
-      "entity_id": "gathering_grass"
-    },
-    {
-      "x": 13,
-      "y": 11,
       "entity_id": "gathering_grass"
     },
     {
@@ -254,39 +389,9 @@
       "entity_id": "gathering_bush"
     },
     {
-      "x": 11,
-      "y": 9,
-      "entity_id": "gathering_bush"
-    },
-    {
       "x": 10,
       "y": 10,
       "entity_id": "gathering_bush"
-    },
-    {
-      "x": 11,
-      "y": 10,
-      "entity_id": "gathering_bush"
-    },
-    {
-      "x": 12,
-      "y": 8,
-      "entity_id": "gathering_grass"
-    },
-    {
-      "x": 12,
-      "y": 9,
-      "entity_id": "gathering_grass"
-    },
-    {
-      "x": 12,
-      "y": 10,
-      "entity_id": "gathering_grass"
-    },
-    {
-      "x": 11,
-      "y": 8,
-      "entity_id": "gathering_grass"
     },
     {
       "x": 10,
@@ -299,11 +404,6 @@
       "entity_id": "gathering_grass"
     },
     {
-      "x": 11,
-      "y": 11,
-      "entity_id": "gathering_bush"
-    },
-    {
       "x": 12,
       "y": 12,
       "entity_id": "gathering_bush"
@@ -340,21 +440,6 @@
     },
     {
       "x": 1,
-      "y": 10,
-      "entity_id": "gathering_grass"
-    },
-    {
-      "x": 1,
-      "y": 11,
-      "entity_id": "gathering_grass"
-    },
-    {
-      "x": 1,
-      "y": 12,
-      "entity_id": "gathering_grass"
-    },
-    {
-      "x": 1,
       "y": 13,
       "entity_id": "gathering_grass"
     },
@@ -401,16 +486,6 @@
     {
       "x": 4,
       "y": 14,
-      "entity_id": "gathering_grass"
-    },
-    {
-      "x": 4,
-      "y": 12,
-      "entity_id": "gathering_grass"
-    },
-    {
-      "x": 0,
-      "y": 12,
       "entity_id": "gathering_grass"
     },
     {
@@ -429,34 +504,34 @@
     "7,15": "进入野外",
     "9,7": "可开垦田地",
     "10,7": "可开垦田地",
-    "11,7": "可开垦田地",
-    "12,7": "可开垦田地",
-    "13,7": "可开垦田地",
-    "14,7": "可开垦田地",
+    "11,7": "牧场",
+    "12,7": "牧场",
+    "13,7": "牧场",
+    "14,7": "牧场",
     "9,8": "可开垦田地",
     "10,8": "可开垦田地",
-    "11,8": "可开垦田地",
-    "12,8": "可开垦田地",
-    "13,8": "可开垦田地",
-    "14,8": "可开垦田地",
+    "11,8": "牧场",
+    "12,8": "牧场",
+    "13,8": "牧场",
+    "14,8": "牧场",
     "9,9": "可开垦田地",
     "10,9": "可开垦田地",
-    "11,9": "可开垦田地",
-    "12,9": "可开垦田地",
-    "13,9": "可开垦田地",
-    "14,9": "可开垦田地",
+    "11,9": "牧场",
+    "12,9": "牧场",
+    "13,9": "牧场",
+    "14,9": "牧场",
     "9,10": "可开垦田地",
     "10,10": "可开垦田地",
-    "11,10": "可开垦田地",
-    "12,10": "可开垦田地",
-    "13,10": "可开垦田地",
-    "14,10": "可开垦田地",
+    "11,10": "牧场",
+    "12,10": "牧场",
+    "13,10": "牧场",
+    "14,10": "牧场",
     "9,11": "可开垦田地",
     "10,11": "可开垦田地",
-    "11,11": "可开垦田地",
-    "12,11": "可开垦田地",
-    "13,11": "可开垦田地",
-    "14,11": "可开垦田地",
+    "11,11": "牧场",
+    "12,11": "牧场",
+    "13,11": "牧场",
+    "14,11": "牧场",
     "9,12": "可开垦田地",
     "10,12": "可开垦田地",
     "11,12": "可开垦田地",
@@ -475,6 +550,112 @@
     "12,14": "可开垦田地",
     "13,14": "可开垦田地",
     "14,14": "可开垦田地",
-    "6,10": "岸边池塘"
+    "6,10": "岸边池塘",
+    "0,8": "农业",
+    "1,8": "农业",
+    "2,8": "农业",
+    "3,8": "农业",
+    "4,8": "农业",
+    "0,9": "农业",
+    "1,9": "农业",
+    "2,9": "农业",
+    "3,9": "农业",
+    "4,9": "农业",
+    "0,10": "农业",
+    "1,10": "农业",
+    "2,10": "农业",
+    "3,10": "农业",
+    "4,10": "农业",
+    "0,11": "农业",
+    "1,11": "农业",
+    "2,11": "农业",
+    "3,11": "农业",
+    "4,11": "农业",
+    "0,12": "农业",
+    "1,12": "农业",
+    "2,12": "农业",
+    "3,12": "农业",
+    "4,12": "农业",
+    "15,7": "牧场",
+    "15,8": "牧场",
+    "15,9": "牧场",
+    "15,10": "牧场",
+    "15,11": "牧场"
+  },
+  "facility_footprints": [
+    {
+      "id": "farm",
+      "label": "农场",
+      "x": 0,
+      "y": 8,
+      "width": 5,
+      "height": 5,
+      "npc_id": "npc.station.agriculture_base",
+      "artKey": "farmOutside"
+    },
+    {
+      "id": "ranch",
+      "label": "牧场",
+      "x": 11,
+      "y": 7,
+      "width": 5,
+      "height": 5,
+      "npc_id": "npc.station.livestock_base",
+      "artKey": "ranchOutside"
+    }
+  ],
+  "agriculture_station_interact_npc_by_cell": {
+    "0,8": "npc.station.agriculture_base",
+    "1,8": "npc.station.agriculture_base",
+    "2,8": "npc.station.agriculture_base",
+    "3,8": "npc.station.agriculture_base",
+    "4,8": "npc.station.agriculture_base",
+    "0,9": "npc.station.agriculture_base",
+    "1,9": "npc.station.agriculture_base",
+    "2,9": "npc.station.agriculture_base",
+    "3,9": "npc.station.agriculture_base",
+    "4,9": "npc.station.agriculture_base",
+    "0,10": "npc.station.agriculture_base",
+    "1,10": "npc.station.agriculture_base",
+    "2,10": "npc.station.agriculture_base",
+    "3,10": "npc.station.agriculture_base",
+    "4,10": "npc.station.agriculture_base",
+    "0,11": "npc.station.agriculture_base",
+    "1,11": "npc.station.agriculture_base",
+    "2,11": "npc.station.agriculture_base",
+    "3,11": "npc.station.agriculture_base",
+    "4,11": "npc.station.agriculture_base",
+    "0,12": "npc.station.agriculture_base",
+    "1,12": "npc.station.agriculture_base",
+    "2,12": "npc.station.agriculture_base",
+    "3,12": "npc.station.agriculture_base",
+    "4,12": "npc.station.agriculture_base"
+  },
+  "livestock_station_interact_npc_by_cell": {
+    "11,7": "npc.station.livestock_base",
+    "12,7": "npc.station.livestock_base",
+    "13,7": "npc.station.livestock_base",
+    "14,7": "npc.station.livestock_base",
+    "15,7": "npc.station.livestock_base",
+    "11,8": "npc.station.livestock_base",
+    "12,8": "npc.station.livestock_base",
+    "13,8": "npc.station.livestock_base",
+    "14,8": "npc.station.livestock_base",
+    "15,8": "npc.station.livestock_base",
+    "11,9": "npc.station.livestock_base",
+    "12,9": "npc.station.livestock_base",
+    "13,9": "npc.station.livestock_base",
+    "14,9": "npc.station.livestock_base",
+    "15,9": "npc.station.livestock_base",
+    "11,10": "npc.station.livestock_base",
+    "12,10": "npc.station.livestock_base",
+    "13,10": "npc.station.livestock_base",
+    "14,10": "npc.station.livestock_base",
+    "15,10": "npc.station.livestock_base",
+    "11,11": "npc.station.livestock_base",
+    "12,11": "npc.station.livestock_base",
+    "13,11": "npc.station.livestock_base",
+    "14,11": "npc.station.livestock_base",
+    "15,11": "npc.station.livestock_base"
   }
 }

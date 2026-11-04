@@ -16,8 +16,9 @@ add('water','修复灶台供水',{stone:6,metal:8,parts:4},'cooking_base_station
 add('calendar','装配日历',{wood:4,fiber:2},'observation_calendar_unlocked',[7,11]);
 add('temperature','装配温度计',{wood:4,metal:4,parts:2},'observation_temperature_unlocked',[7,11]);
 projects.calendar.toolbench=true;projects.temperature.toolbench=true;
-add('agriculture','恢复农业设施',{stone:6,wood:4},'facility_restored:agriculture',[10,15],'facility_cleaned:agriculture');
-add('livestock','恢复牧场装置',{metal:8,wood:8,parts:4},'facility_restored:livestock',[9,15],'facility_cleaned:livestock');
+add('agriculture','恢复农业设施',{stone:6,wood:4},'facility_restored:agriculture',[0,8],'facility_cleaned:agriculture');
+add('livestock','恢复牧场装置',{metal:8,wood:8,parts:4},'facility_restored:livestock',[11,7],'facility_cleaned:livestock');
+['agriculture','livestock'].forEach(function(id){projects[id].mapId='M0_Base_Outside_lv_1';projects[id].footprint=[5,5];});
 add('sewing_tape','装配皮尺',{metal:2,fiber:2},'sewing_tape_unlocked',[6,11]);
 add('sewing_scale','装配体重秤',{wood:8,metal:8},'sewing_scale_unlocked',[6,11],'sewing_tape_unlocked');
 add('sewing_mannequin','装配人台',{wood:8,fiber:4},'sewing_mannequin_unlocked',[6,11],'sewing_scale_unlocked');

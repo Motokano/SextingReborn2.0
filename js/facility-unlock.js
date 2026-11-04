@@ -75,8 +75,11 @@
   if(spec.warehouse){var status=g.HideoutWarehouse.getUpgradeStatus(spec.warehouse,true);return !!(SC&&SC.isAdjacentToWarehouseTile()&&!g.HideoutWarehouse.isOutpostMode()&&(status==='available'||status==='insufficient'));}
   if(spec.id==='cooking'){var c=SC&&SC.getCurrentCookingStationContext();return !!(c&&c.station_type!=='temp'&&SC.isCookingUiBlockedByRepairForContext(c));}
   if(!E||!E.getState||!E.getMap)return false;
-  var st=E.getState(),map=E.getMap();if(st.mapId!=='M0_Base_Inside_lv_1')return false;
-  var pos=spec.position;return !!(map&&pos&&Math.max(Math.abs(st.x-pos[0]),Math.abs(st.y-pos[1]))===1);
+  var st=E.getState(),map=E.getMap();if(st.mapId!==(spec.mapId||'M0_Base_Inside_lv_1'))return false;
+  var pos=spec.position,size=spec.footprint||[1,1];if(!map||!pos)return false;
+  var dx=Math.max(pos[0]-st.x,0,st.x-(pos[0]+size[0]-1));
+  var dy=Math.max(pos[1]-st.y,0,st.y-(pos[1]+size[1]-1));
+  return Math.max(dx,dy)===1;
  }
  g.FacilityUnlock={get:get,canAccess:canAccess};
 })(window);

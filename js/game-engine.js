@@ -515,7 +515,7 @@
     }
 
     function setMaps(maps) {
-        if (maps && typeof maps === 'object') MAPS = maps;
+        if (maps && typeof maps === 'object') { MAPS = maps; relocateFromFacilityFootprint(); }
     }
 
     function getMaps() {
@@ -526,11 +526,25 @@
         return { mapId: state.mapId, x: state.x, y: state.y };
     }
 
+    // An older save can stand on ground now occupied by an outdoor facility.
+    // Move only those saves to the nearest usable tile, without advancing time.
+    function relocateFromFacilityFootprint() {
+        var map=MAPS[state.mapId];
+        if(!map||(map.facility_footprints||[]).every(function(f){return state.x<f.x||state.x>=f.x+f.width||state.y<f.y||state.y>=f.y+f.height;}))return;
+        var candidates=[];
+        for(var y=0;y<map.height;y++)for(var x=0;x<map.width;x++){
+            if(canStandAt(x,y)&&!(map.portals||[]).some(function(p){return p.x===x&&p.y===y;}))candidates.push({x:x,y:y,d:Math.abs(x-state.x)+Math.abs(y-state.y)});
+        }
+        candidates.sort(function(a,b){return a.d-b.d||a.y-b.y||a.x-b.x;});
+        if(candidates.length){state.x=candidates[0].x;state.y=candidates[0].y;}
+    }
+
     function setState(mapId, x, y) {
         if (MAPS[mapId]) {
             state.mapId = mapId;
             state.x = clamp(x, 0, MAPS[mapId].width - 1);
             state.y = clamp(y, 0, MAPS[mapId].height - 1);
+            relocateFromFacilityFootprint();
             syncCombatMap();
             onChange();
         }

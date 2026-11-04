@@ -1,5 +1,13 @@
 # 项目协作约定
 
+## 农场与牧场迁往户外（2026-11-04）
+
+用户指定农场左上角（0,8）、牧场左上角（11,7），各占5×5格，并确认牧场采用本次上传图、两套设施迁过去。正式地图`M0_Base_Outside_lv_1.json`的`facility_footprints`记录两处范围；50格均绑定原设施NPC并阻挡移动／蹑步，周边邻格沿原八向互动规则进入原菜单。原室内（10,15）农业、（9,15）畜牧入口移除并恢复通行；选区内22处草、3处灌木已清理，原树木、池塘、出入口保留。
+
+新图登记于`assets/map/isometric/farm-ranch-5x5-v1/manifest.json`，牧场使用`ranch-approved.png`上传原始字节，农场沿用`farm-ready.png`；原生朝向、等比倍率、独立阴影和125%人物保持，每套只绘制一次，院落屋顶透视不擦除设施围栏。当前各用一张外观图，修复门槛仍按原保存标记执行，不因换图自动修好。
+
+内部11×11农业、四区养殖、材料与费用及保存字段保持；清理／修复入口覆盖整圈邻格，离格、换图或失能关闭生产窗口，陈旧入口不扣费。旧档角色若位于新增占地内，读档时无耗时挪到最近可走地格。回归见`tools/test-outdoor-facilities.mjs`与`tools/check-outdoor-facilities.cjs`；内存验收页`tools/outdoor-facilities-review.html?no_reload`复用正式游戏，不写玩家存档。详见`docs/design/outdoor-farm-ranch-placement.md`。
+
 ## 语言技能物品显示门槛（2026-11-03）
 
 用户明确语言5级显示真实名、10级显示完整描述，覆盖旧3／4级门槛。集中正本为`data/item-field-display-rules.json`的`fields.sn.level_min=5`与`fields.fn.level_min=10`；2级初步描述保持。普通物品与铸造物品共用`InventoryEquipment.isLanguageTextUnlocked`，独立预览未载表时使用同值兜底。未认识的鱼种／铸造物品仍须先满足既有认识条件，已认识也需达到语言门槛；不自动解锁配方或隐藏属性。缺初步描述时不能通过与完整描述相同的`desc_0`别名提前显示完整内容。NPC语言事件及其他信息模块门槛本轮不改。

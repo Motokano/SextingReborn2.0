@@ -1,0 +1,31 @@
+{
+  "footprintCells": 50,
+  "portals": [
+    {
+      "label": "进入野外",
+      "reachable": true
+    },
+    {
+      "label": "进家",
+      "reachable": true
+    }
+  ],
+  "facilities": [
+    {
+      "id": "farm",
+      "adjacentReachable": 13,
+      "overlappingVegetation": 0
+    },
+    {
+      "id": "ranch",
+      "adjacentReachable": 15,
+      "overlappingVegetation": 0
+    }
+  ],
+  "vegetationClearance": {
+    "removed": 25,
+    "grass": 22,
+    "bushes": 3,
+    "otherMapDataPreserved": true
+  }
+}

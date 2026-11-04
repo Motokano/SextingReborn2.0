@@ -1220,6 +1220,7 @@
     }
 
     function render() {
+        if (window.SceneApp && window.SceneApp.syncOutdoorFacilityPanels) window.SceneApp.syncOutdoorFacilityPanels();
         var ctx = getCtx();
         if (!ctx || !ctx.E || !ctx.G || !ctx.IE) return;
         var curFootworkNieBuMode = !!(ctx.footworkNieBuMode);

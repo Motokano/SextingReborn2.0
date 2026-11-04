@@ -97,7 +97,8 @@
     "build:manufacturing-knowledge": "node tools/build-manufacturing-knowledge.mjs",
     "test:recipe-study": "node tools/build-manufacturing-knowledge.mjs --check && node tools/test-recipe-study-point.mjs && node tools/test-recipe-study-point.mjs --svelte",
     "test:jab": "node tools/test-jab-power-range.mjs && node tools/test-combat-damage-runtime.mjs && node tools/test-combat-resource-costs.mjs && node --test tools/test-combat-loadout.mjs",
-    "test:attack-ranges": "npm run test:jab && node tools/test-modular-weapon-combat.mjs && node tools/test-enemy-attack-power-ranges.mjs"
+    "test:attack-ranges": "npm run test:jab && node tools/test-modular-weapon-combat.mjs && node tools/test-enemy-attack-power-ranges.mjs",
+    "test:outdoor-facilities": "node tools/test-facility-labor.mjs && node tools/test-device-pawns.mjs && node --test tools/test-outdoor-facilities.mjs tools/test-facility-appearance.mjs"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "6.2.4",

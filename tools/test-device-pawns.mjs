@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(process.argv[2] || fileURLToPath(new URL('../', import.meta.url)));
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
-const kinds = {bathroom:'bathroom', forging:'forging', sewing:'sewing', stove:'cooking', ranch:'livestock', farm:'agriculture', bed:'bed', barrel:'compost', pharmacy:'pharmacy', warehouse:'warehouse', toolbench:'observation'};
+const kinds = {bathroom:'bathroom', forging:'forging', sewing:'sewing', stove:'cooking', bed:'bed', barrel:'compost', pharmacy:'pharmacy', warehouse:'warehouse', toolbench:'observation'};
 const sizes = {};
 const manifest=JSON.parse(read('assets/map/isometric/hideout-facilities-v2/manifest.json'));
 const registration=(key,state='ready')=>manifest.assets.find(a=>a.key===key&&a.state===state);
@@ -50,9 +50,9 @@ function harness({fail = false, mode = 'isometric', flags = null} = {}) {
     vm.runInContext(read('js/core/tile-renderer-v2.js'), sandbox);
     const host = {style:{},appendChild(){},getBoundingClientRect:()=>({left:0,top:0})};
     const renderer = sandbox.TileRendererV2.create(host, {cellPx:144 / Math.SQRT2});
-    const render = meta => {
+    const render = (meta, map) => {
         draws.length = texts.length = transforms.length = translations.length = ellipses.length = 0;
-        renderer.render({map:{map_id:'test',width:1,height:1},st:{x:0,y:0},dynamicMetaAt:()=>meta});
+        renderer.render({map:map||{map_id:'test',width:1,height:1},st:{x:0,y:0},dynamicMetaAt:()=>meta});
     };
     const flush = () => {while(pending.length) pending.shift()();};
     return {render,flush,draws,texts,transforms,translations,ellipses,footprintEllipses,shadowTransforms,requests,renderer,
@@ -81,6 +81,19 @@ for (const [key, flag] of Object.entries(kinds)) {
     const broken=harness({fail:true}); broken.render(meta); broken.flush(); broken.render(meta);
     assert.ok(broken.texts.some(t=>t[0]===key.slice(0,6)),key + ': failure label'); assert.equal(broken.requests.length,1);
     const legacy=harness({mode:'legacy'});legacy.render({[flag+'Station']:true});assert.equal(legacy.requests.length,0,key + ': legacy stays text');
+}
+
+// Outdoor facilities share one image and shadow across all 25 interaction cells.
+for(const a of JSON.parse(read('assets/map/isometric/farm-ranch-5x5-v1/manifest.json')).assets){
+ const system=a.id==='farm'?'agriculture':'livestock',meta={[system+'Station']:true,npc:true,npcId:'npc.station.'+system+'_base'};
+ const map={map_id:'outdoor-test',width:5,height:5,facility_footprints:[{x:0,y:0,width:5,height:5,artKey:a.id+'Outside',label:a.label}]};
+ const h=harness({flags:{}}),bodies=()=>h.draws.filter(d=>d.layer.id&&d.args[0].url===a.file);
+ h.render(meta,map);h.flush();h.render(meta,map);assert.equal(bodies().length,1,a.id+' one body for 25 cells');
+ assert.deepEqual(bodies()[0].args.slice(1,5),a.crop);assert.ok(Math.abs(bodies()[0].args[7]-a.crop[2]*a.scaleAt144)<1e-8);
+ assert.ok(Math.abs(bodies()[0].args[7]/bodies()[0].args[3]-bodies()[0].args[8]/bodies()[0].args[4])<1e-9);
+ assert.equal(h.draws.filter(d=>d.layer.id&&!d.args[0].url).length,1,a.id+' one independent shadow');
+ h.render({},map);assert.equal(bodies().length,0,'hidden footprint');
+ h.render({unknownPresence:true},map);assert.equal(bodies().length,0);assert.equal(h.texts.filter(t=>t[0]==='?').length,1,'one unknown marker');
 }
 
 // Ordinary loot uses current root items, never a separately persisted marker.
@@ -141,15 +154,14 @@ for(const state of [[1,1,false,2,1],[0,0,false,0,0],[1,0,false,0,0],[1,1,true,0,
  [visual,identified,rear]=state;const m=metaAt(10,10);
  assert.equal(m.groundCount,state[3]);assert.equal(m.groundBackpackCount,state[4]);
 }
-console.log('PASS: 11 RGBA sprites, crops/anchors/scale, facility NPC mapping, body/shadow visibility, load/failure cache, legacy fallback, all scene vision gates.');
+console.log('PASS: 9 single-cell RGBA sprites, crops/anchors/scale, facility NPC mapping, body/shadow visibility, load/failure cache, legacy fallback, all scene vision gates.');
 
 // A state change must redraw both body and matching shadow, without changing
 // picking/ground contact or leaking repair state to temporary stations.
 const repairs = {
  stove:['cooking_base_station_unlocked'], pharmacy:['npc_station_pharmacy_base_repaired'],
  forging:['forging_station_unlocked'], barrel:['npc_station_compost_base_repaired'],
- bathroom:['bathroom_station_unlocked'], farm:['facility_restored:agriculture'],
- ranch:['facility_restored:livestock'], sewing:['sewing_station_unlocked'],
+ bathroom:['bathroom_station_unlocked'], sewing:['sewing_station_unlocked'],
  toolbench:['observation_calendar_unlocked','observation_temperature_unlocked']
 };
 for (const [key, required] of Object.entries(repairs)) {
@@ -180,7 +192,7 @@ for (const [key, required] of Object.entries(repairs)) {
  assert.ok(stale.draws.filter(d=>d.layer.id==='map-grid-canvas-dynamic'&&d.args[0].url).every(d=>!d.args[0].url.includes('-damaged.png')),'late damaged image cannot restore stale state');
  const failed=harness({flags:{},fail:true});failed.render(meta);failed.flush();assert.ok(failed.texts.some(t=>t[0]===key.slice(0,6)));failed.recover();failed.advance(5000);failed.render(meta);failed.flush();assert.equal(failed.requests.length,2,'unfinished image retries after outage');
 }
-console.log('PASS: 9 unfinished RGBA assets, live completion/reset, partial assembly, independent caches/shadows, stale loads, retry, visibility, picking and temporary-station isolation.');
+console.log('PASS: 7 unfinished single-cell RGBA assets, live completion/reset, partial assembly, independent caches/shadows, stale loads, retry, visibility, picking and temporary-station isolation.');
 
 // Only the existing street thug receives tier-one character art.
 {
@@ -190,7 +202,7 @@ console.log('PASS: 9 unfinished RGBA assets, live completion/reset, partial asse
  const h=harness();h.render({enemy:true,enemyId:'enemy.street_thug'});h.flush();
  const body=h.draws.find(d=>d.layer.id==='map-grid-canvas-dynamic'&&d.args[0].url?.includes('street-thug-v1'));
  assert.ok(body,'street thug selects approved standing sprite');
- assert.equal(body.args[7],46,'base matches player width');
+ assert.ok(Math.abs(body.args[7]-57.5)<1e-8,'base matches approved 125% player width');
  assert.ok(h.footprintEllipses.some(e=>e[2]===23&&e[3]===7),'attached ground footprint');
  h.render({unknownPresence:true,enemyId:'enemy.street_thug'});
  assert.equal(h.draws.filter(d=>d.layer.id==='map-grid-canvas-dynamic').length,0,'unknown thug does not leak art');
@@ -221,7 +233,7 @@ console.log('PASS: tier-one street thug selection, scale, transparency, shadow, 
  sizes['standing-mailbag-v2']=info;
  const h=harness();h.render({npc:true,npcId:'npc.supervisor.manager',npcLabel:'林经理'});h.flush();
  const body=h.draws.find(d=>d.layer.id==='map-grid-canvas-dynamic'&&d.args[0].url?.includes('standing-mailbag-v2'));
- assert.ok(body,'manager loads approved daily art');assert.equal(body.args[7],46);
+ assert.ok(body,'manager loads approved daily art');assert.ok(Math.abs(body.args[7]-57.5)<1e-8);
  assert.ok(!h.requests.some(u=>u.includes('standing-smoking-v1')||u.includes('lin-battle')),'no old or battle art');
  assert.ok(h.footprintEllipses.some(e=>e[2]===23&&e[3]===7));
  h.render({unknownPresence:true,npcId:'npc.supervisor.manager'});assert.equal(h.draws.filter(d=>d.layer.id==='map-grid-canvas-dynamic').length,0);

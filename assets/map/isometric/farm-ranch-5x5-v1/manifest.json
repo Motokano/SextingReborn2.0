@@ -1,0 +1,162 @@
+{
+  "version": 1,
+  "date": "2026-11-04",
+  "status": "deployed",
+  "standard": "docs/design/77-grid-scene-art-standard.md",
+  "tileWidth": 144,
+  "tileHeight": 101.82337649086284,
+  "pawnScale": 1.25,
+  "assets": [
+    {
+      "id": "ranch",
+      "label": "牧场",
+      "file": "assets/map/isometric/farm-ranch-5x5-v1/ranch-approved.png",
+      "logicalFootprint": [
+        5,
+        5
+      ],
+      "anchor": [
+        747,
+        591
+      ],
+      "groundContacts": [
+        [
+          745,
+          142
+        ],
+        [
+          1438,
+          597
+        ],
+        [
+          745,
+          1030
+        ],
+        [
+          60,
+          597
+        ]
+      ],
+      "scaleAt144": 0.48,
+      "heightReference": {
+        "kind": "front fence post",
+        "points": [
+          [
+            746,
+            932
+          ],
+          [
+            746,
+            1030
+          ]
+        ],
+        "displayHeight": 47.04
+      },
+      "nativeFacing": "as generated; four arms connect side midpoints",
+      "alphaSamples": [
+        [
+          500,
+          500
+        ],
+        [
+          900,
+          410
+        ],
+        [
+          750,
+          790
+        ],
+        [
+          1090,
+          530
+        ]
+      ],
+      "note": "Registered to the outdoor 5x5 footprint; native facing and uniform scale retained.",
+      "sha256": "763e2a947c99caaa3b83c389faffe40a10e3944a0bb1104eaedeb266a538edb6",
+      "imageSize": [
+        1491,
+        1055
+      ],
+      "crop": [
+        26,
+        1,
+        1451,
+        1054
+      ],
+      "source": "User attachment, 2026-11-04; original bytes preserved."
+    },
+    {
+      "id": "farm",
+      "label": "农场",
+      "file": "assets/map/isometric/farm-ranch-5x5-v1/farm-ready.png",
+      "logicalFootprint": [
+        5,
+        5
+      ],
+      "anchor": [
+        777,
+        630
+      ],
+      "groundContacts": [
+        [
+          670,
+          225
+        ],
+        [
+          1430,
+          780
+        ],
+        [
+          770,
+          1040
+        ],
+        [
+          123,
+          590
+        ]
+      ],
+      "scaleAt144": 0.47,
+      "heightReference": {
+        "kind": "front planting-bed rim",
+        "points": [
+          [
+            755,
+            979
+          ],
+          [
+            755,
+            1033
+          ]
+        ],
+        "displayHeight": 25.38
+      },
+      "nativeFacing": "as generated; source at far corner",
+      "alphaSamples": [
+        [
+          48,
+          48
+        ],
+        [
+          500,
+          290
+        ],
+        [
+          1450,
+          960
+        ]
+      ],
+      "note": "Deployed 5x5 composite facility; internal agriculture remains 11x11. Native facing and uniform scale retained.",
+      "sha256": "077e8db3a8b4348cdeb897606fe8c74ff4a48242a99b7ac146102a2742550a72",
+      "imageSize": [
+        1492,
+        1054
+      ],
+      "crop": [
+        0,
+        7,
+        1486,
+        1047
+      ]
+    }
+  ]
+}

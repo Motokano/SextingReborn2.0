@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "date": "2026-11-04",
+  "mapId": "M0_Base_Outside_lv_1",
+  "coordinateConvention": "zero-based top-left; footprint includes x..x+4 and y..y+4",
+  "status": "deployed",
+  "facilities": [
+    {
+      "id": "farm",
+      "label": "农场",
+      "x": 0,
+      "y": 8,
+      "width": 5,
+      "height": 5,
+      "color": "#e9c16d"
+    },
+    {
+      "id": "ranch",
+      "label": "牧场",
+      "x": 11,
+      "y": 7,
+      "width": 5,
+      "height": 5,
+      "color": "#8ec6d3"
+    }
+  ],
+  "vegetationClearance": {
+    "date": "2026-11-04",
+    "appliedTo": "data/maps/M0_Base_Outside_lv_1.json",
+    "removed": [
+      {
+        "id": "farm",
+        "label": "农场",
+        "bounds": [
+          0,
+          8,
+          4,
+          12
+        ],
+        "grass": 16,
+        "bushes": 0
+      },
+      {
+        "id": "ranch",
+        "label": "牧场",
+        "bounds": [
+          11,
+          7,
+          15,
+          11
+        ],
+        "grass": 6,
+        "bushes": 3
+      }
+    ],
+    "note": "Grass and bush clearance applied before facility deployment."
+  }
+}

@@ -957,6 +957,8 @@
         return Promise.all([loadNpcDef(npcId)]).then(function (rows) {
             if (epoch !== menuEpoch || !sameLocation()) return;
             var def = rows[0];
+            var outdoorFacility = npcId==='npc.station.agriculture_base'?'agriculture':npcId==='npc.station.livestock_base'?'livestock':null;
+            if (outdoorFacility && (!global.FacilityLabor || !global.FacilityLabor.nearby(outdoorFacility))) return;
             if (global.SceneApp && typeof global.SceneApp.guardPlayerActionBlocked === 'function') {
                 var act = global.SceneApp.ACTION_TYPES;
                 var npcActionType = (act && act.NPC_INTERACT) ? act.NPC_INTERACT : 'npc_interact';
@@ -1342,6 +1344,7 @@
 
             if (shouldShowOpenAgriculturePanelButton(def)) {
                 var agBtn = mkBtn(global.FacilityLabor && !global.FacilityLabor.isUnlocked('agriculture') ? '恢复农场' : tUi('npc.menu.open_agriculture_panel', '管理农田'), function () {
+                    if (epoch !== menuEpoch || !sameLocation() || !global.FacilityLabor.nearby('agriculture')) return;
                     closeMenu();
                     if (global.SceneApp && typeof global.SceneApp.openAgriculturePanel === 'function') {
                         global.SceneApp.openAgriculturePanel();
@@ -1362,6 +1365,7 @@
 
             if (shouldShowOpenLivestockPanelButton(def)) {
                 var lsBtn = mkBtn(global.FacilityLabor && !global.FacilityLabor.isUnlocked('livestock') ? '恢复牧场' : tUi('npc.menu.open_livestock_panel', '管理牧场'), function () {
+                    if (epoch !== menuEpoch || !sameLocation() || !global.FacilityLabor.nearby('livestock')) return;
                     closeMenu();
                     if (global.SceneApp && typeof global.SceneApp.openLivestockPanel === 'function') {
                         global.SceneApp.openLivestockPanel();
