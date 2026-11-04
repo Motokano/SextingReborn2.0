@@ -1,14 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import { boot } from './ui-game-fixture.mjs';
+const outdoorArt=Object.fromEntries(JSON.parse(fs.readFileSync('assets/map/isometric/farm-ranch-5x5-v1/manifest.json','utf8')).assets.map(a=>[a.id==='farm'?'agriculture':'livestock',a.file]));
 
 for (const full of [false, true]) test(`${full ? 'Svelte' : 'native'} facility art follows real repair, assembly and saved flags`, async () => {
  const h=await boot(full),g=h.g;
  const ids=['cooking','pharmacy','forging','compost','bathroom','agriculture','livestock','sewing','observation'];
  const art=id=>g.TileRendererV2.getSpeakerPawn('npc.station.'+id+'_base').url;
  const outdoor=id=>id==='agriculture'||id==='livestock';
- const unfinished=id=>assert.match(art(id),outdoor(id)?/farm-ranch-5x5-v1\/.*-(ready|approved)\.png$/:/hideout-facilities-v2\/.*-damaged\.png$/,id);
- const ready=id=>assert.match(art(id),outdoor(id)?/farm-ranch-5x5-v1\/.*-(ready|approved)\.png$/:/hideout-facilities-v2\/.*-ready\.png$/,id);
+ const unfinished=id=>outdoor(id)?assert.ok(art(id).endsWith(outdoorArt[id]),id):assert.match(art(id),/hideout-facilities-v2\/.*-damaged\.png$/,id);
+ const ready=id=>outdoor(id)?assert.ok(art(id).endsWith(outdoorArt[id]),id):assert.match(art(id),/hideout-facilities-v2\/.*-ready\.png$/,id);
  function supply(id) {
   const project=g.FacilityUnlock.get(id),[x,y]=project.spec.position;
   g.GameEngine.setState(project.spec.mapId||'M0_Base_Inside_lv_1',x,y-1);

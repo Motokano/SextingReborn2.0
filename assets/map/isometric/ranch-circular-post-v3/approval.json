@@ -1,0 +1,10 @@
+{
+  "date": "2026-11-04",
+  "userInstruction": "好，就这么装进游戏吧，没问题了",
+  "file": "assets/map/isometric/ranch-circular-post-v3/ranch-ready.png",
+  "sha256": "700e6ad0ff3bdf28a4de5140e8e02c413b0bda5edab249800677f970a249687c",
+  "scope": "圆形外围、中央普通木柱、四个分区的主地图牧场外观，沿用户外（11,7）的5×5占地。",
+  "gameplay": "仅替换地图棋子及共用NPC头像；原四区养殖、轮转、费用、修复状态及存档保持。",
+  "sourcePreserved": true,
+  "activeRegistration": "assets/map/isometric/farm-ranch-5x5-v1/manifest.json"
+}

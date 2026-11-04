@@ -13,7 +13,8 @@ test('approved originals, 50 occupied cells and connected courtyard paths',()=>{
   assert.equal(crypto.createHash('sha256').update(fs.readFileSync(a.file)).digest('hex'),a.sha256);
   const info=inspectPng(a.file);assert.ok(info.transparentFraction>.3);assert.deepEqual(info.cornerAlpha,[0,0,0,0]);
  }
- assert.equal(manifest.assets.find(a=>a.id==='ranch').sha256,'763e2a947c99caaa3b83c389faffe40a10e3944a0bb1104eaedeb266a538edb6');
+ assert.equal(manifest.assets.find(a=>a.id==='ranch').sha256,'700e6ad0ff3bdf28a4de5140e8e02c413b0bda5edab249800677f970a249687c');
+ assert.equal(crypto.createHash('sha256').update(fs.readFileSync('assets/map/isometric/farm-ranch-5x5-v1/ranch-approved.png')).digest('hex'),'763e2a947c99caaa3b83c389faffe40a10e3944a0bb1104eaedeb266a538edb6','previous user source is preserved');
  assert.deepEqual(map.facility_footprints.map(f=>[f.id,f.x,f.y,f.width,f.height]),[['farm',0,8,5,5],['ranch',11,7,5,5]]);
  const occupied=new Set();
  for(const f of map.facility_footprints)for(let y=f.y;y<f.y+f.height;y++)for(let x=f.x;x<f.x+f.width;x++){

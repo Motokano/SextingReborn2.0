@@ -1,0 +1,201 @@
+{
+  "version": 1,
+  "date": "2026-11-04",
+  "status": "deployed",
+  "standard": "docs/design/77-grid-scene-art-standard.md",
+  "tileWidth": 144,
+  "tileHeight": 101.82337649086284,
+  "pawnScale": 1.25,
+  "assets": [
+    {
+      "id": "ranch",
+      "label": "牧场",
+      "file": "assets/map/isometric/ranch-circular-post-v3/ranch-ready.png",
+      "logicalFootprint": [
+        5,
+        5
+      ],
+      "shape": "circular",
+      "anchor": [
+        746,
+        594
+      ],
+      "groundContacts": [
+        [
+          1298,
+          594
+        ],
+        [
+          1287,
+          674
+        ],
+        [
+          1256,
+          751
+        ],
+        [
+          1205,
+          822
+        ],
+        [
+          1136,
+          884
+        ],
+        [
+          1053,
+          935
+        ],
+        [
+          957,
+          973
+        ],
+        [
+          854,
+          996
+        ],
+        [
+          746,
+          1004
+        ],
+        [
+          638,
+          996
+        ],
+        [
+          535,
+          973
+        ],
+        [
+          439,
+          935
+        ],
+        [
+          356,
+          884
+        ],
+        [
+          287,
+          822
+        ],
+        [
+          236,
+          751
+        ],
+        [
+          205,
+          674
+        ],
+        [
+          194,
+          594
+        ],
+        [
+          205,
+          514
+        ],
+        [
+          236,
+          437
+        ],
+        [
+          287,
+          366
+        ],
+        [
+          356,
+          304
+        ],
+        [
+          439,
+          253
+        ],
+        [
+          535,
+          215
+        ],
+        [
+          638,
+          192
+        ],
+        [
+          746,
+          184
+        ],
+        [
+          854,
+          192
+        ],
+        [
+          957,
+          215
+        ],
+        [
+          1053,
+          253
+        ],
+        [
+          1136,
+          304
+        ],
+        [
+          1205,
+          366
+        ],
+        [
+          1256,
+          437
+        ],
+        [
+          1287,
+          514
+        ]
+      ],
+      "scaleAt144": 0.43,
+      "heightReference": {
+        "kind": "front fence post",
+        "points": [
+          [
+            566,
+            843
+          ],
+          [
+            566,
+            995
+          ]
+        ],
+        "displayHeight": 65.36
+      },
+      "nativeFacing": "As generated; four stationary partitions meet at an ordinary central post.",
+      "alphaSamples": [
+        [
+          740,
+          350
+        ],
+        [
+          450,
+          530
+        ],
+        [
+          1050,
+          450
+        ],
+        [
+          680,
+          740
+        ]
+      ],
+      "sha256": "700e6ad0ff3bdf28a4de5140e8e02c413b0bda5edab249800677f970a249687c",
+      "imageSize": [
+        1491,
+        1055
+      ],
+      "crop": [
+        163,
+        24,
+        1166,
+        986
+      ],
+      "note": "Approved and deployed at outdoor (11,7), 5x5 cells. Native aspect ratio and uniform scale; circular ground contacts are approximate. Raw PNG unchanged."
+    }
+  ]
+}

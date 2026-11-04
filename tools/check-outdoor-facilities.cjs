@@ -1,6 +1,8 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {chromium}=require(process.env.ART_PLAYWRIGHT||'playwright-core');
-const root=path.resolve('.'),out='reference/farm-ranch-5x5-v1',origin='http://outdoor-review.test';
+const root=path.resolve('.'),out=process.env.OUTDOOR_REVIEW_DIR||'reference/farm-ranch-5x5-v1',origin='http://outdoor-review.test';
+const expectedArt=Object.fromEntries(JSON.parse(fs.readFileSync('assets/map/isometric/farm-ranch-5x5-v1/manifest.json')).assets.map(a=>[a.id,a.file]));
+fs.mkdirSync(out,{recursive:true});
 (async()=>{const browser=await chromium.launch({headless:true});const reports=[];
  try{for(const full of [false,true]){
   const ctx=await browser.newContext({viewport:{width:1560,height:1000},deviceScaleFactor:1});
@@ -14,7 +16,7 @@ const root=path.resolve('.'),out='reference/farm-ranch-5x5-v1',origin='http://ou
    await page.screenshot({path:out+'/'+id+'-scene-'+(full?'svelte':'native')+'.png'});await style.evaluate(el=>el.remove());
    const system=id==='farm'?'agriculture':'livestock';
    const info=await page.evaluate(async system=>{await NPCSystem.openMenu('npc.station.'+system+'_base');return {position:GameEngine.getState(),adjacent:FacilityLabor.nearby(system),art:TileRendererV2.getSpeakerPawn('npc.station.'+system+'_base').url};},system);
-   assert.equal(info.adjacent,true);assert.ok(info.art.includes('farm-ranch-5x5-v1'));
+   assert.equal(info.adjacent,true);assert.ok(info.art.endsWith(expectedArt[id]));
    await page.getByRole('button',{name:id==='farm'?'管理农田':'管理牧场',exact:true}).click();
    assert.equal(await page.locator('#modal-'+system).evaluate(el=>el.classList.contains('show')),true);
    await page.screenshot({path:out+'/'+id+'-panel-'+(full?'svelte':'native')+'.png'});

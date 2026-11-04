@@ -1,0 +1,42 @@
+{
+  "status": "passed",
+  "scope": "Candidate art on 144px grid with 125% player; isolated preview only.",
+  "originalPreserved": true,
+  "sha256": "700e6ad0ff3bdf28a4de5140e8e02c413b0bda5edab249800677f970a249687c",
+  "scaleAt144": 0.43,
+  "logicalFootprint": [
+    5,
+    5
+  ],
+  "pageErrors": [],
+  "alpha": {
+    "size": [
+      1491,
+      1055
+    ],
+    "transparentPixels": 974481,
+    "borderMax": 1,
+    "samples": [
+      {
+        "x": 740,
+        "y": 350,
+        "alpha": 0
+      },
+      {
+        "x": 450,
+        "y": 530,
+        "alpha": 0
+      },
+      {
+        "x": 1050,
+        "y": 450,
+        "alpha": 0
+      },
+      {
+        "x": 680,
+        "y": 740,
+        "alpha": 0
+      }
+    ]
+  }
+}

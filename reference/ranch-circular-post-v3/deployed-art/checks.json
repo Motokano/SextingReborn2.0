@@ -1,0 +1,107 @@
+{
+  "date": "2026-11-04",
+  "scope": "art preview only; no game state or runtime map changes",
+  "pageErrors": [],
+  "assets": [
+    {
+      "id": "ranch",
+      "originalPreserved": true,
+      "sha256": "700e6ad0ff3bdf28a4de5140e8e02c413b0bda5edab249800677f970a249687c",
+      "width": 1491,
+      "height": 1055,
+      "transparentPixels": 974481,
+      "opaquePixels": 1263,
+      "partialAlphaPixels": 597261,
+      "visibleBounds": [
+        0,
+        8,
+        1490,
+        1047
+      ],
+      "occupiedImageBorderPixels": 137,
+      "samples": [
+        {
+          "x": 740,
+          "y": 350,
+          "alpha": 0
+        },
+        {
+          "x": 450,
+          "y": 530,
+          "alpha": 0
+        },
+        {
+          "x": 1050,
+          "y": 450,
+          "alpha": 0
+        },
+        {
+          "x": 680,
+          "y": 740,
+          "alpha": 0
+        }
+      ],
+      "borderAlpha": {
+        "max": 1,
+        "atLeast32": 0
+      },
+      "scaleAt144": 0.43,
+      "logicalFootprint": [
+        5,
+        5
+      ],
+      "shape": "circular",
+      "observedSupportEdgeSlopes": null,
+      "note": "Native projection retained; no shear or nonuniform rescale. Contacts are approximate visual estimates; curved contacts are not grid-axis edges."
+    },
+    {
+      "id": "farm",
+      "originalPreserved": true,
+      "sha256": "077e8db3a8b4348cdeb897606fe8c74ff4a48242a99b7ac146102a2742550a72",
+      "width": 1492,
+      "height": 1054,
+      "transparentPixels": 846636,
+      "opaquePixels": 1047,
+      "partialAlphaPixels": 724885,
+      "visibleBounds": [
+        0,
+        7,
+        1486,
+        1047
+      ],
+      "occupiedImageBorderPixels": 62,
+      "samples": [
+        {
+          "x": 48,
+          "y": 48,
+          "alpha": 0
+        },
+        {
+          "x": 500,
+          "y": 290,
+          "alpha": 252
+        },
+        {
+          "x": 1450,
+          "y": 960,
+          "alpha": 0
+        }
+      ],
+      "borderAlpha": {
+        "max": 1,
+        "atLeast32": 0
+      },
+      "scaleAt144": 0.47,
+      "logicalFootprint": [
+        5,
+        5
+      ],
+      "shape": "rectangular",
+      "observedSupportEdgeSlopes": [
+        0.7302631578947368,
+        -0.6672760511882998
+      ],
+      "note": "Native projection retained; no shear or nonuniform rescale. Contacts are approximate visual estimates; curved contacts are not grid-axis edges."
+    }
+  ]
+}
