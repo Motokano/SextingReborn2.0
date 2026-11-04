@@ -130,7 +130,7 @@
   if(from.type==='ground')s.ground_items[r.key]=r.items.filter(Boolean);
   return {message:'已收纳 '+n+' 件。',vehicle};
  });}
- function receive(item){return commit(s=>{const x=I().copyItemInstance(item);if(I().getBookInfo(x)&&I().findItemInstanceLocation(x.instance_id))fail('物品已在收纳中。');const vehicle=autoPut(s,x);return {message:'已收纳 '+x.count+' 件。',vehicle};});}
+ function receive(item,{chargeVehicle=true}={}){return commit(s=>{const x=I().copyItemInstance(item);if(I().getBookInfo(x)&&I().findItemInstanceLocation(x.instance_id))fail('物品已在收纳中。');const vehicle=autoPut(s,x);return {message:'已收纳 '+x.count+' 件。',vehicle:vehicle&&chargeVehicle};});}
  function fromWarehouse(index,id){return commit(s=>{
   const W=g.HideoutWarehouse;if(!g.BackpackPanel?.interactionIs('warehouse')||!g.BackpackPanel.interactionValid()||!g.HideoutWarehousePanel?.isOpen())fail('已离开仓库。');
   if(W.isOutpostMode())fail('此处不能从仓库取出物品。');

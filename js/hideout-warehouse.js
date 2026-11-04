@@ -220,6 +220,12 @@
             expired_items: {}
         };
 
+        // Player instances put back into dungeon containers retain normal aging.
+        if (global.DungeonRuntime && global.DungeonRuntime.storedItemContainers) {
+            global.DungeonRuntime.storedItemContainers().forEach(function (items, index) {
+                result.ground_spoiled += tickSpoilageInContainerArray(items, 'dungeon-storage:' + index, result.expired_items);
+            });
+        }
         if (!hasColdStorage()) {
             var wi;
             for (wi = 0; wi < st.slots.length; wi++) {

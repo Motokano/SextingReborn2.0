@@ -108,7 +108,8 @@
     "editor:story": "node tools/story-editor-server.mjs",
     "test:story": "node --test tools/test-story-opening.mjs tools/test-story-editor.mjs",
     "test:books": "node --test tools/test-book-items.mjs tools/test-book-merge.mjs tools/test-book-consumption.mjs tools/test-book-reading.mjs",
-    "prototype:books": "node tools/serve-live.mjs 8051"
+    "prototype:books": "node tools/serve-live.mjs 8051",
+    "test:backpack": "node --test tools/test-backpack-system.mjs tools/test-inventory-transfer.mjs"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "6.2.4",

@@ -40,7 +40,12 @@ export async function boot(full, { storage = {}, jsonOverrides = {} } = {}) {
   };
   async function drain() { for (let i = 0; i < 6; i++) { await Promise.allSettled([...pending]); await settle(); } }
   try {
-    for (const file of scripts) g.eval(read(file) + '\n//# sourceURL=' + file);
+    for (const file of scripts) {
+      // Raster presentation is exercised in a real browser; keep gameplay,
+      // persistence, NPCs and the production gym controller in this fixture.
+      if(file==='js/gym-scene.js'){g.GymSceneArt={ready:Promise.resolve(),objects:()=>[]};continue;}
+      g.eval(read(file) + '\n//# sourceURL=' + file);
+    }
     await settle(); await g.AppBoot.ready; await drain();
     assert.deepEqual(errors, [], 'fresh game initializes without runtime errors');
   } catch (e) { g.SvelteCombat?.dispose(); g.SvelteInteractions?.dispose(); g.SvelteHUD?.dispose(); dom.window.close(); throw e; }

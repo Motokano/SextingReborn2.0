@@ -133,12 +133,13 @@ function completeTick(){const a=pending;if(!a||!active())return false;sync();con
  sync();persist();refresh();return true;
 }
 function takeUnits(it){let added=0;it.taken??=0;while(it.taken<it.count){const placed=IE().putItemIntoDefaultContainer({item_id:it.item_id,count:1,dungeon_rarity:it.rarity});if(!placed.placed)break;it.taken++;added++;}it.claimed=it.taken===it.count;return added;}
-function claim(id,index){if(!active()||disabled('search'))return false;const p=find(id),it=p?.search?.items[index];if(!it?.revealed||it.claimed||!isAccessible(p))return false;
+function claim(id,index,quick=false){if(!active()||disabled('search'))return false;const p=find(id),it=p?.search?.items[index];if(!it?.revealed||it.claimed||!isAccessible(p))return false;
+ if(quick){cancel();const result=globalThis.InventoryTransfer.receive({item_id:it.item_id,count:it.count-(it.taken||0),dungeon_rarity:it.rarity},{chargeVehicle:false});if(!result.ok){lastError=result.message;return false;}it.taken=it.count;it.claimed=true;advance();persist();refresh();return true;}
  cancel();const saved=copy(IE().getState()),previous=copy(it),added=takeUnits(it);
  if(!it.claimed){IE().setState(saved);Object.assign(it,previous);it.taken=previous.taken||0;lastError='背包已满';return false;}
  if(!added)return false;advance();persist();refresh();return true;
 }
-function mark(id){if(!active()||pending||disabled('search'))return false;const p=sim.corpses.find(p=>p.uid===id);if(!p||p.marked||!isAccessible(p)||p.search.opened||p.search.complete)return false;
+function mark(id){if(!active()||pending||disabled('search'))return false;const p=sim.corpses.find(p=>p.uid===id);if(!p||p.marked||!isAccessible(p)||p.search.opened||p.search.complete||p.stored_items?.some(Boolean))return false;
  p.marked=true;const bag=copy(p);bag.allocation=allocate(bag.search.items);bag.batch=run.id;bag.floor=sim.map.floor;run.marked.push(bag);advance();persist();refresh();return true;
 }
 function killed(record){if(!active())return;const enemy=sim.enemies.find(e=>e.uid===record.dungeonUid);if(!enemy)return;const items=drawContents('corpse',enemy);sim.enemies=sim.enemies.filter(e=>e!==enemy);sim.defeated.push(enemy.uid);P.record(sim,'kill',enemy.uid);sim.corpses.push({uid:'corpse-'+sim.map.floor+'-'+enemy.uid,kind:'corpse',name:'尸体',enemyId:enemy.enemyId||record.enemy_id||config.enemyId,cell:record.y*sim.map.width+record.x,marked:false,search:{opened:false,complete:false,cursor:0,items}});}
@@ -186,6 +187,7 @@ function claimBatch(batch){if(active()||!globalThis.DungeonCheckpoint?.canAccess
 
 function claimBag(id,index){if(active()||!globalThis.DungeonCheckpoint?.canAccess())return false;const b=recovered.find(b=>b.uid===id),i=b?.allocation?.player[index];if(!b?.opened||!i||i.claimed)return false;const added=takeUnits(i);persist();refresh();return added>0;}
 function getState(){return{version:1,run:copy(run),sim:copy(sim),pool:copy(pool),recovered:copy(recovered),meals:copy(meals),receipt:copy(receipt),enemyState:active()?gameMap().enemies.map((e,i)=>globalThis.CombatEnemies.getDungeonState(run.mapId,i,e.enemy_id)):[]};}
+function storedItemRoots(){return [...(sim?.lootPoints||[]),...(sim?.corpses||[])].flatMap(p=>p.stored_items||[]).filter(Boolean);}
 function validate(data,engine){
  if(data==null)return !String(engine?.mapId||'').startsWith('dungeon_');
  const num=(v,min=0,max=Number.MAX_SAFE_INTEGER)=>Number.isFinite(v)&&v>=min&&v<=max;
@@ -213,7 +215,8 @@ function validate(data,engine){
    for(const key of terrainSets)if(m[key]!==undefined&&(!Array.isArray(m[key])||!m[key].every(cell)))return false;
    if(m.outpostFloor!==undefined&&(!Array.isArray(m.outpostFloor)||!m.outpostFloor.every(row=>Array.isArray(row)&&row.length===2&&cell(row[0])&&row[1]&&typeof row[1]==='object')))return false;
    if(!s.harvestPoints.every(p=>H.definitions[p.id]&&int(p.total,1,10000)&&int(p.remaining,0,p.total)&&num(p.baseCost,0,10000)&&p.used===(p.remaining===0)))return false;
-   if(![...s.lootPoints,...s.corpses].every(p=>search(p.search)))return false;
+   const stored=x=>x&&!!IE().getItemTemplate(x.item_id)&&typeof x.instance_id==='string'&&!!x.instance_id&&int(x.count??1,1,100000)&&IE().getItemInstanceChildren(x).every(c=>stored(c.instance));
+   if(![...s.lootPoints,...s.corpses].every(p=>search(p.search)&&(p.stored_items===undefined||Array.isArray(p.stored_items)&&p.stored_items.every(x=>x===null||stored(x)))))return false;
    for(const p of [...s.lootPoints,...s.enemies])DungeonBossRewards.profile(p.lootOverride,config.search.rarities,id=>!!IE().getItemTemplate(id));
    if(!s.recoveryPoints.every(p=>{const c=config.recovery[p.id],q=p.recovery;return c&&q&&int(q.remaining,0,c.uses)&&int(q.progress,0,c.ticks)&&p.used===(q.remaining===0)&&(!q.part||RuinsRecovery.parts[q.part]);}))return false;
    if(r.content?.version>=16&&s.insightPoints.filter(RuinsRecipeStudy.isPoint).length!==(r.recipeStudyPlan.floor===m.floor?1:0))return false;
@@ -235,6 +238,8 @@ function dynamicMeta(x,y){const k=y*sim.map.width+x,sight=N.inspect(sim,sim.play
  return{terrainVisible:sight.terrain,player:k===sim.player.cell,adjacent:N.dist(k,sim.player.cell,sim.map.width)===1,walkable:E().isWalkable(x,y),enemy:sight.dynamic&&!!enemy,enemyId:sight.identify?enemy?.enemy_id:null,unknownPresence:sight.dynamic&&!sight.identify&&!!enemy,groundCount:known?ground.length:0,groundBackpackCount:known&&globalThis.InventoryTransfer?ground.filter(globalThis.InventoryTransfer.isBackpack).length:0,groundUnknown:sight.dynamic&&!sight.identify&&ground.length>0,playerFacingDir:sim.player.facing};}
 function inspect(k){return active()?N.inspect(sim,sim.player,k):null;}
 const api={lastError:()=>lastError,progressState,setProgress,receiveHit,checkpoint:persist,openingProgress,active,sync,observe,refresh,config:()=>config,getSim:()=>sim,getRun:()=>run,getPending:()=>pending,getReceipt:()=>receipt,getRecovered:()=>recovered,availableTickets,availableClues,canPrepare,enter,blocked,walkable,canStep,nearby,find,isAccessible,threat,openDoor,begin,cancel,completeTick,claim,mark,killed,updateAI,aggro,afterTick,totals,descend,withdraw,die,openBag,claimBag,claimBatch,windowAction,getState,validate,restore,dynamicMeta,inspect,rolls,containerEmptyChance};
+api.storedItemRoots=storedItemRoots;
+api.storedItemContainers=()=>active()?[...sim.lootPoints,...sim.corpses].map(p=>p.stored_items).filter(Array.isArray):[];
 for(const k of ['enter','openDoor','completeTick','claim','mark','windowAction','descend','withdraw','openBag','claimBag','claimBatch']){const fn=api[k];api[k]=(...args)=>commit(()=>fn(...args),k);}
 api.ready=fetch('data/dungeon-config.json').then(r=>{if(!r.ok)throw Error('地牢配置加载失败');return r.json();}).then(async c=>{
  if(c.recipeStudyRangesSource){

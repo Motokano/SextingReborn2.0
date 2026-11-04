@@ -81,7 +81,7 @@
  function access(){if(!g.SewingStationPanel||!g.SewingStationPanel.isOpen()||!g.SewingStationPanel.canAccess())fail('请在缝纫台旁亲自操作。');if(g.Survival.isDead&&g.Survival.isDead())fail('当前不能操作。');if(g.Survival.canPerformStaminaOrEnergyAction&&!g.Survival.canPerformStaminaOrEnergyAction())fail('当前身体状况无法工作。');if(g.CombatEngagement&&g.CombatEngagement.isPlayerInCombat())fail('战斗中不能缝纫。');}
  function measureAtTools(){try{const p=g.FacilityUnlockConfig.projects.sewing_scale;if(!g.FacilityUnlock.canAccess(p)||!flag('sewing_tape_unlocked'))fail('请在已装配的量具旁操作。');if(g.CombatEngagement&&g.CombatEngagement.isPlayerInCombat())fail('战斗中不能测量。');const b=dimensions(body());if(!flag('sewing_scale_unlocked')){delete b.weight_kg;delete b.bmi;}g.Survival.advanceTick({source:'sewing_measure'});transaction(()=>set('sewing_measurement',b));return {ok:true,message:'记录身高'+b.height_cm+'厘米'+(b.weight_kg?'，体重'+b.weight_kg+'公斤':'。装配体重秤后可补充体重')+'。'};}catch(e){return {ok:false,message:e.message};}}
  function quote(a){
-  access();const current=g.Survival.getState();if(current.isResting||current.is_study_active||current.is_sit_meditation_active||current.is_stamina_regen_action_active)fail('请先停止休息、学习或调息。');let ticks=1,energy=0,stamina=1,cost={},warning='',r=a.id?requireRecord(a.id):null,p=r&&r.item,s=p&&p.sewing,k=knowledge(),commit;
+  access();const current=g.Survival.getState();if(current.isResting||current.is_study_active||current.is_sit_meditation_active||current.is_stamina_regen_action_active)fail('请先停止休息、学习或调息。');if(g.BackpackSystem&&['backpack_craft','backpack_modify'].includes(a.type))return g.BackpackSystem.quote(a);let ticks=1,energy=0,stamina=1,cost={},warning='',r=a.id?requireRecord(a.id):null,p=r&&r.item,s=p&&p.sewing,k=knowledge(),commit;
   if(a.type==='measure'){if(!flag('sewing_scale_unlocked'))fail('先装配体重秤。');commit=()=>set('sewing_measurement',dimensions(body()));}
   else if(a.type==='inspect'){
    if(!s)fail('请选择部件。');commit=()=>s.known=Object.assign({},s.known,{structure:true,cut:true,outer:true});
@@ -130,7 +130,17 @@
   }catch(e){return null;}
  }
  function start(actions){try{if(job)fail('请先完成或停止当前工作。');if(!Array.isArray(actions)||!actions.length||actions.length>100)fail('操作数量不合法。');const first=copy(actions[0]);quote(first);job={actions:copy(actions),index:0,elapsed:0,created:[]};return {ok:true,message:'开始操作。'};}catch(e){return {ok:false,message:e.message};}}
- function step(){try{if(!job)fail('当前没有工作。');const a=job.actions[job.index],q=quote(a),S=g.Survival;if(S.getStamina()<(S.getActionStaminaCost?S.getActionStaminaCost(q.stamina):q.stamina)||S.getEnergy()<q.energy)fail('体力或精力不足，已停止。');if(q.stamina)S.consumeStamina(q.stamina);if(q.energy)S.consumeEnergy(q.energy);S.advanceTick({source:'sewing'});job.elapsed++;
+ function stepBackpack(a,q){
+  const S=g.Survival,completed=job.elapsed+1>=q.ticks;
+  if(!g.SaveSystem?.runAtomic)fail('保存服务尚未就绪。');
+  const result=g.SaveSystem.runAtomicFor('craft.sewing', ()=>{S.consumeStamina(q.stamina);S.advanceTick({source:'sewing'});if(completed)quote(a).commit();});
+  if(!result.saved)fail('保存失败，本刻的材料、物品和时间已撤回。');
+  job.elapsed++;
+  if(completed){job.index++;job.elapsed=0;if(job.index>=job.actions.length){job=null;return {ok:true,done:true,message:a.type==='backpack_craft'?'背包制作完成；装不下的成品放在脚边。':'背包改造完成，结果已保存。'};}}
+  return {ok:true,message:'正在加工背包。'};
+ }
+ function step(){try{if(!job)fail('当前没有工作。');const a=job.actions[job.index],q=quote(a),S=g.Survival;if(S.getStamina()<(S.getActionStaminaCost?S.getActionStaminaCost(q.stamina):q.stamina)||S.getEnergy()<q.energy)fail('体力或精力不足，已停止。');if(['backpack_craft','backpack_modify'].includes(a.type))return stepBackpack(a,q);
+   if(q.stamina)S.consumeStamina(q.stamina);if(q.energy)S.consumeEnergy(q.energy);S.advanceTick({source:'sewing'});job.elapsed++;
    if(job.elapsed>=q.ticks){transaction(()=>quote(a).commit());job.index++;job.elapsed=0;if(job.index>=job.actions.length){job=null;return {ok:true,done:true,message:['craft','process','assemble','assemble_created','detach'].includes(a.type)?'工作完成，产物已收入物品栏；装不下的放在脚边。':'操作完成，结果已保存。'};}}else save();return {ok:true,message:'正在操作'};
   }catch(e){job=null;return {ok:false,message:e.message};}}
  function cancel(){job=null;return {ok:true,message:'已停止。完成的成果保留，当前未完成的材料没有扣除。'};}

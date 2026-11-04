@@ -9,6 +9,7 @@ function btn(label,fn,icon){const b=el('button');b.type='button';if(icon)b.inner
 function iconButton(icon,label,fn){const b=btn('',fn,icon);b.className='du-icon';b.setAttribute('aria-label',label);return b;}
 function stop(){clearTimeout(timer);timer=null;cancelAnimationFrame(frame);frame=null;D.cancel();taking=false;opening=false;continuous=false;batchQueue=[];}
 function close(options={}){const corpse=mode==='corpse'?selected:null;stop();effects.clearAll();reveals=[];mode=null;selected=null;if(root)root.hidden=true;
+ globalThis.BackpackPanel?.endInteraction('dungeon');
  if(!options.silent&&corpse&&D.active())D.windowAction('close',corpse);
  if(!options.silent)D.checkpoint();refresh();
 }
@@ -25,7 +26,7 @@ function itemRow(it,claimFn,key){const c=D.config().search.rarities[it.rarity]||
  row.dataset.rarity=it.rarity;row.dataset.revealKey=key;row.style.setProperty('--rarity-color',c.color);row.innerHTML=ItemIcons.forItem(InventoryEquipment.getItemTemplate(it.item_id)||it);
  row.append(el('span','',nameOf(it)),el('small','','×'+it.count));if(claimFn){const b=btn(it.claimed?'已领取':it.taken?'领取 '+(it.count-it.taken):'领取',claimFn);b.disabled=it.claimed||taking;row.append(b);}const previous=retainedRows.get(key);if(previous){const flare=previous.querySelector('.loot-flare');previous.replaceChildren(...row.childNodes);if(flare)previous.append(flare);return previous;}return row;
 }
-function inventory(body){const strip=el('div','du-inventory');for(const it of [...InventoryEquipment.getPocketArray(),...InventoryEquipment.getVestArray(),...InventoryEquipment.getBackpackArray().slice(0,InventoryEquipment.getBackpackSlots()),...InventoryEquipment.getState().inventory_vehicle]){
+function inventory(body){if(globalThis.BackpackPanel?.interactionIs('dungeon'))return;const strip=el('div','du-inventory');for(const it of [...InventoryEquipment.getPocketArray(),...InventoryEquipment.getVestArray(),...InventoryEquipment.getBackpackArray().slice(0,InventoryEquipment.getBackpackSlots()),...InventoryEquipment.getState().inventory_vehicle]){
  if(!it)continue;const tile=el('div','du-slot');tile.dataset.dungeonRarity=it.dungeon_rarity||'common';tile.title=nameOf(it);tile.innerHTML=ItemIcons.forItem(InventoryEquipment.getItemTemplate(it.item_id)||it);tile.append(el('small','',it.count||1));strip.append(tile);
  }if(strip.children.length)body.append(strip);}
 function prepare(){if(!D.canPrepare())return;stop();mode='prepare';const body=shell(''),tickets=D.availableTickets(),clues=D.availableClues();
@@ -53,10 +54,17 @@ function interrupted(){clearTimeout(timer);cancelAnimationFrame(frame);frame=nul
 function openPoint(kind,id){const oldCorpse=mode==='corpse'?selected:null;stop();
  if(kind==='corpse'){if(!D.windowAction(oldCorpse?'switch':'open',id)){note(D.lastError());return;}}
  else if(oldCorpse)D.windowAction('close',oldCorpse);
- mode=kind;selected=id;renderModal();
+ mode=kind;selected=id;
+ if(['container','corpse'].includes(kind)&&globalThis.BackpackPanel){
+  if(!BackpackPanel.attachInteraction({id:'dungeon',node:root,valid:()=>!!mode&&D.active()&&!!D.find(selected)&&D.isAccessible(D.find(selected)),close:()=>{close();return true;}}))return;
+ }
+ renderModal();
  const p=D.find(id);if(kind==='container'&&!p?.search.opened)start('search',id);
 }
-function take(id,index){stop();taking=true;renderModal();timer=setTimeout(()=>{taking=false;D.claim(id,index);renderModal();note(D.lastError());},D.config().search.pickupMs||550);}
+function take(id,index,quick=false){stop();taking=true;renderModal();timer=setTimeout(()=>{taking=false;D.claim(id,index,quick);renderModal();note(D.lastError());},D.config().search.pickupMs||550);}
+function storageContext(){return ['container','corpse'].includes(mode)&&globalThis.BackpackPanel?.interactionIs('dungeon')&&BackpackPanel.interactionValid()?InventoryTransfer.context('dungeon',selected):null;}
+function quickTake(id,index,guard){const it=D.find(id)?.search?.items[index];if(taking||id!==selected||!storageContext()||!it?.revealed||it.claimed||JSON.stringify(it)!==guard)return;take(id,index,true);}
+function takeStored(id){const c=storageContext();if(!c)return;const r=InventoryTransfer.quickTake(c,id);renderModal();note(r.message);}
 function beginOpening(id,queue=[]){if(!DungeonCheckpoint.canAccess())return;stop();selected=id;batchQueue=queue;mode='opening';opening=true;clock=performance.now();startFraction=D.getRecovered().find(b=>b.uid===id)?.openingProgress||0;renderModal();frame=requestAnimationFrame(openStep);}
 function openStep(time){if(document.hidden){pause();return;}if(!opening)return;const f=Math.min(1,startFraction+(time-clock)/(D.config().search.bagOpeningMs||800));D.openingProgress(selected,f);const bar=root.querySelector('progress');if(bar)bar.value=f;
  if(f<1){frame=requestAnimationFrame(openStep);return;}frame=null;opening=false;const queue=batchQueue.slice();batchQueue=[];
@@ -122,8 +130,9 @@ function renderModal(){if(!root||!mode||mode==='prepare')return;
   const b=btn(p.used?(p.potentialReward?'已领取':'已研究'):working?'停止':empty?'研读并获得潜能':'研读资料',()=>working?pause():start('recipe',p.uid),empty?'potential':'play');b.disabled=p.used;body.append(b);
  }else if(mode==='insight'){body.append(el('div','du-value','+'+p.amount));const b=btn(p.used?'已领悟':working?'停止':'领悟',()=>working?pause():start('insight',p.uid),'potential');b.disabled=p.used;body.append(b);
  }else{
-  const q=p.search;for(const [i,it]of q.items.entries())if(it.revealed)body.append(itemRow(it,()=>take(p.uid,i),p.uid+':'+i));
-  if(q.complete&&!q.items.length)body.append(el('div','du-state','空'));
+  const q=p.search;for(const [i,it]of q.items.entries())if(it.revealed){const row=itemRow(it,()=>take(p.uid,i),p.uid+':'+i);row.dataset.bpPoint=p.uid;row.dataset.bpLootIndex=i;row.dataset.bpLootGuard=JSON.stringify(it);body.append(row);}
+  for(const it of (p.stored_items||[]).filter(Boolean)){const row=itemRow({...it,rarity:it.dungeon_rarity||'common'},()=>takeStored(it.instance_id),p.uid+':stored:'+it.instance_id);row.dataset.bpStoredId=it.instance_id;body.append(row);}
+  if(q.complete&&!q.items.length&&!p.stored_items?.some(Boolean))body.append(el('div','du-state','空'));
   if(!q.complete){const b=btn(working?'暂停':q.searchedTicks&&!(q.opened&&q.cursor===0&&q.items.every(it=>!it.ticks))?'继续搜索':'开始搜索',()=>working?pause():start('search',p.uid),'search');b.disabled=taking;body.append(b);}
   if(taking)body.append(el('div','du-state','领取中'));
  }
@@ -144,19 +153,19 @@ function refresh(){if(!root||globalThis.SaveSystem?.isAtomic?.())return;if(isEnt
  for(const p of D.nearby()){const row=el('div');row.append(el('span','',(p.kind==='corpse'?'尸体 '+(s.corpses.filter(c=>c.cell===p.cell).findIndex(c=>c.uid===p.uid)+1):p.name)||RuinsHarvest.definitions[p.id]?.name||'尸体'));
   if(p.kind==='door')row.append(btn(String(RuinsEncounter.doorCost(s,p)),()=>{D.openDoor(p.cell);},'stamina'));
   else if(p.kind==='exit')row.append(btn('通行',()=>{stop();mode='exit';renderModal();},'arrow'));
-  else if(p.kind==='corpse'){row.append(btn('搜刮',()=>openPoint('corpse',p.uid),'search'));const b=btn('标记',()=>{if(D.mark(p.uid)&&mode==='corpse'&&selected===p.uid)close({silent:true});},'flag');b.disabled=p.search.opened||!!D.getPending()||taking;row.append(b);}
+  else if(p.kind==='corpse'){row.append(btn('搜刮',()=>openPoint('corpse',p.uid),'search'));const b=btn('标记',()=>{if(D.mark(p.uid)&&mode==='corpse'&&selected===p.uid)close({silent:true});},'flag');b.disabled=p.search.opened||!!D.getPending()||taking||p.stored_items?.some(Boolean);row.append(b);}
   else row.append(btn(p.kind==='harvest'?RuinsHarvest.action(p):p.kind==='container'?'搜索':p.kind==='recipe'?'研读资料':p.kind==='insight'?'领悟':D.config().recovery[p.id].action,()=>openPoint(p.kind,p.uid),'arrow'));near.append(row);
  }near.hidden=!near.children.length;if(!mini.hidden)mapView?.draw();
 }
 function interactAt(x,y){if(!D.active())return false;const s=D.getSim(),k=y*s.map.width+x,p=D.nearby().find(p=>p.cell===k&&p.kind!=='corpse');if(!p)return false;if(p.kind==='door')D.openDoor(k);else openPoint(p.kind,p.uid);return true;}
 function init(){root=el('section','dungeon-ui du-modal');root.setAttribute('role','dialog');root.setAttribute('aria-modal','true');root.tabIndex=-1;root.setAttribute('aria-label','地牢');root.hidden=true;near=el('aside','dungeon-ui du-nearby');mini=el('aside','dungeon-ui du-mini');mini.id='minimap';mini.setAttribute('aria-label','小地图');
  const cv=el('canvas');cv.id='minimap-canvas';const controls=el('div','du-mini-controls');for(const [id,icon,label]of [['out','minus','缩小'],['in','plus','放大'],['fit','fit','已探索范围'],['follow','locate','跟随玩家']]){const b=iconButton(icon,label,()=>{});b.id='minimap-'+id;controls.append(b);}mini.append(cv,controls);document.body.append(root,near,mini);mapView=createRuinsMinimap({getSim:D.getSim});
- root.addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Escape'){e.preventDefault();close();}if(e.key==='Tab'){const items=[...root.querySelectorAll('button:not(:disabled),select:not(:disabled)')];const first=items[0],last=items.at(-1);if(e.shiftKey&&(document.activeElement===first||document.activeElement===root)){e.preventDefault();last?.focus();}else if(!e.shiftKey&&(document.activeElement===last||document.activeElement===root)){e.preventDefault();first?.focus();}}});for(const element of [root,near,mini])for(const type of ['pointerdown','click','dblclick'])element.addEventListener(type,e=>{if(!e.target.closest('[data-reveal-sound]'))e.stopPropagation();});
- root.addEventListener('pointerdown',e=>{if(!e.target.closest('.du-head')||e.target.closest('button'))return;const r=root.getBoundingClientRect();drag={id:e.pointerId,x:e.clientX,y:e.clientY,left:r.left,top:r.top};root.setPointerCapture(e.pointerId);});
+ root.addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Escape'){e.preventDefault();close();}if(e.key==='Tab'&&!root.classList.contains('bp-docked-container')){const items=[...root.querySelectorAll('button:not(:disabled),select:not(:disabled)')];const first=items[0],last=items.at(-1);if(e.shiftKey&&(document.activeElement===first||document.activeElement===root)){e.preventDefault();last?.focus();}else if(!e.shiftKey&&(document.activeElement===last||document.activeElement===root)){e.preventDefault();first?.focus();}}});for(const element of [root,near,mini])for(const type of ['pointerdown','click','dblclick'])element.addEventListener(type,e=>{if(!e.target.closest('[data-reveal-sound]'))e.stopPropagation();});
+ root.addEventListener('pointerdown',e=>{if(root.classList.contains('bp-docked-container')||!e.target.closest('.du-head')||e.target.closest('button'))return;const r=root.getBoundingClientRect();drag={id:e.pointerId,x:e.clientX,y:e.clientY,left:r.left,top:r.top};root.setPointerCapture(e.pointerId);});
  root.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.id)return;const r=root.getBoundingClientRect();root.style.transform='none';root.style.left=Math.max(8,Math.min(innerWidth-r.width-8,drag.left+e.clientX-drag.x))+'px';root.style.top=Math.max(8,Math.min(innerHeight-r.height-8,drag.top+e.clientY-drag.y))+'px';});root.addEventListener('pointerup',()=>drag=null);
  document.addEventListener('visibilitychange',()=>{if(document.hidden)pause();});window.addEventListener('pagehide',()=>{stop();D.checkpoint();});
  new MutationObserver(visibility).observe(document.body,{attributes:true,subtree:true,attributeFilter:['open','hidden','class']});refresh();
 }
-globalThis.DungeonPanel={init,refresh,prepare,openPoint,close,interactAt,reveal,interrupted,showCheckpoint,isEntryOpen};
+globalThis.DungeonPanel={init,refresh,prepare,openPoint,close,interactAt,reveal,interrupted,showCheckpoint,isEntryOpen,storageContext,quickTake,renderInteraction:()=>{if(['container','corpse'].includes(mode))renderModal();}};
 globalThis.AppBoot=globalThis.AppBoot||{};AppBoot.afterReady=AppBoot.afterReady||[];AppBoot.afterReady.push(init);
 })();

@@ -3,17 +3,20 @@
 'use strict';
 const P=window.parent,bridge=P!==window&&P.SewingStationPanel,S=P.SewingSystem,IE=P.InventoryEquipment,$=id=>document.getElementById(id);
 if(!bridge||!S||!bridge.snapshot()){ $('editor').textContent='请从基地缝纫台进入。';return; }
-let menu='制作',category='衣服部件',selected='',drafts={},query='',timer=null,actions=[];
+let workspace='garments',views={},menu='制作',category='衣服部件',selected='',drafts={},query='',timer=null,actions=[];
 const menus=['制作','组装','改制','研究','硅叶处理'],esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const B=P.BackpackSystem,workspaces={garments:{label:'服装'},...(B?{backpacks:{label:'背包'}}:{})};
+function switchWorkspace(next){views[workspace]={menu,category,selected,query};workspace=next;const v=views[next]||{};menu=v.menu||'制作';category=v.category||categories()[0];selected=v.selected||'';query=v.query||'';$('search').value=query;draw();}
 function el(tag,text,cls){const n=document.createElement(tag);if(text!=null)n.textContent=text;if(cls)n.className=cls;return n;}
 function button(text,fn,cls){const b=el('button',text,cls);b.onclick=fn;return b;}
 function row(a,b){const n=el('div',null,'row');n.append(el('span',a),el('span',b));return n;}
 function message(r){$('feedback').textContent=r.message||'';}
 function field(label,options,value,change){const box=el('div',null,'field'),l=el('label',label),select=el('select');select.setAttribute('aria-label',label);options.forEach(([id,name])=>{const o=el('option',name);o.value=id;select.append(o);});select.value=value;select.onchange=()=>change(select.value);box.append(l,select);return box;}
-function tooltip(n,item){function show(e){const t=$('item-tooltip');t.textContent=S.describe(item);t.style.whiteSpace='pre-line';t.hidden=false;const r=n.getBoundingClientRect();t.style.left=Math.min(r.right+8,innerWidth-310)+'px';t.style.top=Math.max(8,Math.min(r.top,innerHeight-t.offsetHeight-8))+'px';}n.onmouseenter=show;n.onfocus=show;n.onmouseleave=n.onblur=()=>{$('item-tooltip').hidden=true;};}
-function categories(){return menu==='制作'?['整套衣服','衣服部件','面料与填充']:menu==='研究'?['版型','材料工艺']:menu==='组装'?['独立部件','已组装部件']:['所有部件'];}
+function tooltip(n,item){function show(e){const t=$('item-tooltip');t.textContent=B?.managed(item.item_id)?B.describe(item):S.describe(item);t.style.whiteSpace='pre-line';t.hidden=false;const r=n.getBoundingClientRect();t.style.left=Math.min(r.right+8,innerWidth-310)+'px';t.style.top=Math.max(8,Math.min(r.top,innerHeight-t.offsetHeight-8))+'px';}n.onmouseenter=show;n.onfocus=show;n.onmouseleave=n.onblur=()=>{$('item-tooltip').hidden=true;};}
+function categories(){if(workspace==='backpacks')return [menu==='制作'?'基础型号':'随身背包'];return menu==='制作'?['整套衣服','衣服部件','面料与填充']:menu==='研究'?['版型','材料工艺']:menu==='组装'?['独立部件','已组装部件']:['所有部件'];}
 function entries(){
  const own=S.owned(),k=S.knowledge();
+ if(workspace==='backpacks')return menu==='制作'?Object.entries(B.config.models).map(([id,m])=>({id,name:m.name,sub:m.slots+'格 · 减重'+Math.round((1-m.weight_factor)*100)+'%'})):B.owned().map(r=>({id:r.item.instance_id,item:r.item,name:B.profile(r.item).name,sub:(r.container==='equipment'?'正在装备':'随身携带')+' · '+B.profile(r.item).slots+'格'}));
  if(menu==='制作'){
   if(category==='面料与填充')return Object.keys(S.materials).filter(id=>(k.materials[id]||0)>=S.materials[id][7]).map(id=>({id,name:S.name(id),material:id,sub:'已掌握加工工艺'}));
   return Object.keys(S.styles).flatMap(style=>category==='整套衣服'?(S.parts.every(p=>S.level(style,p)>=3)?[{id:style,style,name:S.name('sewing_outfit_'+style),sub:'完整款式 · 六个部件'}]:[]):S.parts.filter(part=>S.level(style,part)>=3).map(part=>({id:style+':'+part,style,part,name:S.name('sewing_part_'+style+'_'+part),sub:'可仿制'})));
@@ -53,9 +56,27 @@ function preview(list,label){
  if(bad)$('preview').append(el('p',bad.message,'warning'));
  const b=button(label,()=>begin(actions),'wh-primary');b.dataset.invalid=String(!!bad||!list.length);b.disabled=!!bad||!list.length||!!S.jobState();$('commit').append(b);
 }
+function drawBackpack(e,d){
+ const craft=menu==='制作',old=e.item&&B.profile(e.item);let recipe,a,next;
+ if(craft){recipe=B.config.models[e.id].craft;next=B.profile({item_id:e.id});a={type:'backpack_craft',model:e.id};$('editor').append(el('p',B.config.models[e.id].description,'intro'));}
+ else {
+  d.modification=d.modification||Object.keys(B.config.modifications).find(id=>id!==old.modification);
+  $('editor').append(field('改造方案',Object.entries(B.config.modifications).map(([id,m])=>[id,m.name+(id===old.modification?'（当前）':'')]),d.modification,v=>{d.modification=v;draw();}));
+  recipe=B.config.modifications[d.modification];next=B.profile(e.item,d.modification);a={type:'backpack_modify',id:e.id,modification:d.modification};$('editor').append(el('p',recipe.description,'intro'));
+ }
+ const format=p=>p.slots+'格 / '+Number(p.selfWeight.toFixed(3))+' kg / 减重'+Number(((1-p.weightFactor)*100).toFixed(2))+'%';
+ if(old)$('editor').append(row('当前',format(old)));$('editor').append(row(craft?'成品':'加工后',format(next)));
+ $('editor').append(row('食物腐坏速度',Number((next.spoilageFactor*100).toFixed(2))+'%'),el('h3','所需材料'));
+ Object.entries(recipe.cost).forEach(([id,n])=>$('editor').append(row(S.name(id),n+'份 · 可用 '+B.materialCount(id))));
+ $('editor').append(row('工时 / 基础体力',recipe.ticks*10+'分钟 / '+recipe.ticks),el('p','材料取自随身物品和家中仓库，按仓库扣料偏好结算。','muted'));
+ const q=S.preview(a);$('preview').append(el('p',q.ok?q.warning:q.message,q.ok?'notice':'warning'));
+ const b=button(craft?'制作背包':'开始改造',()=>begin([a]),'wh-primary');b.dataset.invalid=String(!q.ok);b.disabled=!q.ok||!!S.jobState();$('commit').append(b);
+}
 function draw(){
  $('item-tooltip').hidden=true;const snap=bridge.snapshot();if(!snap)return;
- $('menus').replaceChildren(...menus.map(m=>button(m,()=>{menu=m;category=categories()[0];selected='';draw();},m===menu?'active':'')));
+ $('workspaces').replaceChildren(...Object.entries(workspaces).map(([id,w])=>button(w.label,()=>switchWorkspace(id),id===workspace?'active':'')));
+ $('mannequin').hidden=workspace!=='garments';
+ $('menus').replaceChildren(...(workspace==='backpacks'?['制作','改造']:menus).map(m=>button(m,()=>{menu=m;category=categories()[0];selected='';draw();},m===menu?'active':'')));
  if(!categories().includes(category))category=categories()[0];$('categories').replaceChildren(...categories().map(c=>button(c,()=>{category=c;selected='';draw();},c===category?'active':'')));
  const list=entries().filter(e=>e.name.includes(query));if(!list.some(e=>e.id===selected))selected=list[0]?.id||'';
  $('list').replaceChildren();list.forEach(e=>{const b=button('',()=>{selected=e.id;draw();},'entry'+(selected===e.id?' selected':''));const t=el('span');t.append(el('strong',e.name),el('small',e.sub));b.append(t);if(e.item)tooltip(b,e.item);$('list').append(b);});
@@ -66,7 +87,8 @@ function draw(){
   $('editor').append(el('h2',e.name));const key=menu+':'+category+':'+e.id;let d=drafts[key];
   if(!d){d=drafts[key]={cut:'male',part:'chest',layer:'',count:1};if(e.style){if(e.part)d.plan=S.defaultPlan(e.style,e.part);else d.plans=Object.fromEntries(S.parts.map(p=>[p,S.defaultPlan(e.style,p)]));}if(e.item?.sewing){d.plan=JSON.parse(JSON.stringify(e.item.sewing.known?.layers?e.item.sewing.layers:S.defaultPlan(e.item.sewing.style,e.item.sewing.part))); d.cut=e.item.sewing.known?.cut?e.item.sewing.cut:'male';}if(!e.item?.sewing?.known?.layers){const plans=d.plan?[d.plan]:Object.values(d.plans||{});plans.forEach(plan=>Object.entries(plan).forEach(([key,l])=>{const available=Object.keys(S.materials).filter(id=>id.startsWith('filling_')===(key==='fill')&&(IE.countCarriedItemsByTemplateId(id)>0||(S.knowledge().materials[id]||0)>0));if(!Object.keys(l.mix).every(id=>available.includes(id)))l.mix=available.length?{[available[0]]:100}:{};}));}}
   if(e.item){const info=el('p',S.describe(e.item),'intro');info.style.whiteSpace='pre-line';$('preview').append(info);if(e.item.sewing&&!e.item.sewing.known?.outer&&!e.item.sewing.known?.layers)$('preview').append(button('检查外观 · 10分钟',()=>begin([{type:'inspect',id:e.id}])));}
-  if(menu==='制作'){
+  if(workspace==='backpacks')drawBackpack(e,d);
+  else if(menu==='制作'){
    if(e.material){$('editor').append(el('p','使用原料加工为已掌握的面料或填充。每批产出 '+S.materials[e.material][10]+' 份。','intro'));const n=el('input');n.type='number';n.min=1;n.max=100;n.value=d.count;n.setAttribute('aria-label','加工批数');n.onchange=()=>{d.count=Math.max(1,Math.min(100,Math.floor(Number(n.value)||1)));draw();};$('editor').append(n);preview(Array.from({length:d.count},()=>({type:'process',material:e.material})),'开始加工');}
    else {planEditor(e,d);const jobs=e.part?[{type:'craft',style:e.style,part:e.part,plan:d.plan,cut:d.cut}]:S.parts.map(p=>({type:'craft',style:e.style,part:p,plan:d.plans[p],cut:d.cut,forSet:true})).concat([{type:'assemble_created'}]);preview(jobs,e.part?'制作部件':'制作并组装整套');}
   }else if(menu==='改制'){
