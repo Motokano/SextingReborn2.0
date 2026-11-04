@@ -1,0 +1,8 @@
+/* Acceptance controls only. Book interaction styles come from css/book-reading.css. */
+body.book-review #modal-backpack.bp-grid-mode .panel{height:calc(100dvh - 140px);max-height:calc(100dvh - 140px);margin-top:-75px}
+#book-review-controls{position:fixed;z-index:100500;bottom:10px;left:50%;transform:translateX(-50%);max-width:calc(100vw - 20px);width:max-content;box-sizing:border-box;background:#101a15f7;border:1px solid #87956c88;box-shadow:0 5px 30px #0008;border-radius:9px;padding:9px 13px;color:#d4d5bc;font:12px system-ui,'Microsoft YaHei',sans-serif}
+#book-review-controls>div{display:flex;align-items:center;justify-content:center;gap:9px;flex-wrap:wrap}
+#book-review-controls p{margin:7px 0 0;color:#94a38d;text-align:center}
+#book-review-controls button,#book-review-controls select{font:inherit;color:#e4ddc4;border:1px solid #87956c80;background:#2b402f;border-radius:5px;padding:5px 8px;cursor:pointer}
+#book-review-controls button:hover{background:#3d5238;border-color:#d9c584}
+@media(max-width:720px){#book-review-controls{width:calc(100vw - 16px)}body.book-review #modal-backpack.bp-grid-mode .panel{height:calc(100dvh - 170px);max-height:calc(100dvh - 170px);margin-top:-130px}}

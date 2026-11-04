@@ -1,0 +1,2 @@
+id,sn,placeholder_name,fn_before,fn,category,sub_category,weight,stack_limit,tags,source,spoilage_ticks,price_class,volatility,region_restrict,base_value
+book_anatomy_textbook,解剖学教材,残旧薄册,书脊残破夹着几页人形图，像是旧书,一本残缺的解剖学教材，留存的几页讲解骨骼、关节与肌肉。找到同书的其他残片，可以补齐缺失内容。,book,skill_textbook,0.05,1,book;fragment;anatomy,dungeon,0,life_good,low,0,200

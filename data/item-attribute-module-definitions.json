@@ -288,10 +288,57 @@
     },
     "organism": {
       "groups": {}
+    },
+    "knowledge": {
+      "groups": {
+        "book": {
+          "fields": [
+            "book_profile"
+          ]
+        }
+      }
     }
   },
   "instance_state": {
+    "knowledge": {
+      "book": {
+        "version": {
+          "type": "integer",
+          "value": 1
+        },
+        "fragments": {
+          "type": "integer",
+          "min": 1,
+          "template_capacity_field": "book_profile.fragments_total",
+          "template_initial_field": "book_profile.fragments_per_item"
+        }
+      }
+    },
     "structure": {
+      "backpack": {
+        "version": {
+          "type": "integer",
+          "value": 1
+        },
+        "modification": {
+          "type": "string",
+          "values": [
+            "none",
+            "pouches",
+            "frame",
+            "lighten",
+            "lining"
+          ],
+          "config": "data/backpacks.json"
+        },
+        "contents": {
+          "type": "array",
+          "instance_field": "backpack_contents",
+          "element_type": "item_instance_or_null",
+          "ownership": "child",
+          "equipped_container": "inventory_backpack"
+        }
+      },
       "liquid_storage": {
         "version": {
           "type": "integer",
@@ -319,7 +366,7 @@
     "base": {
       "spoilage": {
         "elapsed_ticks": {
-          "type": "integer",
+          "type": "number",
           "min": 0,
           "template_duration_field": "spoilage_ticks"
         }

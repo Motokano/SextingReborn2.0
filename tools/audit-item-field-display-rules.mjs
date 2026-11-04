@@ -20,6 +20,7 @@ const MERGE_FILES = [
   'consumables_base.csv',
   'materials_all.csv',
   'product_base.csv',
+  'books_base.csv',
   'currency_base.csv',
   'compost_matrix_base.csv'
 ];

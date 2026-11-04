@@ -28,6 +28,7 @@
     function getSkillDisplayName(skillId) {
         var sid = String(skillId || '').trim();
         if (!sid) return sid;
+        if (sid === 'special_meridian_studies') return '解剖学';
         if (sid.indexOf('life_') === 0) {
             var lifeKey = 'life.skill.' + sid.slice(5) + '.name';
             var lifeName = t(lifeKey);
@@ -188,9 +189,24 @@
         return table.module_sets[id] || null;
     }
 
+    function bookDescription(inst) {
+        var book = global.InventoryEquipment && global.InventoryEquipment.getBookInfo && global.InventoryEquipment.getBookInfo(inst);
+        if (!book) return [];
+        var cap = Math.min(book.profile.skill.max_level, book.fragments * book.profile.levels_per_fragment);
+        var name = getSkillDisplayName(book.profile.skill_id);
+        var lines = ['完整度 ' + book.label, '阅读本书可将' + name + '学到 ' + cap + ' 级。'];
+        if (book.fragments === book.total) lines.push('教材已集齐，可直接消耗整本，使' + name + '提升 1 级。');
+        return lines;
+    }
+
     function renderTooltipModulesHtml(args) {
         var tpl = args && args.tpl;
         var inst = args && args.inst;
+        var book = global.InventoryEquipment && global.InventoryEquipment.getBookInfo && global.InventoryEquipment.getBookInfo(inst);
+        if (book) return '<div class="tooltip-modules">' + bookDescription(inst).map(function (line) { return '<div class="tooltip-module-text">' + esc(line) + '</div>'; }).join('') + '</div>';
+        if (inst && global.BackpackSystem && global.BackpackSystem.managed(inst.item_id)) {
+            return '<div class="tooltip-modules"><div class="tooltip-module-text">'+esc(global.BackpackSystem.describe(inst)).replace(/\n/g,'<br>')+'</div></div>';
+        }
         if (inst && global.ForgingSystem && global.ForgingSystem.managed(inst.item_id)) {
             var text = global.ForgingSystem.describe(inst);
             return text ? '<div class="tooltip-module-text">'+esc(text).replace(/\n/g,'<br>')+'</div>' : '';
@@ -234,6 +250,11 @@
     function tooltipView(args) {
         var tpl = args.tpl || {}, inst = args.inst, character = args.character;
         function node(cls, text, children, tag) { return { tag:tag || 'div', className:cls, text:text == null ? '' : String(text), children:children || [] }; }
+        var book = global.InventoryEquipment && global.InventoryEquipment.getBookInfo && global.InventoryEquipment.getBookInfo(inst);
+        if (book) return [node('tooltip-modules','',bookDescription(inst).map(function (line) { return node('tooltip-module-text',line); }))];
+        if (inst && global.BackpackSystem && global.BackpackSystem.managed(inst.item_id)) {
+            var backpack = node('tooltip-module-text',global.BackpackSystem.describe(inst)); backpack.breakLines = true; return [node('tooltip-modules','',[backpack])];
+        }
         function contentView(content) {
             if (typeof content === 'string') return [node('tooltip-module-text',content)];
             if (!content || typeof content !== 'object') return [];
@@ -278,6 +299,7 @@
     }
 
     global.ItemInfoModules = {
+        bookDescription: bookDescription,
         tooltipView: tooltipView,
         setTable: setTable,
         getModuleSet: getModuleSet,

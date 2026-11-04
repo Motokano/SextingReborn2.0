@@ -2082,5 +2082,6 @@
   "bed.sleep.resources": "体力 {stamina}　疲劳 {fatigue}\n饱食 {satiety}　饮水 {thirst}",
   "bed.sleep.save_failed": "进度未能保存，睡眠已暂停。请重试。",
   "bed.sleep.retry": "重试",
-  "creation.save.failed": "创建角色的进度未能保存，请再次点击完成重试。"
+  "creation.save.failed": "创建角色的进度未能保存，请再次点击完成重试。",
+  "btn.equipment.title": "穿戴装备"
 }

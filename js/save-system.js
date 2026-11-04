@@ -585,6 +585,7 @@
             death: global.DeathSystem ? global.DeathSystem.getState() : null,
             bed_sleep: global.BedSleep ? global.BedSleep.getState() : null,
             gym: global.GymSystem ? global.GymSystem.getState() : null,
+            book_reading: global.BookReading ? global.BookReading.getState() : null,
             manufacturing_knowledge: global.ManufacturingKnowledge ? global.ManufacturingKnowledge.getState() : null,
             combat_enemies: global.CombatEnemies && global.CombatEnemies.getState ? global.CombatEnemies.getState() : null,
             player: {
@@ -613,6 +614,7 @@
 
     function applySnapshot(snapshot, options) {
         var M = global.CombatMetaSkills;
+        if (global.BookReading && !global.BookReading.validate(snapshot && snapshot.book_reading)) return false;
         if (global.GymSystem && !global.GymSystem.validate(snapshot && snapshot.gym)) return false;
         if (global.DeathSystem && !global.DeathSystem.validate(snapshot && snapshot.death)) return false;
         if (global.BedSleep && !global.BedSleep.validate(snapshot && snapshot.bed_sleep)) return false;
@@ -622,6 +624,7 @@
         try {
             var applied = applySnapshotContents(snapshot, options);
             if (applied && M) M.setState(snapshot.metaskills || null);
+            if (applied && global.BookReading) global.BookReading.restore(snapshot.book_reading || null);
             if (applied && global.DeathSystem) global.DeathSystem.restore(snapshot.death || null);
             if (applied && global.GymSystem) global.GymSystem.restore(snapshot.gym || null, !!(options && options.rollback));
             if (applied && global.BedSleep) global.BedSleep.restore(snapshot.bed_sleep || null, !!(options && options.rollback));
@@ -1304,6 +1307,7 @@
         atomicRequired = false;
         var saved = SaveSystem.saveNow(saveOptions);
         if (!saved && before) applySnapshot(before, { rollback: true });
+        if (saved && global.BookReading) { try { global.BookReading.notifyCompleted(before); } catch (eBookNotice) { /* A notice cannot invalidate a committed save. */ } }
         return { saved: saved, value: value };
     };
     SaveSystem.runAtomicFor = function (trigger, operation) {

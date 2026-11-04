@@ -1106,6 +1106,126 @@
         }
       },
       "id": "eq_vest_hoodie"
+    },
+    "eq_backpack_frame_hauler": {
+      "item_id": "eq_backpack_frame_hauler",
+      "editor_name": "框架搬运包",
+      "weight_kg": 3,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "框架搬运包",
+            "name_0": "框架搬运包",
+            "name_1": "框架搬运包",
+            "name_2": "框架搬运包",
+            "desc_0": "带承重框架与腰带的搬运包，适合携带重物。",
+            "desc_1": "带承重框架与腰带的搬运包，适合携带重物。",
+            "desc_2": "带承重框架与腰带的搬运包，适合携带重物。",
+            "display_skill_id": "survival_language"
+          },
+          "stacking": {
+            "stack_limit": 1,
+            "pocketable": false
+          }
+        },
+        "equipment": {
+          "wearable": {
+            "equip_slot": "backpack"
+          },
+          "enchantment": {
+            "enchant_slots": 2
+          }
+        },
+        "structure": {
+          "storage": {
+            "backpack_slots": 16,
+            "backpack_weight_factor": 0.5
+          }
+        }
+      },
+      "id": "eq_backpack_frame_hauler",
+      "category": "equipment",
+      "sub_category": "backpack"
+    },
+    "eq_backpack_light_canvas": {
+      "item_id": "eq_backpack_light_canvas",
+      "editor_name": "轻便帆布包",
+      "weight_kg": 0.5,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "轻便帆布包",
+            "name_0": "轻便帆布包",
+            "name_1": "轻便帆布包",
+            "name_2": "轻便帆布包",
+            "desc_0": "小巧的帆布双肩包，适合轻装出行。",
+            "desc_1": "小巧的帆布双肩包，适合轻装出行。",
+            "desc_2": "小巧的帆布双肩包，适合轻装出行。",
+            "display_skill_id": "survival_language"
+          },
+          "stacking": {
+            "stack_limit": 1,
+            "pocketable": false
+          }
+        },
+        "equipment": {
+          "wearable": {
+            "equip_slot": "backpack"
+          },
+          "enchantment": {
+            "enchant_slots": 2
+          }
+        },
+        "structure": {
+          "storage": {
+            "backpack_slots": 12,
+            "backpack_weight_factor": 0.75
+          }
+        }
+      },
+      "id": "eq_backpack_light_canvas",
+      "category": "equipment",
+      "sub_category": "backpack"
+    },
+    "eq_backpack_multi_pocket": {
+      "item_id": "eq_backpack_multi_pocket",
+      "editor_name": "多袋搜集包",
+      "weight_kg": 1.5,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "多袋搜集包",
+            "name_0": "多袋搜集包",
+            "name_1": "多袋搜集包",
+            "name_2": "多袋搜集包",
+            "desc_0": "带有多个分袋的大背包，适合收集零碎物品。",
+            "desc_1": "带有多个分袋的大背包，适合收集零碎物品。",
+            "desc_2": "带有多个分袋的大背包，适合收集零碎物品。",
+            "display_skill_id": "survival_language"
+          },
+          "stacking": {
+            "stack_limit": 1,
+            "pocketable": false
+          }
+        },
+        "equipment": {
+          "wearable": {
+            "equip_slot": "backpack"
+          },
+          "enchantment": {
+            "enchant_slots": 2
+          }
+        },
+        "structure": {
+          "storage": {
+            "backpack_slots": 24,
+            "backpack_weight_factor": 0.9
+          }
+        }
+      },
+      "id": "eq_backpack_multi_pocket",
+      "category": "equipment",
+      "sub_category": "backpack"
     }
   }
 }

@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "full_book_consumption": {
+    "levels_gained": 1,
+    "potential_cost": 0,
+    "language_exp": 0,
+    "tick_cost": 0
+  },
+  "special_skill_learning": {
+    "potential_per_exp": 100,
+    "language_skill_id": "survival_language",
+    "language_exp_ratio": { "numerator": 1, "denominator": 10 },
+    "language_costs_extra_potential": false,
+    "stop_all_exp_at_book_cap": true,
+    "preserve_fractional_exp": true
+  },
+  "skills": {
+    "special_meridian_studies": {
+      "max_level": 100,
+      "exp_to_max_level": 1000000,
+      "experience_curve": "linear"
+    }
+  },
+  "books": {
+    "anatomy_textbook": {
+      "item_id": "book_anatomy_textbook",
+      "skill_id": "special_meridian_studies",
+      "fragments_total": 100,
+      "fragments_per_item": 1,
+      "levels_per_fragment": 1,
+      "progress_scope": "character",
+      "consumed_by_reading": false
+    }
+  }
+}

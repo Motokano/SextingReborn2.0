@@ -36,6 +36,14 @@
     }
   },
   "fields": {
+    "book_profile": {
+      "primary_block": "regular",
+      "reference_blocks": [],
+      "renderer": "hidden",
+      "value_type": "object",
+      "visible_by_default": false,
+      "locked_hint": ""
+    },
     "compost_inoculant_aerobic": {
       "primary_block": "planting_compost",
       "reference_blocks": [],

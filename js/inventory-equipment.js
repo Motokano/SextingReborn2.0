@@ -174,6 +174,9 @@
      */
     function forEachItemInstanceChild(inst, callback) {
         if (!inst || typeof inst !== 'object' || typeof callback !== 'function') return;
+        if (Array.isArray(inst.backpack_contents)) inst.backpack_contents.forEach(function (child, index) {
+            if (child && child.item_id) callback(child, '.backpack_contents[' + index + ']', 'backpack_content', index);
+        });
         Object.keys(inst.sewing_parts || {}).forEach(function (key) {
             var child = inst.sewing_parts[key];
             if (child && child.item_id) callback(child, '.sewing_parts.' + key, 'sewing', key);
@@ -1035,6 +1038,8 @@
         }
         var tpl = getItemTemplate(itemId);
         var b = tpl && tpl.base_value != null ? Number(tpl.base_value) : 0;
+        var book = getBookInfo(instanceOrTier);
+        if (book) b *= book.fragments / book.profile.fragments_per_item;
         return isFinite(b) ? Math.max(0, Math.round(b)) : 0;
     }
 
@@ -1161,6 +1166,8 @@
     function getBackpackSlots() {
         var backpack = state.equipment.backpack;
         if (!backpack || !backpack.item_id) return 0;
+        var profile = global.BackpackSystem && global.BackpackSystem.profile(backpack);
+        if (profile) return profile.slots;
         var tpl = getItemTemplate(backpack.item_id);
         return (tpl && tpl.backpack_slots != null) ? Math.max(0, parseInt(tpl.backpack_slots, 10)) : 0;
     }
@@ -1197,6 +1204,17 @@
         var arr = state.inventory_backpack.slice(0, max);
         while (arr.length < max) arr.push(null);
         return arr.slice(0, max);
+    }
+
+    function hasPackedBackpackContents(instance) {
+        return !!(instance && Array.isArray(instance.backpack_contents) && instance.backpack_contents.some(Boolean));
+    }
+
+    /** The equipped bag uses the active container; a detached bag owns its closed contents. */
+    function getBackpackContents(instance) {
+        var active = state.equipment.backpack;
+        if (instance && active && instance.instance_id === active.instance_id) return state.inventory_backpack.slice();
+        return instance && Array.isArray(instance.backpack_contents) ? instance.backpack_contents.slice() : [];
     }
 
     function getVehicleArray() {
@@ -1342,11 +1360,15 @@
         if (instanceId) visited[instanceId] = true;
         var tpl = getItemTemplate(itemInstance.item_id);
         var ownWeight = tpl && tpl.weight_kg != null ? Number(tpl.weight_kg) : 0;
+        var backpackProfile = global.BackpackSystem && global.BackpackSystem.profile(itemInstance);
+        if (backpackProfile) ownWeight = backpackProfile.selfWeight;
         if (itemInstance.sewing && global.SewingSystem) ownWeight = global.SewingSystem.stats(itemInstance).weight;
         if (itemInstance.forged_component) ownWeight = itemInstance.forged_component.final_weight_kg;
         if (itemInstance.fishing_catch && /^fishing_catch_/.test(itemInstance.item_id) && Number.isFinite(itemInstance.fishing_catch.weight_kg) && itemInstance.fishing_catch.weight_kg > 0) ownWeight = itemInstance.fishing_catch.weight_kg;
         if (!isFinite(ownWeight) || ownWeight < 0) ownWeight = 0;
         var quantity = itemInstance.count != null ? Math.max(1, Math.floor(Number(itemInstance.count) || 1)) : 1;
+        var book = getBookInfo(itemInstance);
+        if (book) ownWeight *= book.fragments / book.profile.fragments_per_item;
         var total = ownWeight * quantity;
         var storedWater = getItemInstanceValue(itemInstance, 'flask_water');
         var waterWeight = getItemTemplateValue(tpl, 'flask_water_weight_kg');
@@ -1400,11 +1422,109 @@
             for (var k = 0; k < state.inventory_backpack.length; k++) {
                 var cell = state.inventory_backpack[k];
                 if (!cell || !cell.item_id) continue;
-                total += getItemCombinedWeight(cell) * backpackFactor;
+                var itemFactor = global.BackpackSystem && global.BackpackSystem.weightFactor(backpack, cell);
+                total += getItemCombinedWeight(cell) * (itemFactor != null ? itemFactor : backpackFactor);
             }
         }
 
         return total;
+    }
+
+    // Completeness belongs to the physical book. Character learning is never changed here.
+    // Old single-fragment items without this optional state remain valid.
+    function getBookInfo(instance) {
+        if (!instance) return null;
+        var profile = getItemTemplateValue(getItemTemplate(instance.item_id), 'book_profile');
+        if (!profile || profile.schema_version !== 1) return null;
+        var saved = instance.attribute_state && instance.attribute_state.knowledge && instance.attribute_state.knowledge.book;
+        var fragments = saved == null ? profile.fragments_per_item : saved.fragments;
+        var count = instance.count == null ? 1 : instance.count;
+        if (saved != null && (saved.version !== 1 || Object.keys(saved).some(function (key) { return key !== 'version' && key !== 'fragments'; }))) return null;
+        if (!Number.isSafeInteger(fragments) || fragments < 1 || fragments > profile.fragments_total || !Number.isSafeInteger(count) || count < 1 || !Number.isSafeInteger(fragments * count)) return null;
+        return { profile: profile, fragments: fragments, count: count, total: profile.fragments_total, label: fragments + '/' + profile.fragments_total };
+    }
+
+    function bookWithFragments(instance, fragments) {
+        var next = JSON.parse(JSON.stringify(instance));
+        next.count = 1;
+        next.attribute_state = next.attribute_state || {};
+        next.attribute_state.knowledge = next.attribute_state.knowledge || {};
+        next.attribute_state.knowledge.book = { version: 1, fragments: fragments };
+        return next;
+    }
+
+    function bookStorageUnlocked(instance) {
+        return !instance || (!instance.warehouse_locked &&
+            !(global.ForgingSystem && global.ForgingSystem.isInstanceLocked(instance.instance_id)) &&
+            !(global.FishingSession && global.FishingSession.isInstanceLocked(instance.instance_id)));
+    }
+
+    function booksCanMerge(a, b) {
+        if (!getBookInfo(a) || !getBookInfo(b) || !bookStorageUnlocked(a) || !bookStorageUnlocked(b)) return false;
+        if (getItemInstanceChildren(a).length || getItemInstanceChildren(b).length) return false;
+        // All other instance data must match; never discard seals, marks or attachments.
+        function comparable(item) {
+            var next = bookWithFragments(item, 1);
+            ['warehouse_locked', 'warehouse_starred'].forEach(function (key) { if (next[key] === false) delete next[key]; });
+            return next;
+        }
+        return itemInstancesCanStack(comparable(a), comparable(b));
+    }
+
+    /** Pure placement plan. No identities, inventory or XP are changed on a failed plan. */
+    function planBookPlacement(items, capacity, incoming, options) {
+        var info = getBookInfo(incoming);
+        if (!info) return null;
+        var opts = options || {}, arr = items.slice();
+        var left = opts.fragments == null ? info.fragments * info.count : opts.fragments;
+        if (!Number.isSafeInteger(left) || left < 0) return null;
+        var initial = left, used = !!opts.identityUsed, last = -1;
+        if (incoming.instance_id && items.some(function (item) { return item && item.instance_id === incoming.instance_id; })) {
+            return { items: arr, remainingFragments: left, placedFragments: 0, identityUsed: used, index: -1 };
+        }
+        for (var i = 0; i < arr.length && i < capacity && left > 0; i++) {
+            var existing = getBookInfo(arr[i]);
+            if (!existing || existing.count !== 1 || !booksCanMerge(arr[i], incoming)) continue;
+            var add = Math.min(left, existing.total - existing.fragments);
+            if (!add) continue;
+            arr[i] = bookWithFragments(arr[i], existing.fragments + add);
+            left -= add; last = i;
+        }
+        while (left > 0 && !opts.mergeOnly) {
+            var at = arr.findIndex(function (cell, index) { return !cell && index < capacity; });
+            if (at < 0) at = arr.length;
+            if (at >= capacity) break;
+            var amount = Math.min(left, info.total);
+            var next = bookWithFragments(incoming, amount);
+            if (used) { delete next.instance_id; delete next.instance_schema_version; }
+            used = true; arr[at] = next; left -= amount; last = at;
+        }
+        return { items: arr, remainingFragments: left, placedFragments: initial - left, identityUsed: used, index: last };
+    }
+
+    /** Try existing carried books first, then free slots, without reaching into ground/storage. */
+    function placeBookInCarried(inventory, incoming) {
+        var info = getBookInfo(incoming);
+        if (!info) return null;
+        var destinations = [
+            { type: 'backpack', capacity: getBackpackSlots(), owner: inventory.equipment.backpack },
+            { type: 'vehicle', capacity: inventory.bound_vehicle_id ? Infinity : 0 },
+            { type: 'pocket', capacity: canFitPocket(incoming) ? getPocketSlots() : 0, owner: inventory.equipment.clothing }
+        ].filter(function (d) { return d.capacity > 0 && bookStorageUnlocked(d.owner); });
+        var left = info.fragments * info.count, used = false, vehicle = false, container, index;
+        var planned = {};
+        for (var pass = 0; pass < 2 && left; pass++) {
+            for (var n = 0; n < destinations.length && left; n++) {
+                var d = destinations[n], key = 'inventory_' + d.type;
+                var plan = planBookPlacement(planned[key] || inventory[key] || [], d.capacity, incoming, { fragments: left, identityUsed: used, mergeOnly: pass === 0 });
+                if (!plan.placedFragments) continue;
+                planned[key] = plan.items; left = plan.remainingFragments; used = plan.identityUsed;
+                vehicle = vehicle || d.type === 'vehicle'; container = d.type; index = plan.index;
+            }
+        }
+        if (left) return { placed: false, dropped: true };
+        Object.keys(planned).forEach(function (key) { inventory[key] = planned[key].map(function (item) { return item ? copyItemInstance(item) : null; }); });
+        return { placed: true, container: container, index: index, vehicle: vehicle };
     }
 
     /**
@@ -1418,8 +1538,11 @@
             if (ownedAt) return { placed: false, dropped: false, reason: 'duplicate_instance_id', existing_location: ownedAt };
         }
 
+        var bookPlacement = placeBookInCarried(state, itemInstance);
+        if (bookPlacement) return bookPlacement;
+
         var backpackSlots = getBackpackSlots();
-        if (backpackSlots > 0) {
+        if (backpackSlots > 0 && !hasPackedBackpackContents(itemInstance)) {
             var arr = state.inventory_backpack.slice();
             var canStack = canStackInSlot(itemInstance, null);
             for (var i = 0; i < backpackSlots; i++) {
@@ -1466,7 +1589,7 @@
         }
 
         var vestSlots = getVestSlots();
-        if (vestSlots > 0) {
+        if (vestSlots > 0 && !hasPackedBackpackContents(itemInstance)) {
             var v = state.inventory_vest.slice();
             for (var k = 0; k < vestSlots; k++) {
                 if (!v[k]) {
@@ -1508,6 +1631,7 @@
     }
 
     function canStackInSlot(instance, existing) {
+        if (hasPackedBackpackContents(instance) || hasPackedBackpackContents(existing)) return false;
         var tpl = getItemTemplate(instance.item_id);
         if (!tpl) return false;
         if (tpl.enchant_slots != null && tpl.enchant_slots > 0) return false;
@@ -1517,6 +1641,7 @@
     }
 
     function canFitPocket(instance) {
+        if (hasPackedBackpackContents(instance)) return false;
         var tpl = instance && getItemTemplate(instance.item_id);
         // Unmarked legacy items retain their existing eligibility when loading old saves.
         return !!tpl && (tpl.pocketable != null ? tpl.pocketable === true : !tpl.equip_slot);
@@ -1634,6 +1759,19 @@
         }
         var tpl = getItemTemplate(instance.item_id);
         if (!tpl) return { success: false, message: t('inv.equip.unknown_item') };
+        if (slotId === 'backpack') {
+            if (state.equipment.backpack) return { success: false, message: '请先卸下当前背包，再装备新背包。' };
+            if (state.inventory_backpack.some(Boolean)) return { success: false, message: '仍有未归属背包的物品，不能覆盖。' };
+            if (global.BackpackSystem && global.BackpackSystem.managed(instance.item_id)) {
+                var bagValidation = global.BackpackSystem.validate(instance);
+                if (!bagValidation.success) return bagValidation;
+            }
+            var packed = Array.isArray(instance.backpack_contents) ? instance.backpack_contents : [];
+            var packedProfile = global.BackpackSystem && global.BackpackSystem.profile(instance);
+            var packedCapacity = packedProfile ? packedProfile.slots : Math.max(0, parseInt(tpl.backpack_slots, 10) || 0);
+            if (packed.filter(Boolean).length > packedCapacity) return { success: false, message: '包内物品超过背包容量，无法装备。' };
+            if (packed.some(hasPackedBackpackContents)) return { success: false, message: '装有物品的背包不能套进另一只背包。' };
+        }
         var modularWeapon = global.ModularWeaponCombat && global.ModularWeaponCombat.isWeapon(instance);
         if (modularWeapon) {
             var weaponValidation = global.ModularWeaponCombat.validateEquip(instance, slotId);
@@ -1666,6 +1804,12 @@
         }
         if (global.CombatMetaSkills && state.equipment[slotId]) global.CombatMetaSkills.weaponChanged(state.equipment[slotId].instance_id);
         state.equipment[slotId] = inst;
+        if (slotId === 'backpack') {
+            state.inventory_backpack = Array.isArray(inst.backpack_contents) ? inst.backpack_contents : [];
+            delete inst.backpack_contents;
+            delete inst.ground_drop_tick;
+            if (state.inventory_backpack.length > getBackpackSlots()) state.inventory_backpack = state.inventory_backpack.filter(Boolean);
+        }
         if (modularWeapon) global.ModularWeaponCombat.onEquip(inst);
         if ((slotId === 'clothing' || slotId === 'head') && global.Survival && global.Survival.setDiqiShieldRemaining) global.Survival.setDiqiShieldRemaining(0);
         if (global.Survival && global.Survival.syncMoodStateBuff) global.Survival.syncMoodStateBuff();
@@ -1826,6 +1970,7 @@
     function unequip(slotId, optGroundPos) {
         if (EQUIP_SLOT_IDS.indexOf(slotId) < 0) return null;
         var current = state.equipment[slotId];
+        if (!current) return null;
         if (current && global.ForgingSystem && global.ForgingSystem.isInstanceLocked(current.instance_id)) return null;
         if (global.ModularWeaponCombat) global.ModularWeaponCombat.clearTransient(current);
         state.equipment[slotId] = null;
@@ -1837,7 +1982,7 @@
             state.inventory_vest = [];
         }
         if (slotId === 'backpack') {
-            migrateContainerToBackpack(state.inventory_backpack, optGroundPos);
+            current.backpack_contents = state.inventory_backpack;
             state.inventory_backpack = [];
         }
         if (slotId === 'clothing') {
@@ -1888,6 +2033,11 @@
      * 清理非地牢地图上超过存续 tick 的地面物品。
      * 仅对主动丢弃/掉落到地面的物品生效；地牢内物品不参与该规则。
      */
+    function getGroundItemRemainingTicks(mapId, item) {
+        if (!item || isDungeonMapId(mapId)) return null;
+        var born = item.ground_drop_tick == null ? getCurrentTickCountSafe() : Math.max(0, Math.floor(Number(item.ground_drop_tick) || 0));
+        return Math.max(0, GROUND_ITEM_DESPAWN_TICKS - (getCurrentTickCountSafe() - born));
+    }
     function pruneExpiredGroundItems(currentTick, maxAgeTicks) {
         var nowTick = Math.max(0, Math.floor(Number(currentTick) || 0));
         var ttl = Math.max(1, Math.floor(Number(maxAgeTicks) || GROUND_ITEM_DESPAWN_TICKS));
@@ -2601,6 +2751,15 @@
 
     function setState(s) {
         if (!s) return;
+        if (s.equipment && s.equipment.backpack && Array.isArray(s.equipment.backpack.backpack_contents)) {
+            var importBag = Object.assign({}, s.equipment.backpack);
+            var activeContents = Array.isArray(s.inventory_backpack) ? s.inventory_backpack : [];
+            var activeIds = new Set(activeContents.filter(Boolean).map(function (x) { return x.instance_id; }).filter(Boolean));
+            var closedContents = importBag.backpack_contents;
+            delete importBag.backpack_contents;
+            s = Object.assign({}, s, { equipment: Object.assign({}, s.equipment, { backpack: importBag }),
+                inventory_backpack: activeContents.some(Boolean) ? activeContents.concat(closedContents.filter(function (x) { return x && !activeIds.has(x.instance_id); })) : closedContents });
+        }
         state.sewing_version = s.sewing_version || 0;
         var hasLoadedItems = !!(s.equipment || s.inventory_pocket || s.inventory_vest || s.inventory_backpack
             || s.inventory_vehicle || s.ground_items);
@@ -3139,11 +3298,16 @@
         getPocketArray: getPocketArray,
         getVestArray: getVestArray,
         getBackpackArray: getBackpackArray,
+        getBackpackContents: getBackpackContents,
+        hasPackedBackpackContents: hasPackedBackpackContents,
         getVehicleArray: getVehicleArray,
         countCarriedItemsByTemplateId: countCarriedItemsByTemplateId,
         removeCarriedItemsByTemplateId: removeCarriedItemsByTemplateId,
         giveCarriedItemsByTemplateId: giveCarriedItemsByTemplateId,
         getItemCombinedWeight: getItemCombinedWeight,
+        getBookInfo: getBookInfo,
+        planBookPlacement: planBookPlacement,
+        placeBookInCarried: placeBookInCarried,
         getCurrentCarryWeight: getCurrentCarryWeight,
         putItemIntoDefaultContainer: putItemIntoDefaultContainer,
         canFitPocket: canFitPocket,
@@ -3153,6 +3317,7 @@
         unequip: unequip,
         takeItemFromContainer: takeItemFromContainer,
         getGroundItemKey: getGroundItemKey,
+        getGroundItemRemainingTicks: getGroundItemRemainingTicks,
         getGroundItemsAt: getGroundItemsAt,
         addItemToGround: addItemToGround,
         removeItemFromGround: removeItemFromGround,

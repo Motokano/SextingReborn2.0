@@ -3171,6 +3171,7 @@
             if (window.Survival.isDead() || (window.DeathSystem && window.DeathSystem.blocked())) return { isDead: true };
             if (window.BedSleep && !window.BedSleep.allowsTick(arguments[0])) return { sleeping: true };
             if (window.GymSystem && !window.GymSystem.allowsTick(arguments[0])) return { training: true };
+            if (window.BookReading) window.BookReading.beforeWorldTick();
             var worldTickBefore = getWorldTotalTicks();
             var ret = oldAdvance.apply(this, arguments);
             // A rejected tick must not advance production, growth or other world consumers.
@@ -3586,6 +3587,8 @@
 
     function updateBackpackPanel() {
         if (window.SveltePanels) { window.SveltePanels.refresh('backpack'); return; }
+        var panelHeading = document.querySelector('#modal-backpack .bp-title');
+        if (panelHeading) { var panelTitleKey=window.BackpackPanel && window.BackpackPanel.isEquipment()?'btn.equipment.title':'btn.backpack.title';panelHeading.setAttribute('data-ui',panelTitleKey);panelHeading.textContent=ui(panelTitleKey); }
         if (!IE) return;
         var char = IE.getCharacterForDisplay ? IE.getCharacterForDisplay() : null;
         var st = E.getState();
@@ -3633,6 +3636,10 @@
                     if (!va[q] || !va[q].item_id) continue;
                     rows.push({ source: 'vehicle', index: q, item: va[q] });
                 }
+            } else if (containerType === 'groundBag') {
+                var context = window.BackpackPanel.groundContext();
+                var packed = context ? window.InventoryTransfer.read(context).items : [];
+                packed.forEach(function (item, index) { if (item) rows.push({source:'groundBag',index:index,item:item}); });
             } else if (containerType === 'ground') {
                 var g = IE.getGroundItemsAt ? IE.getGroundItemsAt(st.mapId, st.x, st.y) : [];
                 for (var m = 0; m < g.length; m++) {
@@ -3671,6 +3678,10 @@
             var posNow = E.getState ? E.getState() : groundPos;
             var slotId = preferredSlot || tpl.equip_slot;
             var row = getContainerRows(containerType).find(function (r) { return r.index === idx; });
+            if (slotId === 'backpack' && window.BackpackSystem) {
+                var moved = window.BackpackSystem.transfer({action:'equip',source:containerType,index:idx,id:row && row.item.instance_id});
+                showMsg(moved.message, moved.ok ? 'success' : 'warn');updateBackpackPanel();render();return;
+            }
             if (window.ModularWeaponCombat && window.ModularWeaponCombat.isWeapon(row && row.item)) {
                 var check = window.ModularWeaponCombat.validateEquip(row.item, slotId);
                 if (!check.success) { showMsg(check.message, 'warn'); return; }
@@ -3816,7 +3827,7 @@
                     assemblyWrap.innerHTML = window.ItemAssemblyDisplay.renderAssemblyHtml({
                         inst: picked.item,
                         character: char,
-                        interactive: picked.source !== 'ground',
+                        interactive: picked.source !== 'ground' && picked.source !== 'groundBag',
                         showWeight: false
                     }) || '';
                     if (assemblyWrap.innerHTML) {
@@ -3862,9 +3873,31 @@
                 var btn = document.createElement('button');
                 btn.type = 'button';
                 btn.className = 'bp-action-btn';
+                if (label === ui('inv.drop') || label === ui('inv.pickup')) btn.classList.add('bp-legacy-transfer');
                 btn.textContent = label;
                 btn.onclick = onClick;
                 actions.appendChild(btn);
+            }
+            if (picked.source === 'groundBag') return;
+            if (disp.tpl && disp.tpl.equip_slot === 'backpack' && window.BackpackSystem) {
+                var bagAction = function (action) {
+                    var moved = window.BackpackSystem.transfer({action:action,source:picked.source,index:picked.index,id:picked.item.instance_id});
+                    showMsg(moved.message,moved.ok?'success':'warn');
+                    if (moved.ok) backpackUIState.equipDetailSlot = null;
+                    markCellDirty(groundPos.mapId,groundPos.x,groundPos.y);updateBackpackPanel();render();
+                };
+                if (picked.source === 'equipment') {
+                    addActionBtn(ui('inv.unequip'),function(){bagAction('unequip');});
+                    addActionBtn('整包放下',function(){bagAction('drop');});
+                } else if (picked.source === 'ground') {
+                    addActionBtn(ui('inv.pickup'),function(){bagAction('pickup');});
+                    addActionBtn(ui('inv.equip'),function(){bagAction('equip');});
+                } else {
+                    addActionBtn(ui('inv.equip'),function(){bagAction('equip');});
+                    addActionBtn(ui('inv.drop'),function(){bagAction('drop');});
+                }
+                detailEl.appendChild(actions);
+                return;
             }
             if (picked.source === 'equipment') {
                 if (picked.index === 'water_flask') addActionBtn(ui('flask.action.drink'), function () { tryDrinkWaterFlask(picked.item.instance_id); });
@@ -3979,7 +4012,7 @@
                         row.addEventListener('mouseleave', SceneUi.hideItemTooltip);
                         row.onclick = (function (sid) {
                             return function () {
-                                backpackUIState.equipDetailSlot = sid;
+                                backpackUIState.equipDetailSlot = sid; window.BackpackPanel && window.BackpackPanel.showEquipment();
                                 updateBackpackPanel();
                             };
                         })(slotId);
@@ -3993,6 +4026,11 @@
                         return function (ev) {
                             if (ev && ev.stopPropagation) ev.stopPropagation();
                             if (backpackUIState.equipDetailSlot === sid) backpackUIState.equipDetailSlot = null;
+                            if (sid === 'backpack' && window.BackpackSystem) {
+                                var liveBag = IE.getState().equipment.backpack;
+                                var moved = window.BackpackSystem.transfer({action:'unequip',source:'equipment',index:'backpack',id:liveBag && liveBag.instance_id});
+                                showMsg(moved.message,moved.ok?'success':'warn');updateBackpackPanel();render();return;
+                            }
                             var old = IE.unequip(sid, groundPos);
                             if (old) {
                                 var placed = IE.putItemIntoDefaultContainer(old);
@@ -4244,37 +4282,61 @@
         var listState = renderItemList();
         renderDetail(listState.picked);
         renderEquipList();
+        var transferHost = document.getElementById('backpack-transfer');
+        if (transferHost && window.BackpackPanel) window.BackpackPanel.render(transferHost, {select:function(c,index){
+            backpackUIState.container=c.type;backpackUIState.selectedContainer=c.type;backpackUIState.selectedIndex=index;backpackUIState.equipDetailSlot=null;
+        }});
     }
 
-    function openBackpackPanel() {
+    function openGroundItems(id) {
+        if (isPreCreationGameplayRestricted() || window.Survival.getState().isDead || window.Survival.getState().isComa) return;
+        var pos=E.getState(),items=IE.getGroundItemsAt(pos.mapId,pos.x,pos.y);
+        if (!items.length) return;
+        var chosen=id?items.find(function(x){return x.instance_id===id;}):items.length===1?items[0]:null;
+        if(id&&!chosen)return;
+        window.BackpackPanel.ground(chosen&&window.InventoryTransfer.isBackpack(chosen)?chosen.instance_id:null);
+        if(!backpackPanelOpen)openBackpackPanel();else updateBackpackPanel();
+    }
+
+    function openEquipmentPanel() {
+        if (isPreCreationGameplayRestricted()) { showIntroBlockedMsg(); return; }
+        window.BackpackPanel.equipment();
+        if (backpackPanelOpen) updateBackpackPanel(); else openBackpackPanel();
+    }
+    function openBackpackPanel(options) {
         if (isPreCreationGameplayRestricted()) {
             showIntroBlockedMsg();
             return;
         }
         if (backpackPanelOpen) return;
-        if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
+        if (!options?.interaction && window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
         backpackPanelOpen = true;
         if (window.SveltePanels) window.SveltePanels.refresh('backpack');
         if (!window.SveltePanels) document.getElementById('modal-backpack').classList.add('show');
         updateBackpackPanel();
         render();
     }
-    function closeBackpackPanel() {
+    function closeBackpackPanel(options) {
         if (!backpackPanelOpen) return;
-        if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
+        var wasInteraction=window.BackpackPanel && window.BackpackPanel.hasInteraction();
+        if (wasInteraction && !window.BackpackPanel.closeInteraction()) return;
+        window.BackpackPanel && window.BackpackPanel.invalidate();
+        if (options && options.automatic) { backpackPanelOpen=false; if(window.SveltePanels)window.SveltePanels.refresh('backpack');else document.getElementById('modal-backpack').classList.remove('show');return; }
         backpackPanelOpen = false;
+        if (!wasInteraction && window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
         if (window.SveltePanels) window.SveltePanels.refresh('backpack');
         if (!window.SveltePanels) document.getElementById('modal-backpack').classList.remove('show');
         render();
     }
     if (document.getElementById('btn-backpack')) {
         document.getElementById('btn-backpack').addEventListener('click', function () {
-            if (backpackPanelOpen) closeBackpackPanel(); else openBackpackPanel();
+            window.SceneApp.navigate('backpack');
         });
     }
+    if (document.getElementById('btn-equipment')) document.getElementById('btn-equipment').addEventListener('click', function () { window.SceneApp.navigate('equipment'); });
     if (document.getElementById('player-action-ground-items')) {
         document.getElementById('player-action-ground-items').addEventListener('click', function () {
-            if (!backpackPanelOpen) openBackpackPanel();
+            openGroundItems();
         });
     }
     if (document.getElementById('player-action-take-water')) {
@@ -5261,6 +5323,10 @@
         if (guardPlayerComaBlocked()) return;
         if (hideoutWarehousePanelOpen) return;
         hideoutWarehousePanelOpen = true;
+        if (window.BackpackPanel && !window.BackpackPanel.attachInteraction({
+            id:'warehouse',node:document.getElementById('modal-hideout-warehouse'),
+            close:function(){closeHideoutWarehousePanel();return !hideoutWarehousePanelOpen;}
+        })) {hideoutWarehousePanelOpen=false;return;}
         if (window.HideoutWarehousePanel && typeof window.HideoutWarehousePanel.bindOnce === 'function') {
             window.HideoutWarehousePanel.bindOnce();
         }
@@ -5289,6 +5355,7 @@
             }
         }
         hideoutWarehousePanelOpen = false;
+        window.BackpackPanel && window.BackpackPanel.endInteraction("warehouse");
         render();
     }
 
@@ -6964,6 +7031,7 @@
 
     /** 通用：给指定技能 id 加等级；触发属性重算与 UI 刷新。 */
     function addSkillLevelGeneric(skillId, plus, opts) {
+        if (window.BookReading && window.BookReading.isBookSkill(skillId)) return;
         var IE = window.InventoryEquipment;
         if (!IE || typeof IE.getState !== 'function' || !skillId) return;
         var st = IE.getState();
@@ -7066,8 +7134,13 @@
 
         row.appendChild(info);
         row.appendChild(levelEl);
-        row.appendChild(plusBtn);
-        row.appendChild(studyBtn);
+        if (!(window.BookReading && window.BookReading.isBookSkill(opts.skillId))) {
+            row.appendChild(plusBtn);
+            row.appendChild(studyBtn);
+        } else {
+            var bookProgress = window.BookReading.progress(window.BookReading.skillProfile(opts.skillId));
+            levelEl.textContent = (lv || 0) + ui('combat.level.suffix') + (bookProgress.cost ? ' · ' + bookProgress.exp + ' / ' + bookProgress.cost + ' 经验' : '');
+        }
         return row;
     }
 
@@ -7575,6 +7648,9 @@
         if (window.SceneHud && typeof window.SceneHud.register === 'function') {
             window.SceneHud.register('status', updateStatusPanel);
             window.SceneHud.register('backpack', updateBackpackPanel);
+            window.SceneHud.subscribe('status', function () {
+                if (backpackPanelOpen && !window.SveltePanels) updateBackpackPanel();
+            });
         }
         // 站点模块 UI 依赖注入（P1c-2 DI 基座）：搬入模块的函数经 deps 调主 JS 闭包 infra，
         // 不把 ui/showMsg/render 等塞进 window。
@@ -8759,6 +8835,11 @@
         if (!cell || !cell.item_id) return false;
         var tpl = inv.getItemTemplate(cell.item_id);
         if (!tpl || !tpl.equip_slot) return false;
+        if (tpl.equip_slot === 'backpack' && window.BackpackSystem) {
+            var moved = window.BackpackSystem.transfer({action:'equip',source:containerType,index:index,id:cell.instance_id});
+            if (!options.silent) showMsg(moved.message,moved.ok?'success':'warn');
+            if (backpackPanelOpen) updateBackpackPanel();render();return moved.ok;
+        }
         var slotId = tpl.equip_slot;
         if (window.ModularWeaponCombat && window.ModularWeaponCombat.isWeapon(cell)) {
             slotId = options.slot || slotId;
@@ -8825,7 +8906,8 @@
         if (close) close();
     };
     window.SceneApp.navigate = function (id, button) {
-        if (id === 'backpack') { if (backpackPanelOpen) closeBackpackPanel(); else openBackpackPanel(); }
+        if (id === 'backpack') { if (backpackPanelOpen && !window.BackpackPanel.isEquipment()) closeBackpackPanel(); else { window.BackpackPanel.equipped(); if(backpackPanelOpen)updateBackpackPanel();else openBackpackPanel(); } }
+        else if (id === 'equipment') { if (backpackPanelOpen) closeBackpackPanel(); else openEquipmentPanel(); }
         else if (id === 'combat') { if (combatPanelOpen) closeCombatPanel(); else openCombatPanel(); }
         else if (id === 'survival') { if (survivalPanelOpen) closeSurvivalPanel(); else openSurvivalPanel(); }
         else if (id === 'save') { if (savePanelOpen) closeSavePanel(); else openSavePanel(); }
@@ -8849,7 +8931,7 @@
         if (id === 'pour-water') return onPourWaterClick();
         if (id === 'drink-flask') return tryDrinkWaterFlask();
         if (id === 'add-fuel') return onAddFuelClick();
-        if (id === 'ground') { if (!backpackPanelOpen) openBackpackPanel(); return; }
+        if (id === 'ground') { openGroundItems(); return; }
         if (id === 'warehouse') { if (baseWarehousePanelOpen) closeBaseWarehousePanel(); else openBaseWarehousePanel(); return; }
         if (id === 'pharmacy') { if (!PharmacyStationPanel.isOpen()) PharmacyStationPanel.open(); return; }
         if (id === 'cook') { if (CookingStationPanel.isOpen()) CookingStationPanel.close(); else CookingStationPanel.open(); }
@@ -8911,6 +8993,7 @@
         return true;
     };
     window.SceneApp.prepareFacilityAction = function () {
+        if (window.BookReading) window.BookReading.pause();
         stopGatheringIdle(); stopTiaoXiIdle(false); setRestingActionActive(false, {showMsg:false});
         stopCookingCraftIdle(); stopPharmacyCraftIdle(); stopAgricultureAutoTick(); stopLivestockAutoTick();
         if (window.Survival) {window.Survival.setStaminaRegenActionActive(false);window.Survival.setSitMeditationActive(false);}
@@ -9070,6 +9153,9 @@
     // ── 调试直达：URL ?panel=xxx（可加 &tab=）在游戏就绪后自动打开对应面板 ──
     // 供开发预览（better-sidebar 浏览器 / agent 验证）直接跳到指定 UI，无需手动导航。
     window.SceneApp.openBackpackPanel = openBackpackPanel;
+    window.SceneApp.openEquipmentPanel = openEquipmentPanel;
+    window.SceneApp.openGroundItems = openGroundItems;
+    window.SceneApp.closeGroundBackpackView = function(){closeBackpackPanel({automatic:true});};
     window.SceneApp.openBaseWarehousePanel = openBaseWarehousePanel;
     window.SceneApp.openSavePanel = openSavePanel;
     window.SceneApp.openCombatPanel = openCombatPanel;
@@ -9077,6 +9163,7 @@
     window.SceneApp.openUiWindowsMenu = openUiWindowsMenu;
     window.SceneApp.debugPanelOpeners = {
         backpack: openBackpackPanel,
+        equipment: openEquipmentPanel,
         agriculture: openAgriculturePanel,
         livestock: openLivestockPanel,
         hideout: openHideoutWarehousePanel,

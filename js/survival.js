@@ -2188,6 +2188,7 @@
     /** 开始自修某技能（挂机）；返回 { ok, reason } */
     function startStudy(skillId) {
         if (!skillId) return { ok: false, reason: 'no_skill' };
+        if (global.BookReading && global.BookReading.isBookSkill(skillId)) return { ok: false, reason: 'invalid' };
         if (state.isDead) return { ok: false, reason: 'dead' };
         var IE = global.InventoryEquipment;
         if (!IE || typeof IE.getSkillLevel !== 'function') return { ok: false, reason: 'no_ie' };
@@ -2231,6 +2232,7 @@
         if (!state.is_study_active || state.isDead) return out;
         var skillId = state.study_skill_id;
         var IE = global.InventoryEquipment;
+        if (global.BookReading && global.BookReading.isBookSkill(skillId)) { stopStudy('invalid'); out.reason = 'invalid'; return out; }
         if (!skillId || !IE || typeof IE.getStudyExp !== 'function') {
             stopStudy('invalid');
             out.reason = 'invalid';

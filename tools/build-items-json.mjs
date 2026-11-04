@@ -3,7 +3,7 @@
  * 用法：node tools/build-items-json.mjs
  * 合并顺序（先出现的 id 优先，后表重复 id 会跳过并打印警告）：
  *   consumables_base → materials_all → manufacturing_materials_base → seeds_farming → product_base → fishing_components_base → currency_base
- *   → compost_matrix_base → fertilizer_anaerobic_base → agriculture_injectables_base → soil_amendments_base
+ *   → compost_matrix_base → fertilizer_anaerobic_base → agriculture_injectables_base → soil_amendments_base → pharmacy_base → books_base
  */
 import fs from 'fs';
 import path from 'path';
@@ -12,6 +12,8 @@ import { applyFoodCatalog } from './food-catalog-fields.mjs';
 import { buildModularCatalog, buildModuleDefinitionsDocument } from './item-attribute-catalog.mjs';
 import { sewingTemplates } from './build-sewing-catalog.mjs';
 import { applyWaterFlaskStorage, applyWaterFlaskUse } from './water-flask-storage-fields.mjs';
+import { syncBackpackCatalog } from './build-backpack-catalog.mjs';
+import { applyBookLearning } from './book-item-fields.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -21,6 +23,19 @@ const MODULAR_OUT = path.join(ROOT, 'data', 'item-catalog-v2.json');
 const MODULE_DEFINITIONS_OUT = path.join(ROOT, 'data', 'item-attribute-module-definitions.json');
 const EQUIPMENT_MODULAR_OUT = path.join(ROOT, 'data', 'equipment-catalog-v2.json');
 const ATTACHMENT_MODULAR_OUT = path.join(ROOT, 'data', 'attachment-catalog-v2.json');
+
+// Skip unchanged catalogues; replace changed files atomically instead of truncating an open Windows file.
+function writeJsonIfChanged(file, value) {
+  const text = JSON.stringify(value, null, 2) + '\n';
+  if (fs.existsSync(file) && fs.readFileSync(file, 'utf8') === text) return;
+  const temporary = file + '.build-' + process.pid + '.tmp';
+  fs.writeFileSync(temporary, text, { encoding: 'utf8', flag: 'wx' });
+  try {
+    fs.renameSync(temporary, file);
+  } finally {
+    if (fs.existsSync(temporary)) fs.unlinkSync(temporary);
+  }
+}
 
 /** use_action 给药途径白名单（47 §3.2：口服/外敷/吸入/刺入）。 */
 const USE_ACTION_IDS = ['drink', 'topical', 'inhale', 'inject'];
@@ -37,7 +52,8 @@ const MERGE_FILES = [
   'fertilizer_anaerobic_base.csv',
   'agriculture_injectables_base.csv',
   'soil_amendments_base.csv',
-  'pharmacy_base.csv'
+  'pharmacy_base.csv',
+  'books_base.csv'
 ];
 
 function parseCsv(text) {
@@ -331,6 +347,7 @@ function rowToItem(o, filename) {
 }
 
 function main() {
+  syncBackpackCatalog();
   const merged = {};
   const warnings = [];
 
@@ -365,6 +382,7 @@ function main() {
   if (fs.existsSync(foodCatalogPath)) applyFoodCatalog(merged, JSON.parse(fs.readFileSync(foodCatalogPath, 'utf8')));
   applyWaterFlaskStorage(merged, JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'water-flask-storage.json'), 'utf8')));
   applyWaterFlaskUse(merged, JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'water-flask-use.json'), 'utf8')));
+  applyBookLearning(merged, JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'book-learning.json'), 'utf8')));
   const ordered = {};
   Object.keys(merged)
     .sort()
@@ -372,14 +390,14 @@ function main() {
       ordered[k] = merged[k];
     });
 
-  fs.writeFileSync(OUT, JSON.stringify(ordered, null, 2) + '\n', 'utf8');
+  writeJsonIfChanged(OUT, ordered);
   const modularCatalog = buildModularCatalog(ordered);
-  fs.writeFileSync(MODULAR_OUT, JSON.stringify(modularCatalog, null, 2) + '\n', 'utf8');
-  fs.writeFileSync(MODULE_DEFINITIONS_OUT, JSON.stringify(buildModuleDefinitionsDocument(), null, 2) + '\n', 'utf8');
+  writeJsonIfChanged(MODULAR_OUT, modularCatalog);
+  writeJsonIfChanged(MODULE_DEFINITIONS_OUT, buildModuleDefinitionsDocument());
   const equipmentCatalog = buildModularCatalog(JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'equipment.json'), 'utf8')));
   const attachmentCatalog = buildModularCatalog(JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'modules.json'), 'utf8')));
-  fs.writeFileSync(EQUIPMENT_MODULAR_OUT, JSON.stringify(equipmentCatalog, null, 2) + '\n', 'utf8');
-  fs.writeFileSync(ATTACHMENT_MODULAR_OUT, JSON.stringify(attachmentCatalog, null, 2) + '\n', 'utf8');
+  writeJsonIfChanged(EQUIPMENT_MODULAR_OUT, equipmentCatalog);
+  writeJsonIfChanged(ATTACHMENT_MODULAR_OUT, attachmentCatalog);
 
   const count = Object.keys(ordered).length;
   console.log('[build-items-json] wrote ' + OUT + ' (' + count + ' items)');

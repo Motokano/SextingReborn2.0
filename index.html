@@ -3808,6 +3808,7 @@
                 </div>
                 <div id="right-hud-actions">
                     <button type="button" class="hud-btn" id="btn-backpack" data-ui="btn.backpack.title" data-ui-attr="title">🎒</button>
+                    <button type="button" class="hud-btn" id="btn-equipment" data-ui="btn.equipment.title" data-ui-attr="title">♙</button>
                     <button type="button" class="hud-btn" id="btn-survival" data-ui="btn.skill_overview.title" data-ui-attr="title">🌿</button>
                     <button type="button" class="hud-btn" id="btn-combat" data-ui="btn.combat.title" data-ui-attr="title">⚔️</button>
                     <div class="hud-dropdown-wrap" id="player-actions-hud-wrap" style="display:none;">
@@ -3831,6 +3832,15 @@
                         <button type="button" class="bp-close" id="backpack-panel-close" data-ui="backpack.close" data-ui-attr="title">✕</button>
                     </div>
                 </div>
+                <div class="bp-workspace">
+                    <aside class="bp-equipment-column" aria-label="穿戴装备">
+                        <div class="bp-equip-panel">
+                            <h4 class="equip-title" data-ui="equip.title"></h4>
+                            <div class="equip-list" id="equip-list"></div>
+                        </div>
+                    </aside>
+                    <div id="backpack-transfer" class="bp-transfer-surface"></div>
+                </div>
                 <div class="panel-body">
                     <aside class="bp-tabs" id="backpack-tabs">
                         <button type="button" class="bp-tab-btn active" data-container="pocket" data-ui="inv.pocket"></button>
@@ -3843,11 +3853,8 @@
                         <div id="backpack-item-list"></div>
                     </section>
                     <section class="bp-detail">
+                        <button type="button" class="bp-detail-close" aria-label="关闭物品详情" onclick="BackpackPanel.hideDetail()">×</button>
                         <div id="backpack-detail"></div>
-                        <div class="bp-equip-panel">
-                            <h4 class="equip-title" data-ui="equip.title"></h4>
-                            <div class="equip-list" id="equip-list"></div>
-                        </div>
                     </section>
                 </div>
             </div>
@@ -4479,6 +4486,13 @@
     <script src="js/survival.js"></script>
     <script src="js/character-attributes.js"></script>
     <script src="js/item-attribute-modules.js"></script>
+    <script src="js/backpack-config.js"></script>
+    <script src="js/backpack-system.js"></script>
+    <script src="js/inventory-transfer.js"></script>
+    <script src="js/book-learning.js"></script>
+    <script src="js/book-reading.js"></script>
+    <script src="js/book-panel.js"></script>
+    <script src="js/backpack-panel.js"></script>
     <script src="js/sewing-system.js"></script>
     <script src="js/inventory-equipment.js"></script>
     <script src="js/item-assembly.js"></script>
@@ -4593,6 +4607,7 @@
     <link rel="stylesheet" href="css/bed-sleep.css">
     <script src="js/bed-sleep.js"></script>
     <link rel="stylesheet" href="css/gym-panel.css">
+    <link rel="stylesheet" href="css/book-reading.css">
     <script src="js/gym-data.js"></script>
     <script src="js/gym-facility.js"></script>
     <script src="js/gym-system.js"></script>
@@ -4679,5 +4694,6 @@
     <link rel="stylesheet" href="css/ui-moss-runtime.css">
     <link rel="stylesheet" href="css/ui-moss-game.css">
     <link rel="stylesheet" href="css/combat-loadout.css">
+    <link rel="stylesheet" href="css/backpack-transfer.css">
 </body>
 </html>

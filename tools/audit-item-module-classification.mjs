@@ -38,6 +38,7 @@ const groups = [
   ['attachment_effect', '部件效果', 'activation_cost_pct effects segments special special_effect'],
   ['enchantment', '附魔', 'enchant_slot enchant_slots enchant_id enchants'],
   ['live_animal', '活体个体', 'hunting_juvenile'],
+  ['book_learning', '书籍残片与学习配置', 'book_profile'],
   ['presentation', '显示编排（非能力）', 'info_module_set_id'],
   ['provenance', '来源与生产索引', 'source production_lines'],
   ['location', '所在地与地面时间（非能力）', 'ground_drop_tick'],
@@ -54,6 +55,7 @@ const categories = [
   ['structure', '收纳与装配', 'storage attachment_host attachment_part assembly_host assembly_part assembly_connection'],
   ['energy', '能源', 'power'],
   ['organism', '活体', 'live_animal'],
+  ['knowledge', '知识与学习', 'book_learning'],
   ['migration', '迁移审计（不可加载）', 'legacy reserved']
 ];
 const categoryOf = new Map();

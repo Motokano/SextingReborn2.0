@@ -19,6 +19,8 @@ alwaysApply: false
 
 CSV合并及现有缝纫／食物补表后，`data/water-flask-storage.json` 通过 `water-flask-storage-fields.mjs` 验证并补入两款已注册水壶的储水字段。容量、初值、水重和取水倍率必须为有限数，容量／倍率>0，新壶初值固定0；未知物品／字段拒绝。随后 `data/water-flask-use.json` 补入独立装备槽、口袋兼容和饮用参数；耗水为正数且不超过容量，动作1～12整数tick，当前只消费已支持的即时饮水效果，拒绝未知或不支持的效果。不会把耗水当作恢复量。正式运行不读取 `data/drafts/water-flask-items.json` 的快饮、缓补或重量候选，不开启旧一次性饮料使用分支。
 
+2026-11-04新增`books_base.csv`，在现有源表之后合并。书籍基础物品信息写CSV，残片与经验规则写`data/book-learning.json`，由`book-item-fields.mjs`强校验后补入`book_profile`，正式目录归`knowledge.book`。模板不存当前收集数或玩家经验；`1/100`不是静态物品名。书籍不能声明药品`usable/use_action`来代替阅读。正式阅读、自动合并与存档已接入；逐级经验按用户确认每级1万、100级累计100万构建，实际掉落投放待指定。
+
 ## 2) 输出 JSON 字段口径（强制）
 
 构建产物 `data/items.json` 中每个 `item_id` 的模板应至少包含：

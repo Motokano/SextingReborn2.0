@@ -27,6 +27,7 @@
     "dungeon.claimBatch": true,
     "checkpoint.task": true,
     "sleep": true,
-    "gym": true
+    "gym": true,
+    "book.reading": true
   }
 }

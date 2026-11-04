@@ -31,6 +31,9 @@
         var base = tpl && tpl.base_value != null ? Number(tpl.base_value) : 0;
         if (!isFinite(base)) base = 0;
         var v = Math.max(0, base);
+        var IE = global.InventoryEquipment;
+        var book = IE && IE.getBookInfo && IE.getBookInfo(opts.instance);
+        if (book) v *= book.fragments / book.profile.fragments_per_item;
         for (var i = 0; i < modifiers.length; i++) {
             try {
                 var next = modifiers[i](v, itemId, opts);

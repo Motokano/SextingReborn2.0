@@ -80,6 +80,8 @@
         var IE = getIE();
         var tier = IE && IE.getItemDisplayTier ? IE.getItemDisplayTier(itemId, char) : 0;
         var name = resolveItemLabel(itemId, tpl);
+        var book = IE && IE.getBookInfo && IE.getBookInfo(inst);
+        if (book) name += ' · ' + book.label;
         var desc = tpl && IE && IE.getDisplayDesc
             ? String(IE.getDisplayDesc(tpl, tier, char) || '')
             : '';
@@ -258,6 +260,7 @@
 
         var disp = resolveItemDisplay(inst.item_id, inst);
         cell.setAttribute('role','button');cell.tabIndex=0;
+        cell.dataset.bpWarehouseId=inst.instance_id;
         cell.setAttribute('aria-label',disp.name+' × '+disp.count);
         cell.title=disp.name+' × '+disp.count;
         cell.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();handleSlotClick(globalIndex);}});
@@ -1372,7 +1375,7 @@
         if(uiState.selectedSlot!=null&&!(st.slots[uiState.selectedSlot]||{}).item_id)uiState.selectedSlot=null;
         var cells=[],start=(uiState.page-1)*PAGE_SIZE,end=Math.min(start+PAGE_SIZE,capacity);
         for(var i=start;i<end;i++){
-            var inst=st.slots[i],cell={index:i,selected:uiState.selectedSlot===i,guard:itemGuard(st.slots[i])};
+            var inst=st.slots[i],cell={index:i,instanceId:inst?.instance_id,selected:uiState.selectedSlot===i,guard:itemGuard(st.slots[i])};
             if(inst&&inst.item_id&&slotPassesFilter(inst)){
                 var disp=resolveItemDisplay(inst.item_id,inst);
                 Object.assign(cell,{name:disp.name,count:disp.count,label:abbreviateLabel(disp.name,4),perishable:!!(disp.tpl&&Math.floor(Number(disp.tpl.spoilage_ticks))>0),starred:pin&&!!inst.warehouse_starred,locked:pin&&!!inst.warehouse_locked});

@@ -8,7 +8,7 @@ export function skillOverview(g, publish, t) {
     function refresh() { const open = api.getOpen('survival'); publish('survival', { open, tab: api.getSkillTab(), rows: open ? rows().map(s => { const lv = IE.getSkillLevel(s.skillId) || 0, exp = IE.getStudyExp(s.skillId); let level = lv + t('combat.level.suffix') + (s.levelSuffix ? ' ' + s.levelSuffix : ''); if (exp > 0 && g.CombatSkills?.getPotentialCostForLevel) {
             const st = IE.getState(), cost = g.CombatSkills.getPotentialCostForLevel(s.skillId, lv, { skills: st.skills || {}, skill_max_level_bonus: st.skill_max_level_bonus || {} });
             level += ' · ' + t('survival.study.progress', { exp: String(exp), cost: String(cost || '—') });
-        } return { ...s, level, studying: g.Survival.isStudyActive() && g.Survival.getStudySkillId() === s.skillId }; }) : [] }); }
+        } const bookSkill = !!g.BookReading?.isBookSkill(s.skillId); if (bookSkill) { const p = g.BookReading.progress(g.BookReading.skillProfile(s.skillId)); level = lv + t('combat.level.suffix') + (p.cost ? ' · ' + p.exp + ' / ' + p.cost + ' 经验' : ''); } return { ...s, level, bookSkill, studying: g.Survival.isStudyActive() && g.Survival.getStudySkillId() === s.skillId }; }) : [] }); }
     function current(id) { return api.getOpen('survival') && rows().find(s => s.skillId === id); }
     return { refresh, tab: api.setSkillTab, plus(id) { const row = current(id); if (row)
             api.addSkill(id, 1, row.addOpts); }, study(id) { const row = current(id), S = g.Survival; if (!row || !S?.startStudy)

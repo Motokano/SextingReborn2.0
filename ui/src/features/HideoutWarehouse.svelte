@@ -7,7 +7,7 @@
  let open=$derived($store.open);
  const a=(action:string,value?:any,extra?:any,guard?:any)=>c.act(action,value,extra,guard);
  const tabs=['all','materials','equipment','perishable','locked','starred'];
- $effect(()=>{if(open&&root)return overlays.enter(root,{escape:c.close});});
+ $effect(()=>{if(open&&root)return overlays.enter(root.closest('#modal-backpack')||root,{escape:c.close});});
  function project(id:string){a('project',id);if(detail)detail.scrollTop=0;}
 </script>
 <div id="modal-hideout-warehouse" class:show={$store.open} class:hw-project-view={$store.upgradeOpen} aria-hidden={!$store.open} data-ui-owner="svelte" bind:this={root}>
@@ -21,7 +21,7 @@
    <div class="hw-grid-column"><div class="hw-grid-head"><h3 class="hw-hub-title">{t('hideout_warehouse.grid.section')}</h3><span id="hw-pager-info" class="hw-pager-info">{t('hideout_warehouse.pager.page_label',{page:v.page,totalPages:v.totalPages,pageSize:v.pageSize})}</span></div><div id="hw-slot-grid" aria-label="仓格网格">
     {#each v.cells as cell(cell.index)}
     <!-- svelte-ignore a11y_no_static_element_interactions, a11y_click_events_have_key_events, a11y_no_noninteractive_tabindex -->
-    <div class="hw-slot-cell" class:selected={cell.selected} data-slot-index={cell.index} role={cell.name?'button':undefined} tabindex={cell.name?0:undefined} aria-label={cell.name?cell.name+' × '+cell.count:undefined} title={cell.name?cell.name+' × '+cell.count:undefined} onclick={()=>a('slot',cell.index,undefined,cell.guard)} ondblclick={e=>{e.preventDefault();a('quick',cell.index,undefined,cell.guard);}} onkeydown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();a('slot',cell.index,undefined,cell.guard);}}}>
+    <div class="hw-slot-cell" class:selected={cell.selected} data-slot-index={cell.index} data-bp-warehouse-id={cell.instanceId} role={cell.name?'button':undefined} tabindex={cell.name?0:undefined} aria-label={cell.name?cell.name+' × '+cell.count:undefined} title={cell.name?cell.name+' × '+cell.count:undefined} onclick={()=>a('slot',cell.index,undefined,cell.guard)} ondblclick={e=>{e.preventDefault();a('quick',cell.index,undefined,cell.guard);}} onkeydown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();a('slot',cell.index,undefined,cell.guard);}}}>
      {#if cell.name}<span class="hw-slot-label">{cell.label}</span>{#if cell.count>1}<span class="hw-slot-count">×{cell.count}</span>{/if}{#if cell.perishable}<span class={v.cold?'hw-slot-frost':'hw-slot-rot'}>{t(v.cold?'hideout_warehouse.badge.frozen':'hideout_warehouse.badge.perishable')}</span>{/if}{#if cell.starred}<span class="hw-slot-star">★</span>{/if}{#if cell.locked}<span class="hw-slot-lock">🔒</span>{/if}{:else}<span class="hw-slot-empty">{t('hideout_warehouse.slot.empty')}</span>{/if}
     </div>{/each}
     {#each Array(v.padding) as _}<div class="hw-slot-cell hw-slot-filler" aria-hidden="true" style="visibility:hidden;pointer-events:none"></div>{/each}

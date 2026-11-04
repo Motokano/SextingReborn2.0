@@ -80,7 +80,7 @@
                 global.InventoryEquipment.setItemInstanceValue(inst, 'spoilage_elapsed_ticks', 0);
             } else inst.spoilage_elapsed_ticks = 0;
         } else {
-            var elapsed = Math.max(0, coerceInt(inst.spoilage_elapsed_ticks, 0));
+            var elapsed = Math.max(0, Number(inst.spoilage_elapsed_ticks) || 0);
             if (global.InventoryEquipment && typeof global.InventoryEquipment.setItemInstanceValue === 'function') {
                 global.InventoryEquipment.setItemInstanceValue(inst, 'spoilage_elapsed_ticks', elapsed);
             } else inst.spoilage_elapsed_ticks = elapsed;
@@ -128,7 +128,8 @@
         var limit = getSpoilageTicksFromTemplate(inst.item_id);
         if (limit <= 0) return inst;
         ensureSpoilageElapsedOnInstance(inst);
-        var nextElapsed = coerceInt(inst.spoilage_elapsed_ticks, 0) + 1;
+        var rate = /^backpack:\d+$/.test(context) && global.BackpackSystem ? global.BackpackSystem.spoilageFactor(inst) : 1;
+        var nextElapsed = Math.round(((Number(inst.spoilage_elapsed_ticks) || 0) + rate) * 1e9) / 1e9;
         if (global.InventoryEquipment && typeof global.InventoryEquipment.setItemInstanceValue === 'function') {
             global.InventoryEquipment.setItemInstanceValue(inst, 'spoilage_elapsed_ticks', nextElapsed);
         } else inst.spoilage_elapsed_ticks = nextElapsed;
@@ -168,6 +169,9 @@
             return { instance: null, spoiled: 1 };
         }
         var spoiled = 0;
+        if (Array.isArray(next.backpack_contents)) {
+            spoiled += tickSpoilageInContainerArray(next.backpack_contents, context + '.backpack_contents', details);
+        }
         if (next.modules && typeof next.modules === 'object') {
             Object.keys(next.modules).forEach(function (key) {
                 var child = next.modules[key];
@@ -211,6 +215,7 @@
             ok: true,
             warehouse_spoiled: 0,
             inventory_spoiled: 0,
+            ground_spoiled: 0,
             warehouse_frozen: hasColdStorage(),
             expired_items: {}
         };
@@ -237,7 +242,16 @@
                 if (ieSt.bound_vehicle_id) {
                     invSpoiled += tickSpoilageInContainerArray(ieSt.inventory_vehicle, 'vehicle', result.expired_items);
                 }
-                if (invSpoiled > 0) {
+                // Closed bags still age on the ground; ordinary loose items keep their rules.
+                var groundChanged = false;
+                Object.keys(ieSt.ground_items || {}).forEach(function (key) {
+                    (ieSt.ground_items[key] || []).forEach(function (bag, index) {
+                        if (!bag || !Array.isArray(bag.backpack_contents) || !treeHasPerishable(bag)) return;
+                        groundChanged = true;
+                        result.ground_spoiled += tickSpoilageInContainerArray(bag.backpack_contents, 'ground:' + key + ':' + index + '.backpack_contents', result.expired_items);
+                    });
+                });
+                if (invSpoiled > 0 || groundChanged) {
                     result.inventory_spoiled = invSpoiled;
                     IE.setState(ieSt);
                 } else {
@@ -1181,6 +1195,8 @@
     function canDepositInstance(inst) {
         if (!inst || !inst.item_id) return false;
         var st = ensureState();
+        var IE = getIE(), bookPlan = IE && IE.planBookPlacement && IE.planBookPlacement(st.slots, st.capacity, inst);
+        if (bookPlan) return bookPlan.remainingFragments === 0;
         if (findStackSlotForDeposit(inst) >= 0) return true;
         return findEmptySlotIndex() >= 0;
     }
@@ -1192,6 +1208,13 @@
         var st = ensureState();
         var remaining = copyItemInstance(inst);
         if (!remaining) return { ok: false, reason: 'invalid_instance' };
+
+        var IE = getIE(), bookPlan = IE && IE.planBookPlacement && IE.planBookPlacement(st.slots, st.capacity, remaining);
+        if (bookPlan) {
+            if (bookPlan.remainingFragments) return { ok: false, reason: 'warehouse_full' };
+            st.slots = bookPlan.items.map(function (item) { return item ? copyItemInstance(item) : null; });
+            return { ok: true, deposited: remaining.count || 1, slotIndex: bookPlan.index, freshness_shortened: false };
+        }
 
         var useAutoStack = options.autoStack !== false && hasQoL('deposit_auto_stack');
         var deposited = 0;
@@ -1560,6 +1583,11 @@
         var placed = IE.putItemIntoDefaultContainer(withdrawn);
         if (placed && placed.placed) {
             return { ok: true, placed: placed, withdrawn: take };
+        }
+
+        if (IE.getBookInfo && IE.getBookInfo(withdrawn)) {
+            st.slots[idx] = slotBackup;
+            return { ok: false, reason: 'inventory_full' };
         }
 
         if (placed && placed.dropped) {

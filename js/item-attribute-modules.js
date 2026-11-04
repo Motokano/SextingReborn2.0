@@ -6,7 +6,7 @@
 (function (global) {
     'use strict';
     var SCHEMA_VERSION = 2;
-    var categories = ['base', 'food', 'production', 'medicine', 'equipment', 'structure', 'energy', 'organism'];
+    var categories = ['base', 'food', 'production', 'medicine', 'equipment', 'structure', 'energy', 'organism', 'knowledge'];
     var fieldPaths = {};
     var definitions = {
         base: { identity: ['name','name_0','name_1','name_2','sn','placeholder_name','fn_before','fn','desc','desc_0','desc_1','desc_2','display_skill_id'], stacking: ['stack_limit','stack_max','pocketable'], trade: ['base_value','price_class','volatility','region_restrict'], currency: ['accept_code','convert_to_high','usable_regions'], spoilage: ['spoilage_ticks'], presentation: ['info_module_set_id'], provenance: ['source','production_lines'] },
@@ -15,7 +15,8 @@
         medicine: { use: ['usable','use_action','use_buff_id','use_charges','use_effect'], compound: ['pharmacy_compound','concentration_capacity'], effects: ['pharmacy_addiction_gain','pharmacy_relief_stages','pharmacy_oral_toxicity','pharmacy_extra_toxicity_decay','pharmacy_legacy'] },
         equipment: { wearable: ['equip_slot','req_innate_jingu'], combat: ['weapon_attack_power','attack_power','skill_coef','form_coefs','limb_tags','parry_coef','speed_coef','move_cost_mod','damage_type_effects'], fishing_tackle: ['fishing_load_rating','fishing_length_dm','fishing_cast_range_dm'], armor: ['damage_reduce_blunt_pct','damage_reduce_pierce_pct','damage_reduce_slash_pct','base_shield'], effects: ['activation_cost_pct','effects','segments','special','special_effect'], enchantment: ['enchant_slot','enchant_slots'] },
         structure: { storage: ['pocket_slots','vest_slots','backpack_slots','backpack_weight_factor'], host: ['module_slots'], attachment: ['install_slots','occupies','max_per_armor'], assembly_host: ['assembly_slots'], assembly_part: ['assembly_types'] },
-        energy: { storage: ['battery_capacity','battery_charge'] }, organism: {}
+        energy: { storage: ['battery_capacity','battery_charge'] }, organism: {},
+        knowledge: { book: ['book_profile'] }
     };
     definitions.equipment.water_flask = ['flask_source_multiplier','flask_drink_cost','flask_drink_ticks','flask_effects'];
     definitions.structure.liquid_storage = ['flask_capacity','flask_initial_water','flask_water_weight_kg'];
@@ -133,7 +134,7 @@
         }
         if (template && hasGroup(template, 'base', 'spoilage')) {
             var spoilage = ensureStatePath(out, 'base', 'spoilage');
-            if (own(out, 'spoilage_elapsed_ticks')) spoilage.elapsed_ticks = Math.max(0, Math.floor(Number(out.spoilage_elapsed_ticks) || 0));
+            if (own(out, 'spoilage_elapsed_ticks')) spoilage.elapsed_ticks = Math.max(0, Number(out.spoilage_elapsed_ticks) || 0);
             else if (!own(spoilage, 'elapsed_ticks')) spoilage.elapsed_ticks = 0;
             out.spoilage_elapsed_ticks = spoilage.elapsed_ticks;
         }
@@ -162,7 +163,7 @@
         }
         if (field === 'spoilage_elapsed_ticks' && template && hasGroup(template, 'base', 'spoilage')) {
             var spoilage = ensureStatePath(instance, 'base', 'spoilage');
-            spoilage.elapsed_ticks = Math.max(0, Math.floor(Number(value) || 0));
+            spoilage.elapsed_ticks = Math.max(0, Number(value) || 0);
             instance.spoilage_elapsed_ticks = spoilage.elapsed_ticks;
             return true;
         }

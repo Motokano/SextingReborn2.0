@@ -2,6 +2,7 @@
 (function(root,factory){const art=typeof module==='object'&&module.exports?require('./icons.js'):root.ItemIconArt;const api=factory(art);if(typeof module==='object'&&module.exports)module.exports=api;else root.ItemIcons=api;})(typeof globalThis!=='undefined'?globalThis:this,function(art){
   'use strict';
   const subcategories={
+    'book/skill_textbook':'paper',
     'supply/bandage':'bandage','supply/fire_start':'firestarter','supply/rope':'rope','supply/torch':'torch',
     'material/pharm_adjuvant':'powder','material/pharm_powder':'powder','material/battery':'battery','material/chemical':'reagent','material/compost_waste':'scrap','material/compost_matrix':'fertilizer','material/fertilizer_liquid':'fertilizer','material/meat_product':'meat','material/electronic':'circuit','material/flux':'powder','material/industrial':'metal','material/fuel':'oil','material/feed':'feed','material/scrap':'scrap','material/ware':'ceramic','material/leather':'leather','material/oil':'oil','material/paper':'paper','material/plant':'herb','material/soil_amendment':'soil','material/solvent':'water','material/supply':'crate','material/fish':'fish','material/forging_feed':'ingot','material/precision':'precision_core',
     'fish/shellfish':'shellfish','fish/fish':'fish','fish/sea_product':'seaweed','fish/seafood':'seafood',

@@ -8,7 +8,7 @@ export function inventoryPanel(g, publish, t) {
     function item(r) { return array(r.source)[r.index]; }
     const sources = ['pocket', 'backpack', 'vehicle', 'ground'];
     const plates = { 'clothing.chest': '胸', 'clothing.abdomen': '腹', 'clothing.arm_l': '左臂', 'clothing.arm_r': '右臂', 'clothing.leg_l': '左腿', 'clothing.leg_r': '右腿', 'head.shell': '盔体', 'head.liner': '内衬', 'head.face': '护面' };
-    function array(source) { const p = api.position(); return source === 'ground' ? IE.getGroundItemsAt(p.mapId, p.x, p.y) : source === 'equipment' ? IE.getState().equipment : IE['get' + source[0].toUpperCase() + source.slice(1) + 'Array']?.() || []; }
+    function array(source) { const p = api.position(); if(source==='groundBag'){const c=g.BackpackPanel.groundContext();return c?g.InventoryTransfer.read(c).items:[];} return source === 'ground' ? IE.getGroundItemsAt(p.mapId, p.x, p.y) : source === 'equipment' ? IE.getState().equipment : IE['get' + source[0].toUpperCase() + source.slice(1) + 'Array']?.() || []; }
     function ref(source, index) { const it = array(source)[index]; return it ? { source, index, token: token(it), id: it.instance_id, itemId: it.item_id, pos: source === 'ground' ? { ...api.position() } : null } : null; }
     function valid(r) { if (!r)
         return false; const now = array(r.source)[r.index], p = api.position(); return !!now && (r.id ? now.instance_id === r.id : token(now) === r.token) && now.item_id === r.itemId && (!r.pos || (r.pos.mapId === p.mapId && r.pos.x === p.x && r.pos.y === p.y)); }
@@ -62,11 +62,13 @@ export function inventoryPanel(g, publish, t) {
         let detail = null;
         if (selected) {
             const r = selected.ref, tpl = selected.tpl, tooltip = selected.tooltip;
-            detail = { ...selected, attrs: g.SceneUi.formatItemAttributes(tpl, item(r)), modules: tooltip.filter(n => n.className === 'tooltip-modules'), fields: tooltip.filter(n => n.className?.includes('tooltip-field')), assembly: assembly(item(r), r.source !== 'ground'), actions: [] };
+            detail = { ...selected, attrs: g.SceneUi.formatItemAttributes(tpl, item(r)), modules: tooltip.filter(n => n.className === 'tooltip-modules'), fields: tooltip.filter(n => n.className?.includes('tooltip-field')), assembly: assembly(item(r), r.source !== 'ground' && r.source !== 'groundBag'), actions: [] };
             const add = (label, command, part) => detail.actions.push({ label, command, part });
-            if (r.source === 'equipment') {
+            if (r.source === 'groundBag') { /* Content transfers are handled by the shared grid. */ }
+            else if (r.source === 'equipment') {
                 if (r.index === 'water_flask') add(t('flask.action.drink'), 'drink-flask');
                 add(t(r.index === 'water_flask' ? 'flask.action.unequip' : 'inv.unequip'), 'unequip');
+                if (r.index === 'backpack') add('整包放下', 'drop');
             }
             else if (r.source === 'ground') {
                 add(t('inv.pickup'), 'pickup');
@@ -97,7 +99,7 @@ export function inventoryPanel(g, publish, t) {
         for (const row of rows) delete row.tpl;
         if (detail) delete detail.tpl;
         const cap = g.CharacterAttributes?.getCarryCapacity(), cur = IE.getCurrentCarryWeight();
-        return { open: true, search: state.search, container: state.container, tabs: sources.filter(s => s !== 'vehicle' || hasVehicle).map(id => ({ id, label: t('inv.' + id) })), title: t('inv.' + state.container), carry: t('status.label.carry') + ' ' + (cap != null ? (cur != null ? cur.toFixed(1) : '—') + ' / ' + cap.toFixed(1) + ' kg' : '—'), rows, detail, groups, picker };
+        return { open: true, equipmentView:g.BackpackPanel.isEquipment(), search: state.search, container: state.container, tabs: sources.filter(s => s !== 'vehicle' || hasVehicle).map(id => ({ id, label: t('inv.' + id) })), title: t('inv.' + state.container), carry: t('status.label.carry') + ' ' + (cap != null ? (cur != null ? cur.toFixed(1) : '—') + ' / ' + cap.toFixed(1) + ' kg' : '—'), rows, detail, groups, picker };
     }
     function refresh() { publish('backpack', read()); }
     function changed() { refresh(); api.changed(); }
@@ -110,7 +112,14 @@ export function inventoryPanel(g, publish, t) {
             refresh();
             return;
         }
+        if(r.source==='groundBag')return;
         const p = api.position(), tpl = IE.getItemTemplate(r.itemId);
+        if (tpl?.equip_slot === 'backpack' && g.BackpackSystem && ['equip','unequip','drop','pickup'].includes(command)) {
+            const moved = g.BackpackSystem.transfer({action:command,source:r.source,index:r.index,id:r.id});
+            api.message(moved.message, moved.ok ? 'success' : 'warn');
+            if (moved.ok) state.equipDetailSlot = null;
+            changed();return;
+        }
         let result;
         if (command === 'drink-flask' && r.source === 'equipment' && r.index === 'water_flask') {
             g.SceneApp.tryDrinkWaterFlask(r.id);
@@ -203,11 +212,12 @@ export function inventoryPanel(g, publish, t) {
     } const A = g.ItemAssembly; const result = candidate ? A.attachFromContainer(slot.host, slot.id, candidate.source, candidate.index) : A.detachToInventory(slot.host, slot.id); api.message(result?.ok ? t(candidate ? 'item.assembly.message.attached' : 'item.assembly.message.detached') : g.ItemAssemblyDisplay.messageForReason(result?.reason), result?.ok ? (candidate ? 'success' : 'info') : 'warn'); changed(); }
     function warehouse(filter) { if (filter !== undefined)
         warehouseFilter = filter; const open = api.getOpen('warehouse'); publish('warehouse', { open, filter: warehouseFilter, rows: open ? IE.getAllItemIds().map(id => { const tpl = IE.getItemTemplate(id), c = IE.getCharacterForDisplay(), tier = IE.getItemDisplayTier(id, c), name = (tpl && IE.getDisplayName(tpl, tier, c)) || tpl?.sn || tpl?.placeholder_name || t('hideout_warehouse.item.unknown'); return { id, name, tooltip: g.SceneUi.buildItemTooltipView(id, tpl, null, c) }; }).filter(r => !warehouseFilter || (r.id + ' ' + r.name).toLowerCase().includes(warehouseFilter.trim().toLowerCase())) : [] }); }
-    return { refresh, warehouse, action, moduleAction, install, connect, closePicker() { picker = null; refresh(); }, select(r) { if (!valid(r))
+    function transferView(node){const update=()=>g.BackpackPanel.render(node,{select(c,index){state.container=c.type;state.selectedContainer=c.type;state.selectedIndex=index;state.equipDetailSlot=null;refresh();}});update();return {update,destroy(){g.BackpackPanel.cancelDrag();}};}
+    return { hideDetail(){g.BackpackPanel.hideDetail();}, transferView, refresh, warehouse, action, moduleAction, install, connect, closePicker() { picker = null; refresh(); }, select(r) { if (!valid(r))
             return; state.equipDetailSlot = r.source === 'equipment' ? r.index : null; if (r.source !== 'equipment') {
             state.selectedContainer = state.container;
             state.selectedIndex = r.index;
-        } refresh(); }, tab(id) { if (!sources.includes(id))
+        } else g.BackpackPanel.showEquipment(); refresh(); }, tab(id) { if (!sources.includes(id))
             return; state.container = id; state.selectedContainer = id; state.selectedIndex = -1; refresh(); }, search(value) { state.search = value; state.selectedIndex = -1; refresh(); }, take(id) { if (api.getOpen('warehouse'))
             api.takeWarehouse(id); } };
 }

@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>书籍交互试玩</title></head>
+<body style="background:#142019;color:#ded4b4;font:16px system-ui;padding:30px">正在打开书籍试玩…
+<script>
+// Isolated acceptance page using the production inventory and reading system.
+// All game storage is isolated before any game script runs.
+(async()=>{
+ const root=new URL('../',location.href);
+ let html=await(await fetch(new URL('index.html?no_reload',root))).text();
+ function isolate(){
+  const storage=()=>{const m=new Map();return {getItem:k=>m.get(String(k))??null,setItem:(k,v)=>m.set(String(k),String(v)),removeItem:k=>m.delete(String(k)),clear:()=>m.clear(),key:i=>[...m.keys()][i]??null,get length(){return m.size;}};};
+  Object.defineProperty(window,'localStorage',{value:storage()});
+  Object.defineProperty(window,'sessionStorage',{value:storage()});
+  Object.defineProperty(navigator,'locks',{value:undefined,configurable:true});
+  Object.defineProperty(window,'BroadcastChannel',{value:undefined,configurable:true});
+  window.__BOOK_PROTOTYPE_MEMORY__=true;
+  window.__BOOK_PROTOTYPE_READY__=new Promise(resolve=>{window.AppBoot={afterReady:[resolve]};});
+ }
+ html=html.replace(/<link\b[^>]*href="https:\/\/fonts\.[^>]*>/gi,'');
+ html=html.replace('<head>','<head><base href="'+root.href+'"><script>('+isolate.toString()+')();<\/script>');
+ html=html.replace('</body>','<link rel="stylesheet" href="tools/book-prototype.css"><script type="module" src="tools/book-prototype.mjs"><\/script></body>');
+ document.open();document.write(html);document.close();
+})();
+</script></body></html>

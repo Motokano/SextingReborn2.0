@@ -50,7 +50,10 @@ export const CATEGORY_GROUP_FIELDS = {
   energy: {
     storage: ['battery_capacity', 'battery_charge']
   },
-  organism: {}
+  organism: {},
+  knowledge: {
+    book: ['book_profile']
+  }
 };
 
 const ROOT_FIELDS = new Set(['item_id', 'id', 'editor_name', 'category', 'sub_category', 'tags', 'weight_kg', 'material']);
@@ -154,12 +157,20 @@ export function buildModuleDefinitionsDocument() {
       groups: Object.fromEntries(Object.entries(groups).map(([group, fields]) => [group, { fields }]))
     }])),
     instance_state: {
-      structure: { liquid_storage: {
+      knowledge: { book: {
+        version: { type: 'integer', value: 1 },
+        fragments: { type: 'integer', min: 1, template_capacity_field: 'book_profile.fragments_total', template_initial_field: 'book_profile.fragments_per_item' }
+      } },
+      structure: { backpack: {
+        version: { type: 'integer', value: 1 },
+        modification: { type: 'string', values: ['none', 'pouches', 'frame', 'lighten', 'lining'], config: 'data/backpacks.json' },
+        contents: { type: 'array', instance_field: 'backpack_contents', element_type: 'item_instance_or_null', ownership: 'child', equipped_container: 'inventory_backpack' }
+      }, liquid_storage: {
         version: { type: 'integer', value: 1 },
         water: { type: 'number', min: 0, template_capacity_field: 'flask_capacity', template_initial_field: 'flask_initial_water', instance_field: 'flask_water' }
       } },
       energy: { storage: { charge: { type: 'integer', min: 0, template_capacity_field: 'battery_capacity', template_initial_field: 'battery_charge' } } },
-      base: { spoilage: { elapsed_ticks: { type: 'integer', min: 0, template_duration_field: 'spoilage_ticks' } } },
+      base: { spoilage: { elapsed_ticks: { type: 'number', min: 0, template_duration_field: 'spoilage_ticks' } } },
       equipment: { fishing_tackle: {
         wear_stage: { type: 'integer', min: 0, max: 2, instance_field: 'fishing_wear_stage' },
         broken: { type: 'boolean', instance_field: 'fishing_broken' }
