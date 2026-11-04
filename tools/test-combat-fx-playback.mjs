@@ -6,7 +6,7 @@ let wall=1000;
 const c=vm.createContext({console,performance:{now:()=>wall}});c.window=c;
 const map={},state={mapId:'playback',x:0,y:0};
 c.GameEngine={getMap:()=>map,getState:()=>state};
-for(const name of ['combat-fx-paint','combat-fx-presentation','combat-fx-runtime'])
+for(const name of ['combat-fx-paint','combat-fx-presentation','combat-fx-collar-knee','combat-fx-runtime'])
     vm.runInContext(fs.readFileSync(new URL('../js/'+name+'.js',import.meta.url),'utf8'),c);
 const r=c.CombatFxRuntime;
 r.startPlaybackClock?.(wall);

@@ -19,7 +19,7 @@
         { id: 'survival_strength', name: '力量', desc: '提升负重上限；满级时已装备在双手的武器不再计入负重。' },
         { id: 'survival_vitality', name: '活力', desc: '降低身体部位受伤后触发出血的概率。' },
         { id: 'survival_stress_resist', name: '抗压', desc: '手部受伤时，减轻命中率与招架率下降的幅度。' },
-        { id: 'survival_search', name: '搜索', desc: '缩短开箱搜索时间，提升单次搜索完成度。' },
+        { id: 'survival_search', name: '搜索', desc: '每级降低空容器概率 0.2 个百分点。' },
         { id: 'survival_surgery', name: '手术', desc: '提升手术对肢体损毁值上限的临时修复比例。' },
         { id: 'survival_sleep', name: '睡眠', desc: '缩短通过睡眠恢复体力所需的 tick 数。' },
         { id: 'survival_ningqi', name: '凝气', desc: '每回合额外回复体力与底气，与呼吸属性共同决定回复速度。' },

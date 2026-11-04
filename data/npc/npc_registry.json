@@ -1,6 +1,15 @@
 {
   "_comment": "NPC 注册表：npcId -> 本体/事件/台词池路径。dialogue_pools 缺省时运行时按 def 同前缀推导 *_dialogue_pools.json。",
   "npcs": {
+    "npc.station.manufacturing_base": {
+      "def": "data/npc/npc_station_manufacturing_base.json",
+      "triggers": "data/npc/npc_station_manufacturing_base_triggers.json",
+      "dialogue_pools": "data/npc/npc_station_manufacturing_base_dialogue_pools.json"
+    },
+    "npc.station.bathroom_base": {
+      "def": "data/npc/npc_station_bathroom_base.json",
+      "triggers": "data/npc/npc_station_bathroom_base_triggers.json"
+    },
     "npc.supervisor.manager": {
       "def": "data/npc/npc_supervisor_manager.json",
       "triggers": "data/npc/npc_supervisor_manager_triggers.json",
@@ -55,15 +64,6 @@
       "def": "data/npc/npc_station_forging_base.json",
       "triggers": "data/npc/npc_station_forging_base_triggers.json",
       "dialogue_pools": "data/npc/npc_station_forging_base_dialogue_pools.json"
-    },
-    "npc.station.manufacturing_base": {
-      "def": "data/npc/npc_station_manufacturing_base.json",
-      "triggers": "data/npc/npc_station_manufacturing_base_triggers.json",
-      "dialogue_pools": "data/npc/npc_station_manufacturing_base_dialogue_pools.json"
-    },
-    "npc.station.bathroom_base": {
-      "def": "data/npc/npc_station_bathroom_base.json",
-      "triggers": "data/npc/npc_station_bathroom_base_triggers.json"
     },
     "npc.checkpoint.ruins": {
       "def": "data/npc/npc_checkpoint_ruins.json",

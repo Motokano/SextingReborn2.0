@@ -5,10 +5,11 @@ import * as volumeFX from './combat-fx-volumes.mjs';
 import * as snapFX from './combat-fx-snap.mjs';
 import * as signatureFX from './combat-fx-signature.mjs';
 import * as limbFX from './combat-fx-limbs-prototype.mjs';
+import * as collarKneeFX from './combat-fx-collar-knee-prototype.mjs';
 import { scheduleAttackFx, resolvePreviewMove } from './combat-fx-action-prototype.mjs';
 const $ = id => document.getElementById(id);
 const canvas = $('arena'), ctx = canvas.getContext('2d');
-const fx = ()=>({line:lineFX,volume:volumeFX,snap:snapFX,signature:signatureFX,limb:limbFX}[$('effect-style').value]||limbFX);
+const fx = ()=>selected===collarKneeFX.moveId?collarKneeFX:({line:lineFX,volume:volumeFX,snap:snapFX,signature:signatureFX,limb:limbFX}[$('effect-style').value]||limbFX);
 const clamp = (n,a=0,b=1)=>Math.min(b,Math.max(a,n));
 const ease = t=>1-Math.pow(1-clamp(t),3);
 const mix = (a,b,t)=>a+(b-a)*t;
@@ -18,7 +19,8 @@ const shapes = {
   swing_punch:['摆拳','厚重横弧 · 消耗试探','arc'], whip_kick:['鞭腿','长弧收梢 · 失衡','whip'],
   poke_eye:['戳眼','双尖短痕 · 眼花','double'], kick_knee:['踹膝','低位斜击 · 跛足','low'],
   shove:['推搡','宽面推压 · 失衡','shove'], slap_combo:['连环掌掴','两次掌击 · 淤伤','slap'],
-  weapon_strike:['兵击直斩','窄锋切线 · 占位兵击','blade']
+  weapon_strike:['兵击直斩','窄锋切线 · 占位兵击','blade'],
+  collar_knee:['扯领膝撞','回扯上顶 · 一招一击','knee']
 };
 const notes = {
   hit:'预设命中：轨迹抵达实际命中部位，接触后短促散开。状态提示仅表示该情境预设生效。',
@@ -26,6 +28,8 @@ const notes = {
   miss:'预设闪开：只保留擦身而过的轨迹，没有命中爆点。闪避视觉偏移不改变占格。',
   armor:'预设防具吸收：胸部短暂出现护甲轮廓，没有重创爆点。',
   dry:'预设底气不足：动作仍发生，轨迹虚弱；不表现伤害、控制、减益或位移。',
+  distance:'预设先手击退后距离挥空：动作在身前收住，不出现命中爆点或额外追击。',
+  cancelled:'预设必要肢体失能：本次出招取消，不播放抓领、膝撞或命中效果。',
   mixed:'连环掌掴第一段被挡，其余段命中，分别反馈；段数随装备变式变化，仍是一整招，资源按整招一次。',
   varied:'按最终段列表预设：第一段命中、第二段招架、第三段闪开。只有命中的段播放命中飞溅；段数由各自装备变式后的招式决定。',
   exchange:'预设双方均能行动：先手整招结束后，另一方才开始还击。',
@@ -47,12 +51,13 @@ function limbHeight(move){return ['front_kick','whip_kick','kick_knee'].includes
 const partHeight={head:52,chest:28,abdomen:20,left_arm:30,right_arm:30,left_leg:9,right_leg:9};
 function currentPart(){return $('part').value;}
 function addBeat(at,label){beats.push({at,label});}
-function effectiveMove(moveId,actor){return resolvePreviewMove(moves[moveId],$(actor===0?'variant-player':'variant-enemy').value,selected);}
+function effectiveMove(moveId,actor){return resolvePreviewMove(moves[moveId],moveId===collarKneeFX.moveId?'none':$(actor===0?'variant-player':'variant-enemy').value,selected);}
 function strike(actor,target,move,at,outcome='hit',part=currentPart(),opts={}){
   const resolved=effectiveMove(move,actor),n=resolved.hit_segments,windup=fx().accents[move].windup;
   // Leave a short retraction before reusing the same limb in the triple fixture.
   const gap=Math.max(fx().segmentGap||230,resolved.previewVariantId?windup+80:0);
-  addBeat(at,`${actor===0?'主角':'地痞'} · ${shapes[move][0]}${resolved.previewVariantId?' · 三连':''}`);
+  addBeat(at,move===collarKneeFX.moveId?'探手扯领':`${actor===0?'主角':'地痞'} · ${shapes[move][0]}${resolved.previewVariantId?' · 三连':''}`);
+  if(move===collarKneeFX.moveId){addBeat(at+windup*.30,'扯领回收');addBeat(at+windup*.53,'近身提膝');addBeat(at+windup*.73,'膝撞上冲');}
   const segments=[];
   for(let i=0;i<n;i++){
     const result=outcome==='mixed'?(i===0?'parry':'hit'):outcome==='varied'?['hit','parry','miss'][i%3]:outcome;
@@ -67,16 +72,26 @@ function strike(actor,target,move,at,outcome='hit',part=currentPart(),opts={}){
 }
 function displacement(id,from,to,at){tracks[id].steps.push({from,to,at,ms:250});addBeat(at,'击退 1 格');events.push({type:'dust',target:id,at,ms:430,from,to});}
 function build(){
+  const knee=selected===collarKneeFX.moveId;
+  $('preview-version').innerHTML=knee?'膝撞定稿 04 <span>强拽近身 · 粗束爆发</span>':'特效试作 13 <span>预设交手演示 · 不读写存档</span>';
+  $('effect-style').querySelector('option[value="limb"]').textContent=knee?'粒子冲击 · 回收 / 上顶 / 爆发':'动画挥击 · 夸张笔触 / 接触彩墨';
+  for(const id of ['variant-player','variant-enemy','effect-style','side'])$(id).disabled=knee;
+  for(const option of $('scenario').options)option.disabled=knee?!['hit','parry','miss','armor','distance','cancelled'].includes(option.value):['distance','cancelled'].includes(option.value);
+  if($('scenario').selectedOptions[0].disabled)$('scenario').value='hit';
+  for(const option of $('part').options)option.disabled=knee&&!['chest','abdomen'].includes(option.value);
+  if(knee){$('effect-style').value='limb';$('side').value='right';if($('part').selectedOptions[0].disabled)$('part').value='abdomen';}
   scenario=$('scenario').value;
   if(scenario==='mixed')selected='slap_combo';
   if(['knockback','wall','burst'].includes(scenario))selected='front_kick';
   const m=moves[selected];
   const a=swapped?1:0,b=1-a,d=directions[dir];
-  const distance=scenario==='burst'?2:1;
+  const distance=scenario==='burst'||scenario==='distance'?2:1;
   const aPos=[-d[0]*distance/2,-d[1]*distance/2], bPos=[d[0]*distance/2,d[1]*distance/2];
   tracks=[null,null];tracks[a]={start:aPos,steps:[]};tracks[b]={start:bPos,steps:[]};
-  events=[];beats=[];actionSequence=0;addBeat(0,'准备');let end=0;
-  if(scenario==='burst'){
+  events=[];beats=[];actionSequence=0;addBeat(0,knee?'就位':'准备');let end=0;
+  if(scenario==='cancelled'){
+    addBeat(300,'肢体失能 · 取消出招');end=700;
+  }else if(scenario==='burst'){
     events.push({type:'charge',actor:a,at:100,ms:500});addBeat(100,'催气');
     const near=shifted(aPos,d,1);tracks[a].steps.push({from:aPos,to:near,at:380,ms:250});addBeat(380,'冲锋');
     end=strike(a,b,selected,690,'parry','abdomen',{burst:true});
@@ -100,13 +115,15 @@ function build(){
   $('timeline').max=duration;
   $('move-title').textContent=shapes[selected][0];$('school').textContent=m.school;
   describeMove();
-  $('rule').textContent=notes[scenario];
-  $('variant-note').textContent=`预览变式仅作用于当前选择的「${shapes[selected][0]}」。主角：${variantDescription(0)}；地痞：${variantDescription(1)}。50% 是演示威力参数，不是最终伤害；不读写正式装配。`;
+  const kneeNotes={hit:'预设命中胸腹：只出现一次钝击爆点，不额外添加眩晕或击退。',parry:'预设招架成功：只播放承力反馈，本段伤害为零；已出手仍消费一层失衡。'};
+  $('rule').textContent=knee?'探手、回扯与顶膝在一次出招内完成，没有独立准备轮。'+(kneeNotes[scenario]||notes[scenario]):notes[scenario];
+  $('variant-note').textContent=knee?'头目专属试作四版：加大被拽近的幅度，粒子束加粗，接触瞬间加快爆散；只结算1段。费用为25气力、21底气，冷却6世界tick。棋子位移仅为演出，不改变占格，不读写战斗数值或存档。':`预览变式仅作用于当前选择的「${shapes[selected][0]}」。主角：${variantDescription(0)}；地痞：${variantDescription(1)}。50% 是演示威力参数，不是最终伤害；不读写正式装配。`;
   $('actors').textContent=swapped?'地痞 → 主角':'主角 → 地痞';
   $('swap').textContent=swapped?'交换攻守 · 主角出招':'交换攻守 · 地痞出招';
   $('beats').replaceChildren(...beats.map(b=>{const e=document.createElement('span');e.className='beat';e.textContent=b.label;return e;}));
   document.querySelectorAll('.move').forEach(el=>el.setAttribute('aria-pressed',String(el.dataset.move===selected)));
   $('mobile-move').value=selected;
+  const url=new URL(location.href);url.searchParams.set('move',selected);url.searchParams.set('actor',swapped?'enemy':'player');history.replaceState(null,'',url);
   updateUI();
 }
 function variantDescription(actor){const m=effectiveMove(selected,actor);return `${m.previewVariantId?'三连变式':'原式'} ${m.hit_segments} 段 / 每段系数 ${m.move_power_multiplier.toFixed(2)}${m.move_power_range?`（${m.move_power_range.reference_level}级中值）`:''}`;}
@@ -133,7 +150,7 @@ function drawFloor(t){
 function canonicalEvents(){return events.filter(e=>!e.type).map(e=>({...e,from:{x:trackPos(e.actor,e.at)[0],y:trackPos(e.actor,e.at)[1]},to:{x:trackPos(e.target,e.hitAt)[0],y:trackPos(e.target,e.hitAt)[1]}}));}
 function canonicalView(){return {scale:zoom,project:p=>point([p.x,p.y]),direction:(x,y)=>project([x,y])};}
 function pawnOffset(id,t){
-  if(fx()===limbFX)return limbFX.presentation.pawnOffset(id,canonicalEvents(),t,canonicalView().project,zoom);
+  if(fx().presentation)return fx().presentation.pawnOffset(id,canonicalEvents(),t,canonicalView().project,zoom);
   let dx=0,dy=0;
   for(const e of events){if(e.type)continue;const d=point(trackPos(e.target,e.at)),a=point(trackPos(e.actor,e.at));const angle=Math.atan2(d.y-a.y,d.x-a.x);
     if(fx()===snapFX||fx().kinetic){
@@ -173,10 +190,10 @@ function impact(p,age,result,angle,move,side,powerFactor=1){const ms=fx().contac
   }
   ctx.restore();
 }
-function drawStrike(e,t){const life=t-e.at;if(life<0||life>950)return;
-  if(fx()===limbFX){
+function drawStrike(e,t){const life=t-e.at;if(life<0||life>(e.move===collarKneeFX.moveId?collarKneeFX.accents[collarKneeFX.moveId].windup+660:950))return;
+  if(fx().presentation){
     const all=canonicalEvents(),event=all.find(s=>s.segmentId===e.segmentId);
-    const g=limbFX.presentation.drawStrike(ctx,event,t,canonicalView(),all),age=t-e.hitAt;
+    const g=fx().presentation.drawStrike(ctx,event,t,canonicalView(),all),age=t-e.hitAt;
     if(g&&age>=0&&age<660){
       const labels={parry:'招架',miss:'闪开',distance:'挥空',dry:'乏力',armor:'吸收'};
       const statuses={jab:'试探',whip_kick:'失衡',poke_eye:'眼花',kick_knee:'跛足',shove:'失衡',slap_combo:'淤伤'};
@@ -249,6 +266,11 @@ function frame(now){if(playing){time+=limbFX.presentation.frameDelta(now-last)*s
 async function boot(){
   const [data,manifest,player,thug]=await Promise.all([fetch('data/combat-skills.json').then(r=>r.json()),fetch('assets/map/isometric/player-atlas-v1/manifest.json').then(r=>r.json()),image('assets/map/isometric/player-atlas-v1/L00.png'),image('assets/map/isometric/street-thug-v1/standing.png')]);
   for(const skill of Object.values(data.skills)){const list=skill.moves.filter(m=>shapes[m.id]);if(!list.length)continue;const title=document.createElement('div');title.className='group-label';title.textContent=skill.name;$('move-list').append(title);for(const move of list){moves[move.id]={...move,school:skill.name};const b=document.createElement('button');b.className='move';b.dataset.move=move.id;b.innerHTML=`<strong>${move.name}</strong><span>${shapes[move.id][1]}</span>`;b.onclick=()=>{selected=move.id;$('scenario').value='hit';$('part').value=['poke_eye','swing_punch','slap_combo'].includes(move.id)?'head':move.id==='kick_knee'?'right_leg':['front_kick','whip_kick'].includes(move.id)?'abdomen':'chest';build();};$('move-list').append(b);}}
+  const enemies=await fetch('data/combat-enemies.json').then(r=>r.json());
+  moves.collar_knee={...enemies.enemies['enemy.street_thug_boss'].actions.find(a=>a.id==='collar_knee'),school:'地头头目 · 已确认第四版'};
+  const bossTitle=document.createElement('div');bossTitle.className='group-label';bossTitle.textContent='头目专属 · 试作';
+  const bossButton=document.createElement('button');bossButton.className='move';bossButton.dataset.move='collar_knee';bossButton.innerHTML='<strong>扯领膝撞</strong><span>回扯上顶 · 一招一击</span>';
+  bossButton.onclick=()=>{selected='collar_knee';swapped=true;$('scenario').value='hit';$('part').value='abdomen';build();};$('move-list').append(bossTitle,bossButton);
   const st=manifest.states.find(s=>s.id==='D000'),scale=manifest.displayBaseWidth/st.baseWidth;
   pawns=[{image:player,crop:st.crop,w:st.crop[2]*scale,h:st.crop[3]*scale,ax:st.anchor[0]*scale,ay:st.anchor[1]*scale},{image:thug,crop:[230,38,757,1216],w:46,h:1216*46/757,ax:(609.5-230)*46/757,ay:(1253-38)*46/757}];
   pawns.forEach(s=>s.shadow=window.TileRendererV2.makeGroundShadow(s.image,{crop:s.crop,anchor:[s.crop[0]+s.ax*s.crop[2]/s.w,s.crop[1]+s.ay*s.crop[2]/s.w],width:s.w},[23,7]));
@@ -256,6 +278,7 @@ async function boot(){
   $('mobile-move').onchange=()=>document.querySelector(`[data-move="${$('mobile-move').value}"]`).click();
   for(const id of ['scenario','part','side','variant-player','variant-enemy'])$(id).onchange=build;
   const styleQuery=new URLSearchParams(location.search).get('variant');$('effect-style').value=['line','volume','snap','signature','limb'].includes(styleQuery)?styleQuery:'limb';
+  const query=new URLSearchParams(location.search);if(moves[query.get('move')])selected=query.get('move');swapped=query.get('actor')==='enemy';if(selected===collarKneeFX.moveId){$('part').value='abdomen';if(!query.has('actor'))swapped=true;}
   $('effect-style').onchange=()=>{build();const url=new URL(location.href);url.searchParams.set('variant',$('effect-style').value);history.replaceState(null,'',url);};
   $('swap').onclick=()=>{swapped=!swapped;build();};$('rotate').onclick=()=>{dir=(dir+1)%8;build();};
   $('zoom').onchange=()=>{zoom=Number($('zoom').value);$('scale-label').textContent=zoom===1?'144px 格宽 · 实际尺寸':'放大细看 · 1.7×';};

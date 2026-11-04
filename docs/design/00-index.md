@@ -16,6 +16,8 @@
 
 # 设计文档总览与模块索引
 
+- [三档地痞正式接入](street-thug-runtime.md)：60／80／100级、免费箭步、四层配比、房内外独立人数配置与实景验收。
+
 > **2026-10-03 装配式武器框架**：[70 装配式武器与攻击位置设计](70-modular-weapon-system.md)：四种概念原型、单手四位置、自由装配与跨位声明、按位置装招及读取威力、持械替代四肢轮换、伤残切换、耐久与暗金方向。框架已确认，详细配置及运行实现待完成。
 
 > **2026-10-01 缝纫与硅叶处理规则汇总**：[首版统一设计](sewing-material-defense-draft.md)：六部件款式、研究与材料加工、人台和男女版型、温度与合身度、浸泡桶及一次性系数、全局盾池和分部位减伤。硅叶采集物品已接入，其余规则与数值仍待运行实现及平衡验收。
@@ -95,6 +97,11 @@
 | 命中招架与伤害 | [08-hit-parry-damage.md](08-hit-parry-damage.md) | 命中率、招架、卸力、减伤链（激活盾层 → 柔韧 → 微调，见 37） |
 | 身体部位与状态 | [09-body-parts.md](09-body-parts.md) | 七部位、损毁模型（满值即失能；旧"骨折/自恢复"条目标已废）、手术 |
 | 敌人设计 | [10-enemies.md](10-enemies.md) | 敌人与主角差异、配置、掉落池（默认可击杀，D17）；接线状态见文末「实现记录」 |
+| 敌人完整肢体战斗 | [72-enemy-body-system.md](72-enemy-body-system.md) | 七部位损毁、出招与招架资格、移动、持械、恢复及实例存档已接入并测试；外观仍为站立／死亡，具体敌人平衡另行设计 |
+| 地痞四档战斗设计 | [73-street-thug-combat-design.md](73-street-thug-combat-design.md) | 完整体后拆四档；第四层可自由挑战的约120级完整地痞Boss，七部位、招式与行为的v2提案，尚未替换运行配置 |
+| 地头头目完整配表 | [74-street-thug-boss-design.md](74-street-thug-boss-design.md) | v6已实装：第四层可选120级头目，底气500、固定耗14／21，条件选招、调息、三招催气与实例存档；膝撞沿用已确认V4，死亡用既有尸体棋子 |
+| 第四层地痞据点 | [75-street-thug-boss-room.md](75-street-thug-boss-room.md) | 第四层必出的专属内容房，地痞据点主题已定；看场桌、赃物堆、头目座位与中央交手区的首版布局，专属布景待接入 |
+| 地痞据点美术 | [76-street-thug-boss-room-art.md](76-street-thug-boss-room-art.md) | v6按棋格重绘整套房间，统一手绘风格与旧物生活痕迹；14张选用图、两容器双态、真实棋盘和人物比例检查，待正式房间接入 |
 | 技能系统 | [11-skills.md](11-skills.md) | 生存/生活/战斗/特殊、熟练度（每肢固定槽 1 出招，无招式循环）、战斗技能规则；后遗症装配见 34 |
 | 制造物品分类与解锁 | [78-manufacturing-classification-and-unlocks.md](78-manufacturing-classification-and-unlocks.md) | 72项成品状态设施、69项原料；8项材料已注册，6项在用（2加工中间料＋4外部专材），小份铅料与精密机件停用；正式配方与供应待接入，解锁细化见79号 |
 | 制造系统完整流程 | [79-manufacturing-system.md](79-manufacturing-system.md) | 技能与探索解锁；57条新产物中50条追溯到已有原料，7条依赖少量特材；2条材料加工、6条旧狩猎；铅料×1直制6个铅坠，产量按玩法试调；三级制作台与逐配方工具、台级要求已配表，独立原型可试玩，正式流程待接入 |
@@ -115,10 +122,11 @@
 | 剧情大纲（遮天 / Blackout） | [30-story-outline-blackout.md](30-story-outline-blackout.md) | 世界观、七阀（孤儿等）、硅叶、林书瑶、主角、终局「遮天」；定稿状态，开放项见看板 k181 |
 | 畜牧系统（草案） | [31-livestock-husbandry.md](31-livestock-husbandry.md) | 十字机械牧场、四区域旋转（上右下左）、动物个体/体重/饥饿、生态变量、产出/屠宰/繁殖、Perk 遗传、死因（饿死/病死）、17 模块（含需电规则，见 §11.2/32） |
 | 畜牧可扩展性架构（实现约定） | [32-livestock-architecture.md](32-livestock-architecture.md) | 数据驱动三表（物种/模块/Perk）、动物实例模型、生态变量接口、effect_type + handler、modifier key 目录 |
-| 肌肉系统（取代原经脉穴位） | [34-muscle-system-rework.md](34-muscle-system-rework.md) | 穴位→肌肉（22 肌群 × 478）；后遗症→大型被动（肌群槽装配，首批已落地）；招式三维分工；阶段四待做 |
+| 肌肉系统（取代原经脉穴位） | [34-muscle-system-rework.md](34-muscle-system-rework.md) | 22肌群×478块与大型被动槽已接入；§8～9健身房训练／器械仍为设计；§10.6睡眠已接入48刻固定每刻饱食−1、饮水−1、体力+2、疲劳−2，满值扣费、缺补给暂停恢复；普通休息保持 |
 | UI 自由窗口系统 | [36-ui-windows.md](36-ui-windows.md) | 仿 RO 浮动窗口：拖拽/缩放/显隐/锁定/重置、设备级持久化、认知门控合并、8 层 UI 演出 API |
 | 模块化躯干防具与新底气护体 | [37-equipment-modular-armor.md](37-equipment-modular-armor.md) | 躯干防具模块化（底材 + 6 板位模块 + 激活制）；激活盾层减伤链；头部 3 槽常驻 + 眩晕累积；数值待定见看板 k154 |
 | 装备数据契约（模块化 schema） | [38-equipment-data-contract.md](38-equipment-data-contract.md) | 模块表/防具模板/实例格式、槽点命名空间、effect_type 目录（单向伤害转换方向）、校验规则 |
+| 背包装备与三种用途 | [81-backpack-equipment.md](81-backpack-equipment.md) | 每件一格、包内减重、三款基础参数与死亡丢失已定；六词条／四改造、槽数、耗材与叠加为候选，未实装 |
 | 正式死亡系统与死亡演出 | [82-death-system-and-presentation.md](82-death-system-and-presentation.md) | 已接入要害致死、地牢重开判死、一次性结算、玩家选择复活及单句培养皿演出；普通保存触发可配置，已到账潜能保留；50皿主线联动后续设计 |
 | 水壶装备与构筑 | [80-water-flask-equipment.md](80-water-flask-equipment.md) | 第15节已接正式卫生间装水、青竹／铁皮存水、重量与保存；第14节三基底属性草案保留。第16节已接单壶槽与饮用；正式制作与地牢取水待接入，快饮／缓补仍为候选 |
 | 手套与出招装备改造体系 | [39-glove-and-outfitting.md](39-glove-and-outfitting.md) | 手套=徒手武器（形态系数）、鞋六类（踹/扫/踏 + 步法）、左右分装取低、改造件/通货做装骨架 |
@@ -212,5 +220,9 @@ GAME_DESIGN 中「贸易与旅行商人」不单独成章，以 capitalism 目�
 
 
 - [装置材料解锁接入记录](facility-unlock-implementation.md)
+
+- [V14地牢兴趣点与开放房间](../dungeon/ruins-v14/POI-AND-OPEN-ROOMS.md)：道路稀疏容器、搜索点入房、小房无墙与大房缺墙，已接入新楼层生成。
+
+- [头目出现率与掉落配置](../dungeon/ruins-v14/BOSS-CONFIG.md)：头目可配置60%出现率、固定小屋、两种特殊容器与尸体的独立奖励配置。
 
 - [技能装配界面定稿与接入](skill-loadout-ui.md)：确认的 B 版、肌群总览与双列肌肉弹窗，默认游戏入口已接入。

@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<base href="../"><title>前两档地痞 · 倒地形象</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#18231f;color:#ece5d5;font:14px/1.65 'Microsoft YaHei',sans-serif}main{max-width:1060px;margin:auto;padding:20px}h1{font-size:25px;margin:0}p{margin:6px 0 14px;color:#bac2b5}.pair{display:grid;grid-template-columns:1fr 1fr;gap:16px}.card{background:#24352b;border:1px solid #566650;border-radius:7px;overflow:hidden}h2{font-size:15px;margin:9px 14px}.art{height:320px;background:#c6c2b5;display:flex;align-items:center;justify-content:center}.art img{width:100%;height:100%;object-fit:contain}.boards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:10px}.board{overflow:auto}canvas{display:block;width:320px;height:240px;margin:auto}a{color:#e3ca91}nav{display:flex;gap:18px;flex-wrap:wrap;margin-top:14px}.note{font-size:12px;color:#bbc3b1;margin:8px 0}.caption{padding:7px 14px;color:#cbd0c3;font-size:12px}#status{margin-top:14px;margin-bottom:6px}@media(max-width:780px){.boards{grid-template-columns:1fr}.pair{grid-template-columns:1fr}.art{height:300px}main{padding:12px}}
+</style>
+<main>
+<h1>前两档地痞 · 倒地形象</h1>
+<p>一档摊开，二档蜷缩。沿用各自原形象，血迹、擦伤与衣物破损对齐第三档和头目。</p>
+<div class="pair">
+<section class="card"><h2>60级 · 街头混混 / 仰面摊倒</h2><div class="art"><img src="assets/map/isometric/street-thug-lower-tiers-defeated-v1/tier-1.png" alt="街头混混穿灰背心、条纹裤，仰面摊倒，双臂与双腿无力散开"></div><div class="caption">灰背心、裤侧条纹、右手缠带；头偏向一侧，双腿错开。</div></section>
+<section class="card"><h2>80级 · 看场打手 / 侧身蜷倒</h2><div class="art"><img src="assets/map/isometric/street-thug-lower-tiers-defeated-v1/tier-2.png" alt="看场打手穿黑背心和银链，双膝蜷曲侧身倒下，头朝向右侧"></div><div class="caption">黑背心、银链、右手缠带；双膝收拢，右脸贴地。</div></section>
+</div>
+<p id="status" role="status">正在载入实际棋格对照…</p>
+<div class="boards">
+<section class="card"><h2>原一档站姿 · 比例参考</h2><div class="board"><canvas id="standing" aria-label="一档原站姿实际棋盘尺寸"></canvas></div></section>
+<section class="card"><h2>一档 · 仰面摊倒</h2><div class="board"><canvas id="tier-1" aria-label="街头混混倒地实际棋盘尺寸"></canvas></div></section>
+<section class="card"><h2>二档 · 侧身蜷倒</h2><div class="board"><canvas id="tier-2" aria-label="看场打手倒地实际棋盘尺寸"></canvas></div></section>
+</div>
+<nav><a href="assets/map/isometric/street-thug-lower-tiers-defeated-v1/tier-1.png" target="_blank">一档透明原图</a><a href="assets/map/isometric/street-thug-lower-tiers-defeated-v1/tier-2.png" target="_blank">二档透明原图</a><a href="assets/map/isometric/street-thug-lower-tiers-defeated-v1/README.md">素材记录与提示词</a></nav>
+<p class="note">美术预览，尚未替换正式死亡素材。倒地身体自然展开，不强行缩到站立底座的宽度。</p>
+</main>
+<script src="js/core/map-projection.js"></script>
+<script type="module">
+const root='assets/map/isometric/';
+const specs={
+ standing:{src:'street-thug-v1/standing.png',crop:[230,38,757,1216],anchor:[609.5,1253]},
+ 'tier-1':{src:'street-thug-lower-tiers-defeated-v1/tier-1.png',crop:[103,110,1358,844],anchor:[782,950]},
+ 'tier-2':{src:'street-thug-lower-tiers-defeated-v1/tier-2.png',crop:[44,255,1449,630],anchor:[768.5,881]}
+};
+const projection=MapProjection.create({width:3,height:3},144/Math.SQRT2,'isometric');
+const center=projection.cellCenter(1,1),scale=46/757*1.25;
+try{
+ await Promise.all(Object.entries(specs).map(async([id,spec])=>{
+  const image=new Image();image.src=root+spec.src;await image.decode();
+  const canvas=document.getElementById(id),dpr=window.devicePixelRatio||1;
+  canvas.width=Math.round(320*dpr);canvas.height=Math.round(240*dpr);
+  const ctx=canvas.getContext('2d');ctx.scale(dpr,dpr);ctx.save();ctx.translate(160-center.x,143-center.y);
+  for(let y=0;y<3;y++)for(let x=0;x<3;x++){
+   const points=projection.cellPolygon(x,y);ctx.beginPath();points.forEach((p,i)=>ctx[i?'lineTo':'moveTo'](p.x,p.y));ctx.closePath();
+   ctx.fillStyle=(x+y)%2?'#4d5b4e':'#465346';ctx.fill();ctx.strokeStyle='#a1ad8f55';ctx.stroke();
+  }
+  const points=projection.cellPolygon(1,1);ctx.beginPath();points.forEach((p,i)=>ctx[i?'lineTo':'moveTo'](p.x,p.y));ctx.closePath();ctx.strokeStyle='#c7b67b';ctx.stroke();
+  const [bx,by,bw,bh]=spec.crop,[ax,ay]=spec.anchor;
+  ctx.drawImage(image,bx,by,bw,bh,center.x+(bx-ax)*scale,center.y+10+(by-ay)*scale,bw*scale,bh*scale);
+  ctx.restore();
+ }));
+ document.getElementById('status').textContent='实际尺寸对照 · 144px棋格，人物125%';
+}catch(error){document.getElementById('status').textContent='素材载入失败：'+error.message;console.error(error);}
+</script>
+</html>

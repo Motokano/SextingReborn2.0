@@ -91,7 +91,8 @@
 ### 4.1 生存门禁
 
 - [ ] 重度饥饿/体力为 0 时，仅禁“需要资源”的动作，不误禁纯 UI 操作。
-- [ ] 缺水（`thirst=0`）时 NPC 交互门禁生效，补水后解除。
+- [ ] 缺水（`thirst=0`）时普通 NPC 默认禁止交互，补水后解除；`interactionChecks.thirst=false` 的设施仍可进入。
+- [ ] 邋里邋遢状态下普通 NPC 默认禁止交互；`interactionChecks.dirtyness=false` 可独立豁免。两项均关闭时仍受其他行动限制约束。
 
 ### 4.2 Buff 控制门禁
 

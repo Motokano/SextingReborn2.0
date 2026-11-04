@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <base href="../"><title>箭步 · 老练狠角色</title>
+  <link rel="stylesheet" href="tools/combat-dash-preview.css">
+</head>
+<body>
+<main>
+  <header><div><div class="eyebrow">潮碧物语 / 老练狠角色</div><h1>箭步 <span>特效试作 01</span></h1><p>脚下发力，一瞬贴近。尘土还没落下，下一招已经递出。</p></div><a href="tools/street-thug-veteran-art.html?no_reload">查看棋子 ↗</a></header>
+  <section class="preview">
+    <div class="arena">
+      <div class="arena-head"><nav aria-label="演示路线"><button data-scene="straight" aria-pressed="true">直线贴近</button><button data-scene="detour" aria-pressed="false">绕开障碍</button></nav><span id="phase" role="status">载入棋子…</span></div>
+      <div class="canvas-wrap"><canvas id="stage" aria-label="老练狠角色向主角施展箭步的等距棋盘"></canvas><div class="scale-note" id="scale-note">144px 格宽 · 人物 125%</div></div>
+      <div class="transport"><button id="play" disabled>暂停</button><button id="replay" disabled>重播</button><input id="timeline" type="range" min="0" max="3000" value="0" step="1" aria-label="播放进度"><output id="time">0.00s</output><label><input id="loop" type="checkbox" checked>循环</label></div>
+    </div>
+    <aside>
+      <div class="kicker">免费位移 · 冷却 6 tick</div><h2>快，但有重量</h2>
+      <div class="beat" data-beat="push"><b>01</b><div><strong>蹬地</strong><p>身形短促后收，后脚扬尘。</p></div></div>
+      <div class="beat" data-beat="travel"><b>02</b><div><strong>疾冲</strong><p>贴地加速，留下两道淡残影。</p></div></div>
+      <div class="beat" data-beat="brake"><b>03</b><div><strong>刹步 · 接招</strong><p>停在邻格，尘粒向前滚开。</p></div></div>
+      <div class="settings"><label>速度<select id="speed"><option value="1.5">正常节奏</option><option value="0.5">三分之一慢放</option></select></label><label>尺寸<select id="zoom"><option value="1">实际棋格</option><option value="1.3">放大 1.3 倍</option></select></label>
+        <label class="check"><input id="follow" type="checkbox" checked>落地接摆拳</label><label class="check"><input id="route" type="checkbox">显示经过的棋格</label>
+      </div>
+      <div class="stills"><button id="freeze-push">看蹬地</button><button id="freeze-rush">看疾冲</button><button id="freeze-brake">看刹步</button></div>
+      <p id="route-note" class="route-note">目标 4 格外，前冲 3 步。</p>
+    </aside>
+  </section>
+  <footer>视觉预览 · 沿用正式棋子和摆拳特效。箭步自身不造成伤害；落地攻击只演示衔接，不额外赠送攻击次数。本页不读写存档，尚未接入真实战斗。</footer>
+</main>
+<script src="js/core/map-projection.js"></script>
+<script src="js/core/tile-renderer-v2.js"></script>
+<script src="js/combat-fx-paint.js"></script>
+<script src="js/combat-fx-presentation.js"></script>
+<script src="js/combat-fx-dash.js"></script>
+<script type="module" src="tools/combat-dash-preview.mjs"></script>
+</body>
+</html>

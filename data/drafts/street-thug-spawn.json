@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "dungeonId": "village_ruins",
+  "status": "confirmed_rules_with_room_count_proposal_pending_runtime",
+  "scope": "normal_enemies",
+  "selection": "weighted",
+  "nonRoomEnemies": {
+    "status": "confirmed_base_and_variation",
+    "scope": "outside_room_regions_at_spawn",
+    "base": 12,
+    "variationRatio": 0.2,
+    "modifierInputs": ["ticket", "other_variables"],
+    "resolutionProposal": {
+      "order": ["additive", "multiplicative", "round_base", "variation"],
+      "bounds": { "min": "ceil", "max": "floor" },
+      "sampling": "uniform_integer_inclusive",
+      "snapshot": "on_floor_generation"
+    }
+  },
+  "roomEnemies": {
+    "status": "proposed_counts_confirmed_independent_budget",
+    "scope": "per_room_region_at_spawn",
+    "usesNonRoomBudget": false,
+    "modifierInputs": ["ticket", "other_variables"],
+    "profiles": {
+      "ordinary_small": { "min": 1, "max": 1 },
+      "ordinary_medium": { "min": 2, "max": 2 },
+      "ordinary_large": { "min": 3, "max": 3 },
+      "resource_mixed": { "variants": ["gather", "mine", "wood"], "min": 1, "max": 2 },
+      "recovery_mixed": { "min": 1, "max": 2 },
+      "container_mixed": { "min": 2, "max": 3 },
+      "loot_outpost": { "full": { "min": 3, "max": 4 }, "light": { "min": 1, "max": 2 }, "abandoned": { "min": 0, "max": 0 } },
+      "rest_outpost": { "full": { "min": 2, "max": 3 }, "light": { "min": 0, "max": 1 }, "abandoned": { "min": 0, "max": 0 } },
+      "workshop": { "full": { "min": 3, "max": 4 }, "light": { "min": 1, "max": 2 }, "abandoned": { "min": 0, "max": 0 } },
+      "clinic": { "full": { "min": 2, "max": 3 }, "light": { "min": 0, "max": 1 }, "abandoned": { "min": 0, "max": 0 } },
+      "canteen": { "full": { "min": 3, "max": 4 }, "light": { "min": 1, "max": 2 }, "abandoned": { "min": 0, "max": 0 } },
+      "non_enemy_room": { "min": 0, "max": 0 }
+    },
+    "preserveZeroEnemyRooms": true,
+    "applyOutdoorVariation": false,
+    "bossRoom": { "source": "data/dungeon-config.json#boss", "onPresent": 1, "onAbsent": 0, "ordinaryGuards": 0, "usesNonRoomBudget": false, "ordinaryCountModifiers": false }
+  },
+  "lootDesignStatus": "deferred_until_other_systems_are_designed",
+  "tiers": {
+    "tier1": { "name": "街头混混", "skillLevel": 60 },
+    "tier2": { "name": "看场打手", "skillLevel": 80 },
+    "tier3": { "name": "老练狠角色", "skillLevel": 100 }
+  },
+  "floorWeights": {
+    "1": { "tier1": 8, "tier2": 2, "tier3": 0 },
+    "2": { "tier1": 3, "tier2": 3, "tier3": 3 },
+    "3": { "tier1": 2, "tier2": 5, "tier3": 3 },
+    "4": { "tier1": 1, "tier2": 6, "tier3": 3 }
+  },
+  "bossConfigSource": "data/dungeon-config.json#boss"
+}

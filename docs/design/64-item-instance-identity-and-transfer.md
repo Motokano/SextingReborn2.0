@@ -62,6 +62,8 @@
 
 ## 4. 唯一归属
 
+2026-11-01背包扩展：关闭的整包通过`backpack_contents`拥有包内真实实例，通用子树遍历将关系记录为`backpack_content`。装备时内容移入既有`inventory_backpack`，卸下时移回包体，两个位置不同时保存同一份内容。地面／载具／家仓转移整包保留全部子身份；新UI移动通过`BackpackSystem.transfer`与保存事务统一提交，失败整笔撤回。规则与验收见[81号第10节](81-backpack-equipment.md#10-整包落地恢复内容与保存2026-11-01)。
+
 `InventoryEquipment.findItemInstanceLocation(id)` 查找库存、装备、装备内嵌模块和地面中的归属。以下写入口会拒绝一个已经在这些位置出现的身份：
 
 - 放入默认容器；

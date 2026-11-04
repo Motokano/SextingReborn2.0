@@ -1,0 +1,48 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>攻击笔触逐帧对照</title>
+<style>*{box-sizing:border-box}body{margin:0;padding:24px;background:#17251e;color:#eee5cf;font:14px "Microsoft YaHei",sans-serif}h1{font-size:25px;margin:0 0 12px}p{color:#bfccbb;line-height:1.7}select,button,input{padding:8px;background:#304335;color:inherit;border:1px solid #6d8268;margin:4px}input{width:220px}#grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.panel{border:1px solid #52634d;border-radius:8px;overflow:hidden;background:#293b2c}.panel h2{font-size:15px;padding:12px;margin:0;background:#213325}.panel canvas{width:100%;height:280px;display:block}iframe{width:1px;height:1px;position:absolute;top:0;left:0;opacity:0;pointer-events:none}#status{white-space:pre-wrap}.result{font-size:13px;color:#d1b676}</style>
+<h1>攻击笔触逐帧对照</h1><p>同一招式、出招侧、命中部位和时间点。中、右两栏调用完整游戏中加载的正式特效入口；第三栏仅在此对照页换回预览投影。</p>
+<label>招式 <select id="move"><option value="jab">刺拳</option><option value="front_kick">正蹬</option><option value="swing_punch">摆拳</option><option value="whip_kick" selected>鞭腿</option><option value="poke_eye">戳眼</option><option value="kick_knee">踹膝</option><option value="shove">推搡</option><option value="slap_combo">连环掌掴</option><option value="weapon_strike">兵击直斩</option></select></label>
+<label>命中部位 <select id="part"><option value="chest">胸部</option><option value="abdomen" selected>腹部</option><option value="head">头部</option><option value="left_leg">左腿</option></select></label>
+<label>出招侧 <select id="side"><option value="right">右</option><option value="left">左</option></select></label>
+<label>方向 <select id="dir"><option value="0">右下</option><option value="1">下</option><option value="2">左下</option><option value="3">左</option><option value="4">左上</option><option value="5">上</option><option value="6">右上</option><option value="7">右</option></select></label>
+<div><button id="play" disabled>播放</button><label>距离命中帧 <input id="age" type="range" min="-350" max="280" value="0" step="1"></label><output id="age-label">0 ms</output></div>
+<div id="grid"><section class="panel"><h2>① 已确认的第 13 版预览</h2><canvas id="demo"></canvas></section><section class="panel"><h2>② 游戏当前显示</h2><canvas id="live"></canvas></section><section class="panel"><h2>③ 游戏改用预览投影（诊断）</h2><canvas id="control"></canvas></section></div>
+<p id="status">加载完整游戏与参考素材…</p><p class="result">本页不修改正式特效代码。完整游戏在隔离测试端口加载，诊断不写入玩家原游戏端口的存档。</p>
+<iframe id="game" src="/index.html?no_reload&view=isometric"></iframe>
+<script type="module">
+import {demoFrame} from './fixtures/combat-fx-demo-v13.mjs';
+const $=id=>document.getElementById(id),dirs=[[1,0],[1,1],[0,1],[-1,1],[-1,0],[-1,-1],[0,-1],[1,-1]];
+let g,pawns,playing=false,last=0,age=0;
+async function load(src){const im=new Image();im.src=src;await im.decode();return im;}
+function project(dx,dy,live){return {x:(dx-dy)*(live?101/Math.SQRT2:72),y:(dx+dy)*(live?50.5:36)};}
+function view(live,st,w){return {scale:live?101*Math.SQRT2/144:1,project:p=>{const q=project(p.x-st.x,p.y-st.y,live);return{x:w*.42+q.x,y:180+q.y};},direction:(x,y)=>project(x,y,live)};}
+function pawn(c,s,p,o,scale){c.save();c.translate(p.x+o.x,p.y+8*scale+o.y);c.scale(scale,scale);c.drawImage(s.shadow,-64,-40,160,88);c.drawImage(s.image,...s.crop,-s.ax,-s.ay,s.w,s.h);c.restore();}
+function prepare(id){const c=$(id),rect=c.getBoundingClientRect(),dpr=devicePixelRatio||1;c.width=Math.round(rect.width*dpr);c.height=Math.round(rect.height*dpr);const ctx=c.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);return{ctx,w:rect.width};}
+function draw(){if(!g||!pawns)return;try{
+ const R=g.CombatFxRuntime,st=g.GameEngine.getState(),map=g.GameEngine.getMap(),[dx,dy]=dirs[Number($('dir').value)],move=$('move').value,part=$('part').value,side=$('side').value;
+ R.clear();R.enqueue({actionId:'shape-comparison',mapId:st.mapId,attacker:{key:'player',kind:'player',x:st.x,y:st.y},defender:{key:'enemy',kind:'enemy',x:st.x+dx,y:st.y+dy},segments:[{moveId:move,limbId:side==='left'?'lhand':'rhand',hitPart:part,result:'hit',damage:12}]});
+ const a=R.getActiveActions()[0],s=a.segments[0],t=s.hitMs*1.5+age,e={actor:'player',target:'enemy',from:a.attacker,to:a.defender,move,part,side,result:'hit',at:s.startMs*1.5,hitAt:s.hitMs*1.5,segment:0,segmentCount:1,powerFactor:1};
+ g.PlayerFacing.setDir([[0,-1],[1,-1],[1,0],[1,1],[0,1],[-1,1],[-1,0],[-1,-1]].findIndex(d=>d[0]===dx&&d[1]===dy));
+ for(const id of ['demo','live','control']){
+  const {ctx,w}=prepare(id),live=id==='live',v=view(live,st,w),reference=demoFrame(ctx,g.CombatFxPaint,[e],t,v);
+  for(const [idx,key,pos]of [[0,'player',e.from],[1,'enemy',e.to]]){const o=id==='demo'?reference.offset(key):g.CombatFxPresentation.pawnOffset(key,[e],t,v.project,v.scale);pawn(ctx,pawns[idx],v.project(pos),o,v.scale);}
+  if(id==='demo')reference.draw(e);else{
+   const off=document.createElement('canvas');off.width=$(id).width;off.height=$(id).height;const c=off.getContext('2d'),dpr=devicePixelRatio||1;c.setTransform(dpr,0,0,dpr,0,0);
+   // Use the actual compositor, on an independent surface exactly as the live foreground layer does.
+   const center=(x,y)=>v.project({x,y}),hw=live?101/Math.SQRT2:72,hh=live?50.5:36;
+   const frame={ctx:c,nowMs:t/1.5,combatNowMs:t/1.5,map,state:st,cellPx:101,cellCenter:center,cellToPx:center,cellPolygon:(x,y)=>{const p=center(x,y);return[{x:p.x,y:p.y-hh},{x:p.x+hw,y:p.y},{x:p.x,y:p.y+hh},{x:p.x-hw,y:p.y}];},projection:{tileWidth:hw*2,isIsometric:true,directionVector:v.direction},mapWidthPx:3000,mapHeightPx:2000};
+   // Text differs intentionally between gameplay and preview; exclude it from the shape comparison.
+   c.fillText=()=>{};c.strokeText=()=>{};g.SceneRenderer.renderCombatEffects(frame);ctx.drawImage(off,0,0,off.width,off.height,0,0,w,280);
+  }
+ }
+ R.clear();$('age-label').textContent=Math.round(age)+' ms';$('status').textContent=`当前：${$('move').selectedOptions[0].text} · ${$('part').selectedOptions[0].text} · ${side==='left'?'左侧':'右侧'} · 命中${age<0?'前':'后'} ${Math.abs(Math.round(age))} ms（动画时间）`;
+ }catch(e){$('status').textContent=e.stack;playing=false;}}
+function frame(now){if(playing){age+=Math.min(now-last,60)*1.5;if(age>280)age=-350;$('age').value=age;draw();}last=now;requestAnimationFrame(frame);}requestAnimationFrame(frame);
+$('game').onload=async()=>{try{g=$('game').contentWindow;await g.AppBoot.ready;g.GameTime.reset({hour:12});
+ const [manifest,player,enemy]=await Promise.all([fetch('/assets/map/isometric/player-atlas-v1/manifest.json').then(r=>r.json()),load('/assets/map/isometric/player-atlas-v1/L00.png'),load('/assets/map/isometric/street-thug-v1/standing.png')]);
+ const st=manifest.states.find(x=>x.id==='D000'),scale=manifest.displayBaseWidth/st.baseWidth;pawns=[{image:player,crop:st.crop,w:st.crop[2]*scale,h:st.crop[3]*scale,ax:st.anchor[0]*scale,ay:st.anchor[1]*scale},{image:enemy,crop:[230,38,757,1216],w:46,h:1216*46/757,ax:(609.5-230)*46/757,ay:(1253-38)*46/757}];
+ pawns.forEach(s=>s.shadow=g.TileRendererV2.makeGroundShadow(s.image,{crop:s.crop,anchor:[s.crop[0]+s.ax*s.crop[2]/s.w,s.crop[1]+s.ay*s.crop[2]/s.w],width:s.w},[23,7]));$('play').disabled=false;draw();
+ }catch(e){$('status').textContent=e.stack;}};
+for(const id of ['move','part','side','dir'])$(id).onchange=draw;
+$('age').oninput=()=>{playing=false;$('play').textContent='播放';age=Number($('age').value);draw();};$('play').onclick=()=>{playing=!playing;last=performance.now();$('play').textContent=playing?'暂停':'播放';};new ResizeObserver(draw).observe($('grid'));
+</script></html>

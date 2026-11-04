@@ -1204,17 +1204,39 @@
         renderVisionDistanceShadeOverlay(args);
         args.ctx.restore();
     }
+    function hasGroundVisibility(map) {
+        return !!(window.BaseHideoutArt&&window.BaseHideoutArt.usesGroundVisibility&&window.BaseHideoutArt.usesGroundVisibility(map));
+    }
+    function renderGroundEffects(args) {
+        if(!args || !hasGroundVisibility(args.map))return;
+        // Ground masks precede raised objects, so roof pixels cannot be cut by ground diamonds.
+        renderVisionOcclusionOverlay(args);
+        renderVisionDistanceShadeOverlay(args);
+    }
+    function getEnvironmentShade(map) {
+        if(!hasGroundVisibility(map))return null;
+        var cfg=getDayNightVisionConfig();if(!cfg.enabled)return null;
+        var env=window.BaseHideoutArt.config.yard.environment;
+        var alpha=Math.min(env.maxNightAlpha,getDarknessAlphaNow()*env.nightStrength);
+        if(!(alpha>.001))return null;
+        return 'rgba('+cfg.overlayRgb.join(',')+','+alpha.toFixed(4)+')';
+    }
     function renderEffects(fxCtx) {
         if (window.DungeonRuntime && window.DungeonRuntime.active()) { window.DungeonArt.fog(fxCtx); return; }
         // Its destination-out clear radius must only erase the night veil, never
         // attack strokes or damage text already drawn onto this shared canvas.
-        renderDayNightVisionOverlay(fxCtx);
+        var continuous=hasGroundVisibility(fxCtx.map);
+        if(continuous){
+            var shade=getEnvironmentShade(fxCtx.map);
+            if(shade){fxCtx.ctx.save();fxCtx.ctx.fillStyle=shade;fxCtx.ctx.fillRect(0,0,fxCtx.mapWidthPx,fxCtx.mapHeightPx);fxCtx.ctx.restore();}
+        }else renderDayNightVisionOverlay(fxCtx);
         if (window.SceneAnimation && typeof window.SceneAnimation.render === 'function') {
             window.SceneAnimation.render(fxCtx);
         }
         // Keep visibility occlusion above effects; unseen cells stay concealed.
-        renderVisionOcclusionOverlay(fxCtx);
-        renderVisionDistanceShadeOverlay(fxCtx);
+        // Courtyard terrain has already been masked below its raised scenery.
+        // Other maps and renderers without the ground pass retain the normal overlay.
+        if(!continuous || !fxCtx.groundVisibilityHandled){renderVisionOcclusionOverlay(fxCtx);renderVisionDistanceShadeOverlay(fxCtx);}
         renderFacingVisionOverlay(fxCtx);
         renderVisionDebugOverlay(fxCtx);
     }
@@ -1262,6 +1284,7 @@
             tileRenderer = window.TileRendererV2.create(grid, { cellPx: CELL_PX, combatHost:grid.parentElement });
             tileRenderer.setEffectsRenderer(function(args){renderEffects(Object.assign({},args,{skipCombatFx:true}));});
             tileRenderer.setCombatEffectsRenderer(renderCombatEffects);
+            if(tileRenderer.setGroundEffectsRenderer)tileRenderer.setGroundEffectsRenderer(renderGroundEffects);
             if (typeof tileRenderer.startAnimationLoop === 'function') tileRenderer.startAnimationLoop();
         }
         var hasV2 = !!tileRenderer;
@@ -1625,6 +1648,7 @@
                 staticMetaAt: latestFrame.getStaticMetaAt,
                 dynamicMetaAt: latestFrame.getDynamicMetaAt,
                 staticDataKey: staticDataKey,
+                environmentShade: getEnvironmentShade(map),
                 dirtyCells: dirtyForV2,
                 viewport: {
                     width: viewportWidth,
@@ -1719,6 +1743,8 @@
 
         var centerOffsetX = Number.isFinite(runtimeCenterOffsetX) ? runtimeCenterOffsetX : CENTER_OFFSET_X;
         var centerOffsetY = Number.isFinite(runtimeCenterOffsetY) ? runtimeCenterOffsetY : CENTER_OFFSET_Y;
+
+
         var projectedPlayerCenter = tileRenderer && typeof tileRenderer.getCellCenter === 'function'
             ? tileRenderer.getCellCenter(st.x, st.y)
             : { x: st.x * CELL_PX + CELL_PX / 2, y: st.y * CELL_PX + CELL_PX / 2 };
@@ -1919,6 +1945,7 @@
 
     window.SceneRenderer = {
         render: render,
+        renderGroundEffects: renderGroundEffects,
         renderEffects: renderEffects,
         renderCombatEffects: renderCombatEffects,
         setVisionDebugEnabled: function (enabled) {

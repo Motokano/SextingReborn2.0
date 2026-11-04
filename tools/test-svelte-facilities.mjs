@@ -30,14 +30,12 @@ test('P4a native/Svelte preserve labor, all repair steps, embedded tools, wareho
   equal(old,h,'.cooking-repair-overlay');
   for(const f of [old,h]){f.g.FacilityLaborPanel.close();f.g.GameEngine.setState('M0_Base_Inside_lv_1',13,14);f.g.FacilityUnlockPanel.open('pharmacy');await f.drain();}
   equal(old,h,'.cooking-repair-overlay');
-  for(const f of [old,h])await click(f,'[data-action="inspect"]');
   equal(old,h,'.cr-body');
   for(let step=0;step<2;step++){
-   for(const f of [old,h]){await click(f,`[data-step="${step}"]`);await click(f,'[data-action="all"]');}
+   for(const f of [old,h]){await offer(f);}
    equal(old,h,'.cr-body');
+   for(const f of [old,h])await click(f,'[data-action="repair"]');equal(old,h,'.cr-body');
   }
-  for(const f of [old,h])await click(f,'[data-step="2"]');equal(old,h,'.cr-body');
-  for(const f of [old,h])await click(f,'[data-action="repair"]');equal(old,h,'.cr-body');
   for(const f of [old,h]){f.g.FacilityUnlockPanel.close();f.g.GameEngine.setState('M0_Base_Inside_lv_1',7,12);f.g.ToolbenchPanel.open();await f.drain();}
   equal(old,h,'#toolbench-panel');
   for(const id of ['humidity','temperature','calendar']){for(const f of [old,h])await click(f,`[data-tool="${id}"]`);equal(old,h,'#toolbench-panel');}
@@ -133,8 +131,8 @@ test('P4a warehouse transfer, instance identity, filters, locks, fill, tidy, bat
 test('P4a shared standalone work retains sewing construction ticks and releases all controllers on dispose',async()=>{
  const h=await boot(true),g=h.g;let timer;
  try{
-  await setup(h,6,12);g.FacilityUnlockPanel.open('sewing_tape');await h.drain();await click(h,'[data-action="inspect"]');
-  for(let step=0;step<2;step++){await click(h,`[data-step="${step}"]`);await click(h,'[data-action="all"]');}await click(h,'[data-step="2"]');await click(h,'[data-action="repair"]');
+  await setup(h,6,12);g.FacilityUnlockPanel.open('sewing_tape');await h.drain();
+  for(let step=0;step<2;step++){await offer(h);await click(h,'[data-action="repair"]');}
   assert.equal(g.NPCSystem.isDemoFlagTrue('sewing_tape_unlocked'),false);const ticks=g.GameTime.getState().totalTicks;
   await click(h,'[data-sewing-work]');assert.equal(g.GameTime.getState().totalTicks,ticks+1);await click(h,'[data-sewing-work]');assert.equal(g.GameTime.getState().totalTicks,ticks+2);assert.equal(g.NPCSystem.isDemoFlagTrue('sewing_tape_unlocked'),true);assert.equal(h.g.document.querySelector('[data-sewing-work]'),null);
   await click(h,'[data-action="close"]');g.GameEngine.setState('M0_Base_Outside_lv_1',5,10);timer=clock(g);g.FacilityLaborPanel.open('agriculture');await h.drain();await click(h,'[data-action="start"]');assert.equal(timer.timers.size,1);

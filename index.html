@@ -3094,10 +3094,13 @@
             pointer-events: auto;
         }
         #character-creation-overlay.hidden { display: none; }
-        /* 序章未创角：保留顶栏时间，隐藏左右信息与地图旁动作气泡 */
+        /* 序章未创角：保留时间和存档管理，隐藏角色面板与玩法操作。 */
         body.intro-shell-active #left-hud,
-        body.intro-shell-active #right-hud,
         body.intro-shell-active #buff-hud {
+            display: none !important;
+        }
+        body.intro-shell-active #right-hud > :not(#right-hud-actions),
+        body.intro-shell-active #right-hud-actions > :not(#btn-save):not(#btn-reset-demo-save) {
             display: none !important;
         }
         body.intro-shell-active #player-action-bubble,
@@ -4478,9 +4481,7 @@
     <script src="js/game-log.js"></script>
     <script src="js/game-time.js"></script>
     <script src="js/weather.js?v=fishing-temperature-20260926"></script>
-    <link rel="stylesheet" href="css/npc-menu.css">
-    <script src="js/dungeon/ui-icons.js"></script>
-    <script src="js/npc-system.js"></script>
+    <script src="js/npc-system.js?v=facility-entry-state-20261027"></script>
     <script src="js/reset-progress-dialog.js"></script>
     <script src="js/food-metabolism.js"></script>
     <script src="js/survival.js"></script>
@@ -4545,13 +4546,16 @@
     <script src="js/scene-animation.js"></script>
     <script src="js/combat-fx-paint.js"></script>
     <script src="js/combat-fx-presentation.js"></script>
+    <script src="js/combat-fx-collar-knee.js"></script>
     <script src="js/combat-fx-runtime.js"></script>
     <script src="js/combat-fx-dash.js"></script>
     <script src="js/combat-fx-dash-runtime.js"></script>
+    <script src="js/combat-fx-breath.js"></script>
+    <script src="js/combat-fx-breath-runtime.js"></script>
     <script src="js/core/map-projection.js"></script>
     <script src="js/core/base-hideout-art.js?v=hideout-facilities-20261101"></script>
     <script src="js/core/tile-renderer-v2.js?v=hideout-facilities-20261101"></script>
-    <script src="js/scene-renderer.js?v=devices-20260915"></script>
+    <script src="js/scene-renderer.js?v=hideout-vision-20261025"></script>
     <script src="js/scene-systems.js"></script>
     <script src="js/save-system.js"></script>
     <script src="js/death-system.js"></script>
@@ -4569,11 +4573,11 @@
     <script src="js/pharmacy-station.js"></script>
     <script src="js/station-context.js"></script>
     <script src="js/cooking-station-panel.js"></script>
-    <link rel="stylesheet" href="css/cooking-repair.css">
+    <link rel="stylesheet" href="css/cooking-repair.css?v=repair-sequence-20261027-visibility">
     <script src="js/facility-unlock-config.js"></script>
-    <script src="js/facility-unlock.js"></script>
+    <script src="js/facility-unlock.js?v=repair-sequence-20261027-basic"></script>
     <script src="js/cooking-repair.js"></script>
-    <script src="js/cooking-repair-panel.js?v=workspace-20260926d"></script>
+    <script src="js/cooking-repair-panel.js?v=repair-sequence-20261027-basic"></script>
     <script src="js/facility-labor.js"></script>
     <script src="js/facility-labor-panel.js"></script>
     <script src="js/toolbench-panel.js"></script>
@@ -4616,7 +4620,7 @@
     <script src="js/gym-scene.js"></script>
     <script src="js/scene-app.js"></script>
     <script src="js/background-music.js"></script>
-    <script src="assets/ui/svelte-hud.js"></script>
+    <script src="assets/ui/svelte-hud.js?v=checkpoint-stove-20261027"></script>
     <script src="assets/ui/combat-loadout.js"></script>
     <script src="js/ui-moss-game.js"></script>
     <script src="js/dungeon/vendor/settlemaker.js"></script>

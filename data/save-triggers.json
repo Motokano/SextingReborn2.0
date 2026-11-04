@@ -6,8 +6,10 @@
     "legacy": true,
     "quickbar": true,
     "inventory.transfer": true,
+    "book.reading": true,
     "warehouse": true,
     "facility": true,
+    "sleep": true,
     "craft.backpack": true,
     "craft.sewing": true,
     "craft.forging": true,
@@ -26,8 +28,6 @@
     "dungeon.claimBag": true,
     "dungeon.claimBatch": true,
     "checkpoint.task": true,
-    "sleep": true,
-    "gym": true,
-    "book.reading": true
+    "gym": true
   }
 }

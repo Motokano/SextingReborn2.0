@@ -7,7 +7,7 @@ const c=vm.createContext({console,performance:{now:()=>clock},setTimeout,clearTi
 c.GameEngine={getMap:()=>map,getState:()=>state};
 c.CombatWorld={checkAttackDistance(){},queueDisplacement(){},flushDisplacements(){if(flush)flush();}};
 c.CombatEnemies={onEnemyDamageResolved(){delivered++;}};
-for(const file of ['combat-damage','scene-animation','combat-fx-paint','combat-fx-presentation','combat-fx-events','combat-fx-runtime','combat-pipeline','core/map-projection'])vm.runInContext(read('js/'+file+'.js'),c,{filename:file});
+for(const file of ['combat-damage','scene-animation','combat-fx-paint','combat-fx-presentation','combat-fx-collar-knee','combat-fx-events','combat-fx-runtime','combat-pipeline','core/map-projection'])vm.runInContext(read('js/'+file+'.js'),c,{filename:file});
 const P=c.CombatPipeline,R=c.CombatFxRuntime,F=c.CombatFxEvents,A=c.SceneAnimation;
 P.setConfig({pipelines:{test:{phases:[{handler:'test.defense'},{handler:'builtin.damage_stub'}]}}});
 P.registerPhaseHandler('test.defense',ctx=>{

@@ -1,0 +1,40 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><base href="../"><title>院落移动检查</title>
+<link rel="stylesheet" href="css/player-pawn-rig.css"><style>
+*{box-sizing:border-box}body{margin:0;background:#161e1b;color:#e7dec1;font:14px system-ui}header{display:flex;align-items:center;gap:12px;padding:12px}button{display:inline-flex;align-items:center;justify-content:center;font:inherit;color:inherit;background:#29342a;border:1px solid #56604a;border-radius:5px;padding:8px 14px;cursor:pointer}#stage{position:relative;overflow:hidden;height:700px}#map-grid{position:absolute;left:0;top:0;transition:transform .15s ease-out}#player{position:absolute;z-index:20;width:0;height:0;pointer-events:none}pre{white-space:pre-wrap;margin:12px}#stage.instant #map-grid{transition:none}
+</style></head><body><header><button id="run" disabled>运行检查</button><button id="freeze" disabled>移动中停帧</button><span id="status">加载</span></header><div id="stage"><div id="map-grid"></div><div id="player"><div class="player-pawn-visual"></div></div></div><pre id="results"></pre>
+<script src="js/core/map-projection.js"></script><script src="js/core/base-hideout-art.js"></script><script src="js/player-pawn-rig.js"></script><script>
+(async function(){
+ const baseline=false;
+ await new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='js/core/tile-renderer-v2.js';s.onload=resolve;s.onerror=reject;document.head.append(s);});
+ const stage=document.getElementById('stage'),grid=document.getElementById('map-grid'),player=document.getElementById('player'),status=document.getElementById('status'),results=document.getElementById('results');
+ const maps=await Promise.all(['Outside','Inside'].map(async n=>(await fetch('data/maps/M0_Base_'+n+'_lv_1.json')).json()));
+ const renderer=TileRendererV2.create(grid,{cellPx:144/Math.SQRT2,combatHost:stage});
+ let map=maps[0],st={x:7,y:0},camera={x:0,y:0};
+ function meta(x,y){return{terrainVisible:true,sceneryVisible:true,environmentVisible:map===maps[0],walkable:!map.blocks.some(b=>b.x===x&&b.y===y),portal:map.portals?.find(p=>p.x===x&&p.y===y)};}
+ function render(){renderer.render({map,st,staticMetaAt:meta,dynamicMetaAt:meta,staticDataKey:map.map_id,viewport:{width:stage.clientWidth,height:700}});PlayerPawnRig.renderMask(player.firstElementChild,0);}
+ function center(){const c=renderer.getCellCenter(st.x,st.y);camera={x:stage.clientWidth/2-c.x,y:350-c.y};player.style.left=stage.clientWidth/2+'px';player.style.top='350px';renderer.setCamera(camera.x,camera.y);}
+ await new Promise(resolve=>BaseHideoutArt.load(resolve));render();center();
+ const surfaces=[grid,document.getElementById('map-grid-canvas-foreground'),document.getElementById('map-grid-canvas-combat')];
+ const frame=()=>new Promise(requestAnimationFrame);
+ function point(el){const m=new DOMMatrixReadOnly(getComputedStyle(el).transform);return{x:m.e,y:m.f};}
+ async function sample(ms){const records=[];const start=performance.now();do{await frame();const p=surfaces.map(point);records.push({t:Math.round(performance.now()-start),positions:p,error:Math.max(...p.slice(1).map(q=>Math.hypot(q.x-p[0].x,q.y-p[0].y)))});}while(performance.now()-start<ms);return records;}
+ async function reset(){document.getAnimations().forEach(a=>a.finish());map=maps[0];st={x:7,y:0};render();center();await sample(200);}
+ async function run(){document.getElementById('run').disabled=true;status.textContent='检查中';results.textContent='';await reset();const cases=[];
+ async function check(name,action,ms=210){action();const frames=await sample(ms);cases.push({name,samples:frames.length,maxError:Math.max(...frames.map(f=>f.error)),frames});}
+ for(const [dx,dy]of[[72,51],[0,102],[-72,51],[-144,0],[-72,-51],[0,-102],[72,-51],[144,0]])await check('八向 '+dx+','+dy,()=>renderer.setCamera(camera.x+dx,camera.y+dy));
+ await check('快速改向第一步',()=>renderer.setCamera(camera.x+144,camera.y),45);
+ await check('快速反向第二步',()=>renderer.setCamera(camera.x-144,camera.y+51),45);
+ await check('中途再次改向',()=>renderer.setCamera(camera.x,camera.y-102));
+ await check('重复终点',()=>renderer.setCamera(camera.x,camera.y-102));
+ await check('关闭平滑移动',()=>{stage.classList.add('instant');renderer.setCamera(camera.x,camera.y);});
+ stage.classList.remove('instant');await sample(20);
+ await check('切换室内',()=>{map=maps[1];render();renderer.setCamera(camera.x-40,camera.y-20);},45);
+ await check('途中返回院落',()=>{map=maps[0];render();renderer.setCamera(camera.x+40,camera.y+20);});
+ const report={baseline,pass:cases.every(c=>c.maxError<.1),samples:cases.reduce((n,c)=>n+c.samples,0),maxError:Math.max(...cases.map(c=>c.maxError)),cases};
+ results.textContent=JSON.stringify(report,null,2);status.textContent=report.pass?'全部通过':'发现错位';document.getElementById('run').disabled=false;
+ }
+ document.getElementById('run').onclick=()=>run().catch(e=>{status.textContent=e.message;throw e;});
+ document.getElementById('freeze').onclick=async()=>{await reset();st={x:7,y:5};render();center();await sample(200);st={x:6,y:5};render();center();await frame();await frame();document.getAnimations().forEach(a=>a.pause());status.textContent='移动中停帧';};
+ document.getElementById('run').disabled=false;document.getElementById('freeze').disabled=false;status.textContent=baseline?'旧版':'修正版';
+})().catch(e=>document.getElementById('status').textContent=e.message);
+</script></body></html>

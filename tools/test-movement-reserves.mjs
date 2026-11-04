@@ -12,7 +12,10 @@ for(const legacy of [false,true]){
  assert.equal(S.getState().satiety,80);assert.equal(S.getState().thirst,80);
  assert.equal(c.GameTime.getState().totalTicks-start,4);assert.ok(S.getState().stamina<100);
  const tick=S.getState().tickCount;assert.equal(E.moveTo(E.getState().x,1),false);assert.equal(S.getState().tickCount,tick);
+ for(let i=0;i<4;i++){S.advanceTick({source:'wait'});S.consumeStamina(.25,{source:'wait',raw:true});}
+ assert.equal(S.getState().satiety,80);assert.equal(S.getState().thirst,80);
+ assert.equal(c.GameTime.getState().totalTicks-start,8);
  S.setResting(false);for(let i=0;i<4;i++)S.advanceTick();
- assert.ok(S.getState().satiety<80);assert.ok(S.getState().thirst<80);
+ assert.equal(S.getState().satiety,76);assert.equal(S.getState().thirst,78);
 }
-console.log('PASS: actual movement advances time without food/water spending; blocked steps and subsequent normal ticks behave correctly');
+console.log('PASS: movement/wait advance time without food/water spending or deferred costs; blocked steps and subsequent normal ticks behave correctly');

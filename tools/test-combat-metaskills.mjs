@@ -23,7 +23,7 @@ try {
  assert(I.equip('weapon_right',weapon).success);
  const p=g.GameEngine.getState(),map=g.GameEngine.getMap(),enemy={enemy_id:'test_meta_target',x:p.x+1,y:p.y};map.enemies.push(enemy);
  const index=map.enemies.indexOf(enemy);
- g.CombatEnemies.setTable({enemies:{test_meta_target:{speed:10,parry_rate:0,can_attack:false,limbs_invulnerable:true,attack_damage_min:0,attack_damage_max:0}}});
+ g.CombatEnemies.setTable({enemies:{test_meta_target:{speed:10,parry_rate:0,can_attack:false,limbs_invulnerable:true,actions:[{id:'counter',limb:'rhand',power_min:0,power_max:0,damage_type:'blunt',qi_cost:0,hit_part_weights:{chest:1}}]}}});
  g.CharacterAttributes.getCombatSpeed=()=>playerSpeed;
  g.Math.random=()=>.2;
  g.Survival.setDiqiCapLimitFlatBonus('test_metaskills',1000);

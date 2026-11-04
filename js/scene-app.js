@@ -2738,8 +2738,8 @@
     }
 
     function guardPlayerActionBlocked(actionType, opts) {
-        if (window.DeathSystem && window.DeathSystem.blocked()) return true;
         if ((window.BedSleep && window.BedSleep.isActive()) || (window.GymSystem && window.GymSystem.isActive())) return true;
+        if (window.DeathSystem && window.DeathSystem.blocked()) return true;
         if (window.Hunting && window.Hunting.isActive()) {
             showMsg(ui('hunting.reason.active'), 'info');
             return true;
@@ -3245,6 +3245,11 @@
             }
         } catch (eO) { /* ignore */ }
         return Math.max(0.01, Math.round(cost * 100) / 100);
+    }
+
+    function getStepStaminaCost() {
+        var cost = computeMoveStaminaCost();
+        return window.Survival && window.Survival.getActionStaminaCost ? window.Survival.getActionStaminaCost(cost) : cost;
     }
 
     function patchSurvivalTickForCookingCraftOnce() {
@@ -5571,9 +5576,7 @@
                 disp = tpl.sn || tpl.placeholder_name || ui('hideout_warehouse.item.unknown');
             }
             if (!disp) disp = ui('hideout_warehouse.item.unknown');
-            if (f) {
-                if (String(id).toLowerCase().indexOf(f) < 0 && String(disp).toLowerCase().indexOf(f) < 0) continue;
-            }
+            if (!IE.matchesDebugItemSearch(id, f, disp)) continue;
             var row = document.createElement('div');
             row.className = 'warehouse-item-row';
             var nameEl = document.createElement('div');
@@ -7729,8 +7732,6 @@
                 render: render,
                 tryPharmacyAtStation: tryPharmacyAtStation,
                 tryCompoundAtStation: tryCompoundAtStation,
-                canAddFuelAtCurrentTile: canAddFuelAtCurrentTile,
-                onAddFuelClick: onAddFuelClick,
                 isPreCreationGameplayRestricted: isPreCreationGameplayRestricted,
                 showIntroBlockedMsg: showIntroBlockedMsg,
                 guardPlayerComaBlocked: guardPlayerComaBlocked
@@ -7825,6 +7826,16 @@
                 if (window.SceneRenderer && typeof window.SceneRenderer.render === 'function') window.SceneRenderer.render();
                 return true;
             };
+            window.SceneCtx.actions.waitInPlace = function () {
+                var S = window.Survival;
+                if (!S || S.isDead() || isStoryMovementLocked()) return false;
+                var cost = getStepStaminaCost();
+                S.advanceTick({ source: 'wait' });
+                S.consumeStamina(cost, { source: 'wait', raw: true });
+                setRestingActionActive(false, { showMsg: false });
+                stopGatheringIdle();
+                return true;
+            };
             window.SceneCtx.actions.tryMoveTo = function (tx, ty, dx, dy) {
                 if (isStoryMovementLocked()) return;
                 if (guardPlayerComaBlocked()) return;
@@ -7839,8 +7850,7 @@
                 }
                 if (guardPlayerActionBlocked(ACTION_TYPES.MOVE)) return;
                 // 移动耗体力（k17 补全，05 5.5.4）：每格 = 配置基础消耗 × (1+鞋moveCostMod) × 超重系数；体力不足无法移动
-                var moveStaminaCost = computeMoveStaminaCost();
-                if (window.Survival && window.Survival.getActionStaminaCost) moveStaminaCost = window.Survival.getActionStaminaCost(moveStaminaCost);
+                var moveStaminaCost = getStepStaminaCost();
                 var survSt = (window.Survival && typeof window.Survival.getState === 'function') ? window.Survival.getState() : null;
                 if (moveStaminaCost > 0 && survSt && Number(survSt.stamina || 0) < moveStaminaCost) {
                     showMsg(ui('log.info.move_no_stamina'), 'warn');

@@ -1,5 +1,9 @@
 # 44 · 地牢敌人完成度梯度（16 层 × 4 档）
 
+> 2026-10-27：用户确认地痞按「完整体→四档剥离」推进，并确定村外废墟第四层出现一名功夫约120级的完整Boss级地痞，是否挑战由玩家选择，撤离与探索结算不要求击杀。具体见[73号设计](73-street-thug-combat-design.md)。本文的16层分段不限制该可选头目的投放；普通敌人的一至三档分布另定。第八节的锁喉、街头霸王和旧数值仍是历史演示，不是正式地痞定稿。
+
+> 头目完整属性与战斗参数的最新审阅稿见[74号设计](74-street-thug-boss-design.md)；先审完整体，再重算低档，不据本篇历史示例回填头目数值。
+
 > 配合 [10-enemies.md](10-enemies.md)（敌人模型）、[42-dungeon-material-allocation.md](42-dungeon-material-allocation.md)（七座主题地牢 16 层材料档）、[03-death-and-insurance.md](03-death-and-insurance.md)（投保）、[04-combat-exp.md](04-combat-exp.md)（实战经验）、[30-story-outline-blackout.md](30-story-outline-blackout.md)（六劫）。
 >
 > 本文定义「敌人完成度」：同一敌人从地牢第 1 层到第 16 层逐步完整化的框架、档位划分、教学顺序、数值标定规则，以及与上述系统的挂钩。

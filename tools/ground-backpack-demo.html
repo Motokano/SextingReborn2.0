@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><base href="../"><title>地面背包 · 交互试玩</title><link rel="stylesheet" href="tools/ground-backpack-demo.css">
+<script>/* Demo dependencies cannot read or overwrite the real game save. */
+{const memory=new Map();Object.defineProperty(window,'localStorage',{value:{getItem:k=>memory.get(String(k))??null,setItem:(k,v)=>memory.set(String(k),String(v)),removeItem:k=>memory.delete(String(k)),clear:()=>memory.clear(),key:n=>[...memory.keys()][n]??null,get length(){return memory.size;}}});}</script></head>
+<body>
+<header><div><span class="eyebrow">交互试玩 · DEMO</span><h1>地面背包</h1></div><div class="setup"><label>试玩情境<select id="scenario"><option value="start">放包与自由存取</option><option value="full">随身背包只剩一格</option><option value="swap">两只背包交换</option><option value="empty">空背包再利用</option><option value="expiry">距离清理还剩两刻</option><option value="dungeon">地牢内长期放置</option></select></label><button id="restart">重新开始</button></div></header>
+<main>
+ <div class="topline"><span id="world-status"></span></div>
+ <div class="equipped"><div><span class="eyebrow">身上背包</span><strong id="equipped-name">—</strong><span id="equipped-meta" class="muted"></span></div><div class="quick-actions"><button id="drop" class="primary">整包放下</button><button id="show-carry">随身物品</button><button id="show-ground">地面物品</button></div></div>
+ <div class="layout">
+  <section class="map-panel" aria-label="试玩棋盘">
+   <div class="map-tools"><button id="grid" aria-pressed="true">格线</button><button id="door">开门</button></div>
+   <canvas id="board" aria-label="等距棋盘"></canvas>
+   <div class="map-footer"><span id="position"></span><div class="dpad" aria-label="行走"><button data-step="0,-1" aria-label="向上走">↑</button><button data-step="-1,0" aria-label="向左走">←</button><button data-step="0,1" aria-label="向下走">↓</button><button data-step="1,0" aria-label="向右走">→</button></div><button id="stop" hidden>停止行走</button></div>
+   <div id="feedback" role="status" aria-live="polite" hidden></div>
+   <details class="extra"><summary>试玩控制</summary><div class="actions"><button id="wait">等待1刻</button><button id="wait10">等待10刻</button><button id="fail">下次保存失败</button><button id="reload">重载试玩记录</button><button id="death">模拟死亡</button></div></details>
+  </section>
+ </div>
+ <dialog id="interaction-window" class="interaction" aria-labelledby="interaction-title">
+  <div class="window-heading"><h2 id="interaction-title">背包交互</h2><button id="close-window" aria-label="关闭交互窗口" autofocus>关闭 ×</button></div>
+  <div class="window-body">
+   <button id="back-to-list" class="back-link" hidden>← 返回物品列表</button>
+   <div id="ground-picker"><div class="ground-heading"><h2 id="ground-picker-title">地面物品</h2><span id="ground-count" class="muted"></span></div><div id="ground-list" class="ground-list" aria-label="可选择的地面物品"></div></div>
+   <div id="inventory-columns" class="inventory-columns" hidden>
+    <div id="carry-content" class="inventory-column"><div class="container-title"><h2 id="carry-title">随身容器</h2><select id="destination" aria-label="随身容器"><option value="pocket">衣服口袋</option><option value="backpack">装备背包</option><option value="vehicle">绑定载具</option></select></div><div id="carry-slots"></div><div id="carry-detail"></div></div>
+    <div id="ground-content" class="inventory-column"></div>
+   </div>
+   <p id="window-feedback" class="window-feedback" role="status" aria-live="polite" hidden></p>
+  </div>
+ </dialog>
+</main>
+<script src="js/item-attribute-modules.js"></script><script src="js/backpack-config.js"></script><script src="js/backpack-system.js"></script><script src="js/inventory-equipment.js"></script><script src="js/hideout-warehouse.js"></script><script src="js/core/map-projection.js"></script><script src="js/core/tile-renderer-v2.js"></script><script type="module" src="tools/ground-backpack-demo.mjs"></script>
+</body></html>

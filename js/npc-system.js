@@ -1075,8 +1075,11 @@
                 log('NPC 当前不在场（' + t + '）：' + npcId, 'warn');
                 return;
             }
-            if (global.DungeonCheckpoint && global.DungeonCheckpoint.isKeeper(npcId)) { global.DungeonCheckpoint.open(def); return; }
-            var isFacility = !!def.bathroom || !!def.gymStation;
+            if (global.DungeonCheckpoint && global.DungeonCheckpoint.isKeeper(npcId)) {
+                global.DungeonCheckpoint.open(def);
+                return;
+            }
+            var isFacility = def.id.indexOf('npc.station.') === 0 || (Array.isArray(def.tags) && def.tags.indexOf('base_facility') >= 0);
             menuState = { open: true, title: def.displayTitle || def.name || 'NPC', compact: isFacility, hint: isFacility ? '' : tUi('npc.menu.close_hint', '需要靠近才能操作。'), buttons: [] };
             function addButton(button) { menuState.buttons.push(button); publishMenu(); }
             function mkBtn(text, onClick, icon) { return { text: text, run: onClick, disabled: false, icon: isFacility ? (icon || 'point') : '' }; }
@@ -1094,6 +1097,48 @@
                     menuState.buttons.push(button);
                 });
                 publishMenu();
+                return;
+            }
+
+            if (def.id === 'npc.station.cooking_base') {
+                function atStove() {
+                    var context = global.StationContext && global.StationContext.getCurrentCookingStationContext();
+                    return sameLocation() && context && context.station_type === 'main' && context.map_id === def.location.sceneId;
+                }
+                if (!atStove()) { closeMenu(); return; }
+                function reopenStove() { if (atStove() && !menuState.open) openMenu(npcId); }
+                function repairStove(id) {
+                    if (epoch !== menuEpoch || !atStove()) return;
+                    var project = global.FacilityUnlock && global.FacilityUnlock.get(id), panel = global.FacilityUnlockPanel;
+                    if (!project || !project.accessible() || !panel || panel.isOpen()) { hint('暂时无法修复。'); return; }
+                    panel.open(id, reopenStove);
+                    if (panel.isOpen()) closeMenu();
+                }
+                function stoveMenu() {
+                    if (epoch !== menuEpoch || !atStove()) return;
+                    menuState.compact = true; menuState.detail = ''; menuState.back = null; menuState.hint = ''; menuState.buttons = [];
+                    var repaired = global.NPCSystem.isDemoFlagTrue('cooking_base_station_unlocked');
+                    function action(text, icon, run) { var b = mkBtn(text, run); b.icon = icon; menuState.buttons.push(b); }
+                    if (!repaired) action('修复灶台', 'point', function () { repairStove('cooking'); });
+                    else {
+                        action('使用灶台', 'food', function () {
+                            if (epoch !== menuEpoch || !atStove() || !global.NPCSystem.isDemoFlagTrue('cooking_base_station_unlocked')) return;
+                            if (global.SceneApp && global.SceneApp.openCookingStationPanel) global.SceneApp.openCookingStationPanel();
+                            if (global.CookingStationPanel && global.CookingStationPanel.isOpen()) closeMenu();
+                            else hint('暂时无法使用灶台。');
+                        });
+                        var water = global.FacilityUnlock && global.FacilityUnlock.get('water');
+                        if (water && !water.isComplete()) action('修复灶台供水', 'water', function () { repairStove('water'); });
+                    }
+                    action('查看灶台', 'search', function () {
+                        if (epoch !== menuEpoch || !atStove()) return;
+                        var ready = global.NPCSystem.isDemoFlagTrue('cooking_base_station_unlocked'), water = global.FacilityUnlock && global.FacilityUnlock.get('water');
+                        menuState.detail = !ready ? '灶体和支架有破损，需要修复。' : water && water.isComplete() ? '灶台完好，供水已接通。' : '灶台可以使用，供水尚未接通。';
+                        menuState.hint = ''; menuState.buttons = []; menuState.back = stoveMenu; publishMenu();
+                    });
+                    publishMenu();
+                }
+                stoveMenu();
                 return;
             }
 
@@ -1163,7 +1208,7 @@
             // Sewing follows its construction stage instead of listing every locked tool.
             if (def.id === 'npc.station.sewing_base') {
                 function reopen() { if (sameLocation()) openMenu(npcId); }
-                addButton(mkBtn('查看缝纫台', function () {
+                var sewingInfo = mkBtn('查看缝纫台', function () {
                     var progress = menuState.hint;
                     loadDialoguePoolsForNpc(npcId).then(function (doc) {
                         if (epoch !== menuEpoch || !sameLocation()) return;
@@ -1178,7 +1223,7 @@
                             playerName:getPlayerName(),onQueueExhausted:reopen
                         });
                     });
-                }));
+                }, 'search');
                 if (global.NPCSystem.isDemoFlagTrue('sewing_station_unlocked')) {
                     hint('测量、人台与浸泡桶均在缝纫界面内管理。');
                     addButton(mkBtn('使用缝纫台', function () {
@@ -1195,7 +1240,7 @@
                         addButton(mkBtn('测量身材 · 10分钟', function () {
                             var r = global.SewingSystem.measureAtTools();
                             if (r.ok) reopen(); else hint(r.message);
-                        }));
+                        }, 'clock'));
                     } else if (next) {
                         hint('下一步：' + next.spec.title + '。进入后查看材料需求与装配进度。');
                         addButton(mkBtn(next.spec.title, function () {
@@ -1209,7 +1254,7 @@
                         }));
                     } else hint('缝纫台数据尚未就绪，请重新进入。');
                 }
-                addButton(mkBtn('离开', closeMenu));
+                addButton(sewingInfo);
                 return;
             }
 
@@ -1262,7 +1307,7 @@
                 return tagsB.indexOf('bed_station') >= 0;
             }
 
-            addButton(mkBtn(def.id.indexOf('npc.station.') === 0 ? '查看'+(def.displayTitle||def.name) : tUi('npc.menu.chat'), function () {
+            var infoButton = mkBtn(isFacility ? '查看'+(def.displayTitle||def.name) : tUi('npc.menu.chat'), function () {
                 closeMenu();
                 var chatEpoch = menuEpoch;
                 log('[NPCSystem] NPC chat clicked: npc=' + String(npcId), 'system');
@@ -1311,43 +1356,49 @@
                         playChatEntry(def, entry);
                     }
                 });
-            }));
+            }, 'search');
+            if (!isFacility) addButton(infoButton);
 
             var facilityActions = {
                 'npc.station.forging_base': ['forging'],
                 'npc.station.pharmacy_base': ['pharmacy'],
-                'npc.station.compost_base': ['compost'],
-                'npc.station.cooking_base': ['water']
+                'npc.station.compost_base': ['compost']
             };
+            function facilityReady() {
+                return (facilityActions[def.id] || []).every(function (id) {
+                    var project = global.FacilityUnlock && global.FacilityUnlock.get(id);
+                    return project && project.isComplete();
+                });
+            }
             (facilityActions[def.id] || []).forEach(function (id) {
                 var project = global.FacilityUnlock && global.FacilityUnlock.get(id);
-                if (!project) return;
-                var complete = project.isComplete();
-                var button = mkBtn(project.spec.title + (complete ? '（已完成）' : ''), function () {
-                    closeMenu();
-                    global.FacilityUnlockPanel.open(id);
+                if (!project || project.isComplete()) return;
+                var button = mkBtn(project.spec.title, function () {
+                    if (epoch !== menuEpoch || !sameLocation()) return;
+                    var current = global.FacilityUnlock.get(id), panel = global.FacilityUnlockPanel;
+                    if (!current || !current.accessible() || !panel || panel.isOpen()) { hint('暂时无法修复。'); return; }
+                    panel.open(id, function () { if (sameLocation() && !menuState.open) openMenu(npcId); });
+                    if (panel.isOpen()) closeMenu();
                 });
-                button.disabled = complete || !project.accessible();
-                if (id === 'water' && !global.NPCSystem.isDemoFlagTrue('cooking_base_station_unlocked')) button.title = '先修好灶台';
+                button.disabled = !project.accessible();
                 addButton(button);
             });
             if (def.id === 'npc.station.observation_base') {
-                addButton(mkBtn('使用工具台', function () {closeMenu();if(global.ToolbenchPanel)global.ToolbenchPanel.open();}));
+                var toolsReady = ['calendar', 'temperature'].every(function (id) {
+                    var project = global.FacilityUnlock && global.FacilityUnlock.get(id);
+                    return project && project.isComplete();
+                });
+                addButton(mkBtn(toolsReady ? '使用工具台' : '装配工具台', function () {closeMenu();if(global.ToolbenchPanel)global.ToolbenchPanel.open();}));
             }
-            if (def.id === 'npc.station.forging_base') {
+            if (def.id === 'npc.station.forging_base' && facilityReady()) {
                 var forgeButton = mkBtn('使用铸造台', function () {
+                    if (epoch !== menuEpoch || !sameLocation() || !facilityReady()) return;
                     if (global.ForgingStationPanel && global.ForgingStationPanel.open()) closeMenu();
                 });
                 forgeButton.disabled = !global.ForgingSystem || !global.ForgingSystem.canAccess();
                 addButton(forgeButton);
             }
             if (shouldShowOpenCookingPanelButton(def)) {
-                if (def.id === 'npc.station.cooking_base' && !global.NPCSystem.isDemoFlagTrue('cooking_base_station_unlocked')) {
-                    addButton(mkBtn('修复灶台', function () {
-                        closeMenu();
-                        if (global.CookingRepairPanel) global.CookingRepairPanel.open();
-                    }));
-                }
                 var cookBtn = mkBtn(tUi('npc.menu.open_cooking_panel', '使用灶台'), function () {
                     if (global.SceneApp && typeof global.SceneApp.isCookingStationPanelBlockedByRepair === 'function'
                         && global.SceneApp.isCookingStationPanelBlockedByRepair()) {
@@ -1362,7 +1413,7 @@
                     if (global.SceneApp && typeof global.SceneApp.openCookingStationPanel === 'function') {
                         global.SceneApp.openCookingStationPanel();
                     }
-                });
+                }, 'food');
                 if (global.SceneApp && typeof global.SceneApp.isCookingStationPanelBlockedByRepair === 'function'
                     && global.SceneApp.isCookingStationPanelBlockedByRepair()) {
                     cookBtn.disabled = true;
@@ -1372,8 +1423,9 @@
                 addButton(cookBtn);
             }
 
-            if (shouldShowOpenPharmacyPanelButton(def)) {
+            if (shouldShowOpenPharmacyPanelButton(def) && facilityReady()) {
                 var pharmBtn = mkBtn(tUi('npc.menu.open_pharmacy_panel', '使用制药台'), function () {
+                    if (epoch !== menuEpoch || !sameLocation() || !facilityReady()) return;
                     if (global.SceneApp && typeof global.SceneApp.isPharmacyStationPanelBlockedByRepair === 'function'
                         && global.SceneApp.isPharmacyStationPanelBlockedByRepair()) {
                         try {
@@ -1387,7 +1439,7 @@
                     if (global.SceneApp && typeof global.SceneApp.openPharmacyStationPanel === 'function') {
                         global.SceneApp.openPharmacyStationPanel();
                     }
-                });
+                }, 'medical');
                 if (global.SceneApp && typeof global.SceneApp.isPharmacyStationPanelBlockedByRepair === 'function'
                     && global.SceneApp.isPharmacyStationPanelBlockedByRepair()) {
                     pharmBtn.disabled = true;
@@ -1397,13 +1449,14 @@
                 addButton(pharmBtn);
             }
 
-            if (shouldShowOpenCompostPanelButton(def)) {
+            if (shouldShowOpenCompostPanelButton(def) && facilityReady()) {
                 var compostBtn = mkBtn(tUi('npc.menu.open_compost_panel', '使用制肥桶'), function () {
+                    if (epoch !== menuEpoch || !sameLocation() || !facilityReady()) return;
                     closeMenu();
                     if (global.SceneApp && typeof global.SceneApp.openCompostStationPanel === 'function') {
                         global.SceneApp.openCompostStationPanel();
                     }
-                });
+                }, 'grid');
                 addButton(compostBtn);
             }
 
@@ -1414,7 +1467,7 @@
                     if (global.SceneApp && typeof global.SceneApp.openAgriculturePanel === 'function') {
                         global.SceneApp.openAgriculturePanel();
                     }
-                });
+                }, 'grid');
                 addButton(agBtn);
             }
 
@@ -1424,7 +1477,7 @@
                     if (global.SceneApp && typeof global.SceneApp.openHideoutWarehousePanel === 'function') {
                         global.SceneApp.openHideoutWarehousePanel();
                     }
-                });
+                }, 'bag');
                 addButton(whBtn);
             }
 
@@ -1435,7 +1488,7 @@
                     if (global.SceneApp && typeof global.SceneApp.openLivestockPanel === 'function') {
                         global.SceneApp.openLivestockPanel();
                     }
-                });
+                }, 'grid');
                 addButton(lsBtn);
             }
 
@@ -1445,11 +1498,12 @@
                     if (global.SceneApp && typeof global.SceneApp.trySleepAtBed === 'function') {
                         global.SceneApp.trySleepAtBed();
                     }
-                });
+                }, 'fatigue');
                 addButton(bedBtn);
             }
 
-            addButton(mkBtn(tUi('npc.menu.leave'), function () { closeMenu(); }));
+            if (isFacility) addButton(infoButton);
+            else addButton(mkBtn(tUi('npc.menu.leave'), function () { closeMenu(); }));
         });
     }
 
@@ -1522,7 +1576,10 @@
                     if (spec.workTicks) setFlag((spec.key || ('facility_progress:' + id)) + ':work', 0);
                     setFlag(spec.unlock, false);
                 });
-                global.FacilityUnlockConfig.materials.forEach(function (m) { setFlag('repair_use_known:' + m[0], false); });
+                global.FacilityUnlockConfig.materials.forEach(function (m) {
+                    setFlag('repair_use_known:' + m[0], false);
+                    setFlag('repair_material_used:' + m[0], false);
+                });
             }
             if (global.ToolbenchPanel) global.ToolbenchPanel.close();
             if (global.SewingStationPanel) global.SewingStationPanel.close();

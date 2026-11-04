@@ -25,15 +25,13 @@
                 }
                 return;
             }
-            // 空格：过 1 个全局 tick（长按连发由 e.repeat 屏蔽）
+            // 空格：按移动一格结算时间与消耗，保留位置和朝向；长按不连发。
             if (e.key === ' ' || e.key === 'Spacebar') {
                 if (e.repeat) return;
                 if (window.DialogueUI && typeof window.DialogueUI.isDialogueOpen === 'function' && window.DialogueUI.isDialogueOpen()) return;
                 if (window.SceneApp && typeof window.SceneApp.isStoryMovementLocked === 'function' && window.SceneApp.isStoryMovementLocked()) return;
                 e.preventDefault();
-                if (window.Survival && typeof window.Survival.advanceTick === 'function') {
-                    window.Survival.advanceTick();
-                }
+                if (!ctx.actions || typeof ctx.actions.waitInPlace !== 'function' || !ctx.actions.waitInPlace()) return;
                 if (window.GameLog && window.UIText && typeof window.UIText.t === 'function') {
                     window.GameLog.log(window.UIText.t('log.system.tick.space'), 'system');
                 }

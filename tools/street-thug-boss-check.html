@@ -1,0 +1,27 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><base href="../"><title>地头头目 · 正式接入检查</title>
+<style>body{margin:0;background:#17231d;color:#e6ddca;font:14px 'Microsoft Yahei',sans-serif}header{padding:12px 20px}h1{font-size:20px;margin:0 0 7px}button{background:#3b5143;color:#fff0d2;border:1px solid #81947d;padding:7px 14px;margin:4px}iframe{width:100%;height:760px;border:0}#status{white-space:pre-wrap;line-height:1.7}</style>
+<header><h1>第四层 · 地头头目</h1><div>正式地图、头目属性与战斗管线。独立内存试场，不读取或写入你的游戏存档。</div>
+<button id="wait" disabled>等待一回合</button><button id="knee" disabled>查看扯领膝撞</button><button id="corpse" disabled>查看倒地棋子</button><button id="exit" disabled>绕开头目撤离</button><button id="reset" onclick="location.reload()">重新开始</button><div id="status">加载正式游戏…</div></header><iframe id="game"></iframe>
+<script>
+(async()=>{
+ const frame=document.getElementById('game'),status=document.getElementById('status');
+ const storage=`<script>const memory=new Map();Object.defineProperty(window,'localStorage',{value:{getItem:k=>memory.get(k)??null,setItem:(k,v)=>memory.set(k,String(v)),removeItem:k=>memory.delete(k),clear:()=>memory.clear(),key:n=>Array.from(memory.keys())[n]??null,get length(){return memory.size}}});<\/script>`;
+ const source=await fetch('index.html?no_reload').then(r=>r.text());
+ frame.srcdoc=source.replace('<head>','<head><base href="'+new URL('.',document.baseURI).href+'">'+storage);
+ await new Promise(resolve=>frame.onload=resolve);const g=frame.contentWindow;await g.AppBoot.ready;await g.DungeonRuntime.ready;
+ g.CharacterAttributes.setState({character_creation_completed:true});g.document.getElementById('character-creation-overlay')?.classList.add('hidden');
+ g.MapProjection.setMode('isometric');g.GameEngine.setState('M0_Field_02',7,7);const D=g.DungeonRuntime,CE=g.CombatEnemies,id='enemy.street_thug_boss';
+ if(!D.enter({seed:'boss-runtime-review'}))throw Error('试场进入失败');
+ for(let i=1;i<4;i++){const s=D.getSim();g.GameEngine.setState(D.getRun().mapId,s.map.exit%s.map.width,Math.floor(s.map.exit/s.map.width));D.sync();if(!D.descend())throw Error('试场下层失败');}
+ g.DungeonPanel.close({silent:true});
+ const s=D.getSim(),map=g.GameEngine.getMap(),index=map.enemies.findIndex(e=>e.enemy_id===id),rec=map.enemies[index],e=s.enemies.find(e=>e.uid===rec.dungeonUid);
+ const near=g.RuinsEncounter.neighbours(e.cell,s.map).find(k=>D.walkable(k%s.map.width,Math.floor(k/s.map.width))&&!s.enemies.some(n=>n.cell===k)&&g.RuinsEncounter.lineOfSight(s,e.cell,k));
+ g.GameEngine.setState(map.map_id,near%s.map.width,Math.floor(near/s.map.width));g.SceneCtx.setFacingDir(g.RuinsEncounter.direction(near,e.cell,s.map.width));
+ function show(){D.refresh();const b=CE.bossInfo(id,map.map_id,index),q=CE.getEnemyQi(id,map.map_id,index);status.textContent=`底气 ${b.diqi}/500 · 气力 ${q.current}/100 · 催气积蓄 ${b.charge}/200 · 催气剩余 ${b.burstRemaining} 招\n普通招消耗14 · 扯领膝撞21 · 头目房间以外保留撤离通路`;}
+ document.getElementById('wait').onclick=()=>{g.Survival.advanceTick();show();};
+ document.getElementById('knee').onclick=()=>{g.BuffSystem.setBuffStacks('player','buff_off_balance',1);g.CombatWorld.runEnemyAttackOnPlayer(id,rec.x,rec.y);show();};
+ document.getElementById('corpse').onclick=()=>{CE.onEnemyDamageResolved({defender:{kind:'enemy',enemyId:id,mapId:map.map_id,index},hitPart:'head',finalDamage:60,hitRollSuccess:true});g.CombatWorld.settleEnemyKills();D.refresh();status.textContent='倒地后使用既有尸体棋子；伤残不视为死亡。';for(const key of ['knee','wait','corpse'])document.getElementById(key).disabled=true;};
+ document.getElementById('exit').onclick=()=>{const m=D.getSim().map;g.GameEngine.setState(map.map_id,m.exit%m.width,Math.floor(m.exit/m.width));D.sync();const ok=D.withdraw();g.DungeonPanel.close({silent:true});if(ok)for(const key of ['knee','wait','corpse','exit'])document.getElementById(key).disabled=true;status.textContent=ok?'已成功撤离。无需击败头目。':'撤离失败';};
+ document.querySelectorAll('button').forEach(b=>b.disabled=false);show();
+})().catch(e=>{document.getElementById('status').textContent=e.stack;console.error(e);});
+</script></html>

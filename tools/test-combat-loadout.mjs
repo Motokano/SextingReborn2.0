@@ -78,9 +78,13 @@ test('approved default loadout: ownership, breathing costs, muscle gate/progress
         await click(h, '[data-group-open=shoulder_l]');
         assert.ok(d.querySelector('#modal-combat .window').inert);
         const muscle = AP.getMusclesByGroup('shoulder_l')[0];
-        await click(h, `[data-muscle=${muscle.id}] button`);
-        assert.equal(AP.isUnlocked(muscle.id), true);
-        assert.ok(d.activeElement.closest(`[data-muscle=${muscle.id}]`), 'unlock keeps focus on the same tile');
+        assert.equal(d.querySelector(`[data-muscle=${muscle.id}] button`),null,'no manual unlock control');
+        await click(h, `[data-muscle=${muscle.id}] .muscle-tile`);
+        assert.equal(AP.isUnlocked(muscle.id),false,'viewing does not unlock');
+        AP.addGrowth(muscle.id,19.75);g.SvelteCombat.refresh();await h.drain();
+        assert.match(d.querySelector(`[data-muscle=${muscle.id}]`).textContent,/19\.75%/);
+        AP.addGrowth(muscle.id,80.25);g.SvelteCombat.refresh();await h.drain();
+        assert.equal(AP.isUnlocked(muscle.id),true);assert.match(d.querySelector(`[data-muscle=${muscle.id}]`).textContent,/100\.00%/);
         const bonus = AP.getStatBonus();
         for (const [key, name] of [['jingu', '后天筋骨'], ['flexibility', '后天柔韧'], ['breath', '后天呼吸'], ['dexterity', '后天身手']]) {
             if (bonus.acquired[key]) assert.ok(compact(d.querySelector('.muscle-bonuses').textContent).includes(name + '+' + bonus.acquired[key]));
@@ -90,7 +94,7 @@ test('approved default loadout: ownership, breathing costs, muscle gate/progress
         await h.drain();
         assert.equal(d.querySelector('#combat-loadout-picker'), null);
         assert.equal(g.SceneApp.combatApi.getOpen('combat'), true, 'nested Escape keeps main loadout open');
-        assert.equal(ticks, 3, 'nested navigation and unlock do not advance time');
+        assert.equal(ticks, 3, 'reading growth does not advance time');
 
         for (const group of ['shoulder_l', 'shoulder_r']) for (const entry of AP.getMusclesByGroup(group)) AP.unlock(entry.id);
         g.SvelteCombat.refresh(); await h.drain();

@@ -26,7 +26,7 @@ for(let mask=0;mask<128;mask++){
  ca.setState({part_destroy:Object.fromEntries(parts.map((p,i)=>[p,mask&(1<<i)?ca.getBodyPartDestroyMax(p):ca.getBodyPartDestroyMax(p)-1]))});
  assert.equal(render.readMask(ca),mask);
  const el=makeElement();render.update(el);await flush();assert.equal(el.getAttribute('data-rig-state'),state.id);assert.ok(el.classList.contains('has-atlas-pawn'));
- const scale=manifest.displayBaseWidth/state.baseWidth;
+ const scale=manifest.displayBaseWidth*1.25/state.baseWidth;
  assert.equal(el.style['--atlas-shadow-x'],(state.anchor[0]*scale-64)+'px','shadow shares body anchor x');
  assert.equal(el.style['--atlas-shadow-y'],(state.anchor[1]*scale-40)+'px','shadow shares body anchor y');
  assert.ok(el.style['--atlas-shadow'].startsWith('url("data:image/png'),'merged shadow is supplied for every state');
@@ -37,7 +37,21 @@ for(let mask=0;mask<128;mask++){
 assert.equal(requests.length,16,'page cache');assert.equal(draws.length,256,'body and shadow frame caches');
 const el=makeElement();render.renderMask(el,127);render.renderMask(el,0);await flush();assert.equal(el.getAttribute('data-rig-state'),'D000','stale result ignored');
 assert.throws(()=>render.renderMask(el,128));
+// Presentation size must cover every injury state without moving the ground anchor.
+sandbox.PawnDisplayScale=1;
+for(let mask=0;mask<128;mask++){
+ const state=manifest.states[mask],scale=manifest.displayBaseWidth/state.baseWidth;
+ render.renderMask(el,mask);await flush();
+ assert.equal(el.getAttribute('data-rig-state'),state.id);
+ assert.equal(el.style['--atlas-width'],state.crop[2]*scale+'px');
+ assert.equal(el.style['--atlas-height'],state.crop[3]*scale+'px');
+ assert.equal(el.style['--atlas-y'],(8-state.anchor[1]*scale)+'px','same ground anchor after enlargement');
+ assert.equal(el.style['--atlas-shadow-y'],(state.anchor[1]*scale-40)+'px','enlarged shadow follows base');
+}
+sandbox.PawnDisplayScale=1.25;render.renderMask(el,0);sandbox.PawnDisplayScale=1;render.renderMask(el,0);await flush();
+assert.ok(Math.abs(parseFloat(el.style['--atlas-width'])-manifest.states[0].crop[2]*manifest.displayBaseWidth/manifest.states[0].baseWidth)<1e-8,'switch back while an enlarged frame is pending');
+assert.equal(requests.length,16,'size changes reuse the original 16 atlas pages');
 // Fresh renderer: failed image load must enable the existing fallback.
 vm.runInContext(read('js/player-pawn-rig.js'),sandbox);fail=true;
 const broken=makeElement();sandbox.PlayerPawnRig.update(broken);await flush();assert.equal(sandbox.PlayerPawnRig.update(broken),false);assert.ok(!broken.classList.contains('has-atlas-pawn'));
-console.log('PASS: 128 real attribute thresholds/recovery, exact atlas mapping/crops, RGBA pages, caches, stale loads and failure fallback.');
+console.log('PASS: 128 attribute/injury states, atlas crops, RGBA pages, 125% default and 100% comparison, fixed foot/shadow anchors, caches, stale loads and fallback.');

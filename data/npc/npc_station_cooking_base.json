@@ -26,7 +26,7 @@
   "behavior": {
     "type": "workbench",
     "origin": "base_hideout",
-    "description": "设施 NPC：邻格点灶格走 interactNpc 打开与林经理同套菜单；闲聊走 triggers，使用灶台打开烹饪面板。"
+    "description": "设施 NPC：邻格点击打开检查站式紧凑菜单，按状态显示修复、使用和供水修复；查看灶台在同窗显示状态并可返回，使用灶台打开烹饪面板。"
   },
   "fallbackDialoguePoolId": "npc.station.cooking_base.fallback",
   "fallbackPoolRules": [

@@ -3,3 +3,16 @@
 .cr-slider{display:flex;flex-direction:column;align-items:flex-end;gap:4px;width:48%;min-width:120px}.cr-material .cr-slider input{width:100%;padding:0;accent-color:#e2b877;cursor:pointer;min-height:28px;border:0}.cr-slider output{font-size:13px;color:#e2b877;white-space:nowrap}
 
 .cr-body nav{flex-wrap:wrap;margin-top:16px}.cr-body nav button{min-width:100px}.cr-explanation{white-space:pre-line;color:#c9bb9f}
+
+.cr-steps{list-style:none;margin:0 0 16px;padding:0;display:flex;gap:10px;flex-wrap:wrap}
+.cr-step{flex:1;min-width:150px;display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:2px solid var(--ui-border,#514332);color:var(--ui-muted,#ac9f8d);font-size:13px}
+.cr-step small{display:block;font-size:12px;margin-top:3px}.cr-step-number{flex:none;width:24px;height:24px;border:1px solid currentColor;border-radius:50%;display:grid;place-items:center}
+.cr-step.is-current{border-color:#e2b877;color:#efcf93;font-weight:700}.cr-step.is-complete{color:#b4c69a}.cr-step.is-locked{opacity:.65}
+.cr-current{padding-top:2px}.cr-current h2{margin:6px 0 10px;font-size:22px}
+.cr-repair-material{gap:16px;padding:14px 12px;margin-top:8px}.cr-repair-material small{margin-top:4px;font-size:12px}
+.cr-repair-slider{width:38%;flex-shrink:0}.cr-repair-slider input:disabled{opacity:.45;cursor:not-allowed}
+.cr-alternatives{margin-top:10px;font-size:13px;color:var(--ui-muted,#ac9f8d)}.cr-alternatives summary{cursor:pointer;padding:4px 0}
+.cr-commit{margin-top:16px}.cr-commit .cr-primary{display:block;width:100%}
+.cr-window button.cr-primary{background:#586148;border-color:#a3ab79;color:#fff1cf;font-weight:700;padding:11px 18px}.cr-window button.cr-primary:hover{background:#697252}
+.cr-feedback,.cr-empty{background:#969d6c12;border-left:3px solid #929b69;padding:12px 16px;margin:16px 0}.cr-feedback p{margin:4px 0 0;font-size:13px}.cr-empty p{margin-top:0}.cr-finished{text-align:center;padding:16px 0}
+@media(max-width:540px){.cr-body{padding:18px}.cr-steps{display:block}.cr-step{min-width:0;padding:8px 0}.cr-step small{display:inline;margin-left:10px}.cr-repair-material{align-items:flex-start;flex-direction:column;gap:10px}.cr-repair-slider{width:100%}}

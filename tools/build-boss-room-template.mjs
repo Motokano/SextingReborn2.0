@@ -1,0 +1,13 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+const root='assets/dungeon/street-thug-boss-room-v6/';
+const read=file=>JSON.parse(fs.readFileSync(root+file,'utf8'));
+const template=read('room-template.json'),layout=read('default-layout.json'),art=read('manifest.json');
+assert.equal(layout.objects.length,template.objects.length);
+const positions=new Map(layout.objects.map(p=>[p.uid,p]));
+template.objects=template.objects.map(p=>{const pos=positions.get(p.uid);assert.ok(pos,p.uid);return {...p,x:pos.x,y:pos.y};});
+const output='// Generated from the approved v6 room template, user layout and art manifest.\n// Run node tools/build-boss-room-template.mjs after an intentional source edit.\nglobalThis.DungeonBossRoomData='+JSON.stringify({template,art})+';\n';
+const target='js/dungeon/boss-room-data.js';
+if(process.argv.includes('--check'))assert.equal(fs.readFileSync(target,'utf8'),output);
+else fs.writeFileSync(target,output);
+console.log('Fixed boss room data '+(process.argv.includes('--check')?'matches':'built from')+' the approved layout and art.');

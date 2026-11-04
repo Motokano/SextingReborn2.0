@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {demoFrame} from './fixtures/combat-fx-demo-v13.mjs';
 const c=vm.createContext({console,performance:{now:()=>1000}});c.window=c;
 const map={},state={mapId:'parity',x:0,y:0};c.GameEngine={getMap:()=>map,getState:()=>state};
-for(const file of ['combat-fx-paint','combat-fx-presentation','combat-fx-runtime'])vm.runInContext(fs.readFileSync(new URL('../js/'+file+'.js',import.meta.url),'utf8'),c);
+for(const file of ['combat-fx-paint','combat-fx-presentation','combat-fx-collar-knee','combat-fx-runtime'])vm.runInContext(fs.readFileSync(new URL('../js/'+file+'.js',import.meta.url),'utf8'),c);
 function recorder(){
     const draws=[],stack=[];let path=[],s={globalAlpha:1,transform:[],fillStyle:'#000',strokeStyle:'#000',lineWidth:1};
     const target={draws,save(){stack.push({...s,transform:[...s.transform]});},restore(){s=stack.pop();},beginPath(){path=[];},

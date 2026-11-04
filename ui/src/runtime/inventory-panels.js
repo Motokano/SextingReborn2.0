@@ -17,7 +17,7 @@ export function inventoryPanel(g, publish, t) {
         let name = tpl ? IE.getDisplayName(tpl, tier, character) : it.item_id;
         if ((it.sewing || it.sewing_parts) && g.SewingSystem)
             name = g.SewingSystem.itemName(it);
-        return { ref: r, name, desc: tpl ? IE.getDisplayDesc(tpl, tier, character) : '', qty: it.count > 1 ? ' x' + it.count : '', meta: it.item_id, tooltip: g.SceneUi.buildItemTooltipView(it.item_id, tpl, it, character), tpl };
+        return { ref: r, name, dungeonRarity: it.dungeon_rarity, desc: tpl ? IE.getDisplayDesc(tpl, tier, character) : '', qty: it.count > 1 ? ' x' + it.count : '', meta: it.item_id, tooltip: g.SceneUi.buildItemTooltipView(it.item_id, tpl, it, character), tpl };
     }
     function owner(slot, plate) {
         const eq = IE.getState().equipment, direct = eq[slot]?.modules?.[plate];
@@ -210,8 +210,18 @@ export function inventoryPanel(g, publish, t) {
         refresh();
         return;
     } const A = g.ItemAssembly; const result = candidate ? A.attachFromContainer(slot.host, slot.id, candidate.source, candidate.index) : A.detachToInventory(slot.host, slot.id); api.message(result?.ok ? t(candidate ? 'item.assembly.message.attached' : 'item.assembly.message.detached') : g.ItemAssemblyDisplay.messageForReason(result?.reason), result?.ok ? (candidate ? 'success' : 'info') : 'warn'); changed(); }
-    function warehouse(filter) { if (filter !== undefined)
-        warehouseFilter = filter; const open = api.getOpen('warehouse'); publish('warehouse', { open, filter: warehouseFilter, rows: open ? IE.getAllItemIds().map(id => { const tpl = IE.getItemTemplate(id), c = IE.getCharacterForDisplay(), tier = IE.getItemDisplayTier(id, c), name = (tpl && IE.getDisplayName(tpl, tier, c)) || tpl?.sn || tpl?.placeholder_name || t('hideout_warehouse.item.unknown'); return { id, name, tooltip: g.SceneUi.buildItemTooltipView(id, tpl, null, c) }; }).filter(r => !warehouseFilter || (r.id + ' ' + r.name).toLowerCase().includes(warehouseFilter.trim().toLowerCase())) : [] }); }
+    function warehouse(filter) {
+        if (filter !== undefined) warehouseFilter = filter;
+        const open = api.getOpen('warehouse'), character = IE.getCharacterForDisplay();
+        const rows = [];
+        if (open) for (const id of IE.getAllItemIds()) {
+            const tpl = IE.getItemTemplate(id), tier = IE.getItemDisplayTier(id, character);
+            const name = (tpl && IE.getDisplayName(tpl, tier, character)) || tpl?.sn || tpl?.placeholder_name || t('hideout_warehouse.item.unknown');
+            if (IE.matchesDebugItemSearch(id, warehouseFilter, name))
+                rows.push({ id, name, tooltip: g.SceneUi.buildItemTooltipView(id, tpl, null, character) });
+        }
+        publish('warehouse', { open, filter: warehouseFilter, rows });
+    }
     function transferView(node){const update=()=>g.BackpackPanel.render(node,{select(c,index){state.container=c.type;state.selectedContainer=c.type;state.selectedIndex=index;state.equipDetailSlot=null;refresh();}});update();return {update,destroy(){g.BackpackPanel.cancelDrag();}};}
     return { hideDetail(){g.BackpackPanel.hideDetail();}, transferView, refresh, warehouse, action, moduleAction, install, connect, closePicker() { picker = null; refresh(); }, select(r) { if (!valid(r))
             return; state.equipDetailSlot = r.source === 'equipment' ? r.index : null; if (r.source !== 'equipment') {

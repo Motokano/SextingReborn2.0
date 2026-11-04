@@ -1021,6 +1021,15 @@
         return Object.keys(itemsTable || {}).sort();
     }
 
+    /** 调试取物专用：可按正式名称检索，显示与角色认知仍走原接口。勿用于玩法背包筛选。 */
+    function matchesDebugItemSearch(itemId, query, displayName) {
+        var needle = String(query || '').trim().toLowerCase();
+        if (!needle) return true;
+        var tpl = getItemTemplate(itemId) || {};
+        return [itemId, displayName, tpl.name, tpl.sn, tpl.name_0, tpl.name_1, tpl.name_2, tpl.placeholder_name]
+            .some(function (value) { return value != null && String(value).toLowerCase().indexOf(needle) >= 0; });
+    }
+
     /**
      * 有效基价（贸易/任务/事件）：round(模板 base_value)，品质系统已移除（见 docs/design/41-quality-removal.md）。
      * @param {string} itemId
@@ -3286,6 +3295,7 @@
         itemInstancesCanStack: itemInstancesCanStack,
         getEffectiveBaseValue: getEffectiveBaseValue,
         getAllItemIds: getAllItemIds,
+        matchesDebugItemSearch: matchesDebugItemSearch,
         getItemDisplayTier: getItemDisplayTier,
         isLanguageTextUnlocked: isLanguageTextUnlocked,
         getDisplayName: getDisplayName,

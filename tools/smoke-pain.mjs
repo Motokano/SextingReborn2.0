@@ -88,7 +88,7 @@ function resetBody() {
   CA.setState(CA.getDefaultState());
   S.clearPain();
   // dirtyness=50 → 无「干净清爽(+5心情/tick)」buff 干扰；mood 锚 500（心情回归步进 0）
-  S.setState({ mood: 500, dirtyness: 50, stamina: 100, energy: 100 });
+  S.setState({ mood: 500, dirtyness: 50, stamina: 100, energy: 100, isDead: false, deathReason: null });
 }
 /** 把玩家疼痛配置临时改为「封顶不随损毁走」，便于按档位直测（测试结束 restorePainConfig） */
 function setPainConfigForTier(capBase) {
@@ -226,8 +226,9 @@ async function main() {
   const gInfo = CE.getEnemyPainInfo('mapA', 0);
   ok(gInfo.stored === 100, '敌人一记 100 → pain 100（测试汇率 1.0）');
   ok(gInfo.cap === 90 && gInfo.effective === 90 && gInfo.tier === 'agony', '敌人封顶 90 → 剧痛档');
-  ok(BS.hasBuffByBuffId('thug', 'survival_pain_agony'), '敌人档位镜像到 BuffSystem（owner=thug）');
-  ok(Math.abs(BS.getBattleMoveSpeedMultiplier('thug') - 0.6) < 1e-9, '敌人剧痛 出手速度乘区 ×0.60（先手交换可读）');
+  const thugOwner = CE.getOwnerId('thug', 'mapA', 0);
+  ok(BS.hasBuffByBuffId(thugOwner, 'survival_pain_agony'), '敌人档位镜像到自身实例的 BuffSystem');
+  ok(Math.abs(BS.getBattleMoveSpeedMultiplier(thugOwner) - 0.6) < 1e-9, '敌人剧痛 出手速度乘区 ×0.60（先手交换可读）');
   // 敌人 50~74 中度的汇率线性：打不同损毁部位观察增量按进度变化（新实例）
   CA.setConfig({ pain_cap_base: 100, pain_cap_per_avg_destroy: 0 });
   S.setConfig({ pain_rate_base: 0.1, pain_rate_span: 0.9, pain_cap_base: 100, pain_cap_per_avg_destroy: 0 });

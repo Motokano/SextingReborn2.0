@@ -1,0 +1,19 @@
+<!doctype html><meta charset="utf-8"><title>背包正式界面验收（独立内存，不读写游戏存档）</title>
+<style>html,body{margin:0;height:100%;overflow:hidden;background:#19211c}iframe{display:block;width:100%;height:100%;border:0}</style>
+<script src="../js/item-attribute-modules.js"></script><script src="../js/backpack-config.js"></script><script src="../js/backpack-system.js"></script><script src="../js/sewing-system.js"></script><script src="../js/inventory-equipment.js"></script><script src="../js/hideout-warehouse.js"></script>
+<script>
+(async function(){
+ const copy=x=>JSON.parse(JSON.stringify(x));let flags={},stamina=1000,ticks=0;
+ window.NPCSystem={getFlagValue:k=>flags[k],setDemoFlag:(k,v)=>flags[k]=v,isDemoFlagTrue:k=>!!flags[k],getDemoState:()=>copy(flags),setDemoState:s=>flags=s};
+ window.Survival={getState:()=>({}),getStamina:()=>stamina,getEnergy:()=>1000,consumeStamina:n=>stamina-=n,advanceTick:()=>{ticks++;HideoutWarehouse.tickSpoilage();},setDiqiShieldRemaining:()=>{}};
+ window.GameTime={getState:()=>({totalTicks:ticks})};window.GameEngine={getState:()=>({mapId:'M0_Base_Inside_lv_1',x:5,y:12})};
+ window.SaveSystem={saveNow:()=>true,runAtomic:fn=>{const state=copy(InventoryEquipment.getState()),warehouse=HideoutWarehouse.getState(),time=ticks,energy=stamina;try{return {saved:true,value:fn()};}catch(e){InventoryEquipment.setState(state);HideoutWarehouse.setState(warehouse);ticks=time;stamina=energy;throw e;}}};
+ const read=async p=>(await fetch('../data/'+p+'.json')).json(),IE=InventoryEquipment,B=BackpackSystem;
+ IE.setConfig({items:ItemAttributeModules.hydrateCatalog(await read('item-catalog-v2')),equipment:ItemAttributeModules.hydrateCatalog(await read('equipment-catalog-v2')),modules:{},enchants:await read('enchant'),default_equipment:{}});
+ const light=B.generate('eq_backpack_light_canvas',['enc_backpack_capacity','enc_backpack_light']),hauler=B.generate('eq_backpack_frame_hauler',['enc_backpack_load','enc_backpack_mineral']);
+ IE.setState({equipment:{backpack:light},inventory_backpack:[hauler,B.generate('eq_backpack_multi_pocket',['enc_backpack_fresh'])],inventory_pocket:[],inventory_vest:[],ground_items:{}});
+ HideoutWarehouse.setState({capacity:100,slots:[...new Set([...Object.values(B.config.models).flatMap(m=>Object.keys(m.craft.cost)),...Object.values(B.config.modifications).flatMap(m=>Object.keys(m.cost))])].map(item_id=>({item_id,count:100})),settings:{prefer_deduct_warehouse:true}});
+ window.SewingStationPanel={isOpen:()=>true,canAccess:()=>true,close:()=>{SewingSystem.cancel();document.body.textContent='验收界面已关闭，刷新可重新开始。';},snapshot:()=>({bucketUnlocked:false,bucket:0,leaves:0,measurement:null,mannequin:null})};
+ const frame=document.createElement('iframe');frame.title='正式缝纫台背包入口';frame.src='../sewing-station.html?no_reload=';document.body.append(frame);
+})();
+</script>

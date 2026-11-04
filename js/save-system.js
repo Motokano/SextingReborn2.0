@@ -645,6 +645,9 @@
         // Time first: buff expiration is tick-based.
         // Validate livestock before mutating any other game subsystem.
         if (global.LivestockState && typeof global.LivestockState.validateState === 'function' && !global.LivestockState.validateState(snapshot.livestock).ok) return false;
+        // Visual queues belong to the old session, including a partially spent breath burst.
+        // The restored authoritative state will resume its mantle without replaying activation.
+        if (global.SceneAnimation) global.SceneAnimation.clear();
         if (global.HideoutWarehousePanel && global.HideoutWarehousePanel.suspendForLoad) global.HideoutWarehousePanel.suspendForLoad();
         if (global.ToolbenchPanel) global.ToolbenchPanel.close();
             if (global.SewingStationPanel) global.SewingStationPanel.close();

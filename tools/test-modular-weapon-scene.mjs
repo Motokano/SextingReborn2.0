@@ -36,7 +36,7 @@ try{
  strikes.length=0;g.Math.random=()=>.2;
  g.Survival.setState({qi_li_current:100,diqi_current:10000});
  const sameSpeed=g.CharacterAttributes.getCombatSpeed();
- g.CombatEnemies.setTable({enemies:{modular_test_target:{speed:sameSpeed,parry_rate:0,parry_damage_reduce:0,can_attack:true,limbs_invulnerable:true,attack_damage_min:0,attack_damage_max:0}}});
+ g.CombatEnemies.setTable({enemies:{modular_test_target:{speed:sameSpeed,parry_rate:0,parry_damage_reduce:0,can_attack:true,limbs_invulnerable:true,actions:[{id:'counter',limb:'rhand',power_min:0,power_max:0,damage_type:'blunt',qi_cost:0,hit_part_weights:{chest:1}}]}}});
  const side=w.connections.side1.part.forged_component,beforeSide=side.durability_current;
  let dryDefenseSaw;
  g.CombatPipeline.runPipeline=(name,ctx)=>{if(name==='melee_hit_player_defender'&&ctx.simultaneousDryRun)dryDefenseSaw=side.durability_current;const result=run(name,ctx);strikes.push(result);return result;};

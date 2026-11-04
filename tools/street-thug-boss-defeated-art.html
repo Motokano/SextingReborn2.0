@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<base href="../"><title>地头头目 · 站立与倒地</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#18231f;color:#ece5d5;font:14px/1.65 'Microsoft YaHei',sans-serif}main{max-width:1040px;margin:auto;padding:22px}h1{font-size:25px;margin:0}p{margin:6px 0 16px;color:#bac2b5}.pair{display:grid;grid-template-columns:1fr 1fr;gap:16px}.card{background:#24352b;border:1px solid #566650;border-radius:7px;overflow:hidden}h2{font-size:15px;margin:10px 16px}.art{height:340px;background:#c6c2b5;display:flex;align-items:center;justify-content:center}.art img{width:100%;height:100%;object-fit:contain}.art.fallen img{height:340px;object-fit:contain}.art.fallen{overflow:hidden}canvas{display:block;width:440px;height:310px;margin:auto}a{color:#e3ca91}nav{display:flex;gap:18px;flex-wrap:wrap;margin-top:14px}.note{font-size:12px;color:#bbc3b1;margin:9px 16px}.canvas-wrap{overflow:auto}#status{margin-bottom:8px}@media(max-width:700px){.pair{grid-template-columns:1fr}.art{height:300px}main{padding:12px}}
+</style>
+<main>
+<h1>地头头目 · 站立与倒地</h1>
+<p>沿用头目形象：墨绿开衫、灰鬓、单侧黑护腕。改为向前扑倒：背部朝上、脸侧贴底座，一臂伸向前方。</p>
+<div class="pair">
+<section class="card"><h2>站立 · 现有头目定稿</h2><div class="art"><img src="assets/map/isometric/street-thug-boss-v1/standing.png" alt="地头头目正常站立"></div></section>
+<section class="card"><h2>倒地 · 向前扑倒</h2><div class="art fallen"><img src="assets/map/isometric/street-thug-boss-defeated-v3/defeated.png" alt="同一角色面朝下扑倒，背部朝上，脸侧贴底座，脸部、外套和底座有少量血迹"></div></section>
+</div>
+<p id="status" role="status">正在载入棋盘尺寸对照…</p>
+<div class="pair">
+<section class="card"><h2>站立 · 144px棋格 / 人物125%</h2><div class="canvas-wrap"><canvas id="standing" aria-label="正常站姿在144像素棋格上的实际尺寸"></canvas></div></section>
+<section class="card"><h2>倒地 · 保持人物自身比例</h2><div class="canvas-wrap"><canvas id="defeated" aria-label="倒地角色在144像素棋格上的实际尺寸"></canvas></div></section>
+</div>
+<nav><a href="assets/map/isometric/street-thug-boss-v1/standing.png" target="_blank">站立透明原图</a><a href="assets/map/isometric/street-thug-boss-defeated-v3/defeated.png" target="_blank">倒地透明原图</a><a href="assets/map/isometric/street-thug-boss-defeated-v3/README.md">素材记录与提示词</a><a href="assets/map/isometric/street-thug-boss-defeated-v2/defeated.png" target="_blank">上一版侧躺对照</a></nav>
+<p class="note">本页为美术尺寸预览。倒地按站姿的身体比例显示，展开后占地稍宽；未修改正式战斗或尸体替换规则。</p>
+</main>
+<script src="js/core/map-projection.js"></script>
+<script type="module">
+const sources={standing:'assets/map/isometric/street-thug-boss-v1/standing.png',defeated:'assets/map/isometric/street-thug-boss-defeated-v3/defeated.png'};
+const specs={standing:{crop:[240,40,715,1200],anchor:[597.5,1238]},defeated:{crop:[41,204,1487,639],anchor:[780,839]}};
+const projection=MapProjection.create({width:3,height:3},144/Math.SQRT2,'isometric');
+const center=projection.cellCenter(1,1),scale=46/715*1.25;
+try{
+ await Promise.all(Object.entries(specs).map(async([state,spec])=>{
+  const image=new Image();image.src=sources[state];await image.decode();
+  const canvas=document.getElementById(state),dpr=window.devicePixelRatio||1;
+  canvas.width=Math.round(440*dpr);canvas.height=Math.round(310*dpr);
+  const ctx=canvas.getContext('2d');ctx.scale(dpr,dpr);ctx.save();ctx.translate(220-center.x,167-center.y);
+  for(let y=0;y<3;y++)for(let x=0;x<3;x++){
+   const points=projection.cellPolygon(x,y);ctx.beginPath();points.forEach((p,i)=>ctx[i?'lineTo':'moveTo'](p.x,p.y));ctx.closePath();
+   ctx.fillStyle=(x+y)%2?'#4d5b4e':'#465346';ctx.fill();ctx.strokeStyle='#a1ad8f55';ctx.stroke();
+  }
+  const points=projection.cellPolygon(1,1);ctx.beginPath();points.forEach((p,i)=>ctx[i?'lineTo':'moveTo'](p.x,p.y));ctx.closePath();ctx.strokeStyle='#c7b67b';ctx.stroke();
+  const [bx,by,bw,bh]=spec.crop,[ax,ay]=spec.anchor,f=scale*(state==='defeated'?0.8:1);
+  ctx.drawImage(image,bx,by,bw,bh,center.x+(bx-ax)*f,center.y+10+(by-ay)*f,bw*f,bh*f);
+  ctx.restore();
+ }));
+ document.getElementById('status').textContent='下方按实际棋格规格显示；两态按人物身体比例对齐，不把倒地身体压缩到站立底座宽度。';
+}catch(error){document.getElementById('status').textContent='素材载入失败：'+error.message;console.error(error);}
+</script>
+</html>

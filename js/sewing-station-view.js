@@ -3,9 +3,10 @@
 'use strict';
 const P=window.parent,bridge=P!==window&&P.SewingStationPanel,S=P.SewingSystem,IE=P.InventoryEquipment,$=id=>document.getElementById(id);
 if(!bridge||!S||!bridge.snapshot()){ $('editor').textContent='请从基地缝纫台进入。';return; }
-let workspace='garments',views={},menu='制作',category='衣服部件',selected='',drafts={},query='',timer=null,actions=[];
-const menus=['制作','组装','改制','研究','硅叶处理'],esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const B=P.BackpackSystem,workspaces={garments:{label:'服装'},...(B?{backpacks:{label:'背包'}}:{})};
+let workspace='garments',menu='制作',category='衣服部件',selected='',drafts={},query='',timer=null,actions=[],jobLabel='';
+const workspaces={garments:{label:'服装',menus:['制作','组装','改制','研究','硅叶处理']},gloves:{label:'手套',kind:'glove',menus:['制作','研究']},shoes:{label:'鞋子',kind:'shoe',menus:['制作','研究']},materials:{label:'材料加工',menus:['制作','研究']}},views={};
+const B=P.BackpackSystem;if(B)workspaces.backpacks={label:'背包',menus:['制作','改造']};
+function menuLabel(m){if(workspace==='backpacks')return m;return workspace==='materials'?({制作:'加工',研究:'研究工艺'})[m]:workspaces[workspace].kind?({制作:'制作',研究:'研究款式'})[m]:({制作:'缝制',研究:'研究版型'})[m]||m;}
 function switchWorkspace(next){views[workspace]={menu,category,selected,query};workspace=next;const v=views[next]||{};menu=v.menu||'制作';category=v.category||categories()[0];selected=v.selected||'';query=v.query||'';$('search').value=query;draw();}
 function el(tag,text,cls){const n=document.createElement(tag);if(text!=null)n.textContent=text;if(cls)n.className=cls;return n;}
 function button(text,fn,cls){const b=el('button',text,cls);b.onclick=fn;return b;}
@@ -13,18 +14,26 @@ function row(a,b){const n=el('div',null,'row');n.append(el('span',a),el('span',b
 function message(r){$('feedback').textContent=r.message||'';}
 function field(label,options,value,change){const box=el('div',null,'field'),l=el('label',label),select=el('select');select.setAttribute('aria-label',label);options.forEach(([id,name])=>{const o=el('option',name);o.value=id;select.append(o);});select.value=value;select.onchange=()=>change(select.value);box.append(l,select);return box;}
 function tooltip(n,item){function show(e){const t=$('item-tooltip');t.textContent=B?.managed(item.item_id)?B.describe(item):S.describe(item);t.style.whiteSpace='pre-line';t.hidden=false;const r=n.getBoundingClientRect();t.style.left=Math.min(r.right+8,innerWidth-310)+'px';t.style.top=Math.max(8,Math.min(r.top,innerHeight-t.offsetHeight-8))+'px';}n.onmouseenter=show;n.onfocus=show;n.onmouseleave=n.onblur=()=>{$('item-tooltip').hidden=true;};}
-function categories(){if(workspace==='backpacks')return [menu==='制作'?'基础型号':'随身背包'];return menu==='制作'?['整套衣服','衣服部件','面料与填充']:menu==='研究'?['版型','材料工艺']:menu==='组装'?['独立部件','已组装部件']:['所有部件'];}
+function categories(){if(workspace==='backpacks')return [menu==='制作'?'基础型号':'随身背包'];if(workspaces[workspace].kind)return [workspaces[workspace].label];if(workspace==='materials')return menu==='制作'?['面料','填充']:['面料与填充','衣服部件'];return menu==='制作'?['整套衣服','衣服部件']:menu==='研究'?['版型']:menu==='组装'?['独立部件','已组装部件']:['所有部件'];}
 function entries(){
  const own=S.owned(),k=S.knowledge();
  if(workspace==='backpacks')return menu==='制作'?Object.entries(B.config.models).map(([id,m])=>({id,name:m.name,sub:m.slots+'格 · 减重'+Math.round((1-m.weight_factor)*100)+'%'})):B.owned().map(r=>({id:r.item.instance_id,item:r.item,name:B.profile(r.item).name,sub:(r.container==='equipment'?'正在装备':'随身携带')+' · '+B.profile(r.item).slots+'格'}));
+ if(workspaces[workspace].kind){
+  const kind=workspaces[workspace].kind;
+  if(menu==='制作')return Object.keys(S.accessories).filter(id=>S.accessories[id].kind===kind&&S.accessoryLevel(id)>=3).map(id=>({id,accessory:id,name:S.name(S.accessoryItemId(id,'left')).replace(/^左手|^左脚/,''),sub:'可仿制 · 左右均可制作'}));
+  return own.filter(r=>S.accessories[S.accessoryOf(r.item)]?.kind===kind).map(r=>({id:r.item.instance_id,item:r.item,record:r,accessory:S.accessoryOf(r.item),name:S.itemName(r.item),sub:r.item.sewing_pattern_researched?'已研究款式':'可研究实物'}));
+ }
+ if(workspace==='materials'){
+  if(menu==='制作')return Object.keys(S.materials).filter(id=>id.startsWith('filling_')===(category==='填充')&&(k.materials[id]||0)>=S.materials[id][7]).map(id=>({id,name:S.name(id),material:id,sub:'已掌握加工工艺'}));
+  return own.filter(r=>category==='衣服部件'?!!r.item.sewing:!!S.materials[r.item.item_id]).map(r=>({id:r.item.instance_id,item:r.item,record:r,name:S.itemName(r.item),sub:r.item.sewing?'拆开部件研究材料':'研究材料工艺'}));
+ }
  if(menu==='制作'){
-  if(category==='面料与填充')return Object.keys(S.materials).filter(id=>(k.materials[id]||0)>=S.materials[id][7]).map(id=>({id,name:S.name(id),material:id,sub:'已掌握加工工艺'}));
   return Object.keys(S.styles).flatMap(style=>category==='整套衣服'?(S.parts.every(p=>S.level(style,p)>=3)?[{id:style,style,name:S.name('sewing_outfit_'+style),sub:'完整款式 · 六个部件'}]:[]):S.parts.filter(part=>S.level(style,part)>=3).map(part=>({id:style+':'+part,style,part,name:S.name('sewing_part_'+style+'_'+part),sub:'可仿制'})));
  }
- return own.filter(r=>menu==='研究'&&category==='材料工艺'?r.item.sewing||S.materials[r.item.item_id]:!!r.item.sewing).filter(r=>menu!=='组装'||(category==='独立部件'?!r.parent:!!r.parent)).map(r=>({id:r.item.instance_id,item:r.item,record:r,name:S.itemName(r.item),sub:(r.parent?'衣服中的部件':'独立物品')+(r.item.sewing?.researched?' · 已研究版型':'')}));
+ return own.filter(r=>!!r.item.sewing).filter(r=>menu!=='组装'||(category==='独立部件'?!r.parent:!!r.parent)).map(r=>({id:r.item.instance_id,item:r.item,record:r,name:S.itemName(r.item),sub:(r.parent?'衣服中的部件':'独立物品')+(r.item.sewing.researched?' · 已研究版型':'')}));
 }
-function begin(list){const r=S.start(list);message(r);if(!r.ok)return;tickUI();timer=setInterval(()=>{const r=S.step();message(r);if(!r.ok||r.done){clearInterval(timer);timer=null;draw();}else tickUI();},700);}
-function tickUI(){const j=S.jobState();$('job').replaceChildren();if(j){$('job').append(el('div','正在亲自操作 · 第 '+(j.index+1)+' / '+j.total+' 项','action-label'),el('p','本项剩余 '+j.remaining+' 分钟'),button('停止工作',()=>{clearInterval(timer);timer=null;message(S.cancel());draw();}));}document.querySelectorAll('#commit button').forEach(b=>b.disabled=!!j||b.dataset.invalid==='true');}
+function begin(list){const r=S.start(list);message(r);if(!r.ok)return;jobLabel=workspaces[workspace].label+' · '+(({measure:'测量尺寸',mannequin:'更新人台'})[list[0]?.type]||$('editor').querySelector('h2')?.textContent||menuLabel(menu));tickUI();timer=setInterval(()=>{const r=S.step();message(r);if(!r.ok||r.done){clearInterval(timer);timer=null;draw();}else tickUI();},700);}
+function tickUI(){const j=S.jobState();$('job').replaceChildren();if(j){$('job').append(el('div',jobLabel,'action-label'),el('p','正在亲自操作 · 第 '+(j.index+1)+' / '+j.total+' 项'),el('p','本项剩余 '+j.remaining+' 分钟'),button('停止工作',()=>{clearInterval(timer);timer=null;message(S.cancel());draw();}));}document.querySelectorAll('#commit button').forEach(b=>b.disabled=!!j||b.dataset.invalid==='true');}
 function planEditor(e,d){
  const part=e.part||d.part||'chest';if(!e.part)$('editor').append(field('编辑部位',S.parts.map((p,i)=>[p,S.labels[i]]),part,v=>{d.part=v;draw();}));
  const plan=e.part?d.plan:d.plans[part],style=e.style;
@@ -46,8 +55,9 @@ function planEditor(e,d){
 }
 function preview(list,label){
  if(!list.length){$('preview').append(el('p','请选择待处理部件。','intro'));const b=button(label,()=>{});b.disabled=true;b.dataset.invalid='true';$('commit').append(b);return;}
- actions=list;const quotes=list.filter(a=>a.type!=='assemble_created').map(a=>S.preview(a)),bad=quotes.find(q=>!q.ok),cost={},ticks=quotes.reduce((n,q)=>n+(q.ticks||0),0)+(list.some(a=>a.type==='assemble_created')?6:0);
+ actions=list;const quotes=list.filter(a=>a.type!=='assemble_created').map(a=>S.preview(a)),cost={},ticks=quotes.reduce((n,q)=>n+(q.ticks||0),0)+(list.some(a=>a.type==='assemble_created')?6:0);let bad=quotes.find(q=>!q.ok);
  quotes.forEach(q=>Object.entries(q.cost||{}).forEach(([id,n])=>cost[id]=(cost[id]||0)+n));
+ if(list.every(a=>a.type==='craft_accessory')){const shortage=Object.entries(cost).find(([id,n])=>IE.countCarriedItemsByTemplateId(id)<n);if(shortage)bad={message:'本次全部制作材料不足：'+S.name(shortage[0])+' × '+shortage[1]};}
  const estimates=list.map(a=>S.estimate(a)).filter(Boolean);if(estimates.length){let cold=[0,0],heat=[0,0],weight=0,pockets=0;estimates.forEach(e=>{for(let i=0;i<2;i++){cold[i]+=e.cold[i];heat[i]+=e.heat[i];}weight+=e.weight;pockets+=e.pockets;});if(list.some(a=>a.type==='assemble_created')){const b=S.styles[list[0].style].bonus;cold=cold.map(n=>n+b[0]);heat=heat.map(n=>n+b[1]);}$('preview').append(el('h3','制成后预计'),row('耐寒修正',cold.map(n=>n.toFixed(1)).join('～')+'℃'),row('耐热修正',heat.map(n=>n.toFixed(1)).join('～')+'℃'),row('重量 / 口袋',Math.round(weight*1000)+'克 / '+pockets+'格'));if(estimates.length===1)$('preview').append(row('天然减伤范围',estimates[0].base[0].map((v,i)=>Math.round(v*100)+'～'+Math.round(estimates[0].base[1][i]*100)+'%').join(' / ')),el('small','劈砍 / 穿刺 / 钝击；实际防护另受覆盖与合身度影响。'));}
  $('preview').append(el('h3','本次操作'),row('预计时间',ticks*10+' 分钟'));
  Object.entries(cost).forEach(([id,n])=>$('preview').append(row(S.name(id),n+'份')));
@@ -74,31 +84,39 @@ function drawBackpack(e,d){
 }
 function draw(){
  $('item-tooltip').hidden=true;const snap=bridge.snapshot();if(!snap)return;
- $('workspaces').replaceChildren(...Object.entries(workspaces).map(([id,w])=>button(w.label,()=>switchWorkspace(id),id===workspace?'active':'')));
+ $('workspaces').replaceChildren(...Object.entries(workspaces).map(([id,w])=>{const b=button(w.label,()=>switchWorkspace(id),id===workspace?'active':'');b.setAttribute('aria-pressed',String(id===workspace));return b;}));
  $('mannequin').hidden=workspace!=='garments';
- $('menus').replaceChildren(...(workspace==='backpacks'?['制作','改造']:menus).map(m=>button(m,()=>{menu=m;category=categories()[0];selected='';draw();},m===menu?'active':'')));
- if(!categories().includes(category))category=categories()[0];$('categories').replaceChildren(...categories().map(c=>button(c,()=>{category=c;selected='';draw();},c===category?'active':'')));
+ $('menus').replaceChildren(...workspaces[workspace].menus.map(m=>{const b=button(menuLabel(m),()=>{menu=m;category=categories()[0];selected='';draw();},m===menu?'active':'');b.setAttribute('aria-pressed',String(m===menu));return b;}));
+ if(!categories().includes(category))category=categories()[0];$('categories').hidden=!!workspaces[workspace].kind;$('categories').replaceChildren(...(workspaces[workspace].kind?[]:categories()).map(c=>button(c,()=>{category=c;selected='';draw();},c===category?'active':'')));
  const list=entries().filter(e=>e.name.includes(query));if(!list.some(e=>e.id===selected))selected=list[0]?.id||'';
  $('list').replaceChildren();list.forEach(e=>{const b=button('',()=>{selected=e.id;draw();},'entry'+(selected===e.id?' selected':''));const t=el('span');t.append(el('strong',e.name),el('small',e.sub));b.append(t);if(e.item)tooltip(b,e.item);$('list').append(b);});
- $('listFoot').textContent=menu==='制作'?'仅显示已掌握的配方':'穿着中的衣服请先脱下，再进行加工。';
+ $('listFoot').textContent=menu==='制作'?'仅显示已掌握的'+(workspaces[workspace].kind?'款式':'配方'):workspace==='materials'?'研究会消耗选中的材料或部件。':'穿着中的装备请先脱下。';
+ if(workspace==='backpacks')$('listFoot').textContent=menu==='制作'?'基础型号可直接制作。':'可改造装备中或随身的背包；仓库中的背包请先取出。';
  $('editor').replaceChildren();$('preview').replaceChildren();$('commit').replaceChildren();actions=[];
- const e=list.find(e=>e.id===selected);if(!e){$('editor').append(el('h2',menu),el('p',menu==='制作'?'尚无已掌握的配方。可先从现有衣服研究版型或材料工艺。':'没有可操作的物品。','intro'));}
+ const e=list.find(e=>e.id===selected);if(!e){$('editor').append(el('h2',category),el('p',menu==='制作'?(workspaces[workspace].kind?'尚无已掌握的'+category+'款式。':'尚无已掌握的配方。'):'没有可操作的物品。','intro'));}
  if(e){
-  $('editor').append(el('h2',e.name));const key=menu+':'+category+':'+e.id;let d=drafts[key];
+  $('editor').append(el('h2',e.name));const key=workspace+':'+menu+':'+category+':'+e.id;let d=drafts[key];
   if(!d){d=drafts[key]={cut:'male',part:'chest',layer:'',count:1};if(e.style){if(e.part)d.plan=S.defaultPlan(e.style,e.part);else d.plans=Object.fromEntries(S.parts.map(p=>[p,S.defaultPlan(e.style,p)]));}if(e.item?.sewing){d.plan=JSON.parse(JSON.stringify(e.item.sewing.known?.layers?e.item.sewing.layers:S.defaultPlan(e.item.sewing.style,e.item.sewing.part))); d.cut=e.item.sewing.known?.cut?e.item.sewing.cut:'male';}if(!e.item?.sewing?.known?.layers){const plans=d.plan?[d.plan]:Object.values(d.plans||{});plans.forEach(plan=>Object.entries(plan).forEach(([key,l])=>{const available=Object.keys(S.materials).filter(id=>id.startsWith('filling_')===(key==='fill')&&(IE.countCarriedItemsByTemplateId(id)>0||(S.knowledge().materials[id]||0)>0));if(!Object.keys(l.mix).every(id=>available.includes(id)))l.mix=available.length?{[available[0]]:100}:{};}));}}
-  if(e.item){const info=el('p',S.describe(e.item),'intro');info.style.whiteSpace='pre-line';$('preview').append(info);if(e.item.sewing&&!e.item.sewing.known?.outer&&!e.item.sewing.known?.layers)$('preview').append(button('检查外观 · 10分钟',()=>begin([{type:'inspect',id:e.id}])));}
+  if(e.item){const info=el('p',B?.managed(e.item.item_id)?B.describe(e.item):S.describe(e.item),'intro');info.style.whiteSpace='pre-line';$('preview').append(info);if(e.item.sewing&&!e.item.sewing.known?.outer&&!e.item.sewing.known?.layers)$('preview').append(button('检查外观 · 10分钟',()=>begin([{type:'inspect',id:e.id}])));}
   if(workspace==='backpacks')drawBackpack(e,d);
   else if(menu==='制作'){
-   if(e.material){$('editor').append(el('p','使用原料加工为已掌握的面料或填充。每批产出 '+S.materials[e.material][10]+' 份。','intro'));const n=el('input');n.type='number';n.min=1;n.max=100;n.value=d.count;n.setAttribute('aria-label','加工批数');n.onchange=()=>{d.count=Math.max(1,Math.min(100,Math.floor(Number(n.value)||1)));draw();};$('editor').append(n);preview(Array.from({length:d.count},()=>({type:'process',material:e.material})),'开始加工');}
+   if(e.accessory){
+    d.side=d.side||'pair';const recipe=S.accessories[e.accessory];
+    $('editor').append(el('p','按已掌握款式制作，每只独立完工、收纳与穿戴。用料按下方清单结算。','intro'),field('制作左右',[['pair','一双（左、右各一只）'],['left','仅左只'],['right','仅右只']],d.side,v=>{d.side=v;d.count=Math.min(d.count,v==='pair'?50:100);draw();}));
+    const n=el('input');n.type='number';n.min=1;n.max=d.side==='pair'?50:100;n.value=d.count;n.setAttribute('aria-label',d.side==='pair'?'制作双数':'制作只数');n.onchange=()=>{d.count=Math.max(1,Math.min(Number(n.max),Math.floor(Number(n.value)||1)));draw();};const label=el('label',d.side==='pair'?'制作双数':'制作只数');label.append(n);$('editor').append(label);
+    const card=el('div',null,'card');card.append(el('h3','单只用料'));Object.entries(recipe.cost).forEach(([id,count])=>card.append(row(S.name(id),count+'份 · 持有 '+IE.countCarriedItemsByTemplateId(id))));$('editor').append(card,el('p','制作一双时按左、右依次完成。停止工作会保留已完成的单只。','muted'));
+    preview(S.accessoryActions(e.accessory,d.side,d.count),'开始制作');
+   }else if(e.material){$('editor').append(el('p','使用原料加工为已掌握的面料或填充。每批产出 '+S.materials[e.material][10]+' 份。','intro'));const n=el('input');n.type='number';n.min=1;n.max=100;n.value=d.count;n.setAttribute('aria-label','加工批数');n.onchange=()=>{d.count=Math.max(1,Math.min(100,Math.floor(Number(n.value)||1)));draw();};$('editor').append(n);preview(Array.from({length:d.count},()=>({type:'process',material:e.material})),'开始加工');}
    else {planEditor(e,d);const jobs=e.part?[{type:'craft',style:e.style,part:e.part,plan:d.plan,cut:d.cut}]:S.parts.map(p=>({type:'craft',style:e.style,part:p,plan:d.plans[p],cut:d.cut,forSet:true})).concat([{type:'assemble_created'}]);preview(jobs,e.part?'制作部件':'制作并组装整套');}
   }else if(menu==='改制'){
    const s=e.item.sewing;if(S.level(s.style,s.part)>=1)planEditor({style:s.style,part:s.part},d);else $('editor').append(el('p','先研究这个部件的版型，了解结构后才能改制。','intro'));preview([{type:'modify',id:e.id,plan:d.plan,cut:d.cut,layer:d.layer||undefined}],'按最终方案改制');
   }else if(menu==='研究'){
-   const s=e.item.sewing;if(category==='版型')$('editor').append(row('理解程度',['尚未掌握','可改造','可改造','可仿制'][S.level(s.style,s.part)]));
+   const s=e.item.sewing;if(e.accessory){$('editor').append(row('理解程度',['尚未掌握','初步认识','熟悉结构','可仿制'][S.accessoryLevel(e.accessory)]),el('p','研究保留原件及附魔。每只实物只能贡献一次；同款左右共享进度，累计三个不同样本后可仿制。','intro'));preview([{type:'pattern',id:e.id}],'研究款式');}
+   else {if(category==='版型')$('editor').append(row('理解程度',['尚未掌握','可改造','可改造','可仿制'][S.level(s.style,s.part)]));
    else {const ids=s?[...new Set(Object.values(s.layers).flatMap(l=>Object.keys(l.mix)))]:[e.item.item_id];
     // Hidden layers are not disclosed merely by selecting a research target.
     if(!s||s.known?.layers)ids.forEach(id=>{const n=S.knowledge().materials[id]||0,max=S.materials[id][7];$('editor').append(row(S.name(id),n>=max?'已掌握':n>=max*.7?'接近掌握':n?'初步认识':'尚未研究'));});
-   }preview([{type:category==='版型'?'pattern':'research',id:e.id}],category==='版型'?'研究版型':'拆开并研究材料');
+   }preview([{type:category==='版型'?'pattern':'research',id:e.id}],category==='版型'?'研究版型':s?'拆开并研究材料':'研究材料');}
   }else if(menu==='组装'){
    if(e.record.parent)preview([{type:'detach',id:e.id}],'完整拆下部件');
    else {const part=e.item.sewing.part,targets=S.owned().filter(r=>r.item.sewing_parts&&!r.item.sewing_parts[part]);$('editor').append(field('安装到',[['','开始组合一套衣服'],...targets.map(r=>[r.item.instance_id,S.name(r.item.item_id)+' · '+Object.keys(r.item.sewing_parts).length+'件'])],d.target||'',v=>{d.target=v;draw();}),el('p','按部位自动安装，无需选择整套款式。','intro'));preview([{type:'assemble',id:e.id,target:d.target||null}],e.item.sewing.known?.structure?'安装到'+S.labels[S.parts.indexOf(part)]:'安装部件');}

@@ -1,0 +1,50 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><base href="../"><meta name="viewport" content="width=device-width,initial-scale=1"><title>催气 · 正式状态验收</title>
+<style>body{margin:0;background:#16221c;color:#e9dfc9;font:13px 'Microsoft YaHei',sans-serif}header{padding:14px 20px}h1{font-size:21px;margin:0 0 6px}p{color:#9fb095;margin:5px 0;line-height:1.7}button{background:#374c3e;color:#f1e0b5;border:1px solid #738669;padding:7px 11px;margin:5px 3px;border-radius:4px;cursor:pointer}button:disabled{opacity:.4;cursor:wait}iframe{display:block;width:100%;height:720px;border:0}#status{color:#dbca9e;line-height:1.8}</style>
+<header><h1>基本呼吸法 · 正式催气状态</h1><p>主角 Buff 与头目真实招数驱动；使用正式地图和战斗管线。独立内存试场，不读写你的存档。</p>
+<button id="player-on" disabled>主角发动催气</button><button id="boss-warn" disabled>头目蓄满并预警</button><button id="boss-on" disabled>头目发动并出招</button><button id="player-hit" disabled>主角出招</button><button id="boss-hit" disabled>头目出招</button><button id="both" disabled>双方同时出招</button><button id="clear" disabled>结束催气</button><button id="reset">重置试场</button>
+<div id="status">加载正式游戏…</div><p>演示准备：主角基本技能120、底气充足；每次试招前恢复伤势并就位，集中观察催气。头目首次准备从175积蓄开始，由一次真实付费出招触发200预警；“发动”仍通过合法行动检查。</p></header><iframe id="game"></iframe>
+<script>
+(async()=>{
+ const $=id=>document.getElementById(id),frame=$('game');
+ const isolated=`<script>const memory=new Map();Object.defineProperty(window,'localStorage',{value:{getItem:k=>memory.get(k)??null,setItem:(k,v)=>memory.set(k,String(v)),removeItem:k=>memory.delete(k),clear:()=>memory.clear(),key:n=>Array.from(memory.keys())[n]??null,get length(){return memory.size}}});<\/script>`;
+ frame.srcdoc=(await fetch('index.html?no_reload').then(r=>r.text())).replace('<head>','<head><base href="'+new URL('.',document.baseURI).href+'">'+isolated);
+ await new Promise(resolve=>frame.onload=resolve);const g=frame.contentWindow;await g.AppBoot.ready;
+ const E=g.GameEngine,CE=g.CombatEnemies,I=g.InventoryEquipment,B=g.BuffSystem,R=g.CombatMeleeResolve,W=g.CombatWorld,P=g.CombatPipeline,id='enemy.street_thug_boss';
+ g.CharacterAttributes.setState({character_creation_completed:true,innate:{jingu:60,flexibility:20,breath:40,dexterity:20,focus:20}});
+ g.document.getElementById('character-creation-overlay')?.classList.add('hidden');g.MapProjection.setMode('isometric');
+ for(const skill of ['combat_basic_unarmed','combat_basic_breath','combat_basic_footwork'])I.getSkillsState()[skill]={level:120,move_usage:{}};
+ I.setCombatState({hubs:{breath:'combat_basic_breath',footwork:'combat_basic_footwork'},limbs:{lhand:{active:'combat_basic_unarmed'},rhand:{active:'combat_basic_unarmed'},lfoot:{active:'combat_basic_unarmed'},rfoot:{active:'combat_basic_unarmed'}}});
+ const map={map_id:'breath_live_check',name:'催气试场',width:11,height:11,blocks:[],disabled:[],entities:[],npcs:[],portals:[],enemies:[{enemy_id:id,x:6,y:5}]};E.getMaps()[map.map_id]=map;E.setState(map.map_id,5,5);g.SceneCtx.setFacingDir(2);
+ const initial=CE.getDungeonState(map.map_id,0,id);let tick=(g.GameTime.getState().totalTicks||0)+1,bossPrepared=false;
+ function show(){g.SceneRenderer.render();const b=CE.bossInfo(id,map.map_id,0);$('status').textContent=`主角：催气 ${B.getBuffStacksSum('player','buff_breath_burst')} 招 · 积蓄 ${B.getBuffStacksSum('player','buff_breath_charge')}/200　｜　头目：催气 ${b.burstRemaining} 招 · 积蓄 ${b.charge}/200 · 底气 ${b.diqi}/500`;}
+ function prepare(){
+  for(const part of ['head','chest','abdomen','lhand','rhand','lfoot','rfoot'])g.CharacterAttributes.recoverPartDestroy(part,10000);
+  g.Survival.setState({isDead:false,qi_li_current:100,diqi_current:1000});I.setPlayerStunValue(0);
+  const saved=CE.getDungeonState(map.map_id,0,id);saved.part_destroy={...initial.part_destroy};saved.dead=false;saved.stunned=false;saved.stun_value=0;saved.qi_current=100;CE.restoreDungeonState(map.map_id,0,id,saved);
+  E.setState(map.map_id,5,5);map.enemies[0].x=6;map.enemies[0].y=5;
+  g.CombatEngagement.engageEnemy({mapId:map.map_id,index:0,enemyId:id,record:map.enemies[0]});
+ }
+ function playerContext(dry=false,group=null){
+  const defender={kind:'enemy',enemyId:id,mapId:map.map_id,index:0,pos:{x:6,y:5}};CE.mergeIntoDefender(defender);
+  const r=R.resolvePlayerVsEnemyAttack({skillId:'combat_basic_unarmed',moveId:'jab',limbId:'rhand',powerLevel:1,targetIndex:0,enemyId:id,enemyMapId:map.map_id,defenderSpeed:defender.speed,deferResourceSpend:dry});
+  return {...r,resourceResult:r,hitPart:'chest',attacker:{kind:'player',pos:{x:5,y:5}},defender,simultaneousDryRun:dry,fxGroupId:group};
+ }
+ function bossContext(dry=false,group=null){
+  CE.beginWorldTurn(++tick);CE.dungeonTurnStatus(map.map_id,0,id,tick);CE.prepareBossOpportunity(id,map.map_id,0,true,false);
+  const b=CE.bossInfo(id,map.map_id,0),move=b.burstRemaining===1?'collar_knee':'swing_punch';
+  if(move==='collar_knee')B.setBuffStacks('player','buff_off_balance',1);
+  const action=CE.getById(id).actions.find(a=>a.id===move);
+  const r=R.resolveEnemyVsPlayerAttack({enemyId:id,enemyMapId:map.map_id,enemyIndex:0,plannedAction:action,deferResourceSpend:dry});
+  if(r.notExecuted){CE.endWorldTurn();throw Error(r.skipReason||'头目尚不能出招');}
+  const ctx=W.buildEnemyCounterAtkCtx(r,dry,{enemyId:id,ex:6,ey:5,px:5,py:5});ctx.hitPart='chest';ctx.fxGroupId=group;return ctx;
+ }
+ $('player-on').onclick=()=>{prepare();if(!g.CombatBreath.active()){B.setBuffStacks('player','buff_breath_charge',200);g.CombatBreath.activate();}show();};
+ $('boss-warn').onclick=()=>{prepare();const s=CE.getDungeonState(map.map_id,0,id);s.boss={...s.boss,charge:175,burstRemaining:0,warningTick:null,diqi:500,kneeReadyTick:0};CE.restoreDungeonState(map.map_id,0,id,s);const c=bossContext();P.runPipeline('melee_hit_player_defender',c);CE.endWorldTurn();bossPrepared=true;show();};
+ function bossHit(){prepare();const c=bossContext();P.runPipeline('melee_hit_player_defender',c);CE.endWorldTurn();show();}
+ $('boss-on').onclick=()=>{if(!bossPrepared)$('boss-warn').click();else bossHit();};$('boss-hit').onclick=bossHit;
+ $('player-hit').onclick=()=>{prepare();P.runPipeline('melee_hit_enemy_defender',playerContext());show();};
+ $('both').onclick=()=>{prepare();const group=g.CombatFxEvents.nextGroupId(),a=playerContext(true,group),b=bossContext(true,group);P.runPipeline('melee_hit_enemy_defender',a);P.runPipeline('melee_hit_player_defender',b);R.applyDeferredResourceSpendFromResolveResult(a.resourceResult);R.applyDeferredResourceSpendFromResolveResult(b.resourceResult);P.finalizeSimultaneousStrike(a);P.finalizeSimultaneousStrike(b);W.flushDisplacements();CE.endWorldTurn();show();};
+ $('clear').onclick=()=>{g.CombatBreath.clear();CE.prepareBossOpportunity(id,map.map_id,0,false,false);show();};$('reset').onclick=()=>location.reload();
+ document.querySelectorAll('button').forEach(b=>b.disabled=false);prepare();show();
+})().catch(e=>{document.getElementById('status').textContent=e.stack;console.error(e);});
+</script></html>

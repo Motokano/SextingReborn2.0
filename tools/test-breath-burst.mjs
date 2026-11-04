@@ -15,7 +15,7 @@ c.GameEngine={getState:()=>({...st}),getMap:()=>map,setState:(id,x,y)=>{st={mapI
 c.InventoryEquipment={getCombatState:()=>({hubs}),getSkillLevel:()=>100,getSkillsState:()=>({}),getState:()=>({equipment:{},skills:{}}),
  getCombatExperienceDamageMultiplier:()=>1,getHubActionCooldownRemaining:()=>0,consumePlayerStunRoundIfBlocking:()=>false,
  getPlayerPostEffectIds:()=>[],isPlayerStunned:()=>false};
-c.Survival={getState:()=>state,getQiLiMax:()=>100,consumeQiLi:n=>{let a=Math.min(n,state.qi_li_current);state.qi_li_current-=a;c.CombatBreath.spent(a);return a;},
+c.Survival={getState:()=>state,isDead:()=>state.isDead,getQiLiMax:()=>100,consumeQiLi:n=>{let a=Math.min(n,state.qi_li_current);state.qi_li_current-=a;c.CombatBreath.spent(a);return a;},
  drainQiLi:()=>{let a=state.qi_li_current;state.qi_li_current=0;c.CombatBreath.spent(a);},consumeDiqi:n=>{state.diqi_current-=n;return n;},
  addQiLi:n=>{state.qi_li_current=Math.min(100,state.qi_li_current+n);},advanceTick:()=>{ticks++;c.CombatWorld.tickEnemiesAfterWorldTick();},getDiqiShieldRemaining:()=>0};
 c.CharacterAttributes={getCombatSpeed:()=>speed,getHitRate:()=>1,getEffectiveAttr:()=>30,getInnateAttr:()=>20,
@@ -23,6 +23,8 @@ c.CharacterAttributes={getCombatSpeed:()=>speed,getHitRate:()=>1,getEffectiveAtt
 c.CombatEnemies={getById:()=>({jingu:20,speed:10,attack_damage_min:10,attack_damage_max:10}),
  onEnemyDamageResolved:ctx=>{hp-=ctx.finalDamage;},isEnemyDead:()=>hp<=0,isEnemyStunned:()=>stunned,
  addEnemyStun:(m,i,id,n)=>{stun+=n;if(stun>=100){stun=0;stunned=true;}},
+ getOwnerId:(id,m,i)=>m+'|i'+i,
+ planAction(){return {action:this.pickEnemyAction(),occupiedLimbs:['rhand']};},
  pickEnemyAction:()=>({id:'reply',power_min:10,power_max:10,qi_cost:25,hit_part_weights:{chest:1}}),consumeEnemyQi:(id,n)=>{enemySpent+=n;return n;},sampleHitPartForAction:()=> 'chest',
  mergeIntoDefender:d=>Object.assign(d,{speed:10,can_attack:true,parry_rate:0}),forceAggro:()=>{},
  updateEnemyAI:o=>{if(stunned){stunned=false;return {moves:[],attacks:[]};}assert.ok(o.didActThisTick(0),'counter must consume the enemy action');return {moves:[],attacks:[]};},isEnemyAggro:()=>true};
@@ -50,9 +52,11 @@ function attack(id='jab',dry=false){
  P.runPipeline('melee_hit_enemy_defender',ctx);return {r,ctx};
 }
 let a=attack();assert.equal(a.r.breathMultiplier,1.8);assert.equal(enemy.x,4,'immediate burst displacement');assert.equal(BS.getBuffStacksSum('player','buff_breath_burst'),2);assert.equal(BS.getBuffStacksSum('player','buff_breath_charge'),0);
+assert.deepEqual(JSON.parse(JSON.stringify(fxEvents.at(-1).breath)),{id:'basic_breath',remainingAfter:2},'real player pipeline snapshots the active breath');
 assert.equal(W.preparePlayerApproach(enemy,{range:1}),true);assert.equal(st.x,3);
 attack();assert.equal(enemy.x,5);assert.equal(BS.getBuffStacksSum('player','buff_breath_burst'),1);
 assert.equal(W.preparePlayerApproach(enemy,{range:1}),true);attack();assert.equal(B.active(),null);assert.equal(BS.getBuffStacksSum('player','buff_breath_charge'),0,'last boosted attack must not recharge');
+assert.equal(fxEvents.at(-1).breath.remainingAfter,0,'last real player strike retains its burst event after exhaustion');
 // Multi-segment action applies exactly one displacement and collision uses total damage.
 st.x=2;enemy.x=3;const jab=skills.skills.combat_basic_unarmed.moves.find(m=>m.id==='jab');jab.hit_segments=2;jab.on_parry_failed_displace_target={cells:1};
 let before=hp;a=attack();assert.equal(enemy.x,4);assert.equal(hp,before-a.ctx.finalDamage);

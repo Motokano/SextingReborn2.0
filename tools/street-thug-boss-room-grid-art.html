@@ -1,0 +1,18 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><base href="../"><title>地痞据点 · 按格绘制的旧物</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#192820;color:#e7dfcc;font:15px/1.7 'Microsoft YaHei',sans-serif}main{max-width:1200px;margin:auto;padding:28px}h1{font-size:28px;margin:0 0 8px}p{color:#bbc5b6}a{color:#e0c68b}nav{display:flex;gap:16px;flex-wrap:wrap;margin:18px 0}.references{display:flex;align-items:center;gap:16px;background:#24372b;padding:14px;border:1px solid #54654e;border-radius:8px}.references img{width:92px;height:120px;object-fit:contain}.references p{margin:0;max-width:680px}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:24px}.card{border:1px solid #53634e;border-radius:8px;background:#233429;overflow:hidden}.card img{display:block;width:100%;aspect-ratio:1;object-fit:contain;background:repeating-conic-gradient(#2a3b30 0% 25%,#2d3f33 0% 50%) 50%/24px 24px}.card h2{font-size:16px;margin:14px 16px 0}.card p{font-size:12px;margin:4px 16px 16px}#status{color:#d1bc85}@media(max-width:800px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.references{flex-wrap:wrap}}@media(max-width:480px){.grid{grid-template-columns:1fr}main{padding:16px}}
+</style><main><h1>凑合修，继续用</h1><p>旧厂房值班室被地痞占用：桌边的掉皮与茶渍、没叠好的床被、修补过的椅面、塞进货架的杂货。家具沿棋格落地，生活痕迹留在使用的位置。</p>
+<nav><a href="tools/street-thug-boss-room-board.html?no_reload">回到实际棋盘</a><a href="assets/dungeon/street-thug-boss-room-v6/README.md">素材与规格记录</a><a href="assets/dungeon/street-thug-boss-room-v6/PROMPTS.json">生成提示与来源</a></nav>
+<section class="references"><img src="reference/street-thugs-v1/tier-1.png" alt="已确认的一档地痞画风"><img src="assets/map/isometric/interactive-devices-v1/bed.png" alt="已确认的装置手绘风格"><p>画风固定参照既有定稿：深色外轮廓、成块的手绘明暗、左上来光。磨损有位置、有用途；不靠满图碎纹理代替造型。</p></section>
+<p id="status">正在载入素材…</p><div class="grid" id="assets"></div></main>
+<script type="module">
+import {ROOM_SCALE} from './tools/street-thug-boss-room-scale.mjs';
+const root='assets/dungeon/street-thug-boss-room-v6/';
+try{
+ const m=await fetch(root+'manifest.json').then(r=>r.json()),rows=m.props.map(p=>({...p,label:ROOM_SCALE[p.id].label}));
+ for(const c of m.containers)for(const [state,label]of [['unsearched','未搜'],['searched','搜空']])rows.push({...c[state],label:ROOM_SCALE[c.id].label+' · '+label});
+ for(const [id,src]of Object.entries(m.textures))rows.push({src,label:id==='wall'?'旧粉刷墙面':'旧水泥地面'});
+ for(const p of rows){const card=document.createElement('article');card.className='card';const img=document.createElement('img');img.src=root+p.src;img.alt=p.label;const h=document.createElement('h2');h.textContent=p.label;const note=document.createElement('p');note.textContent=p.footprint?'底面 '+p.footprint.join(' × ')+' 格 · 原始透明图，显示校准见实际棋盘':'平面材质 · 沿真实墙面／地面投影';card.append(img,h,note);document.getElementById('assets').append(card);}
+ document.getElementById('status').textContent='14 张选用素材 · 人物保持原样 · 棋盘页可查看格线、朝向和人物比例';
+}catch(e){document.getElementById('status').textContent='载入失败：'+e.message;}
+</script></html>

@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<base href="../"><title>老练狠角色 · 站立与倒地</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#18231f;color:#ece5d5;font:14px/1.65 'Microsoft YaHei',sans-serif}main{max-width:1040px;margin:auto;padding:22px}h1{font-size:25px;margin:0}p{margin:6px 0 16px;color:#bac2b5}.pair{display:grid;grid-template-columns:1fr 1fr;gap:16px}.card{background:#24352b;border:1px solid #566650;border-radius:7px;overflow:hidden}h2{font-size:15px;margin:10px 16px}.art{height:340px;background:#c6c2b5;display:flex;align-items:center;justify-content:center}.art img{width:100%;height:100%;object-fit:contain}.art.fallen img{height:450px;object-fit:contain;transform:translateY(-20px)}.art.fallen{overflow:hidden}canvas{display:block;width:440px;height:310px;margin:auto}a{color:#e3ca91}nav{display:flex;gap:18px;flex-wrap:wrap;margin-top:14px}.note{font-size:12px;color:#bbc3b1;margin:9px 16px}.canvas-wrap{overflow:auto}#status{margin-bottom:8px}@media(max-width:700px){.pair{grid-template-columns:1fr}.art{height:300px}main{padding:12px}}
+</style>
+<main>
+<h1>老练狠角色 · 站立与倒地</h1>
+<p>沿用第三档形象：酒红短袖、双手缠带、短发胡茬。倒地增加血迹、擦伤与衣物破损。</p>
+<div class="pair">
+<section class="card"><h2>站立 · 原形象透明提取</h2><div class="art"><img src="assets/map/isometric/street-thug-veteran-v1/standing.png" alt="老练狠角色正常站立"></div></section>
+<section class="card"><h2>倒地 · 首版</h2><div class="art fallen"><img src="assets/map/isometric/street-thug-veteran-v1/defeated.png" alt="同一角色侧身倒地，脸部、缠带和底座有少量血迹"></div></section>
+</div>
+<p id="status" role="status">正在载入棋盘尺寸对照…</p>
+<div class="pair">
+<section class="card"><h2>站立 · 144px棋格 / 人物125%</h2><div class="canvas-wrap"><canvas id="standing" aria-label="正常站姿在144像素棋格上的实际尺寸"></canvas></div></section>
+<section class="card"><h2>倒地 · 保持人物自身比例</h2><div class="canvas-wrap"><canvas id="defeated" aria-label="倒地角色在144像素棋格上的实际尺寸"></canvas></div></section>
+</div>
+<nav><a href="assets/map/isometric/street-thug-veteran-v1/standing.png" target="_blank">站立透明原图</a><a href="assets/map/isometric/street-thug-veteran-v1/defeated.png" target="_blank">倒地透明原图</a><a href="assets/map/isometric/street-thug-veteran-v1/README.md">素材记录与提示词</a></nav>
+<p class="note">本页为美术尺寸预览。倒地按站姿的身体比例显示，展开后占地稍宽；未修改正式战斗或尸体替换规则。</p>
+</main>
+<script src="js/core/map-projection.js"></script>
+<script type="module">
+const root='assets/map/isometric/street-thug-veteran-v1/';
+const specs={standing:{crop:[226,66,752,1168],anchor:[602,1234]},defeated:{crop:[31,339,1158,702],anchor:[610,1041]}};
+const projection=MapProjection.create({width:3,height:3},144/Math.SQRT2,'isometric');
+const center=projection.cellCenter(1,1),scale=46/752*1.25;
+try{
+ await Promise.all(Object.entries(specs).map(async([state,spec])=>{
+  const image=new Image();image.src=root+state+'.png';await image.decode();
+  const canvas=document.getElementById(state),dpr=window.devicePixelRatio||1;
+  canvas.width=Math.round(440*dpr);canvas.height=Math.round(310*dpr);
+  const ctx=canvas.getContext('2d');ctx.scale(dpr,dpr);ctx.save();ctx.translate(220-center.x,167-center.y);
+  for(let y=0;y<3;y++)for(let x=0;x<3;x++){
+   const points=projection.cellPolygon(x,y);ctx.beginPath();points.forEach((p,i)=>ctx[i?'lineTo':'moveTo'](p.x,p.y));ctx.closePath();
+   ctx.fillStyle=(x+y)%2?'#4d5b4e':'#465346';ctx.fill();ctx.strokeStyle='#a1ad8f55';ctx.stroke();
+  }
+  const points=projection.cellPolygon(1,1);ctx.beginPath();points.forEach((p,i)=>ctx[i?'lineTo':'moveTo'](p.x,p.y));ctx.closePath();ctx.strokeStyle='#c7b67b';ctx.stroke();
+  const [bx,by,bw,bh]=spec.crop,[ax,ay]=spec.anchor;
+  ctx.drawImage(image,bx,by,bw,bh,center.x+(bx-ax)*scale,center.y+10+(by-ay)*scale,bw*scale,bh*scale);
+  ctx.restore();
+ }));
+ document.getElementById('status').textContent='下方按实际棋格规格显示；两态沿用同一人物缩放，不把倒地身体压缩到站立底座宽度。';
+}catch(error){document.getElementById('status').textContent='素材载入失败：'+error.message;console.error(error);}
+</script>
+</html>

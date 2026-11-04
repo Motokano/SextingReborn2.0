@@ -63,8 +63,12 @@
     "equip_slot": "shoe_left",
     "enchant_slots": 6,
     "weight_kg": 0.25,
-    "form_coefs": { "踹": 1.0, "扫": 1.2, "踏": 1.0 },
-    "move_cost_mod": -0.10,
+    "form_coefs": {
+      "踹": 1,
+      "扫": 1.2,
+      "踏": 1
+    },
+    "move_cost_mod": -0.1,
     "parry_coef": 0.95,
     "speed_coef": 1.15
   },
@@ -81,8 +85,12 @@
     "equip_slot": "shoe_right",
     "enchant_slots": 6,
     "weight_kg": 0.25,
-    "form_coefs": { "踹": 1.0, "扫": 1.2, "踏": 1.0 },
-    "move_cost_mod": -0.10,
+    "form_coefs": {
+      "踹": 1,
+      "扫": 1.2,
+      "踏": 1
+    },
+    "move_cost_mod": -0.1,
     "parry_coef": 0.95,
     "speed_coef": 1.15
   },
@@ -99,8 +107,14 @@
     "equip_slot": "glove_left",
     "enchant_slots": 6,
     "weight_kg": 0.05,
-    "limb_tags": ["挥拳"],
-    "form_coefs": { "拳": 1.0, "掌": 1.0, "戳": 1.0 }
+    "limb_tags": [
+      "挥拳"
+    ],
+    "form_coefs": {
+      "拳": 1,
+      "掌": 1,
+      "戳": 1
+    }
   },
   "eq_glove_right_cloth": {
     "id": "eq_glove_right_cloth",
@@ -115,8 +129,14 @@
     "equip_slot": "glove_right",
     "enchant_slots": 6,
     "weight_kg": 0.05,
-    "limb_tags": ["挥拳"],
-    "form_coefs": { "拳": 1.0, "掌": 1.0, "戳": 1.0 }
+    "limb_tags": [
+      "挥拳"
+    ],
+    "form_coefs": {
+      "拳": 1,
+      "掌": 1,
+      "戳": 1
+    }
   },
   "eq_glove_left_boxing": {
     "id": "eq_glove_left_boxing",
@@ -131,8 +151,14 @@
     "equip_slot": "glove_left",
     "enchant_slots": 6,
     "weight_kg": 0.3,
-    "limb_tags": ["挥拳"],
-    "form_coefs": { "拳": 1.3, "掌": 0.9, "戳": 0.8 }
+    "limb_tags": [
+      "挥拳"
+    ],
+    "form_coefs": {
+      "拳": 1.3,
+      "掌": 0.9,
+      "戳": 0.8
+    }
   },
   "eq_glove_right_boxing": {
     "id": "eq_glove_right_boxing",
@@ -147,8 +173,14 @@
     "equip_slot": "glove_right",
     "enchant_slots": 6,
     "weight_kg": 0.3,
-    "limb_tags": ["挥拳"],
-    "form_coefs": { "拳": 1.3, "掌": 0.9, "戳": 0.8 }
+    "limb_tags": [
+      "挥拳"
+    ],
+    "form_coefs": {
+      "拳": 1.3,
+      "掌": 0.9,
+      "戳": 0.8
+    }
   },
   "eq_glove_left_open": {
     "id": "eq_glove_left_open",
@@ -163,8 +195,14 @@
     "equip_slot": "glove_left",
     "enchant_slots": 6,
     "weight_kg": 0.08,
-    "limb_tags": ["挥拳"],
-    "form_coefs": { "拳": 0.9, "掌": 1.0, "戳": 1.2 }
+    "limb_tags": [
+      "挥拳"
+    ],
+    "form_coefs": {
+      "拳": 0.9,
+      "掌": 1,
+      "戳": 1.2
+    }
   },
   "eq_glove_right_open": {
     "id": "eq_glove_right_open",
@@ -179,8 +217,14 @@
     "equip_slot": "glove_right",
     "enchant_slots": 6,
     "weight_kg": 0.08,
-    "limb_tags": ["挥拳"],
-    "form_coefs": { "拳": 0.9, "掌": 1.0, "戳": 1.2 }
+    "limb_tags": [
+      "挥拳"
+    ],
+    "form_coefs": {
+      "拳": 0.9,
+      "掌": 1,
+      "戳": 1.2
+    }
   },
   "eq_glove_left_motor": {
     "id": "eq_glove_left_motor",
@@ -195,8 +239,14 @@
     "equip_slot": "glove_left",
     "enchant_slots": 6,
     "weight_kg": 0.35,
-    "limb_tags": ["挥拳"],
-    "form_coefs": { "拳": 1.1, "掌": 1.2, "戳": 1.0 }
+    "limb_tags": [
+      "挥拳"
+    ],
+    "form_coefs": {
+      "拳": 1.1,
+      "掌": 1.2,
+      "戳": 1
+    }
   },
   "eq_glove_right_motor": {
     "id": "eq_glove_right_motor",
@@ -211,8 +261,14 @@
     "equip_slot": "glove_right",
     "enchant_slots": 6,
     "weight_kg": 0.35,
-    "limb_tags": ["挥拳"],
-    "form_coefs": { "拳": 1.1, "掌": 1.2, "戳": 1.0 }
+    "limb_tags": [
+      "挥拳"
+    ],
+    "form_coefs": {
+      "拳": 1.1,
+      "掌": 1.2,
+      "戳": 1
+    }
   },
   "eq_glove_left_work": {
     "id": "eq_glove_left_work",
@@ -227,8 +283,14 @@
     "equip_slot": "glove_left",
     "enchant_slots": 6,
     "weight_kg": 0.2,
-    "limb_tags": ["挥拳"],
-    "form_coefs": { "拳": 1.05, "掌": 1.05, "戳": 1.05 }
+    "limb_tags": [
+      "挥拳"
+    ],
+    "form_coefs": {
+      "拳": 1.05,
+      "掌": 1.05,
+      "戳": 1.05
+    }
   },
   "eq_glove_right_work": {
     "id": "eq_glove_right_work",
@@ -243,8 +305,14 @@
     "equip_slot": "glove_right",
     "enchant_slots": 6,
     "weight_kg": 0.2,
-    "limb_tags": ["挥拳"],
-    "form_coefs": { "拳": 1.05, "掌": 1.05, "戳": 1.05 }
+    "limb_tags": [
+      "挥拳"
+    ],
+    "form_coefs": {
+      "拳": 1.05,
+      "掌": 1.05,
+      "戳": 1.05
+    }
   },
   "eq_shoe_left_cloth": {
     "id": "eq_shoe_left_cloth",
@@ -259,10 +327,14 @@
     "equip_slot": "shoe_left",
     "enchant_slots": 6,
     "weight_kg": 0.2,
-    "form_coefs": { "踹": 1.0, "扫": 1.0, "踏": 1.0 },
+    "form_coefs": {
+      "踹": 1,
+      "扫": 1,
+      "踏": 1
+    },
     "move_cost_mod": -0.15,
-    "parry_coef": 1.0,
-    "speed_coef": 1.0
+    "parry_coef": 1,
+    "speed_coef": 1
   },
   "eq_shoe_right_cloth": {
     "id": "eq_shoe_right_cloth",
@@ -277,10 +349,14 @@
     "equip_slot": "shoe_right",
     "enchant_slots": 6,
     "weight_kg": 0.2,
-    "form_coefs": { "踹": 1.0, "扫": 1.0, "踏": 1.0 },
+    "form_coefs": {
+      "踹": 1,
+      "扫": 1,
+      "踏": 1
+    },
     "move_cost_mod": -0.15,
-    "parry_coef": 1.0,
-    "speed_coef": 1.0
+    "parry_coef": 1,
+    "speed_coef": 1
   },
   "eq_shoe_left_straw": {
     "id": "eq_shoe_left_straw",
@@ -295,10 +371,14 @@
     "equip_slot": "shoe_left",
     "enchant_slots": 6,
     "weight_kg": 0.1,
-    "form_coefs": { "踹": 0.8, "扫": 0.8, "踏": 0.8 },
+    "form_coefs": {
+      "踹": 0.8,
+      "扫": 0.8,
+      "踏": 0.8
+    },
     "move_cost_mod": -0.35,
     "parry_coef": 0.85,
-    "speed_coef": 1.0
+    "speed_coef": 1
   },
   "eq_shoe_right_straw": {
     "id": "eq_shoe_right_straw",
@@ -313,10 +393,14 @@
     "equip_slot": "shoe_right",
     "enchant_slots": 6,
     "weight_kg": 0.1,
-    "form_coefs": { "踹": 0.8, "扫": 0.8, "踏": 0.8 },
+    "form_coefs": {
+      "踹": 0.8,
+      "扫": 0.8,
+      "踏": 0.8
+    },
     "move_cost_mod": -0.35,
     "parry_coef": 0.85,
-    "speed_coef": 1.0
+    "speed_coef": 1
   },
   "eq_shoe_left_spike": {
     "id": "eq_shoe_left_spike",
@@ -331,9 +415,13 @@
     "equip_slot": "shoe_left",
     "enchant_slots": 6,
     "weight_kg": 0.4,
-    "form_coefs": { "踹": 1.0, "扫": 1.0, "踏": 1.3 },
+    "form_coefs": {
+      "踹": 1,
+      "扫": 1,
+      "踏": 1.3
+    },
     "move_cost_mod": 0,
-    "parry_coef": 1.0,
+    "parry_coef": 1,
     "speed_coef": 1.05,
     "_special_reserved": "钉鞋：踢击命中触发流血（机制待 15-todo 中毒/流血/灼烧，k21 接入）"
   },
@@ -350,9 +438,13 @@
     "equip_slot": "shoe_right",
     "enchant_slots": 6,
     "weight_kg": 0.4,
-    "form_coefs": { "踹": 1.0, "扫": 1.0, "踏": 1.3 },
+    "form_coefs": {
+      "踹": 1,
+      "扫": 1,
+      "踏": 1.3
+    },
     "move_cost_mod": 0,
-    "parry_coef": 1.0,
+    "parry_coef": 1,
     "speed_coef": 1.05,
     "_special_reserved": "钉鞋：踢击命中触发流血（机制待 15-todo 中毒/流血/灼烧，k21 接入）"
   },
@@ -369,10 +461,14 @@
     "equip_slot": "shoe_left",
     "enchant_slots": 6,
     "weight_kg": 0.5,
-    "form_coefs": { "踹": 1.0, "扫": 1.0, "踏": 1.0 },
+    "form_coefs": {
+      "踹": 1,
+      "扫": 1,
+      "踏": 1
+    },
     "move_cost_mod": 0,
     "parry_coef": 1.15,
-    "speed_coef": 1.0,
+    "speed_coef": 1,
     "_special_reserved": "雨靴：泥泞/雨天移动不减（环境机制预留，k21 接入）"
   },
   "eq_shoe_right_rain": {
@@ -388,10 +484,14 @@
     "equip_slot": "shoe_right",
     "enchant_slots": 6,
     "weight_kg": 0.5,
-    "form_coefs": { "踹": 1.0, "扫": 1.0, "踏": 1.0 },
+    "form_coefs": {
+      "踹": 1,
+      "扫": 1,
+      "踏": 1
+    },
     "move_cost_mod": 0,
     "parry_coef": 1.15,
-    "speed_coef": 1.0,
+    "speed_coef": 1,
     "_special_reserved": "雨靴：泥泞/雨天移动不减（环境机制预留，k21 接入）"
   },
   "eq_shoe_left_heavy": {
@@ -406,8 +506,12 @@
     "info_module_set_id": "module.equipment_armor",
     "equip_slot": "shoe_left",
     "enchant_slots": 6,
-    "weight_kg": 1.0,
-    "form_coefs": { "踹": 1.2, "扫": 1.0, "踏": 1.2 },
+    "weight_kg": 1,
+    "form_coefs": {
+      "踹": 1.2,
+      "扫": 1,
+      "踏": 1.2
+    },
     "move_cost_mod": 0.25,
     "parry_coef": 1.25,
     "speed_coef": 0.9
@@ -424,8 +528,12 @@
     "info_module_set_id": "module.equipment_armor",
     "equip_slot": "shoe_right",
     "enchant_slots": 6,
-    "weight_kg": 1.0,
-    "form_coefs": { "踹": 1.2, "扫": 1.0, "踏": 1.2 },
+    "weight_kg": 1,
+    "form_coefs": {
+      "踹": 1.2,
+      "扫": 1,
+      "踏": 1.2
+    },
     "move_cost_mod": 0.25,
     "parry_coef": 1.25,
     "speed_coef": 0.9
@@ -443,7 +551,14 @@
     "equip_slot": "clothing",
     "material": "leather",
     "base_shield": 24,
-    "module_slots": ["chest", "abdomen", "arm_l", "arm_r", "leg_l", "leg_r"],
+    "module_slots": [
+      "chest",
+      "abdomen",
+      "arm_l",
+      "arm_r",
+      "leg_l",
+      "leg_r"
+    ],
     "pocket_slots": 3,
     "enchant_slots": 0,
     "weight_kg": 1.2
@@ -460,7 +575,11 @@
     "info_module_set_id": "module.equipment_armor",
     "equip_slot": "head",
     "material": "leather",
-    "module_slots": ["shell", "liner", "face"],
+    "module_slots": [
+      "shell",
+      "liner",
+      "face"
+    ],
     "enchant_slots": 0,
     "weight_kg": 0.4
   },

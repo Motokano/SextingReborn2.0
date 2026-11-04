@@ -1699,14 +1699,17 @@
     }
 
     function roundStamina(value) { return Math.round(value * 100) / 100; }
+    function isMovementOrWait(options) {
+        return !!(options && (options.source === 'movement' || options.source === 'wait'));
+    }
     function consumeStamina(amount, options) {
         var a = options && options.raw ? Math.max(0, Number(amount) || 0) : getActionStaminaCost(amount);
         var before = roundStamina(Math.max(0, Number(state.stamina) || 0));
         state.stamina = roundStamina(Math.max(0, before - a));
         var actualCost = roundStamina(Math.max(0, before - state.stamina));
         if (actualCost > 0) {
-            // Walking pays stamina only; time-based metabolism remains in advanceTick.
-            if (foodConfig() && !(options && options.source === 'movement')) foodState.pendingStamina += actualCost;
+            // Walking and in-place waiting share step costs without a deferred food bill.
+            if (foodConfig() && !isMovementOrWait(options)) foodState.pendingStamina += actualCost;
             var gainPerStamina = Number(options && Number.isFinite(options.fatiguePerStamina) ? options.fatiguePerStamina : get('fatigue_gain_per_stamina_spent', 0.5));
             if (!isFinite(gainPerStamina) || gainPerStamina < 0) gainPerStamina = 0.5;
             state.fatigue = roundFatigue(clamp(
@@ -1851,7 +1854,7 @@
 
     /** 单 tick 结算；返回 { death: string|null, coma: boolean } */
     function advanceTick(options) {
-        var movementTick = !!(options && options.source === 'movement');
+        var stepTick = isMovementOrWait(options);
         var sleeping = !!(options && options.source === 'sleep');
         var sleepSatietyCost = sleeping ? Math.max(0, Number(get('sleep_satiety_cost_per_tick', 1)) || 0) : 0;
         var sleepThirstCost = sleeping ? Math.max(0, Number(get('sleep_thirst_cost_per_tick', 1)) || 0) : 0;
@@ -1920,7 +1923,7 @@
         // Sleep has its own fixed food/water cost; digestion and outstanding labor still settle.
         if (sleeping && metabolismCfg) metabolismCfg = Object.assign({}, metabolismCfg, { base_expenditure: 0 });
         if (metabolismCfg) {
-            var mealResult = global.FoodMetabolism.tick(foodState, { satiety: state.satiety, nutrition: state.nutrition, weight_kg: state.weight_kg, height_cm: getHeightCm() }, metabolismCfg, { preserveReserves: movementTick });
+            var mealResult = global.FoodMetabolism.tick(foodState, { satiety: state.satiety, nutrition: state.nutrition, weight_kg: state.weight_kg, height_cm: getHeightCm() }, metabolismCfg, { preserveReserves: stepTick });
             state.satiety = mealResult.satiety;
             state.nutrition = mealResult.nutrition;
             state.weight_kg = mealResult.weight_kg;
@@ -1929,7 +1932,7 @@
             }
             syncMealBalanceBuff();
             syncNutritionStateBuff();
-        } else if (!movementTick && !sleeping && state.satiety > 0) state.satiety = round1(Math.max(0, state.satiety - satDecay));
+        } else if (!stepTick && !sleeping && state.satiety > 0) state.satiety = round1(Math.max(0, state.satiety - satDecay));
         if (sleeping) {
             sleepPaid = state.satiety >= sleepSatietyCost && state.thirst >= sleepThirstCost;
             state.satiety = Math.max(0, state.satiety - sleepSatietyCost);
@@ -1967,7 +1970,7 @@
         var thirstInterval = get('thirst_tick_decay_interval', 2);
         if (sleeping) {
             state.thirst = round1(Math.max(0, state.thirst - sleepThirstCost));
-        } else if (!movementTick && thirstInterval > 0 && tick % thirstInterval === 0) {
+        } else if (!stepTick && thirstInterval > 0 && tick % thirstInterval === 0) {
             var thirstDecay = Number(get('thirst_tick_decay_amount', 1));
             if (!isFinite(thirstDecay) || thirstDecay < 0) thirstDecay = 1;
             if (state.thirst > 0) state.thirst = round1(Math.max(0, state.thirst - thirstDecay));
@@ -1991,7 +1994,7 @@
                 state.fatigue = roundFatigue(clamp(state.fatigue - Math.max(0, Number(get('sleep_fatigue_reduction_per_tick', 2)) || 0), get('fatigue_min', 0), get('fatigue_max', 100)));
                 syncFatigueStateBuff();
             }
-        } else if (!movementTick && (state.isResting || state.is_stamina_regen_action_active ||
+        } else if (!stepTick && (state.isResting || state.is_stamina_regen_action_active ||
             (state.is_sit_meditation_active && !state.sit_meditation_interrupt_this_tick))) {
             applyFoodConversion(get('rest_action_extra_satiety_decay_per_tick', 1),
                 get('rest_action_extra_thirst_decay_per_tick', 1),
