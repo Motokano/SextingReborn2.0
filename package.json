@@ -72,6 +72,7 @@
     "test:fishing-temperature": "node tools/test-fishing-temperature.mjs",
     "test:fishing-weather-species": "node tools/test-fishing-weather-species.mjs",
     "test:facility-labor": "node tools/test-facility-labor.mjs",
+    "test:facility-time": "node --test tools/test-facility-world-time.mjs tools/test-sleep-runtime.mjs tools/test-gym-runtime.mjs tools/test-bathroom-facility.mjs",
     "test:facility-unlock": "node tools/test-cooking-repair.mjs && node tools/test-facility-unlock.mjs && node tools/test-hideout-warehouse.mjs",
     "test:livestock-state-validation": "node tools/test-livestock-state-validation.mjs",
     "test:footwork": "node tools/test-footwork-parry.mjs && node tools/test-parry-variant-retirement.mjs",

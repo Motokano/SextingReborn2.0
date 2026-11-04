@@ -3143,10 +3143,13 @@
         if (window.Survival.__worldSystemsTickPatched) return;
         var oldAdvance = window.Survival.advanceTick;
         window.Survival.advanceTick = function () {
-            if (window.DeathSystem && window.DeathSystem.blocked()) return { isDead: true };
+            if (window.Survival.isDead() || (window.DeathSystem && window.DeathSystem.blocked())) return { isDead: true };
             if (window.BedSleep && !window.BedSleep.allowsTick(arguments[0])) return { sleeping: true };
             if (window.GymSystem && !window.GymSystem.allowsTick(arguments[0])) return { training: true };
+            var worldTickBefore = getWorldTotalTicks();
             var ret = oldAdvance.apply(this, arguments);
+            // A rejected tick must not advance production, growth or other world consumers.
+            if (getWorldTotalTicks() <= worldTickBefore) return ret;
             try { resolveNpcHardOccupancyAfterWorldTick(); } catch (e2) { /* ignore */ }
             try { CookingStation.tickCookingTempStationsAfterWorldTick(); } catch (e1) { /* ignore */ }
             try { CookingStation.tickCraftAfterWorldTick(); } catch (e0) { /* ignore */ }

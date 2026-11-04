@@ -26,7 +26,7 @@ async function offer(h,selector='.cr-body'){for(const el of h.g.document.querySe
 test('P4a native/Svelte preserve labor, all repair steps, embedded tools, warehouse contents and upgrade presentation',async()=>{
  const old=await boot(false),h=await boot(true);
  try{
-  for(const f of [old,h]){await setup(f,10,14);f.g.FacilityLaborPanel.open('agriculture');await f.drain();}
+  for(const f of [old,h]){await setup(f);f.g.GameEngine.setState('M0_Base_Outside_lv_1',5,10);f.g.FacilityLaborPanel.open('agriculture');await f.drain();}
   equal(old,h,'.cooking-repair-overlay');
   for(const f of [old,h]){f.g.FacilityLaborPanel.close();f.g.GameEngine.setState('M0_Base_Inside_lv_1',13,14);f.g.FacilityUnlockPanel.open('pharmacy');await f.drain();}
   equal(old,h,'.cooking-repair-overlay');
@@ -57,7 +57,7 @@ test('P4a native/Svelte preserve labor, all repair steps, embedded tools, wareho
 test('P4a labor owns one interval, charges once, pauses on hidden/save failure/load, and transitions to repair',async()=>{
  const h=await boot(true),g=h.g;let timer;
  try{
-  await setup(h,10,14);timer=clock(g);g.FacilityLaborPanel.open('agriculture');await h.drain();
+  await setup(h);g.GameEngine.setState('M0_Base_Outside_lv_1',5,10);timer=clock(g);g.FacilityLaborPanel.open('agriculture');await h.drain();
   const before=g.GameTime.getState().totalTicks,stamina=g.Survival.getStamina(),cost=g.FacilityLabor.cost();
   await click(h,'[data-action="start"]');assert.equal(timer.timers.size,1);g.FacilityLaborPanel.act('start');assert.equal(timer.timers.size,1);
   timer.step();await h.drain();assert.equal(g.FacilityLabor.progress('agriculture'),1);assert.equal(g.GameTime.getState().totalTicks,before+1);assert.ok(g.Survival.getStamina()<=stamina-cost,'labor and ordinary world survival costs both apply');
@@ -137,7 +137,7 @@ test('P4a shared standalone work retains sewing construction ticks and releases 
   for(let step=0;step<2;step++){await click(h,`[data-step="${step}"]`);await click(h,'[data-action="all"]');}await click(h,'[data-step="2"]');await click(h,'[data-action="repair"]');
   assert.equal(g.NPCSystem.isDemoFlagTrue('sewing_tape_unlocked'),false);const ticks=g.GameTime.getState().totalTicks;
   await click(h,'[data-sewing-work]');assert.equal(g.GameTime.getState().totalTicks,ticks+1);await click(h,'[data-sewing-work]');assert.equal(g.GameTime.getState().totalTicks,ticks+2);assert.equal(g.NPCSystem.isDemoFlagTrue('sewing_tape_unlocked'),true);assert.equal(h.g.document.querySelector('[data-sewing-work]'),null);
-  await click(h,'[data-action="close"]');g.GameEngine.setState('M0_Base_Inside_lv_1',10,14);timer=clock(g);g.FacilityLaborPanel.open('agriculture');await h.drain();await click(h,'[data-action="start"]');assert.equal(timer.timers.size,1);
+  await click(h,'[data-action="close"]');g.GameEngine.setState('M0_Base_Outside_lv_1',5,10);timer=clock(g);g.FacilityLaborPanel.open('agriculture');await h.drain();await click(h,'[data-action="start"]');assert.equal(timer.timers.size,1);
   g.SvelteInteractions.dispose();await h.drain();assert.equal(timer.timers.size,0);assert.equal(g.FacilityLaborPanel.isOpen(),false);assert.equal(g.ToolbenchPanel.isOpen(),false);assert.equal(g.FacilityUnlockPanel.isOpen(),false);assert.equal(g.HideoutWarehousePanel.isOpen(),false);assert.deepEqual(h.errors,[]);
  }finally{timer?.restore();await h.close();}
 });

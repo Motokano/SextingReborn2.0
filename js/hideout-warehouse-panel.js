@@ -631,8 +631,13 @@
             stopConstructionTimer();
             return;
         }
-        if (global.Survival && global.Survival.isDead && global.Survival.isDead()) {stopConstructionTimer();projectMessage='当前无法继续施工。';render();return;}
+        if (!global.Survival || !global.SceneApp || !global.SceneApp.canWorkFacilityLabor()
+            || !global.StationContext.isAdjacentToWarehouseTile() || isOutpostView()) {
+            stopConstructionTimer();projectMessage='当前无法继续施工。';render();return;
+        }
         var result = HW.tickConstructionTask(buildConstructionTickContext());
+        // Record paid construction first, then advance every world system once before saving.
+        if (result && result.advanced) global.Survival.advanceTick({ source: 'warehouse_construction' });
         if (result && result.advanced && !saveConstruction()) {stopConstructionTimer();render();return;}
         if (result && result.advanced === false && result.reason === 'insufficient_stamina') {
             stopConstructionTimer();
