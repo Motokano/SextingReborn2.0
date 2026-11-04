@@ -48,7 +48,7 @@
         if (blocked) return { ok: false, message: blocked };
         busy = true;
         try {
-            var transaction = g.SaveSystem.runAtomic(function () {
+            var transaction = g.SaveSystem.runAtomicFor('water.drink', function () {
                 if (g.SceneApp.guardPlayerActionBlocked(g.SceneApp.ACTION_TYPES.ITEM_USE)) return { ok: false, message: '当前无法饮水。' };
                 var item = equipped(instanceId), p = profile(item);
                 if (!item || !p || p.error || p.water < p.cost) return { ok: false, message: '水壶状态已改变，请重试。' };

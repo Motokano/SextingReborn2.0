@@ -1,0 +1,34 @@
+#death-panel[hidden], #death-panel [hidden] { display: none !important; }
+#death-panel { position: fixed; inset: 0; width: 100vw; height: 100dvh; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; box-sizing: border-box; z-index: 2147483647; display: flex; align-items: center; justify-content: center; overflow: hidden; color: var(--ui-text,#e5e4d9); background: #080d0e; font: 16px/1.7 serif; isolation: isolate; }
+#death-panel.death-wait { padding: 24px; background: radial-gradient(ellipse at 50% 38%, #26302a66 0, #101817 45%, #080d0e 85%) #080d0e; }
+#death-panel :is(.death-card,.death-error) button { display: inline-flex; align-items: center; justify-content: center; gap: 24px; min-height: 48px; padding: 12px 24px; border: 1px solid var(--ui-border,#8f998044); border-radius: 5px; background: linear-gradient(135deg,#41473b,#2c342c); color: var(--ui-text,#e5e4d9); font: 15px/1.5 "Microsoft YaHei",sans-serif; letter-spacing: .06em; box-shadow: inset 0 1px #f0dda911,0 4px 12px #0003; cursor: pointer; transition: background .16s,border-color .16s; }
+#death-panel :is(.death-card,.death-error) button:hover { background: linear-gradient(135deg,#50523e,#394237); border-color: var(--ui-accent,#c5b083); }
+#death-panel :is(.death-card,.death-error) button:focus-visible { outline: 2px solid var(--ui-accent,#c5b083); outline-offset: 4px; }
+#death-panel .death-card { position: relative; width: min(640px,100%); padding: clamp(24px,4vw,40px); background: linear-gradient(135deg,#c6ae7810,transparent 50%),var(--ui-surface,#232825); border: 1px solid var(--ui-border,#8f998044); border-radius: 10px; box-shadow: 0 28px 90px #0007,inset 0 1px #e4d3a51c; }
+#death-panel .death-record-card { display: flex; flex-direction: column; max-height: calc(100dvh - 48px); text-align: left; }
+#death-panel .death-record-heading { display: flex; align-items: center; gap: 12px; margin: 0 0 24px; flex: none; }
+#death-panel .death-record-heading h2 { margin: 0; font: 500 13px/1.5 "Microsoft YaHei",sans-serif; letter-spacing: .2em; color: var(--ui-accent,#c5b083); }
+#death-panel .death-record-mark { width: 7px; height: 7px; border: 1px solid var(--ui-accent,#c5b083); transform: rotate(45deg); }
+#death-panel .death-record-rule { height: 1px; flex: 1; background: linear-gradient(90deg,#9b8a593b,transparent); }
+#death-panel .death-records { margin: 0; padding: 0 8px 0 4px; list-style: none; overflow: auto; min-height: 0; max-height: 45dvh; scrollbar-width: thin; scrollbar-color: #7d8268 var(--ui-deep,#1b201e); }
+#death-panel .death-records:focus-visible { outline: 1px solid var(--ui-accent,#c5b083); outline-offset: 3px; }
+#death-panel .death-record { position: relative; padding: 0 0 18px 20px; border-left: 1px solid var(--ui-border,#8f998044); font: 14px/1.85 "Microsoft YaHei",sans-serif; color: var(--ui-muted,#a3aaa0); overflow-wrap: anywhere; }
+#death-panel .death-record::before { content: ''; position: absolute; left: -3px; top: 8px; width: 5px; height: 5px; border-radius: 50%; background: #817858; }
+#death-panel .death-record time { display: block; margin-bottom: 3px; color: var(--ui-muted,#a3aaa0); font: 11px/1.6 ui-monospace,Consolas,monospace; letter-spacing: .08em; }
+#death-panel .death-record p { margin: 0; white-space: pre-wrap; }
+#death-panel .death-record.is-final { padding-bottom: 4px; color: var(--ui-text,#e5e4d9); font-size: 16px; }
+#death-panel .death-record.is-final::before { background: #bd9378; box-shadow: 0 0 8px #bd937844; }
+#death-panel .death-record-footer { display: flex; justify-content: flex-end; flex: none; margin-top: 26px; padding-top: 22px; border-top: 1px solid var(--ui-border,#8f998044); }
+#death-panel .death-return-arrow { font-size: 20px; line-height: 1; color: var(--ui-accent,#c5b083); }
+@media(max-width:520px) { #death-panel.death-wait { padding: 16px; } #death-panel .death-record-card { padding: 24px; max-height: calc(100dvh - 32px); } #death-panel .death-record-footer button { width: 100%; justify-content: space-between; } }
+#death-panel.death-vessel { background: radial-gradient(ellipse at 50% 24%, #30979b 0, #125d68 40%, #042933 76%, #020d14 100%); }
+.vessel-light { position: absolute; top: 14%; left: 20%; width: 60%; height: 3%; background: #b4fff0; filter: blur(16px); opacity: .6; transform: rotate(-7deg); }
+.vessel-person { position: absolute; left: 58%; top: 25%; width: 15%; height: 54%; border-radius: 45% 48% 20% 25%; background: #04222c; filter: blur(30px); opacity: .7; transform: rotate(7deg); }
+.vessel-person::before { content: ''; position: absolute; width: 45%; height: 25%; top: -16%; left: 24%; border-radius: 50%; background: inherit; }
+.vessel-liquid { position: absolute; inset: -15%; background: repeating-radial-gradient(ellipse at 35% 18%, transparent 0 12%, #69ead52b 14%, transparent 19%); filter: blur(9px); animation: vessel-drift 7s ease-in-out infinite alternate; }
+.vessel-glass { position: absolute; inset: -8%; border-radius: 50%; box-shadow: inset 0 0 130px 60px #001722d9, inset 30px 0 60px #61dccc30; }
+#death-panel .death-error { position: absolute; bottom: 3%; left: 5%; right: 5%; text-align: center; font-size: 14px; }
+#death-panel .death-error p { margin: 0; }
+#death-panel .death-error button { margin-top: .3em; }
+@keyframes vessel-drift { from { transform: translate(-2%, 1%) rotate(-2deg); } to { transform: translate(2%, -3%) rotate(3deg); } }
+@media (prefers-reduced-motion: reduce) { .vessel-liquid { animation: none; } }

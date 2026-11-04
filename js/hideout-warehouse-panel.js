@@ -827,7 +827,7 @@
     }
 
     function saveConstruction() {
-        try {if (!global.SaveSystem || global.SaveSystem.saveNow()) return true;} catch(e) {}
+        try {if (!global.SaveSystem || global.SaveSystem.saveNow('warehouse')) return true;} catch(e) {}
         projectMessage='保存失败，施工已暂停。当前进度仍在本次游戏中，请重试保存。';
         return false;
     }

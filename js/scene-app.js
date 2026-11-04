@@ -1417,7 +1417,7 @@
             if (!slots[i]) {
                 slots[i] = tok;
                 window.SceneCtx.setActionBarSlots(slots);
-                if (window.SaveSystem && typeof window.SaveSystem.saveNow === 'function') window.SaveSystem.saveNow();
+                if (window.SaveSystem && typeof window.SaveSystem.saveNow === 'function') window.SaveSystem.saveNow('quickbar');
                 showMsg(ui('action.bar.pin.ok'), 'success');
                 if (window.SceneRenderer) window.SceneRenderer.render();
                 return true;
@@ -1434,7 +1434,7 @@
         if (!slots[idx]) return;
         slots[idx] = null;
         window.SceneCtx.setActionBarSlots(slots);
-        if (window.SaveSystem && typeof window.SaveSystem.saveNow === 'function') window.SaveSystem.saveNow();
+        if (window.SaveSystem && typeof window.SaveSystem.saveNow === 'function') window.SaveSystem.saveNow('quickbar');
         showMsg(ui('action.bar.pin.cleared'), 'info');
         if (window.SceneRenderer) window.SceneRenderer.render();
     }
@@ -2714,6 +2714,7 @@
     }
 
     function guardPlayerActionBlocked(actionType, opts) {
+        if (window.DeathSystem && window.DeathSystem.blocked()) return true;
         if (window.Hunting && window.Hunting.isActive()) {
             showMsg(ui('hunting.reason.active'), 'info');
             return true;
@@ -3142,6 +3143,7 @@
         if (window.Survival.__worldSystemsTickPatched) return;
         var oldAdvance = window.Survival.advanceTick;
         window.Survival.advanceTick = function () {
+            if (window.DeathSystem && window.DeathSystem.blocked()) return { isDead: true };
             var ret = oldAdvance.apply(this, arguments);
             try { resolveNpcHardOccupancyAfterWorldTick(); } catch (e2) { /* ignore */ }
             try { CookingStation.tickCookingTempStationsAfterWorldTick(); } catch (e1) { /* ignore */ }
@@ -7256,7 +7258,7 @@
                 showMsg(ui('save.msg.localFail'), 'error');
                 return;
             }
-            var ok = window.SaveSystem.saveNow();
+            var ok = window.SaveSystem.saveNow('manual');
             showMsg(ok ? ui('save.msg.localOk') : ui('save.msg.localFail'), ok ? 'info' : 'error');
         });
     }
@@ -7699,18 +7701,23 @@
             window.LivestockState.setUiDeps({ recalcCharacterStats: recalcCharacterStatsFromIE });
         }
         registerUiWindows();
-        return Promise.all([loadConfig(), window.DungeonRuntime ? window.DungeonRuntime.ready : null]).then(function () {
+        return Promise.all([loadConfig(), window.DungeonRuntime ? window.DungeonRuntime.ready : null,
+            window.SaveSystem && window.SaveSystem.ready, window.DeathSystem && window.DeathSystem.ready]).then(function () {
             setupCombatEngagementFeedback();
             // i18n 已就绪（UIText.setDict 已完成）后再进行地图合并渲染
             if (window.SaveSystem && typeof window.SaveSystem.init === 'function') {
-                window.SaveSystem.init({ saveIntervalTicks: 50 });
+                window.SaveSystem.init();
             }
             // 世界 tick 后置：烹饪/制药/制肥/农业等（单一 patch，避免重复结算）
             patchSurvivalTickForWorldSystemsOnce();
             var mapsPromise = bootstrapMapsFromJson();
             function afterMaps() {
+                if (window.DeathSystem && window.DeathSystem.isSessionBlocked()) {
+                    window.DeathSystem.resume(); return;
+                }
                 if (window.SaveSystem && typeof window.SaveSystem.loadRealtime === 'function') {
                     var ok = window.SaveSystem.loadRealtime();
+                    if (ok && window.DeathSystem) window.DeathSystem.resume();
                     if (ok) {
                         // 读档成功后，确保 UI 状态与角色数据一致。
                         hideCreationOverlay();
@@ -7731,7 +7738,7 @@
                 }
                 CookingStation.syncCookingTempStationsIntoMaps();
                 // 读档后：若存在进行中制作，恢复自动 tick 推进
-                startCookingCraftIdleIfNeeded();
+                if (!window.DeathSystem || !window.DeathSystem.blocked()) startCookingCraftIdleIfNeeded();
                 // 读档后再渲染一次，避免出现“短暂默认状态闪屏”。
                 render();
             }
@@ -8907,6 +8914,17 @@
         if (window.Survival) {window.Survival.setStaminaRegenActionActive(false);window.Survival.setSitMeditationActive(false);}
     };
     window.SceneApp.prepareDungeonAction = window.SceneApp.prepareFacilityAction;
+    window.SceneApp.prepareDeath = function () {
+        window.SceneApp.prepareFacilityAction();
+        if (window.DialogueUI) window.DialogueUI.close();
+        closeBackpackPanel({automatic:true}); closeCombatPanel(); closeSurvivalPanel(); closeSavePanel();
+        if (window.BackpackPanel) window.BackpackPanel.invalidate();
+        if (window.DungeonPanel) window.DungeonPanel.close({silent:true});
+        if (window.FacilityLaborPanel) window.FacilityLaborPanel.dismiss();
+        if (window.HideoutWarehousePanel) window.HideoutWarehousePanel.suspendForLoad();
+        if (window.HuntingPanel && window.HuntingPanel.dismiss) window.HuntingPanel.dismiss();
+        if (window.FishingPanel && window.FishingPanel.dismiss) window.FishingPanel.dismiss();
+    };
     window.SceneApp.openAgriculturePanel = openAgriculturePanel;
     window.SceneApp.syncOutdoorFacilityPanels = syncOutdoorFacilityPanels;
     window.SceneApp.canUseOutdoorFacility = canUseOutdoorFacility;

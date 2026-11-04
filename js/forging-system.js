@@ -7,11 +7,12 @@
  function state(){
   let s=g.NPCSystem.getFlagValue(key),serialized=JSON.stringify(s);
   if(cached&&serialized===lastStored)return cached;
-  if(!s||s.version!==1){s={version:1,knowledge:{identity:{},routes:{},structures:{},recipes:{},effects:{}},job:null,lastResult:null};g.NPCSystem.setDemoFlag(key,s);}
-  cached=s;lastStored=JSON.stringify(s);return s;
+  if(!s||s.version!==1)s={version:1,knowledge:{identity:{},routes:{},structures:{},recipes:{},effects:{}},job:null,lastResult:null};
+  // Merely querying defaults (including snapshot rollback) must not write storage.
+  cached=s;lastStored=serialized;return s;
  }
  function write(s){g.NPCSystem.setDemoFlag(key,s);cached=s;lastStored=JSON.stringify(s);}
- function save(){if(!g.SaveSystem?.saveNow())fail('保存失败，操作已暂停。');}
+ function save(){if(!g.SaveSystem?.saveNow('craft.forging'))fail('保存失败，操作已暂停。');}
  function transaction(fn){
   const inv=copy(IE().getState()),npc=copy(g.NPCSystem.getDemoState()),warehouse=g.HideoutWarehouse?.getState();
   try{const result=fn();save();return result;}catch(e){IE().setState(inv);g.NPCSystem.setDemoState(npc);cached=null;if(warehouse)g.HideoutWarehouse.setState(warehouse);throw e;}

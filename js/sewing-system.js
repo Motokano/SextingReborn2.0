@@ -76,7 +76,7 @@
  function pay(c){Object.entries(c).forEach(([id,n])=>{if(!IE().removeCarriedItemsByTemplateId(id,n,{strict:true}).ok)fail('材料不足。');});}
  function enough(c){Object.entries(c).forEach(([id,n])=>{if(IE().countCarriedItemsByTemplateId(id)<n)fail('材料不足：'+name(id)+' × '+n);});}
  function name(id){return IE().getDisplayName(IE().getItemTemplate(id),0,IE().getCharacterForDisplay());}
- function save(){if(!g.SaveSystem||!g.SaveSystem.saveNow())fail('保存失败，当前操作已停止。');}
+ function save(){if(!g.SaveSystem||!g.SaveSystem.saveNow('craft.sewing'))fail('保存失败，当前操作已停止。');}
  function transaction(fn){const inv=copy(IE().getState()),npc=copy(g.NPCSystem.getDemoState());try{fn();save();}catch(e){IE().setState(inv);g.NPCSystem.setDemoState(npc);throw e;}}
  function access(){if(!g.SewingStationPanel||!g.SewingStationPanel.isOpen()||!g.SewingStationPanel.canAccess())fail('请在缝纫台旁亲自操作。');if(g.Survival.isDead&&g.Survival.isDead())fail('当前不能操作。');if(g.Survival.canPerformStaminaOrEnergyAction&&!g.Survival.canPerformStaminaOrEnergyAction())fail('当前身体状况无法工作。');if(g.CombatEngagement&&g.CombatEngagement.isPlayerInCombat())fail('战斗中不能缝纫。');}
  function measureAtTools(){try{const p=g.FacilityUnlockConfig.projects.sewing_scale;if(!g.FacilityUnlock.canAccess(p)||!flag('sewing_tape_unlocked'))fail('请在已装配的量具旁操作。');if(g.CombatEngagement&&g.CombatEngagement.isPlayerInCombat())fail('战斗中不能测量。');const b=dimensions(body());if(!flag('sewing_scale_unlocked')){delete b.weight_kg;delete b.bmi;}g.Survival.advanceTick({source:'sewing_measure'});transaction(()=>set('sewing_measurement',b));return {ok:true,message:'记录身高'+b.height_cm+'厘米'+(b.weight_kg?'，体重'+b.weight_kg+'公斤':'。装配体重秤后可补充体重')+'。'};}catch(e){return {ok:false,message:e.message};}}

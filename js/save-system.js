@@ -34,6 +34,27 @@
     var patched = false;
     // 清档后在本次会话内禁止任何本地回写，避免「已排队 autosave」立刻把旧档写回。
     var persistSuspended = false;
+    var triggerPolicy = { version: 1, intervalTicks: 50, triggers: {} };
+    var idleSavePending = false;
+    var snapshotRestoreDepth = 0;
+    SaveSystem.isRestoringSnapshot = function () { return snapshotRestoreDepth > 0; };
+    var requiredTriggers = ['manual', 'dungeon.enter', 'dungeon.withdraw', 'death.settle', 'death.scene', 'death.revive'];
+    SaveSystem.setTriggerPolicy = function (policy) {
+        if (!policy || policy.version !== 1 || !Number.isInteger(policy.intervalTicks) || policy.intervalTicks < 1 ||
+            !policy.triggers || typeof policy.triggers !== 'object' || Array.isArray(policy.triggers) ||
+            !Object.keys(policy.triggers).every(function (key) { return typeof policy.triggers[key] === 'boolean'; })) {
+            throw new Error('存档触发配置无效');
+        }
+        triggerPolicy = JSON.parse(JSON.stringify(policy));
+        SAVE_INTERVAL_TICKS = policy.intervalTicks;
+    };
+    SaveSystem.getTriggerPolicy = function () { return JSON.parse(JSON.stringify(triggerPolicy)); };
+    SaveSystem.shouldSave = function (trigger) {
+        return requiredTriggers.indexOf(trigger) >= 0 || triggerPolicy.triggers[trigger || 'legacy'] !== false;
+    };
+    SaveSystem.ready = typeof global.fetch !== 'function' ? Promise.resolve() : global.fetch('data/save-triggers.json').then(function (r) {
+        if (!r.ok) throw new Error('存档触发配置加载失败'); return r.json();
+    }).then(SaveSystem.setTriggerPolicy);
 
     // ---------------------------
     // Utilities
@@ -561,6 +582,7 @@
             time: { totalTicks: timeSt.totalTicks },
             weather: global.Weather && global.Weather.getState(),
             dungeon: global.DungeonRuntime ? global.DungeonRuntime.getState() : null,
+            death: global.DeathSystem ? global.DeathSystem.getState() : null,
             manufacturing_knowledge: global.ManufacturingKnowledge ? global.ManufacturingKnowledge.getState() : null,
             combat_enemies: global.CombatEnemies && global.CombatEnemies.getState ? global.CombatEnemies.getState() : null,
             player: {
@@ -587,17 +609,20 @@
         };
     }
 
-    function applySnapshot(snapshot) {
+    function applySnapshot(snapshot, options) {
         var M = global.CombatMetaSkills;
+        if (global.DeathSystem && !global.DeathSystem.validate(snapshot && snapshot.death)) return false;
         if (M && !M.validate(snapshot && snapshot.metaskills)) return false;
         if (M) M.beginRestore();
+        snapshotRestoreDepth++;
         try {
-            var applied = applySnapshotContents(snapshot);
+            var applied = applySnapshotContents(snapshot, options);
             if (applied && M) M.setState(snapshot.metaskills || null);
+            if (applied && global.DeathSystem) global.DeathSystem.restore(snapshot.death || null);
             return applied;
-        } finally { if (M) M.endRestore(); }
+        } finally { snapshotRestoreDepth--; if (M) M.endRestore(); }
     }
-    function applySnapshotContents(snapshot) {
+    function applySnapshotContents(snapshot, options) {
         if (!assertSnapshotShape(snapshot)) return false;
         if (global.ManufacturingKnowledge && !global.ManufacturingKnowledge.validate(snapshot.manufacturing_knowledge)) return false;
         if (global.DungeonRuntime && !global.DungeonRuntime.validate(snapshot.dungeon, snapshot.player.engine)) return false;
@@ -614,7 +639,7 @@
         if (global.HideoutWarehousePanel && global.HideoutWarehousePanel.suspendForLoad) global.HideoutWarehousePanel.suspendForLoad();
         if (global.ToolbenchPanel) global.ToolbenchPanel.close();
             if (global.SewingStationPanel) global.SewingStationPanel.close();
-            if (global.ForgingStationPanel) global.ForgingStationPanel.close();
+            if (global.ForgingStationPanel) global.ForgingStationPanel.suspendForLoad();
         if (global.CookingRepairPanel) global.CookingRepairPanel.close();
         if (global.FacilityLaborPanel) global.FacilityLaborPanel.dismiss();
         if (typeof mods.GameTime.reset === 'function') {
@@ -673,7 +698,7 @@
         if (mods.NPCSystem && typeof mods.NPCSystem.setDemoState === 'function' && snapshot.player.npcDemo) {
             try { mods.NPCSystem.setDemoState(snapshot.player.npcDemo); } catch (e5) { /* ignore */ }
         }
-        if (global.ForgingSystem) global.ForgingSystem.onLoad();
+        if (global.ForgingSystem && !(options && options.rollback)) global.ForgingSystem.onLoad();
         // setDemoState 会整包覆盖 flags，需按角色 epithet 再对齐无用之人 flag
         if (mods.NPCSystem && typeof mods.NPCSystem.syncPlayerEpithetFlags === 'function') {
             try { mods.NPCSystem.syncPlayerEpithetFlags(); } catch (e5b) { /* ignore */ }
@@ -703,7 +728,7 @@
             try { mods.CompostSystem.setState(snapshot.compost); } catch (eCompost) { /* ignore */ }
         }
 
-        if (global.FacilityLabor) global.FacilityLabor.migrate(snapshot);
+        if (global.FacilityLabor && !(options && options.rollback)) global.FacilityLabor.migrate(snapshot);
         applyAgricultureMapFromSnapshot(snapshot);
         applyHideoutWarehouseFromSnapshot(snapshot);
 
@@ -1031,6 +1056,7 @@
 
     // Public: import
     SaveSystem.importSaveCode = async function (code, params) {
+        if (global.DeathSystem && global.DeathSystem.isSessionBlocked()) throw new Error('游戏已在另一个窗口运行');
         params = params || {};
         var account = String(params.account || '');
         var password = String(params.password || '');
@@ -1054,15 +1080,27 @@
             }
 
             // Apply snapshot and overwrite realtime save.
-            var ok = applySnapshot(payloadSnapshot);
+            var beforeImport = buildSnapshot();
+            var ok;
+            try { ok = applySnapshot(payloadSnapshot); }
+            catch (applyError) {
+                if (beforeImport) applySnapshot(beforeImport, { rollback: true });
+                return { ok: false, reason: 'apply' };
+            }
             if (!ok) return { ok: false, reason: 'apply' };
+
+            if (!persistRealtime(payloadSnapshot)) {
+                if (beforeImport) applySnapshot(beforeImport, { rollback: true });
+                return { ok: false, reason: 'save' };
+            }
 
             saveGeneration = coerceNumber(payloadSnapshot.saveGeneration, saveGeneration);
             lastSavedTotalTicks = payloadSnapshot.time && typeof payloadSnapshot.time.totalTicks === 'number'
                 ? payloadSnapshot.time.totalTicks
                 : lastSavedTotalTicks;
 
-            persistRealtime(payloadSnapshot);
+            inLoad = false;
+            if (global.DeathSystem) global.DeathSystem.resume();
             return { ok: true };
         } finally {
             inLoad = false;
@@ -1138,6 +1176,7 @@
 
     function maybeAutoSave() {
         if (persistSuspended) return;
+        if (!SaveSystem.shouldSave('interval') || idleSavePending || (global.DeathSystem && global.DeathSystem.blocked())) return;
         if (!enableAutoSave) return;
         if (inLoad || inSave) return;
         if (!global.GameTime || typeof global.GameTime.getState !== 'function') return;
@@ -1153,10 +1192,11 @@
             if (nowTicks - lastSavedTotalTicks < SAVE_INTERVAL_TICKS) return;
         }
 
-        inSave = true;
+        idleSavePending = true;
         tryRequestIdle(function () {
             try {
-                if (inLoad) return;
+                if (inLoad || inSave || persistSuspended || !enableAutoSave || !SaveSystem.shouldSave('interval') ||
+                    (global.DeathSystem && global.DeathSystem.blocked())) return;
                 var st2 = global.GameTime.getState();
                 if (!st2 || typeof st2.totalTicks !== 'number') return;
                 if (lastSavedTotalTicks != null && st2.totalTicks - lastSavedTotalTicks < SAVE_INTERVAL_TICKS) return;
@@ -1174,7 +1214,7 @@
             } catch (e) {
                 // Never break gameplay.
             } finally {
-                inSave = false;
+                idleSavePending = false;
             }
         });
     }
@@ -1209,9 +1249,13 @@
         try { return loadRealtime(); } catch (e) { return false; }
     };
 
-    SaveSystem.saveNow = function () {
+    SaveSystem.saveNow = function (options) {
+        options = typeof options === 'string' ? { trigger: options } : (options || {});
+        if (global.DeathSystem && global.DeathSystem.isSessionBlocked()) return false;
         if (persistSuspended) return false;
-        if (inLoad || inSave) return false;
+        if (inLoad || inSave || snapshotRestoreDepth) return false;
+        // Disabled optional checkpoints are accepted; transactions still roll back on real write failure.
+        if (!options.required && !SaveSystem.shouldSave(options.trigger || 'legacy')) return true;
         inSave = true;
         try {
             if (!global.GameTime || typeof global.GameTime.getState !== 'function') return false;
@@ -1235,21 +1279,29 @@
     // Dungeon actions save time, inventory and expedition state in one snapshot.
     // Suppress intermediate autosaves; restore the complete snapshot if storage fails.
     var atomicDepth = 0;
+    var atomicRequired = false;
     SaveSystem.isAtomic = function () { return atomicDepth > 0; };
-    SaveSystem.runAtomic = function (operation) {
-        if (atomicDepth) return { saved: true, value: operation() };
+    SaveSystem.runAtomic = function (operation, options) {
+        var required = !!(options && (options.required || requiredTriggers.indexOf(options.trigger) >= 0));
+        if (atomicDepth) { atomicRequired = atomicRequired || required; return { saved: true, value: operation() }; }
         var before = buildSnapshot(), held = persistSuspended, value;
+        atomicRequired = required;
         atomicDepth++; persistSuspended = true;
         try { value = operation(); }
         catch (error) {
-            atomicDepth--; persistSuspended = held;
-            if (before) applySnapshot(before);
+            atomicDepth--; persistSuspended = held; atomicRequired = false;
+            if (before) applySnapshot(before, { rollback: true });
             throw error;
         }
         atomicDepth--; persistSuspended = held;
-        var saved = SaveSystem.saveNow();
-        if (!saved && before) applySnapshot(before);
+        var saveOptions = atomicRequired ? Object.assign({}, options, { required: true }) : options;
+        atomicRequired = false;
+        var saved = SaveSystem.saveNow(saveOptions);
+        if (!saved && before) applySnapshot(before, { rollback: true });
         return { saved: saved, value: value };
+    };
+    SaveSystem.runAtomicFor = function (trigger, operation) {
+        return SaveSystem.runAtomic(operation, { trigger: trigger });
     };
 
     SaveSystem.buildSnapshotForDebug = function () {
@@ -1294,6 +1346,7 @@
         if (realtimeKey !== DEFAULT_REALTIME_KEY) rm(DEFAULT_REALTIME_KEY);
         rm(NPC_DEMO_FLAGS_KEY);
         rm(NPC_DEMO_TRIGGERED_KEY);
+        if (global.NPCSystem && global.NPCSystem.resetRestoredSaveState) global.NPCSystem.resetRestoredSaveState();
         lastSavedTotalTicks = null;
         saveGeneration = 0;
         return !anyFail;

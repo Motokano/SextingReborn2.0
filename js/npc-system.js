@@ -43,19 +43,30 @@
     }
 
     function safeJsonParse(raw, fallback) { try { return JSON.parse(raw); } catch (e) { return fallback; } }
-    function getFlags() { return safeJsonParse(localStorage.getItem(LS_FLAGS) || '{}', {}); }
+    // A restored snapshot remains authoritative even when storage is currently unavailable.
+    // Migrations may change its in-memory flags; restoring/rolling back never writes a second save.
+    var restoredFlags = null, restoredTriggered = null;
+    function copySaved(v) { return JSON.parse(JSON.stringify(v)); }
+    function restoringSnapshot() { return !!(global.SaveSystem && global.SaveSystem.isRestoringSnapshot && global.SaveSystem.isRestoringSnapshot()); }
+    function getFlags() { return restoredFlags !== null ? copySaved(restoredFlags) : safeJsonParse(localStorage.getItem(LS_FLAGS) || '{}', {}); }
     function setFlag(k, v) {
-        var f = getFlags(); f[String(k)] = v; localStorage.setItem(LS_FLAGS, JSON.stringify(f));
+        var f = getFlags(); f[String(k)] = v;
+        if (!restoringSnapshot()) localStorage.setItem(LS_FLAGS, JSON.stringify(f));
+        if (restoredFlags !== null || restoringSnapshot()) restoredFlags = copySaved(f);
         if (global.DungeonCorpseArt && String(k) === global.DungeonCorpseArt.GORE_FLAG) global.DungeonCorpseArt.refresh();
     }
-    function getTriggered() { return safeJsonParse(localStorage.getItem(LS_TRIGGERED) || '[]', []); }
+    function getTriggered() { return restoredTriggered !== null ? restoredTriggered.slice() : safeJsonParse(localStorage.getItem(LS_TRIGGERED) || '[]', []); }
+    function writeTriggered(arr) {
+        if (!restoringSnapshot()) localStorage.setItem(LS_TRIGGERED, JSON.stringify(arr));
+        if (restoredTriggered !== null || restoringSnapshot()) restoredTriggered = arr.slice();
+    }
     function markTriggered(entryId) {
         var arr = getTriggered();
         var id = (entryId == null) ? '' : String(entryId);
         if (!id) return;
         if (arr.indexOf(id) >= 0) return;
         arr.push(id);
-        localStorage.setItem(LS_TRIGGERED, JSON.stringify(arr));
+        writeTriggered(arr);
         log('[NPCSystem] Mark triggered: ' + id, 'system');
     }
     function isTriggered(entryId) {
@@ -72,7 +83,7 @@
         if (ix < 0) return false;
         arr.splice(ix, 1);
         try {
-            localStorage.setItem(LS_TRIGGERED, JSON.stringify(arr));
+            writeTriggered(arr);
         } catch (eRm) { /* ignore */ }
         return true;
     }
@@ -1413,14 +1424,17 @@
             if (!s || typeof s !== 'object') return;
             var nextFlags = s.flags && typeof s.flags === 'object' ? s.flags : {};
             var nextTriggered = Array.isArray(s.triggered) ? s.triggered : [];
+            restoredFlags = copySaved(nextFlags); restoredTriggered = nextTriggered.slice();
+            if (global.DungeonCorpseArt) global.DungeonCorpseArt.refresh();
+            if (restoringSnapshot()) return;
             try {
                 localStorage.setItem(LS_FLAGS, JSON.stringify(nextFlags));
             } catch (e2) { /* ignore */ }
             try {
                 localStorage.setItem(LS_TRIGGERED, JSON.stringify(nextTriggered));
             } catch (e3) { /* ignore */ }
-            if (global.DungeonCorpseArt) global.DungeonCorpseArt.refresh();
         },
+        resetRestoredSaveState: function () { restoredFlags = null; restoredTriggered = null; },
         /** 读取 demo flags（与 setFlag / 存档 setDemoState 同源），供场景门闸等查询；缺键返回 undefined。 */
         getFlagValue: function (key) {
             if (key == null) return undefined;

@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "intervalTicks": 50,
+  "triggers": {
+    "interval": true,
+    "legacy": true,
+    "quickbar": true,
+    "inventory.transfer": true,
+    "warehouse": true,
+    "facility": true,
+    "craft.backpack": true,
+    "craft.sewing": true,
+    "craft.forging": true,
+    "water.refill": true,
+    "water.drink": true,
+    "hunting": true,
+    "fishing": true,
+    "dungeon.checkpoint": true,
+    "dungeon.openDoor": true,
+    "dungeon.completeTick": true,
+    "dungeon.claim": true,
+    "dungeon.mark": true,
+    "dungeon.windowAction": true,
+    "dungeon.descend": true,
+    "dungeon.openBag": true,
+    "dungeon.claimBag": true,
+    "dungeon.claimBatch": true,
+    "checkpoint.task": true
+  }
+}

@@ -39,7 +39,7 @@
         render();
         if (global.SceneApp) global.SceneApp.render();
         if (global.SceneHud) global.SceneHud.refresh('status');
-        if (global.SaveSystem) global.SaveSystem.saveNow();
+        if (global.SaveSystem) global.SaveSystem.saveNow('hunting');
     }
     function tick(rest) {
         var S = global.Survival, previous = S.getState().isResting;
@@ -262,6 +262,6 @@
         }); });
         if (container.childElementCount) node('p',t('hunting.admission_hint'),container);
     }
-    global.HuntingPanel = { openCrafting:openCrafting,canOpenCrafting:canOpenCrafting,configure: configure, open: open, render: render, renderAdmission: renderAdmission,
+    global.HuntingPanel = { dismiss:function(){if(overlay)overlay.hidden=true;kitsOpen=false;}, openCrafting:openCrafting,canOpenCrafting:canOpenCrafting,configure: configure, open: open, render: render, renderAdmission: renderAdmission,
         currentPoint: currentPoint, isOpen: function () { return !!(overlay && !overlay.hidden); } };
 })(window);

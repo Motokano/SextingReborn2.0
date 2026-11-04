@@ -12,7 +12,7 @@
  function description(id){var n=progress(id);return descriptions[id][n>=TOTAL?5:n===0?0:n<250?1:n<500?2:n<750?3:4];}
  function nearby(id){var spec=g.FacilityUnlockConfig.projects[id];return !!(descriptions[id]&&spec&&g.FacilityUnlock.canAccess(Object.assign({},spec,{requires:null})));}
  function cost(){return g.Survival.getActionStaminaCost?g.Survival.getActionStaminaCost(BASE_COST):BASE_COST;}
- function save(){try{return !!(g.SaveSystem&&g.SaveSystem.saveNow());}catch(e){return false;}}
+ function save(){try{return !!(g.SaveSystem&&g.SaveSystem.saveNow('facility'));}catch(e){return false;}}
  function reason(id){
   if(!nearby(id))return '请回到对应设施旁继续清理。';
   if(unlocked(id)||progress(id)>=TOTAL)return '清理已经完成。';

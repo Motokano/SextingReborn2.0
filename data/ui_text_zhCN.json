@@ -615,7 +615,7 @@
   "dialogue.close": "关闭",
   "dialogue.ellipsis": "…",
   "dialogue.end": "结束",
-  "dialogue.hint": "Enter/空格：下一句　Esc：关闭",
+  "dialogue.hint": "Enter/空格：补全或继续",
   "dialogue.next": "下一句",
   "dialogue.npc.name": "NPC",
   "dialogue.placeholder": "（对话将显示在这里）",
@@ -2058,5 +2058,14 @@
   "pharmacy.equipment.install_named": "安装{item}",
   "pharmacy.equipment.uninstall_named": "卸下{item}",
   "pharmacy.equipment.risk": "设备损坏率",
-  "pharmacy.action.working": "制作中"
+  "pharmacy.action.working": "制作中",
+  "log.death.vital": "{part}部损毁达到 {current}/{max}，要害已无法维持生命。",
+  "log.death.starvation": "饱食耗尽后长期未能进食，持续饥饿超过生存极限，生命体征终止。",
+  "log.death.dehydration": "体内水分耗尽后长期未能补水，持续脱水超过生存极限，生命体征终止。",
+  "log.death.temperature_extreme_cold": "体温降至 {temperature}°C，低于身体可承受的极限，严重失温导致生命体征终止。",
+  "log.death.temperature_extreme_hot": "体温升至 {temperature}°C，高于身体可承受的极限，严重高热导致生命体征终止。",
+  "log.death.drug_toxicity": "体内药物毒性长期处于重度水平，超过可承受时限，生命体征终止。",
+  "log.death.dungeon_interrupted": "上次地牢出征尚未撤离便已中断；重新进入时，这次未完成的出征按死亡结算。",
+  "log.death.unknown": "生命体征已经终止，未记录到具体原因。",
+  "log.death.record_unavailable": "这次死亡未保存当时的详细事件记录。"
 }

@@ -13,6 +13,9 @@
         var d=ctx && ctx.defender, ce=global.CombatEnemies;
         return !!(d && d.kind==='enemy' && d.mapId!=null && d.index!=null && ce && ce.isEnemyDead && ce.isEnemyDead(d.mapId,d.index));
     }
+    function defenderDead(ctx) {
+        return enemyDefenderDead(ctx) || !!(ctx && ctx.defender && ctx.defender.kind === 'player' && global.Survival && global.Survival.isDead());
+    }
     function moveFor(ctx) {
         if (ctx.moveTemplate) return ctx.moveTemplate;
         var sk = global.CombatSkills && global.CombatSkills.getSkill(ctx.skillId);
@@ -1041,7 +1044,7 @@
 
     function runPipeline(pipelineName, ctx) {
         if (!ctx || ctx.notExecuted) return ctx;
-        if(enemyDefenderDead(ctx)){ctx.notExecuted=true;ctx.skipReason='dead';return ctx;}
+        if(defenderDead(ctx)){ctx.notExecuted=true;ctx.skipReason='dead';return ctx;}
         var pipe = config.pipelines && config.pipelines[pipelineName];
         if (!pipe || !pipe.phases) return ctx;
         ctx.pipelineName = pipelineName;
@@ -1069,7 +1072,7 @@
         var mergedPending = [];
         var si;
         for (si = 0; si < segs.length; si++) {
-            if(!ctx.simultaneousDryRun && enemyDefenderDead(ctx))break;
+            if(!ctx.simultaneousDryRun && defenderDead(ctx))break;
             var s = segs[si] || {};
             var sCtx = Object.assign({}, ctx, {
                 hitRollSuccess: !!s.hitRollSuccess,

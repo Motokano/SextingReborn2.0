@@ -860,7 +860,7 @@
             for (var rsi = 0; rsi < PART_DESTROY_IDS.length; rsi++) {
                 var rsk = PART_DESTROY_IDS[rsi];
                 var rsv = Number(s.part_destroy_recover_acc[rsk]);
-                if (isFinite(rsv) && rsv > 0) state.part_destroy_recover_acc[rsk] = rsv;
+                if (isFinite(rsv) && rsv >= 0) state.part_destroy_recover_acc[rsk] = rsv;
             }
         }
         if (s.destroy_recover_block_ticks != null) {
@@ -981,6 +981,12 @@
                     global.Survival.addPainFromDestroy({ actualIncrement: appliedTotal, partPreValue: pre, partMax: mx });
                 }
             } catch (ePain) { /* 疼痛账异常不阻断损毁账 */ }
+            if (global.Survival && !global.Survival.isDead()) {
+                ['head', 'chest', 'abdomen'].some(function (part) {
+                    if (getPartDestroy(part) < getBodyPartDestroyMax(part)) return false;
+                    global.Survival.setDead('vital_' + part); return true;
+                });
+            }
         }
     }
 

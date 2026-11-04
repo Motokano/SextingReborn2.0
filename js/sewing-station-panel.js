@@ -28,7 +28,7 @@
         try {
             if (!IE.removeCarriedItemsByTemplateId('silica_leaf', n, {strict:true}).ok) throw Error('inventory');
             g.NPCSystem.setDemoFlag('sewing_bucket_stock', before + n);
-            if (!g.SaveSystem || !g.SaveSystem.saveNow()) throw Error('save');
+            if (!g.SaveSystem || !g.SaveSystem.saveNow('craft.sewing')) throw Error('save');
             return {ok:true,message:'已补充' + n + '份硅叶。'};
         } catch (e) {
             IE.setState(inventory); g.NPCSystem.setDemoState(npc);

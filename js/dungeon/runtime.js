@@ -27,8 +27,8 @@ function sync(){if(!active())return;const p=E().getState(),sv=S().getState();sim
 }
 function observe(){if(!active())return;sync();RuinsExploration.observe(sim);}
 function refresh(){if(globalThis.SaveSystem?.isAtomic?.())return;observe();globalThis.SceneHud?.refresh('status');globalThis.SceneRenderer?.render();globalThis.DungeonPanel?.refresh();}
-function persist(){return globalThis.SaveSystem?.isAtomic?.()||globalThis.SaveSystem?.saveNow?.();}
-function commit(fn){lastError=null;try{const result=globalThis.SaveSystem.runAtomic(fn);if(!result.saved){lastError='保存失败';refresh();return false;}refresh();return result.value;}catch(e){lastError='操作失败';console.error(e);refresh();return false;}}
+function persist(){return globalThis.SaveSystem?.isAtomic?.()||globalThis.SaveSystem?.saveNow?.('dungeon.checkpoint');}
+function commit(fn,kind){lastError=null;try{const result=globalThis.SaveSystem.runAtomic(fn,{trigger:'dungeon.'+kind});if(!result.saved){lastError='保存失败';refresh();return false;}refresh();return result.value;}catch(e){lastError='操作失败';console.error(e);refresh();return false;}}
 function initPool(){for(const batch of config.pool.batches){if(pool.batches[batch.id])continue;for(const row of batch.items){if(!IE().getItemTemplate(row.item_id)||row.lifeProduct)throw Error('非法掉落池物品');if(!Number.isInteger(row.stock)||row.stock<0||!config.search.rarities[row.rarity])throw Error('非法掉落池库存');pool.remaining.push({...copy(row),batch:batch.id});}pool.batches[batch.id]=true;}}
 function rolls(kind,bonus,rng=Math.random){const c=config.search[kind],b=Math.max(0,Number(bonus)||0);let rounds=1+Math.floor(b)+(rng()<b%1?1:0),count=0;for(let n=0;n<rounds;n++){if(rng()<(kind==='container'?containerEmptyChance():c.emptyChance))continue;const v=rng();let a=0;for(let i=0;i<c.weights.length;i++){a+=c.weights[i];if(v<a){count+=i+1;break;}}}return count;}
 function drawContents(kind,point=null){
@@ -167,7 +167,7 @@ function updateAI(o){if(!active())return null;sync();const moves=[],attacks=[],d
 function aggro(index){return active()&&['chase','search'].includes(sim.enemies.find(e=>e.uid===gameMap().enemies[index]?.dungeonUid)?.state);}
 function provoke(index){if(!active())return;sync();const e=sim.enemies.find(e=>e.uid===gameMap().enemies[index]?.dungeonUid);if(!e)return;e.state='chase';e.lost=0;e.lastSeen=sim.player.cell;e.facing=N.direction(e.cell,sim.player.cell,sim.map.width);}
 function afterTick(){if(inTick)return;inTick=true;try{for(const m of meals){const gain=Math.min(m.remaining,m.rate);S().addSatiety(gain);m.remaining-=gain;m.ticks--;}meals=meals.filter(m=>m.ticks>0&&m.remaining>0);
- if(run?.status==='active'){if(dead())die();else if(active())observe();}if(pending&&!inActionTick){cancel();globalThis.DungeonPanel?.interrupted();}globalThis.DungeonPanel?.refresh();}finally{inTick=false;}}
+ if(run?.status==='active'){if(dead()){if(!globalThis.DeathSystem)die();}else if(active())observe();}if(pending&&!inActionTick){cancel();globalThis.DungeonPanel?.interrupted();}globalThis.DungeonPanel?.refresh();}finally{inTick=false;}}
 function collectMarked(){for(const p of run?.marked||[])if(!recovered.some(b=>b.uid===run.id+':'+p.uid)){
  p.allocation??=allocate(p.search.items);recovered.push({...copy(p),uid:run.id+':'+p.uid,batch:run.id,floor:p.floor||sim.map.floor,opened:false,openingProgress:0});
 }}
@@ -235,7 +235,7 @@ function dynamicMeta(x,y){const k=y*sim.map.width+x,sight=N.inspect(sim,sim.play
  return{terrainVisible:sight.terrain,player:k===sim.player.cell,adjacent:N.dist(k,sim.player.cell,sim.map.width)===1,walkable:E().isWalkable(x,y),enemy:sight.dynamic&&!!enemy,enemyId:sight.identify?enemy?.enemy_id:null,unknownPresence:sight.dynamic&&!sight.identify&&!!enemy,groundCount:known?ground.length:0,groundBackpackCount:known&&globalThis.InventoryTransfer?ground.filter(globalThis.InventoryTransfer.isBackpack).length:0,groundUnknown:sight.dynamic&&!sight.identify&&ground.length>0,playerFacingDir:sim.player.facing};}
 function inspect(k){return active()?N.inspect(sim,sim.player,k):null;}
 const api={lastError:()=>lastError,progressState,setProgress,receiveHit,checkpoint:persist,openingProgress,active,sync,observe,refresh,config:()=>config,getSim:()=>sim,getRun:()=>run,getPending:()=>pending,getReceipt:()=>receipt,getRecovered:()=>recovered,availableTickets,availableClues,canPrepare,enter,blocked,walkable,canStep,nearby,find,isAccessible,threat,openDoor,begin,cancel,completeTick,claim,mark,killed,updateAI,aggro,afterTick,totals,descend,withdraw,die,openBag,claimBag,claimBatch,windowAction,getState,validate,restore,dynamicMeta,inspect,rolls,containerEmptyChance};
-for(const k of ['enter','openDoor','completeTick','claim','mark','windowAction','descend','withdraw','openBag','claimBag','claimBatch']){const fn=api[k];api[k]=(...args)=>commit(()=>fn(...args));}
+for(const k of ['enter','openDoor','completeTick','claim','mark','windowAction','descend','withdraw','openBag','claimBag','claimBatch']){const fn=api[k];api[k]=(...args)=>commit(()=>fn(...args),k);}
 api.ready=fetch('data/dungeon-config.json').then(r=>{if(!r.ok)throw Error('地牢配置加载失败');return r.json();}).then(async c=>{
  if(c.recipeStudyRangesSource){
   const ranges=await fetch(c.recipeStudyRangesSource).then(r=>{if(!r.ok)throw Error('地牢配方范围加载失败');return r.json();});

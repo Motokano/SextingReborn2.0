@@ -49,7 +49,7 @@
         busy = true;
         var result;
         try {
-            var transaction = g.SaveSystem.runAtomic(function () {
+            var transaction = g.SaveSystem.runAtomicFor('water.refill', function () {
                 var S = g.Survival, count = ticks(def, action);
                 // Drink immediately so arriving on the last dehydration tick can still save the player.
                 if (action === 'drink') S.addThirst(S.getThirstMax());

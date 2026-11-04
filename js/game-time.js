@@ -115,6 +115,7 @@
     }
 
     function advanceTicks(ticks) {
+        if (global.DeathSystem && global.DeathSystem.blocked()) return;
         var t = Math.floor(Number(ticks) || 0);
         if (!t) return;
         state.totalTicks += t;

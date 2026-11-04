@@ -119,6 +119,7 @@
 | UI 自由窗口系统 | [36-ui-windows.md](36-ui-windows.md) | 仿 RO 浮动窗口：拖拽/缩放/显隐/锁定/重置、设备级持久化、认知门控合并、8 层 UI 演出 API |
 | 模块化躯干防具与新底气护体 | [37-equipment-modular-armor.md](37-equipment-modular-armor.md) | 躯干防具模块化（底材 + 6 板位模块 + 激活制）；激活盾层减伤链；头部 3 槽常驻 + 眩晕累积；数值待定见看板 k154 |
 | 装备数据契约（模块化 schema） | [38-equipment-data-contract.md](38-equipment-data-contract.md) | 模块表/防具模板/实例格式、槽点命名空间、effect_type 目录（单向伤害转换方向）、校验规则 |
+| 正式死亡系统与死亡演出 | [82-death-system-and-presentation.md](82-death-system-and-presentation.md) | 已接入要害致死、地牢重开判死、一次性结算、玩家选择复活及单句培养皿演出；普通保存触发可配置，已到账潜能保留；50皿主线联动后续设计 |
 | 水壶装备与构筑 | [80-water-flask-equipment.md](80-water-flask-equipment.md) | 第15节已接正式卫生间装水、青竹／铁皮存水、重量与保存；第14节三基底属性草案保留。第16节已接单壶槽与饮用；正式制作与地牢取水待接入，快饮／缓补仍为候选 |
 | 手套与出招装备改造体系 | [39-glove-and-outfitting.md](39-glove-and-outfitting.md) | 手套=徒手武器（形态系数）、鞋六类（踹/扫/踏 + 步法）、左右分装取低、改造件/通货做装骨架 |
 | 战斗场景与可互动元素 | [40-combat-scene.md](40-combat-scene.md) | 可互动元素（一次性动作范式）+ 酒瓶实例（眩晕灌入累积系统）；场地伤害/掩体预留 |

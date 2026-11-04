@@ -1807,12 +1807,14 @@
     }
 
     function setDead(reason) {
+        if (state.isDead) return;
         state.isDead = true;
         state.deathReason = reason ? String(reason) : 'unknown';
         if (global.CombatEngagement && typeof global.CombatEngagement.clear === 'function') {
             global.CombatEngagement.clear('player_dead');
         }
-        if (global.DungeonRuntime) global.DungeonRuntime.die();
+        if (global.DeathSystem) global.DeathSystem.request(state.deathReason);
+        else if (global.DungeonRuntime) global.DungeonRuntime.die();
     }
 
     function addNutrition(amount) {

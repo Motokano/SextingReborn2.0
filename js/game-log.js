@@ -79,7 +79,8 @@
             message: String(message),
             text: escapeHtml(String(message)),
             type: cssClass,
-            time: timeStr
+            time: timeStr,
+            tick: global.GameTime && typeof global.GameTime.getState === 'function' ? global.GameTime.getState().totalTicks : 0
         });
         displayLines.push(lines[lines.length - 1]);
         if (lines.length > MAX_LINES) lines.shift();

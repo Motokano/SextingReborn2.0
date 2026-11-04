@@ -16,7 +16,7 @@
   if(!accessible())return {ok:false,message:'请在装置旁查看说明。'};
   var IE=g.InventoryEquipment,character=IE.getCharacterForDisplay(),snapshot=g.NPCSystem.getDemoState();
   var text=groups.map(function(c){var names=materials.filter(function(m){return m[1]===c.id;}).map(function(m){return IE.getDisplayName(IE.getItemTemplate(m[0]),0,character);});return c.note+'：说明上的形貌与你认识的这些材料相符——'+names.join('、')+'。';}).join('\n');
-  try{materials.forEach(function(m){g.NPCSystem.setDemoFlag('repair_use_known:'+m[0],true);});if(g.SaveSystem&&!g.SaveSystem.saveNow())throw Error('save');}
+  try{materials.forEach(function(m){g.NPCSystem.setDemoFlag('repair_use_known:'+m[0],true);});if(g.SaveSystem&&!g.SaveSystem.saveNow('facility'))throw Error('save');}
   catch(e){g.NPCSystem.setDemoState(snapshot);return {ok:false,message:'说明未能记录，请稍后再试。'};}
   return {ok:true,message:text+'\n你记下了这些材料的用途。'};
  }
@@ -50,7 +50,7 @@
    used.forEach(function(r){if(!remove(r.item,r.count))throw Error('inventory');var c=groups.find(function(c){return c.id===r.item.group;});before[c.id]=Math.min(c.need,before[c.id]+r.count*r.item.points);});
    if(spec.warehouse)g.HideoutWarehouse.setMaterialProgress(spec.warehouse,before);else g.NPCSystem.setDemoFlag(key,before);
    if(groups.every(function(c){return before[c.id]>=c.need;})){if(!spec.warehouse&&!spec.workTicks)g.NPCSystem.setDemoFlag(unlock,true);if(spec.id==='water'&&g.CookingStation)g.CookingStation.getState().water_unlimited=true;}
-   if(g.SaveSystem&&!g.SaveSystem.saveNow())throw Error('save');
+   if(g.SaveSystem&&!g.SaveSystem.saveNow('facility'))throw Error('save');
   }catch(e){IE.setState(snapshot);g.NPCSystem.setDemoState(npc);if(wh)g.HideoutWarehouse.setState(wh);if(water!==null)g.CookingStation.getState().water_unlimited=water;return {ok:false,message:'本次修复未能保存，材料没有扣除，请稍后再试。'};}
   return {ok:true,used:used,returned:returned};
  }
@@ -62,7 +62,7 @@
   S.consumeStamina(1);S.advanceTick({source:'sewing_construction'});
   var n=Math.min(spec.workTicks,workProgress()+1);g.NPCSystem.setDemoFlag(key+':work',n);
   if(n===spec.workTicks){g.NPCSystem.setDemoFlag(unlock,true);if(spec.id==='sewing_mannequin')g.NPCSystem.setDemoFlag('sewing_mannequin_dimensions',JSON.parse(JSON.stringify(measurement)));}
-  if(g.SaveSystem&&!g.SaveSystem.saveNow())return {ok:false,message:'进度已保留在本次游戏，但保存失败，请重试保存。'};
+  if(g.SaveSystem&&!g.SaveSystem.saveNow('facility'))return {ok:false,message:'进度已保留在本次游戏，但保存失败，请重试保存。'};
   return {ok:true,message:n===spec.workTicks?'装配完成。':'完成一段施工，剩余'+((spec.workTicks-n)*10)+'分钟。'};
  }
  function workProgress(){return Math.max(0,Math.min(spec.workTicks||0,Number(g.NPCSystem.getFlagValue(key+':work'))||0));}

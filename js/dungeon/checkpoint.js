@@ -20,7 +20,7 @@ function greeting(){return definition?.checkpoint?.greeting||'封好口的，我
 // Quest content remains owned by its future provider, just like DungeonContent.hasClue/apply.
 function tasks(){const c=globalThis.DungeonContent;if(!canAccess()||typeof c?.checkpointTasks!=='function'||typeof c?.performCheckpointTask!=='function')return[];
  const rows=c.checkpointTasks(id());return Array.isArray(rows)?rows.filter(t=>t&&typeof t.id==='string'&&typeof t.name==='string'&&['available','ready'].includes(t.state)):[];}
-function task(taskId){if(!tasks().some(t=>t.id===taskId))return false;const result=globalThis.SaveSystem.runAtomic(()=>{
+function task(taskId){if(!tasks().some(t=>t.id===taskId))return false;const result=globalThis.SaveSystem.runAtomicFor('checkpoint.task', ()=>{
  if(!canAccess()||!tasks().some(t=>t.id===taskId))return false;
  return globalThis.DungeonContent.performCheckpointTask(id(),taskId)===true;
  });return result.saved&&result.value===true;}

@@ -11,7 +11,8 @@
  function act(result){if(!result.ok){stopTimer();message(result.message);return false;}render();message('');return true;}
  function start(a){if(act(S().start(a)))work();}
  function work(){stopTimer();if(!S().state().job||S().state().job.phase!=='work')return;timer=setInterval(()=>{const result=S().step();if(!result.ok||result.done||result.interrupted)stopTimer();act(result);if(result.interrupted)message('工作已中断。');},500);render();}
- function close(){stopTimer();S().pause();fx?.destroy();fx=null;root?.remove();root=null;focus?.focus();}
+ function suspendForLoad(){stopTimer();fx?.destroy();fx=null;root?.remove();root=null;}
+ function close(){stopTimer();S().pause();suspendForLoad();focus?.focus();}
  function open(options={}){
   if(root)return true;if(options.repair!==true&&!S().canAccess())return false;
   if(g.CombatEngagement?.isPlayerInCombat())return false;
@@ -106,5 +107,5 @@
   else if(['quench','temper','finish'].includes(a)){if(a==='finish')tab='patterns';strike({kind:a});}
  }
  function change(e){if(e.target.id==='forge-part'){partId=e.target.value;recipe={};render();}else if(e.target.dataset.feed){const n=Number(e.target.value);if(Number.isSafeInteger(n)&&n>0)recipe[e.target.dataset.feed]=n;else delete recipe[e.target.dataset.feed];quoteCraft();}else if(e.target.id==='forge-repair-kit')quoteRepairs();}
- g.ForgingStationPanel={open,close,isOpen:()=>!!root,stopTimer,render};
+ g.ForgingStationPanel={open,close,suspendForLoad,isOpen:()=>!!root,stopTimer,render};
 })(window);

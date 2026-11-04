@@ -16,7 +16,7 @@
             e.stopImmediatePropagation();
         },true);
     }
-    function save(){if(g.SaveSystem)g.SaveSystem.saveNow();if(g.SceneHud)g.SceneHud.refresh('status');}
+    function save(){if(g.SaveSystem)g.SaveSystem.saveNow('fishing');if(g.SceneHud)g.SceneHud.refresh('status');}
     function action(key,value){var r=g.FishingPond.act(key,value);if(r.ok){historyPage=0;if(key==='nest')workspace='water';if(key==='select')workspace='parts';}render();if(!r.ok)status(errors[r.reason]||'当前条件下无法执行，请检查工具与当前作业。');save();return r;}
     function status(text){var n=card.querySelector('.fishing-notice');if(n)n.textContent=text;}
     function btn(parent,text,key,value,disabled){var b=node('button',text,parent);b.disabled=!!disabled;b.onclick=function(){action(key,value);};return b;}
@@ -148,5 +148,5 @@
         if(pages>1){var pager=node('div',null,history,'fishing-history-pages');var newer=node('button','较新',pager);newer.disabled=historyPage===0;newer.onclick=function(){historyPage--;render();};node('span',(historyPage+1)+' / '+pages,pager);var older=node('button','较早',pager);older.disabled=historyPage===pages-1;older.onclick=function(){historyPage++;render();};}
         node('footer','观察只记录有依据的见闻 · 调整不会预告鱼口 · 离开水域会结束当前作业',card,'fishing-footer');
     }
-    g.FishingPanel={configure:configure,open:open,close:close,render:render,ensureStarterSupplies:ensureStarterSupplies,currentPoint:atPoint,isOpen:function(){return opened;}};
+    g.FishingPanel={dismiss:function(){opened=false;if(overlay)overlay.hidden=true;},configure:configure,open:open,close:close,render:render,ensureStarterSupplies:ensureStarterSupplies,currentPoint:atPoint,isOpen:function(){return opened;}};
 })(window);

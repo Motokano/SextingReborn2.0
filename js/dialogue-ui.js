@@ -10,6 +10,7 @@
  * - DialogueUI.close()（仅内部在台词推进完毕时调用；玩家不可用 Esc/关闭键跳过）
  * - DialogueUI.say({ speakerRole, speakerId, speakerName, text })
  * - DialogueUI.playLinesRich(linesRich, opts?)
+ *   opts.host: 临时承载同一对话面板的模态元素；关闭后归位。opts.onQueueExhausted: 台词结束回调。
  * - speakerRole === 'narration'（旁白）：不显示名字栏
  */
 (function (global) {
@@ -57,6 +58,20 @@
     var currentCloseLabel = '';
     /** playLinesRich：队列自然耗尽（非 Esc 中途关闭）时回调一次 */
     var dialogueOnQueueExhausted = null;
+    // Reuse the same view inside a native modal (e.g. a cutscene), then return it.
+    var hostedElements = [];
+    function setHost(host) {
+        hostedElements.forEach(function (entry) { entry.anchor.replaceWith(entry.node); });
+        hostedElements = [];
+        if (!host) return;
+        [PANEL_ID, 'dialogue-input-blocker'].forEach(function (id) {
+            var node = $(id);
+            if (!node || !node.parentNode) return;
+            var anchor = document.createComment('dialogue-home');
+            node.before(anchor); hostedElements.push({ node: node, anchor: anchor });
+            host.appendChild(node);
+        });
+    }
 
     function setDialogueInputBlockerVisible(visible) {
         if (view) return;
@@ -329,11 +344,12 @@
             isOpen = false; queue = []; options = null; optionsContext = null; lastLoggedKey = null;
             clearTypingTimer(); isTyping = false; fullText = visibleText = '';
             currentSpeakerName = currentLineSpeakerRole = currentAvatarUrl = currentNextLabel = '';
-            currentNextDisabled = false; dialogueOnQueueExhausted = null; publish(); return;
+            currentNextDisabled = false; dialogueOnQueueExhausted = null; publish(); setHost(null); return;
         }
         var panel = $(PANEL_ID);
         if (!panel) {
             setDialogueInputBlockerVisible(false);
+            setHost(null);
             return;
         }
         setDialogueInputBlockerVisible(false);
@@ -379,6 +395,7 @@
         lastActiveEl = null;
         unmountDialogueTextRenderer();
         dialogueOnQueueExhausted = null;
+        setHost(null);
     }
 
     function setPortrait(entityId, imageUrl) {
@@ -395,6 +412,7 @@
 
     function say(payload) {
         if (!payload) return;
+        setHost(null);
         var role = payload.speakerRole || 'npc';
         var entityId = normalizeEntityId(role, payload.speakerId);
         dialogueOnQueueExhausted = null;
@@ -416,6 +434,7 @@
     function playLinesRich(linesRich, opts) {
         opts = opts || {};
         if (!Array.isArray(linesRich)) return;
+        setHost(opts.host || null);
         dialogueOnQueueExhausted = (typeof opts.onQueueExhausted === 'function') ? opts.onQueueExhausted : null;
         options = Array.isArray(opts.options) ? opts.options : null;
         optionsContext = null;

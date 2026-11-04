@@ -1,0 +1,7 @@
+{
+  "version": 1,
+  "revivalMapId": "M0_Base_Inside_lv_1",
+  "revivalCells": [[10, 15], [10, 14], [10, 13], [12, 14]],
+  "destroyRatio": 0.5,
+  "resourceRatio": 0.5
+}
