@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>林经理 · 事件编排</title><link rel="stylesheet" href="/story-editor.css"><script src="/js/ui-text.js" defer></script><script src="/js/dialogue-ui.js" defer></script><script type="module" src="/story-editor.mjs"></script></head>
+<body>
+  <header><div class="brand"><span class="brand-mark">林</span><div><h1>事件编排</h1><span>林经理 · 开场与对话</span></div></div><div class="header-actions"><span id="save-state">正在读取…</span><button id="undo" disabled>撤销</button><button id="redo" disabled>重做</button><button id="export">导出草稿</button><button id="reload">重新读取</button><button id="save" class="primary" disabled>保存对话事件</button></div></header>
+  <main>
+    <aside class="library"><div class="aside-heading"><span>事件库</span><button id="add-event" title="新增对话事件">＋</button></div><input id="search" type="search" placeholder="查找事件或台词" aria-label="查找事件或台词"><button id="overview" class="overview-button">◈　事件关系总览</button><nav id="event-list" aria-label="事件列表"></nav><div class="aside-heading pool-heading">日常闲聊</div><nav id="pool-list" aria-label="闲聊台词池"></nav><div class="library-footer"><span class="live-dot"></span> 直接读取项目配置</div></aside>
+    <section class="workspace"><div class="workspace-heading"><div><div id="breadcrumb">对话事件 / 总览</div><h2 id="graph-title">事件关系</h2></div><div class="workspace-actions"><button id="settings">事件设置</button><button id="add-line">＋ 插入一句</button><button id="preview" class="accent">▶ 从此句预览</button></div></div>
+      <p id="graph-caption"></p><div id="viewport" tabindex="0" aria-label="可缩放流程图"><div id="graph"></div></div>
+      <div class="graph-toolbar"><span id="count"></span><div><button id="zoom-out" aria-label="缩小">−</button><span id="zoom-label">100%</span><button id="zoom-in" aria-label="放大">＋</button><button id="fit">适应画布</button></div></div>
+    </section>
+    <aside id="inspector" aria-label="编辑选中内容"></aside>
+  </main>
+  <footer><span id="message" role="status">正在读取林经理的对话事件…</span><span id="source-label"></span></footer>
+  <dialog id="preview-dialog" aria-label="对话预览"><div class="preview-header"><div><strong id="preview-title">对话预览</strong><small>使用正式逐字对话 · 不执行奖励、标记或存档</small></div><button id="preview-close" aria-label="关闭预览">✕</button></div><div class="preview-scene"><div class="preview-silhouette">林</div><p id="preview-finished" hidden>本段预览结束</p><section id="preview-panel"><div id="preview-role"></div><div id="preview-text"></div><div class="preview-buttons"><button id="preview-next" class="primary">下一句</button></div></section></div><div class="preview-bottom"><button id="preview-restart">重新播放本段</button><button id="preview-done">返回编辑</button></div></dialog>
+</body></html>

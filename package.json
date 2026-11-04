@@ -104,7 +104,9 @@
     "test:death": "node tools/test-death-system.mjs && node tools/test-death-system.mjs --svelte && node tools/test-player-death-combat.mjs",
     "test:gym": "node --test tools/test-gym-runtime.mjs tools/test-gym-npcs.mjs tools/test-gym-wall.mjs tools/test-npc-interaction-checks.mjs",
     "test:sleep": "node tools/test-stamina-recovery.mjs && node tools/test-fatigue-balance.mjs && node --test tools/test-sleep-runtime.mjs",
-    "prototype:gym": "node tools/serve-live.mjs 8049"
+    "prototype:gym": "node tools/serve-live.mjs 8049",
+    "editor:story": "node tools/story-editor-server.mjs",
+    "test:story": "node --test tools/test-story-opening.mjs tools/test-story-editor.mjs"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "6.2.4",

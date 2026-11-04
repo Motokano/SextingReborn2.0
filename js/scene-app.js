@@ -321,6 +321,7 @@
         if ((window.BedSleep && window.BedSleep.isActive()) || (window.GymSystem && window.GymSystem.isActive())) return true;
         if (window.GymPanel && window.GymPanel.isOpen()) return true;
         if (window.GymEntrancePanel && window.GymEntrancePanel.isOpen()) return true;
+        if (window.NPCSystem && window.NPCSystem.isOpeningPending && window.NPCSystem.isOpeningPending()) return true;
         if (window.ResetProgressDialog && window.ResetProgressDialog.isOpen()) return true;
         if (window.CookingRepairPanel && window.CookingRepairPanel.isOpen()) return true;
         if (window.ToolbenchPanel && window.ToolbenchPanel.isOpen()) return true;
@@ -906,9 +907,21 @@
 
     var creationView = null;
     var creationVisible = false;
+    var creationSaveError = '';
     function publishCreation() {
         if (creationView) creationView({ open: creationVisible, innate: Object.assign({}, creationInnate), free: getCreationFreePoints(), max: CREATION_ATTR_MAX,
+            error: creationSaveError,
             height: clampCreationHeightCm(window.Survival && window.Survival.getConfigValue ? window.Survival.getConfigValue('height_cm_default', CREATION_HEIGHT_DEFAULT) : CREATION_HEIGHT_DEFAULT) });
+    }
+
+    function showCreationSaveError(message) {
+        creationSaveError = message || '';
+        if (creationView) { publishCreation(); return; }
+        var card = document.getElementById('character-creation-card');
+        if (!card) return;
+        var error = document.getElementById('creation-save-error');
+        if (!error) { error = document.createElement('p'); error.id = 'creation-save-error'; error.setAttribute('role', 'alert'); card.appendChild(error); }
+        error.textContent = creationSaveError; error.hidden = !creationSaveError;
     }
     function updateCreationPointsDisplay() {
         var el = document.getElementById('creation-points');
@@ -1065,6 +1078,7 @@
                 publishCreation();
                 if (window.GameLog) window.GameLog.log(ui('log.system.creation.points.auto'), 'system');
             }
+            function commitCreation() {
             if (typeof IE.initNewGame === 'function') {
                 IE.initNewGame();
                 if (window.GameLog) window.GameLog.log(ui('log.system.starter.equip'), 'system');
@@ -1109,6 +1123,16 @@
             if (window.Survival && typeof window.Survival.initBattleResourcesFull === 'function') {
                 window.Survival.initBattleResourcesFull();
             }
+            }
+            var creationSaved = false;
+            try {
+                creationSaved = !!(window.SaveSystem && window.SaveSystem.runAtomic(commitCreation, { trigger: 'opening.creation', required: true }).saved);
+            } catch (creationError) { /* keep the form and draft available for retry */ }
+            if (!creationSaved) {
+                showCreationSaveError(ui('creation.save.failed'));
+                return false;
+            }
+            showCreationSaveError('');
             hideCreationOverlay();
             updateRoleNameFromCharacter();
             syncIntroShellUi();
@@ -1135,6 +1159,7 @@
     }
 
     function openCharacterCreationAfterIntro() {
+        showCreationSaveError('');
         showCreationOverlay();
         initCreationUI();
     }
@@ -7683,7 +7708,7 @@
                         syncIntroShellUi();
                         if (window.GameLog) window.GameLog.log('[SaveSystem] loaded realtime save', 'system');
                     } else {
-                        // 新档默认先走序章；创角仅在林经理首次对话完成后再弹出。
+                        // 新档自动播放首次对话；结束后再创角。
                         hideCreationOverlay();
                         syncIntroShellUi();
                     }
@@ -7699,6 +7724,7 @@
                 if ((!window.DeathSystem || !window.DeathSystem.blocked()) && (!window.BedSleep || !window.BedSleep.isActive()) && (!window.GymSystem || !window.GymSystem.isActive())) startCookingCraftIdleIfNeeded();
                 // 读档后再渲染一次，避免出现“短暂默认状态闪屏”。
                 render();
+                if (window.NPCSystem && window.NPCSystem.resumeOpening) return window.NPCSystem.resumeOpening();
             }
             var mapsReady = Promise.resolve(mapsPromise).then(afterMaps);
             setPlayerAvatarSprites({

@@ -23,6 +23,7 @@
       <div class="group"><!-- svelte-ignore a11y_label_has_associated_control --><label class="group-label">{t('creation.dominant.hand')}</label><div class="opt"><label><input type="radio" name="creation-hand" value="left" bind:group={hand} /> <span>{t('creation.left')}</span></label><label><input type="radio" name="creation-hand" value="right" bind:group={hand} /> <span>{t('creation.right')}</span></label></div></div>
       <div class="group"><!-- svelte-ignore a11y_label_has_associated_control --><label class="group-label">{t('creation.dominant.foot')}</label><div class="opt"><label><input type="radio" name="creation-leg" value="left" bind:group={leg} /> <span>{t('creation.left')}</span></label><label><input type="radio" name="creation-leg" value="right" bind:group={leg} /> <span>{t('creation.right')}</span></label></div></div>
     </div>
+    {#if $store.error}<p id="creation-save-error" role="alert">{$store.error}</p>{/if}
     <button type="button" id="btn-confirm-creation" class="btn-confirm-creation" disabled={!name.trim()} onclick={() => controller.confirm({ name, gender, hand, leg, height })}>{t('creation.finish')}</button>
   </div>{/if}
 </div>

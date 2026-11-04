@@ -38,7 +38,7 @@
     var idleSavePending = false;
     var snapshotRestoreDepth = 0;
     SaveSystem.isRestoringSnapshot = function () { return snapshotRestoreDepth > 0; };
-    var requiredTriggers = ['manual', 'dungeon.enter', 'dungeon.withdraw', 'death.settle', 'death.scene', 'death.revive'];
+    var requiredTriggers = ['manual', 'opening.complete', 'opening.creation', 'dungeon.enter', 'dungeon.withdraw', 'death.settle', 'death.scene', 'death.revive'];
     SaveSystem.setTriggerPolicy = function (policy) {
         if (!policy || policy.version !== 1 || !Number.isInteger(policy.intervalTicks) || policy.intervalTicks < 1 ||
             !policy.triggers || typeof policy.triggers !== 'object' || Array.isArray(policy.triggers) ||

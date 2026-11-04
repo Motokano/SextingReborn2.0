@@ -4,17 +4,18 @@
   "pools": {
     "npc.supervisor.manager.fallback": {
       "lines": [
-        "（摸鱼）……",
-        "啧，别吵，我槟榔还没嚼匀。",
-        "上班呢，有事快说，没事别挡我树荫。",
-        "签完字赶紧走，我还等着下班去便利店抢关东煮。"
+        {
+          "speaker": "narration",
+          "text": "（摸鱼）……",
+          "avatar": ""
+        },
+        "啧，别吵，我槟榔还没嚼匀",
+        "上班呢，有事快说，没事别烦我"
       ]
     },
     "npc.supervisor.manager.fallback_veteran": {
       "lines": [
-        "登记表都签过了还聊？行吧……今天系统没抽风，算你运气好。",
-        "有事说事，别跟我套近乎，我下班还要挤地铁。",
-        "你要是再弄丢身份卡，这次我可不帮你擦屁股了。"
+        "有事说事"
       ]
     },
     "npc.supervisor.manager.fallback_combined": {

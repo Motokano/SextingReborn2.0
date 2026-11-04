@@ -46,19 +46,21 @@
     // A restored snapshot remains authoritative even when storage is currently unavailable.
     // Migrations may change its in-memory flags; restoring/rolling back never writes a second save.
     var restoredFlags = null, restoredTriggered = null;
+    var openingCommitStaged = false, openingPending = false, openingLoad = null;
+    var OPENING_ENTRY = 'supervisor.firstTalk_01';
     function copySaved(v) { return JSON.parse(JSON.stringify(v)); }
     function restoringSnapshot() { return !!(global.SaveSystem && global.SaveSystem.isRestoringSnapshot && global.SaveSystem.isRestoringSnapshot()); }
     function getFlags() { return restoredFlags !== null ? copySaved(restoredFlags) : safeJsonParse(localStorage.getItem(LS_FLAGS) || '{}', {}); }
     function setFlag(k, v) {
         var f = getFlags(); f[String(k)] = v;
-        if (!restoringSnapshot()) localStorage.setItem(LS_FLAGS, JSON.stringify(f));
-        if (restoredFlags !== null || restoringSnapshot()) restoredFlags = copySaved(f);
+        if (!restoringSnapshot() && !openingCommitStaged) localStorage.setItem(LS_FLAGS, JSON.stringify(f));
+        if (restoredFlags !== null || restoringSnapshot() || openingCommitStaged) restoredFlags = copySaved(f);
         if (global.DungeonCorpseArt && String(k) === global.DungeonCorpseArt.GORE_FLAG) global.DungeonCorpseArt.refresh();
     }
     function getTriggered() { return restoredTriggered !== null ? restoredTriggered.slice() : safeJsonParse(localStorage.getItem(LS_TRIGGERED) || '[]', []); }
     function writeTriggered(arr) {
-        if (!restoringSnapshot()) localStorage.setItem(LS_TRIGGERED, JSON.stringify(arr));
-        if (restoredTriggered !== null || restoringSnapshot()) restoredTriggered = arr.slice();
+        if (!restoringSnapshot() && !openingCommitStaged) localStorage.setItem(LS_TRIGGERED, JSON.stringify(arr));
+        if (restoredTriggered !== null || restoringSnapshot() || openingCommitStaged) restoredTriggered = arr.slice();
     }
     function markTriggered(entryId) {
         var arr = getTriggered();
@@ -886,6 +888,79 @@
         });
     }
 
+    function creationIncomplete() {
+        return global.CharacterAttributes && !global.CharacterAttributes.isCharacterCreationCompleted();
+    }
+
+    function openingUnavailable() {
+        return !creationIncomplete() || (global.DeathSystem && global.DeathSystem.blocked());
+    }
+
+    function openingRetry(message, retry) {
+        openingPending = true;
+        menuState = { open: true, openingRequired: true, title: '开场暂未完成', hint: message,
+            buttons: [{ text: '重试', run: function () { closeMenu(true); retry(); } }] };
+        publishMenu();
+    }
+
+    // Both automatic opening and manual chat use the same lines and completion effects.
+    function playChatEntry(def, entry) {
+        var finished = false;
+        var opening = entry.id === OPENING_ENTRY && creationIncomplete();
+        if (opening) openingPending = true;
+        function finish() {
+            if (finished) return;
+            function apply() {
+                applyEffects(entry.effects, { event_kind: 'dialogue', event_name: 'npc_dialogue_entry_effects', source_id: entry.id, npc_id: def.id });
+                if (entry.repeatable === false) markTriggered(entry.id);
+            }
+            if (opening) {
+                var saved = false;
+                openingCommitStaged = true;
+                try {
+                    saved = !!(global.SaveSystem && global.SaveSystem.runAtomic(apply, { trigger: 'opening.complete', required: true }).saved);
+                } catch (error) { log('开场保存失败：' + error.message, 'warn'); }
+                finally { openingCommitStaged = false; }
+                if (!saved) { openingRetry('进度未能保存，请重试。', finish); return; }
+            } else apply();
+            finished = true;
+            if (opening) {
+                openingPending = false;
+                global.SceneApp.openCharacterCreationAfterIntro();
+            }
+        }
+        var dialogue = entry.dialogue || {};
+        var lines = Array.isArray(dialogue.linesRich) ? dialogue.linesRich : (dialogue.lines || []).map(function (text) { return { speaker: 'npc', text: text }; });
+        global.DialogueUI.playLinesRich(lines, {
+            npcId: def.id, npcName: def.displayTitle || def.name || 'NPC', playerName: getPlayerName(),
+            options: dialogue.options, onQueueExhausted: finish
+        });
+    }
+
+    function resumeOpening() {
+        if (openingUnavailable()) return Promise.resolve(false);
+        if (openingLoad) return openingLoad;
+        if (openingPending && (global.DialogueUI.isDialogueOpen() || isMenuOpen())) return Promise.resolve(false);
+        if (isTriggered(OPENING_ENTRY) || getFlags().supervisor_has_talked === true) {
+            openingPending = false;
+            global.SceneApp.openCharacterCreationAfterIntro();
+            return Promise.resolve(true);
+        }
+        openingPending = true;
+        openingLoad = Promise.all([loadNpcDef('npc.supervisor.manager'), loadNpcTriggers('npc.supervisor.manager')]).then(function (rows) {
+            if (openingUnavailable()) { openingPending = false; return false; }
+            var entry = rows[1] && rows[1].entries && rows[1].entries.find(function (e) { return e.id === OPENING_ENTRY; });
+            if (!rows[0] || !entry || !global.DialogueUI) throw new Error('开场对话暂时无法读取。');
+            closeMenu();
+            playChatEntry(rows[0], entry);
+            return true;
+        }).catch(function () {
+            openingRetry('开场对话暂时无法读取，请重试。', resumeOpening);
+            return false;
+        }).finally(function () { openingLoad = null; });
+        return openingLoad;
+    }
+
     // --- 菜单 UI（最小实现） ---
     var menuEl = null, menuView = null, menuEpoch = 0;
     var menuState = { open: false, title: '', hint: '', buttons: [] };
@@ -955,7 +1030,10 @@
         });
         return menuEl;
     }
-    function closeMenu() { menuEpoch++; menuState.open = false; publishMenu(); }
+    function closeMenu(force) {
+        if (menuState.open && menuState.openingRequired && openingPending && force !== true) return;
+        menuEpoch++; menuState.open = false; publishMenu();
+    }
     function isMenuOpen() {
         return menuState.open || !!(global.DungeonPanel && global.DungeonPanel.isEntryOpen());
     }
@@ -1230,46 +1308,7 @@
                     if (res.type === 'entry') {
                         var entry = res.entry;
                         log('[NPCSystem] Execute chat entry: ' + String(entry.id), 'system');
-                        var linesRich = entry && entry.dialogue && entry.dialogue.linesRich;
-                        if (Array.isArray(linesRich)) {
-                            global.DialogueUI.playLinesRich(linesRich, {
-                                npcId: def.id,
-                                npcName: def.displayTitle || def.name || 'NPC',
-                                playerName: getPlayerName(),
-                                options: entry && entry.dialogue ? entry.dialogue.options : null,
-                                onQueueExhausted: function () {
-                                    applyEffects(entry.effects, {
-                                        event_kind: 'dialogue',
-                                        event_name: 'npc_dialogue_entry_effects',
-                                        source_id: entry && entry.id ? String(entry.id) : '',
-                                        npc_id: def && def.id ? String(def.id) : ''
-                                    });
-                                    if (entry.repeatable === false) markTriggered(entry.id);
-                                    if (entry.id === 'supervisor.firstTalk_01'
-                                        && global.CharacterAttributes
-                                        && typeof global.CharacterAttributes.isCharacterCreationCompleted === 'function'
-                                        && !global.CharacterAttributes.isCharacterCreationCompleted()
-                                        && global.SceneApp
-                                        && typeof global.SceneApp.openCharacterCreationAfterIntro === 'function') {
-                                        global.SceneApp.openCharacterCreationAfterIntro();
-                                    }
-                                }
-                            });
-                        } else if (entry && entry.dialogue && Array.isArray(entry.dialogue.lines)) {
-                            global.DialogueUI.say({
-                                speakerRole: 'npc',
-                                speakerId: def.id,
-                                speakerName: def.displayTitle || def.name || 'NPC',
-                                text: entry.dialogue.lines.join('\n')
-                            });
-                            applyEffects(entry.effects, {
-                                event_kind: 'dialogue',
-                                event_name: 'npc_dialogue_entry_effects',
-                                source_id: entry && entry.id ? String(entry.id) : '',
-                                npc_id: def && def.id ? String(def.id) : ''
-                            });
-                            if (entry.repeatable === false) markTriggered(entry.id);
-                        }
+                        playChatEntry(def, entry);
                     }
                 });
             }));
@@ -1551,6 +1590,8 @@
         },
         isMenuOpen: isMenuOpen,
         openMenu: openMenu,
+        resumeOpening: resumeOpening,
+        isOpeningPending: function () { return openingPending && !!creationIncomplete(); },
         scanChatEntry: scanChatEntry,
         FLAG_PLAYER_EPITHET_USELESS: FLAG_PLAYER_EPITHET_USELESS,
         syncPlayerEpithetFlags: syncPlayerEpithetFlags
