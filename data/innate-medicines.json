@@ -14,13 +14,24 @@
   },
   "upgrade_rule": {
     "station": "pharmacy",
+    "required_station_upgrades": 1,
     "mode": "adjacent_tier",
     "same_family": true,
     "same_tier": true,
     "min_inputs": 1,
     "max_inputs": 100,
     "output_count": 1,
-    "probability": { "formula": "power", "denominator": 100, "exponent": 1.5 },
+    "probability": {
+      "formula": "power",
+      "denominator": 100,
+      "exponent": 1.5,
+      "skill_multiplier": {
+        "skill_id": "life_pharmacy",
+        "bonus_per_level": 0.01,
+        "max_level": 100
+      },
+      "cap": 1
+    },
     "consume_inputs_on_failure": true,
     "counts_as_consumption": false,
     "ordinary_success_modifiers": false,
@@ -32,7 +43,6 @@
     "base_value": null,
     "spoilage_ticks": null,
     "acquisition": null,
-    "upgrade_unlock": null,
     "upgrade_equipment": null,
     "upgrade_ticks": null,
     "upgrade_stamina": null,

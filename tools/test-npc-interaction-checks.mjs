@@ -84,6 +84,8 @@ test('real scene entry opens exempt facilities, blocks ordinary NPCs, and retain
     for (const def of facilities) {
       assert.deepEqual(def.interactionChecks, { thirst: false, dirtyness: false }, def.id);
       g.GameEngine.setState(def.location.sceneId, def.location.x, def.location.y + 1);
+      // The pharmacy is on the bottom edge; its southern neighbour is outside the map.
+      if (def.id === 'npc.station.pharmacy_base') g.GameEngine.setState(def.location.sceneId, 13, 14);
       if(def.gymStation){
         const {x,y}=def.location,[w,h]=def.gymStation.footprint,candidates=[];
         for(let dy=0;dy<h;dy++)for(let dx=0;dx<w;dx++)for(const [ax,ay] of [[1,0],[-1,0],[0,1],[0,-1]])candidates.push({x:x+dx+ax,y:y+dy+ay});

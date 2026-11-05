@@ -23,6 +23,10 @@ CSV合并及现有缝纫／食物补表后，`data/water-flask-storage.json` 通
 
 2026-11-05新增`innate_medicines_base.csv`，在书籍表后合并。五种先天药品各四档共20种，全部为`potion/innate_medicine`、`stack_limit=100`；已定成长和升级规则从`data/innate-medicines.json`经`innate-medicine-item-fields.mjs`校验补入`innate_medicine_profile`，正式归`medicine.innate`并隐藏内部对象展示。当前仅数据登记，`edible/usable=false`且无通用药效、生产配方或投放。模板保存共用计数键和规则，不保存角色食用次数。未定药效及物理经济数据在`pending_values`中显式为null；空CSV重量／保存期的现有0回退不能解释为正式定稿。详情见47号§11.6。
 
+先天药品升级概率已确认`min(1,(N/100)^1.5×(1+L×0.01))`。`probability.skill_multiplier`记录`life_pharmacy`、每级0.01和等级上限100，`cap=1`；20种模板必须同步。`ordinary_success_modifiers=false`只禁用普通制药修正，不禁用这一专用技能倍率；不改服用增长概率，不因数据更新启用使用／升级入口。
+
+药品升级要求`upgrade_rule.required_station_upgrades=1`，必须完成首次制药台设施升级；移除原待定的`upgrade_unlock`。20种模板共同保存门槛，不保存玩家设施等级或材料进度。试玩里的设施材料数量尚未定稿，不得据此写入正式配置。
+
 ## 2) 输出 JSON 字段口径（强制）
 
 构建产物 `data/items.json` 中每个 `item_id` 的模板应至少包含：

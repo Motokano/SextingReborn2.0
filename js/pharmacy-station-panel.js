@@ -23,6 +23,9 @@
     var resolvedWearResult = null;
     var dismissedCraftResult = null;
     var staminaUnsubscribe = null;
+    // An optional view keeps unfinished medicine enhancement confined to its prototype.
+    var enhancementView = null;
+    var enhancementMode = false;
 
     var uiDeps = {};
     function setUiDeps(deps) {
@@ -82,37 +85,60 @@
         return bar;
     }
 
+    function isEnhancementUnlocked() {
+        return !!(enhancementView && enhancementView.isUnlocked());
+    }
+    function getUpgradeProject() {
+        var id = enhancementView && enhancementView.stationProjectId;
+        return id && global.FacilityUnlock ? global.FacilityUnlock.get(id) : null;
+    }
+    function selectMode(mode) {
+        if (!pharmacyStationPanelOpen || ['craft', 'compound', 'enhance'].indexOf(mode) < 0) return false;
+        if (mode === 'compound' && !isInjectionUnlocked() || mode === 'enhance' && !isEnhancementUnlocked()) return false;
+        enhancementMode = mode === 'enhance';
+        if (!enhancementMode) { pharmacyStationUiState.compound_mode = mode === 'compound'; libraryView = 'materials'; }
+        renderPharmacyStationPanel();
+        return true;
+    }
+    function getMode() { return enhancementMode ? 'enhance' : pharmacyStationUiState.compound_mode ? 'compound' : 'craft'; }
+    function setEnhancementView(view) {
+        if (enhancementView) enhancementView.hide();
+        enhancementView = view || null;
+        if (!isEnhancementUnlocked()) enhancementMode = false;
+        if (pharmacyStationPanelOpen) renderPharmacyStationPanel();
+    }
+    function renderModeTabs() {
+        var toggleWrap = document.getElementById('pharmacy-mode-tabs');
+        if (!toggleWrap) return;
+        toggleWrap.innerHTML = '';
+        var visible = isInjectionUnlocked() || !!enhancementView;
+        toggleWrap.hidden = !visible;
+        toggleWrap.style.display = visible ? '' : 'none';
+        if (!visible) return;
+        var mkBtn = function (label, mode) {
+            var b = document.createElement('button');
+            b.type = 'button';
+            b.className = 'btn-method' + (getMode() === mode ? ' active' : '');
+            b.dataset.pharmacyMode = mode;
+            b.textContent = label;
+            b.setAttribute('aria-pressed', String(getMode() === mode));
+            b.onclick = function () {
+                if (!selectMode(mode)) renderPharmacyStationPanel();
+            };
+            return b;
+        };
+        toggleWrap.appendChild(mkBtn(ui('pharmacy.mode.craft'), 'craft'));
+        if (isInjectionUnlocked()) toggleWrap.appendChild(mkBtn(ui('pharmacy.mode.compound'), 'compound'));
+        if (isEnhancementUnlocked()) toggleWrap.appendChild(mkBtn(ui('pharmacy.mode.enhance'), 'enhance'));
+    }
     function renderCompoundBar() {
         var modal = document.getElementById('modal-pharmacy-station');
         var bar = ensureCompoundBar(modal);
         if (!bar) return;
         bar.innerHTML = '';
         var PC = getCompounding();
-
-        var toggleWrap = document.getElementById('pharmacy-mode-tabs') || document.createElement('div');
-        toggleWrap.innerHTML = '';
-        var unlocked = isInjectionUnlocked();
-        toggleWrap.hidden = !unlocked;
-        toggleWrap.style.display = unlocked ? '' : 'none';
-        bar.hidden = !unlocked;
-        if (!unlocked) return;
-        var mkBtn = function (label, isCompound) {
-            var b = document.createElement('button');
-            b.type = 'button';
-            b.className = 'btn-method' + (!!pharmacyStationUiState.compound_mode === isCompound ? ' active' : '');
-            b.textContent = label;
-            b.setAttribute('aria-pressed', String(!!pharmacyStationUiState.compound_mode === isCompound));
-            b.onclick = function () {
-                if (isCompound && !isInjectionUnlocked()) { renderPharmacyStationPanel(); return; }
-                pharmacyStationUiState.compound_mode = isCompound;
-                libraryView = 'materials';
-                renderPharmacyStationPanel();
-            };
-            return b;
-        };
-        toggleWrap.appendChild(mkBtn(ui('pharmacy.mode.craft'), false));
-        toggleWrap.appendChild(mkBtn(ui('pharmacy.mode.compound'), true));
-        if (!document.getElementById('pharmacy-mode-tabs')) bar.appendChild(toggleWrap);
+        bar.hidden = !isInjectionUnlocked();
+        if (bar.hidden) return;
 
         if (!pharmacyStationUiState.compound_mode || !pharmacyStationUiState.inputs.length) return;
         var info = (PC && typeof PC.getConcentrationInfo === 'function')
@@ -450,6 +476,13 @@
         resetLockedCompoundMode();
         var modal = document.getElementById('modal-pharmacy-station');
         if (!modal) return;
+        if (enhancementMode && !isEnhancementUnlocked()) enhancementMode = false;
+        renderModeTabs();
+        var normalBody = modal.querySelector('.cs-body'), normalFooter = modal.querySelector('.pharmacy-footer');
+        if (normalBody) normalBody.hidden = enhancementMode;
+        if (normalFooter) normalFooter.hidden = enhancementMode;
+        if (enhancementMode) { enhancementView.render(); return; }
+        if (enhancementView) enhancementView.hide();
         var methodWrap = document.getElementById('pharmacy-method-list');
         var listEl = document.getElementById('pharmacy-input-list');
         var knownWrap = document.getElementById('pharmacy-known-list');
@@ -931,6 +964,7 @@
         if (startBtn) {
             startBtn.addEventListener('click', function () {
                 if (!pharmacyStationPanelOpen) return;
+                if (enhancementMode) { renderPharmacyStationPanel(); return; }
                 // A flag change must not turn a queued injection click into ordinary crafting.
                 if (resetLockedCompoundMode()) { renderPharmacyStationPanel(); return; }
                 var mid = pharmacyStationUiState.method_id ? String(pharmacyStationUiState.method_id) : '';
@@ -962,6 +996,10 @@
         render: renderPharmacyStationPanel,
         refreshIfOpen: refreshIfOpen,
         isOpen: isOpen,
+        setEnhancementView: setEnhancementView,
+        selectMode: selectMode,
+        getMode: getMode,
+        getUpgradeProject: getUpgradeProject,
         isItemAllowedPharmacyIngredient: function (id) { return StationCraftCore.isItemAllowedPharmacyIngredient(id); }
     };
 })(typeof window !== 'undefined' ? window : globalThis);

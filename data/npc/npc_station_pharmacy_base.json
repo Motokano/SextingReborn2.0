@@ -18,7 +18,7 @@
     "dirtyness": false
   },
   "mainMenu": {
-    "showChat": true,
+    "showChat": false,
     "showWorkWhen": "never",
     "showOpenPharmacyPanel": true,
     "showLeave": true
@@ -26,7 +26,7 @@
   "behavior": {
     "type": "workbench",
     "origin": "base_hideout",
-    "description": "设施 NPC：邻格点制药台格走 interactNpc；闲聊走 triggers，使用制药台打开制药面板。"
+    "description": "设施 NPC：邻格点击按修复与升级进度分流；未修复只显示修复，已修复提供使用和已登记的升级项目，升级完成后直接进入制药界面。"
   },
   "fallbackDialoguePoolId": "npc.station.pharmacy_base.fallback",
   "fallbackPoolRules": [

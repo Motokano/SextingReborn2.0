@@ -1142,6 +1142,55 @@
                 return;
             }
 
+            if (def.id === 'npc.station.pharmacy_base') {
+                var pharmacyPanel = global.PharmacyStationPanel;
+                function atPharmacy() {
+                    var context = global.StationContext && global.StationContext.getCurrentPharmacyStationContext();
+                    return sameLocation() && context && context.map_id === def.location.sceneId
+                        && context.x === def.location.x && context.y === def.location.y;
+                }
+                function pharmacyRepaired() {
+                    var repair = global.FacilityUnlock && global.FacilityUnlock.get('pharmacy');
+                    return repair && repair.isComplete();
+                }
+                function pharmacyUpgrade() {
+                    return pharmacyPanel && pharmacyPanel.getUpgradeProject ? pharmacyPanel.getUpgradeProject() : null;
+                }
+                function canChoosePharmacy() {
+                    if (epoch !== menuEpoch || !atPharmacy()) return false;
+                    return !global.SceneApp || !global.SceneApp.guardPlayerActionBlocked
+                        || !global.SceneApp.guardPlayerActionBlocked('npc_interact');
+                }
+                function usePharmacy() {
+                    if (!canChoosePharmacy() || !pharmacyRepaired() || !pharmacyPanel) return;
+                    closeMenu();
+                    pharmacyPanel.open();
+                }
+                function constructPharmacy(upgrade) {
+                    if (!canChoosePharmacy()) return;
+                    // Recheck the stage: an old menu must never repair or upgrade twice.
+                    if (upgrade ? !pharmacyRepaired() : pharmacyRepaired()) return;
+                    var project = upgrade ? pharmacyUpgrade() : global.FacilityUnlock.get('pharmacy');
+                    var construction = global.FacilityUnlockPanel;
+                    if (!project || !project.accessible() || !construction || construction.isOpen()) return;
+                    construction.open(project.spec.id, function () {
+                        if (atPharmacy() && !menuState.open) openMenu(npcId);
+                    });
+                    if (construction.isOpen()) closeMenu();
+                }
+                if (!atPharmacy()) { closeMenu(); return; }
+                if (!pharmacyRepaired()) {
+                    addButton(mkBtn('修复制药台', function () { constructPharmacy(false); }));
+                } else {
+                    var upgrade = pharmacyUpgrade();
+                    if (upgrade && upgrade.isComplete()) { usePharmacy(); return; }
+                    menuState.buttons.push(mkBtn(tUi('npc.menu.open_pharmacy_panel', '使用制药台'), usePharmacy, 'medical'));
+                    if (upgrade) menuState.buttons.push(mkBtn('升级制药台', function () { constructPharmacy(true); }, 'point'));
+                    publishMenu();
+                }
+                return;
+            }
+
             if (def.bathroom && global.BathroomFacility) {
                 var bathroom = global.BathroomFacility;
                 if (!bathroom.isUnlocked()) {
@@ -1361,7 +1410,6 @@
 
             var facilityActions = {
                 'npc.station.forging_base': ['forging'],
-                'npc.station.pharmacy_base': ['pharmacy'],
                 'npc.station.compost_base': ['compost']
             };
             function facilityReady() {

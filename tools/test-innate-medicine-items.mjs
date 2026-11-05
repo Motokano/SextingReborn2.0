@@ -46,9 +46,15 @@ test('all 20 medicines reach both catalogues with shared first-ten growth and up
       assert.equal(profile.growth.inherent_effects_on_every_portion, true);
       assert.equal(profile.upgrade.next_item_id, tier < 4 ? `potion_innate_${attribute}_t${tier + 1}` : null);
       assert.equal(profile.upgrade.min_inputs, 1);
+      assert.equal(profile.upgrade.required_station_upgrades, 1);
+      assert.ok(!('upgrade_unlock' in profile.pending_values));
       assert.equal(profile.upgrade.max_inputs, 100);
       assert.equal(profile.upgrade.output_count, 1);
-      assert.deepEqual(profile.upgrade.probability, { formula: 'power', denominator: 100, exponent: 1.5 });
+      assert.deepEqual(profile.upgrade.probability, {
+        formula: 'power', denominator: 100, exponent: 1.5,
+        skill_multiplier: { skill_id: 'life_pharmacy', bonus_per_level: 0.01, max_level: 100 },
+        cap: 1
+      });
       assert.equal(profile.upgrade.counts_as_consumption, false);
       assert.equal(profile.upgrade.consume_inputs_on_failure, true);
       assert.equal(profile.upgrade.ordinary_success_modifiers, false);
@@ -127,8 +133,20 @@ test('invalid sources and incomplete catalogues fail atomically', () => {
     s => { s.growth_rule.count_failed_rolls = false; },
     s => { s.growth_rule.inherent_effects_on_every_portion = false; },
     s => { s.growth_rule.current_consumed = 0; },
+    s => { delete s.upgrade_rule.required_station_upgrades; },
+    s => { s.upgrade_rule.required_station_upgrades = 0; },
+    s => { s.upgrade_rule.required_station_upgrades = 2; },
+    s => { s.upgrade_rule.required_station_upgrades = '1'; },
     s => { s.upgrade_rule.probability.exponent = 1; },
     s => { s.upgrade_rule.probability.denominator = 101; },
+    s => { delete s.upgrade_rule.probability.skill_multiplier; },
+    s => { s.upgrade_rule.probability.skill_multiplier.skill_id = 'life_cooking'; },
+    s => { s.upgrade_rule.probability.skill_multiplier.bonus_per_level = -0.01; },
+    s => { s.upgrade_rule.probability.skill_multiplier.bonus_per_level = '0.01'; },
+    s => { s.upgrade_rule.probability.skill_multiplier.bonus_per_level = Infinity; },
+    s => { s.upgrade_rule.probability.skill_multiplier.max_level = 0; },
+    s => { s.upgrade_rule.probability.skill_multiplier.max_level = 1.5; },
+    s => { s.upgrade_rule.probability.cap = 1.1; },
     s => { s.upgrade_rule.counts_as_consumption = true; },
     s => { s.upgrade_rule.craftable_from_raw = true; },
     s => { s.upgrade_rule.ordinary_success_modifiers = true; },

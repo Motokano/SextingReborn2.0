@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>制药台升级 · 试玩</title></head>
+<body style="background:#1b201e;color:#e5e4d9;font:14px system-ui;padding:30px">加载中…
+<script>
+// Throwaway UI: three upgrade layouts hosted inside the real game, with memory-only storage.
+(async () => {
+  const root = new URL('../', location.href);
+  function isolate() {
+    const storage = () => { const m = new Map(); return { getItem: k => m.get(String(k)) ?? null, setItem: (k,v) => m.set(String(k),String(v)), removeItem: k => m.delete(String(k)), clear: () => m.clear(), key: i => [...m.keys()][i] ?? null, get length() { return m.size; } }; };
+    Object.defineProperty(window, 'localStorage', { value: storage() });
+    Object.defineProperty(window, 'sessionStorage', { value: storage() });
+    Object.defineProperty(navigator, 'locks', { value: undefined, configurable: true });
+    Object.defineProperty(window, 'BroadcastChannel', { value: undefined, configurable: true });
+    window.__PHARMACY_UPGRADE_MEMORY__ = true;
+    window.__PHARMACY_UPGRADE_READY__ = new Promise(resolve => { window.AppBoot = { afterReady: [resolve] }; });
+  }
+  let html = await (await fetch(new URL('index.html?no_reload', root))).text();
+  html = html.replace(/<link\b[^>]*href="https:\/\/fonts\.[^>]*>/gi, '');
+  html = html.replace('<head>', '<head><base href="' + root.href + '"><script>(' + isolate.toString() + ')();<\/script>');
+  html = html.replace('</body>', '<link rel="stylesheet" href="tools/pharmacy-upgrade-prototype.css"><script type="module" src="tools/pharmacy-upgrade-prototype.mjs"><\/script></body>');
+  document.open(); document.write(html); document.close();
+})().catch(error => { document.body.textContent = '加载失败'; console.error(error); });
+</script></body></html>
