@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "implementation": "data_only",
+  "growth_rule": {
+    "attribute_gain": 1,
+    "innate_cap": 40,
+    "first_portions": 10,
+    "counter_scope": "character_family",
+    "count_on": "consumed_portion",
+    "count_failed_rolls": true,
+    "consumption_limit": null,
+    "after_first_portions": "inherent_effects_only",
+    "inherent_effects_on_every_portion": true
+  },
+  "upgrade_rule": {
+    "station": "pharmacy",
+    "mode": "adjacent_tier",
+    "same_family": true,
+    "same_tier": true,
+    "min_inputs": 1,
+    "max_inputs": 100,
+    "output_count": 1,
+    "probability": { "formula": "power", "denominator": 100, "exponent": 1.5 },
+    "consume_inputs_on_failure": true,
+    "counts_as_consumption": false,
+    "ordinary_success_modifiers": false,
+    "craftable_from_raw": false
+  },
+  "pending_values": {
+    "inherent_effects": null,
+    "weight_kg": null,
+    "base_value": null,
+    "spoilage_ticks": null,
+    "acquisition": null,
+    "upgrade_unlock": null,
+    "upgrade_equipment": null,
+    "upgrade_ticks": null,
+    "upgrade_stamina": null,
+    "upgrade_experience": null,
+    "upgrade_equipment_wear": null,
+    "upgrade_failure_byproduct": null
+  },
+  "families": {
+    "jingu": { "name": "剥剥星", "attribute": "jingu" },
+    "flexibility": { "name": "达达糖", "attribute": "flexibility" },
+    "breath": { "name": "毛毛虫", "attribute": "breath" },
+    "dexterity": { "name": "咪咪脆", "attribute": "dexterity" },
+    "focus": { "name": "杏球杯", "attribute": "focus" }
+  },
+  "tiers": [
+    { "id": "t1", "prefix": "通常版", "success_probability": 0.7 },
+    { "id": "t2", "prefix": "初回版", "success_probability": 0.8 },
+    { "id": "t3", "prefix": "完全生产限定版", "success_probability": 0.9 },
+    { "id": "t4", "prefix": "初回限定生产版", "success_probability": 1 }
+  ]
+}

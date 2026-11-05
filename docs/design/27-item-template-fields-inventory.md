@@ -1,5 +1,7 @@
 # 物品模板字段：分层计数与口径
 
+2026-11-05新增对象字段`innate_medicine_profile`，正式归`medicine.innate`。来源为`data/innate-medicines.json`，物品名称／描述／堆叠来自`data/items/innate_medicines_base.csv`；构建时校验后写入两套目录，展示规则为隐藏。对象内含先天成长规则、家族共用计数键和逐级升级关联，不放玩家食用次数。未定自身药效与物理经济值显式保留`null`；模板重量／保存期的现有0回退不是正式定稿。接入边界见[47号§11.6](47-pharmacy-system.md#116-正式物品数据登记2026-11-05仅数据接入)。
+
 > **快照说明**：正文快照截至 2026-09 前的某次运行，可能滞后于当前数据；最新计数以 `npm run audit:item-keys` / `npm run audit:item-field-rules` 复跑输出为准（历史输出见 [`_archive/27-item-field-rules-audit-last-run.md`](_archive/27-item-field-rules-audit-last-run.md)）。
 
 本文档固化「一个物品在数据与运行时里有哪些字段」的分层口径，便于重构物品结构时对账；**权威构建逻辑**仍以 [`tools/build-items-json.mjs`](../../tools/build-items-json.mjs) 与 [`.cursor/rules/items-json-build-agent.mdc`](../../.cursor/rules/items-json-build-agent.mdc) 为准。

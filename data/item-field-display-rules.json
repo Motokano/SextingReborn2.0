@@ -36,6 +36,14 @@
     }
   },
   "fields": {
+    "innate_medicine_profile": {
+      "primary_block": "regular",
+      "reference_blocks": [],
+      "renderer": "hidden",
+      "value_type": "object",
+      "visible_by_default": false,
+      "locked_hint": ""
+    },
     "book_profile": {
       "primary_block": "regular",
       "reference_blocks": [],

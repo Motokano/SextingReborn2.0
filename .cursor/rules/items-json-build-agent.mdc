@@ -21,6 +21,8 @@ CSV合并及现有缝纫／食物补表后，`data/water-flask-storage.json` 通
 
 2026-11-04新增`books_base.csv`，在现有源表之后合并。书籍基础物品信息写CSV，残片与经验规则写`data/book-learning.json`，由`book-item-fields.mjs`强校验后补入`book_profile`，正式目录归`knowledge.book`。模板不存当前收集数或玩家经验；`1/100`不是静态物品名。书籍不能声明药品`usable/use_action`来代替阅读。正式阅读、自动合并与存档已接入；逐级经验按用户确认每级1万、100级累计100万构建，实际掉落投放待指定。
 
+2026-11-05新增`innate_medicines_base.csv`，在书籍表后合并。五种先天药品各四档共20种，全部为`potion/innate_medicine`、`stack_limit=100`；已定成长和升级规则从`data/innate-medicines.json`经`innate-medicine-item-fields.mjs`校验补入`innate_medicine_profile`，正式归`medicine.innate`并隐藏内部对象展示。当前仅数据登记，`edible/usable=false`且无通用药效、生产配方或投放。模板保存共用计数键和规则，不保存角色食用次数。未定药效及物理经济数据在`pending_values`中显式为null；空CSV重量／保存期的现有0回退不能解释为正式定稿。详情见47号§11.6。
+
 ## 2) 输出 JSON 字段口径（强制）
 
 构建产物 `data/items.json` 中每个 `item_id` 的模板应至少包含：

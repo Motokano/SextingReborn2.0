@@ -20195,6 +20195,1626 @@
       "sub_category": "drink",
       "tags": "potion;consumable;pharmacy;drink"
     },
+    "potion_innate_breath_t1": {
+      "item_id": "potion_innate_breath_t1",
+      "editor_name": "通常版毛毛虫",
+      "weight_kg": 0,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "通常版毛毛虫",
+            "name_0": "通常版毛毛虫",
+            "sn": "通常版毛毛虫",
+            "placeholder_name": "未识别药品",
+            "fn_before": "一种药品。",
+            "fn": "毛毛虫全版本累计前10颗，每颗有70%概率永久增加先天呼吸1点（先天上限40点）；第11颗起只保留药品自身效果。",
+            "desc_0": "毛毛虫全版本累计前10颗，每颗有70%概率永久增加先天呼吸1点（先天上限40点）；第11颗起只保留药品自身效果。"
+          },
+          "stacking": {
+            "stack_limit": 100
+          }
+        },
+        "medicine": {
+          "innate": {
+            "innate_medicine_profile": {
+              "schema_version": 1,
+              "implementation": "data_only",
+              "family_id": "breath",
+              "attribute": "breath",
+              "tier_id": "t1",
+              "success_probability": 0.7,
+              "counter_key": "innate_medicine:breath",
+              "growth": {
+                "attribute_gain": 1,
+                "innate_cap": 40,
+                "first_portions": 10,
+                "counter_scope": "character_family",
+                "count_on": "consumed_portion",
+                "count_failed_rolls": true,
+                "consumption_limit": null,
+                "after_first_portions": "inherent_effects_only",
+                "inherent_effects_on_every_portion": true
+              },
+              "upgrade": {
+                "station": "pharmacy",
+                "mode": "adjacent_tier",
+                "same_family": true,
+                "same_tier": true,
+                "min_inputs": 1,
+                "max_inputs": 100,
+                "output_count": 1,
+                "probability": {
+                  "formula": "power",
+                  "denominator": 100,
+                  "exponent": 1.5
+                },
+                "consume_inputs_on_failure": true,
+                "counts_as_consumption": false,
+                "ordinary_success_modifiers": false,
+                "craftable_from_raw": false,
+                "next_item_id": "potion_innate_breath_t2"
+              },
+              "pending_values": {
+                "inherent_effects": null,
+                "weight_kg": null,
+                "base_value": null,
+                "spoilage_ticks": null,
+                "acquisition": null,
+                "upgrade_unlock": null,
+                "upgrade_equipment": null,
+                "upgrade_ticks": null,
+                "upgrade_stamina": null,
+                "upgrade_experience": null,
+                "upgrade_equipment_wear": null,
+                "upgrade_failure_byproduct": null
+              }
+            }
+          }
+        }
+      },
+      "category": "potion",
+      "sub_category": "innate_medicine",
+      "tags": "medicine;innate_growth"
+    },
+    "potion_innate_breath_t2": {
+      "item_id": "potion_innate_breath_t2",
+      "editor_name": "初回版毛毛虫",
+      "weight_kg": 0,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "初回版毛毛虫",
+            "name_0": "初回版毛毛虫",
+            "sn": "初回版毛毛虫",
+            "placeholder_name": "未识别药品",
+            "fn_before": "一种药品。",
+            "fn": "毛毛虫全版本累计前10颗，每颗有80%概率永久增加先天呼吸1点（先天上限40点）；第11颗起只保留药品自身效果。",
+            "desc_0": "毛毛虫全版本累计前10颗，每颗有80%概率永久增加先天呼吸1点（先天上限40点）；第11颗起只保留药品自身效果。"
+          },
+          "stacking": {
+            "stack_limit": 100
+          }
+        },
+        "medicine": {
+          "innate": {
+            "innate_medicine_profile": {
+              "schema_version": 1,
+              "implementation": "data_only",
+              "family_id": "breath",
+              "attribute": "breath",
+              "tier_id": "t2",
+              "success_probability": 0.8,
+              "counter_key": "innate_medicine:breath",
+              "growth": {
+                "attribute_gain": 1,
+                "innate_cap": 40,
+                "first_portions": 10,
+                "counter_scope": "character_family",
+                "count_on": "consumed_portion",
+                "count_failed_rolls": true,
+                "consumption_limit": null,
+                "after_first_portions": "inherent_effects_only",
+                "inherent_effects_on_every_portion": true
+              },
+              "upgrade": {
+                "station": "pharmacy",
+                "mode": "adjacent_tier",
+                "same_family": true,
+                "same_tier": true,
+                "min_inputs": 1,
+                "max_inputs": 100,
+                "output_count": 1,
+                "probability": {
+                  "formula": "power",
+                  "denominator": 100,
+                  "exponent": 1.5
+                },
+                "consume_inputs_on_failure": true,
+                "counts_as_consumption": false,
+                "ordinary_success_modifiers": false,
+                "craftable_from_raw": false,
+                "next_item_id": "potion_innate_breath_t3"
+              },
+              "pending_values": {
+                "inherent_effects": null,
+                "weight_kg": null,
+                "base_value": null,
+                "spoilage_ticks": null,
+                "acquisition": null,
+                "upgrade_unlock": null,
+                "upgrade_equipment": null,
+                "upgrade_ticks": null,
+                "upgrade_stamina": null,
+                "upgrade_experience": null,
+                "upgrade_equipment_wear": null,
+                "upgrade_failure_byproduct": null
+              }
+            }
+          }
+        }
+      },
+      "category": "potion",
+      "sub_category": "innate_medicine",
+      "tags": "medicine;innate_growth"
+    },
+    "potion_innate_breath_t3": {
+      "item_id": "potion_innate_breath_t3",
+      "editor_name": "完全生产限定版毛毛虫",
+      "weight_kg": 0,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "完全生产限定版毛毛虫",
+            "name_0": "完全生产限定版毛毛虫",
+            "sn": "完全生产限定版毛毛虫",
+            "placeholder_name": "未识别药品",
+            "fn_before": "一种药品。",
+            "fn": "毛毛虫全版本累计前10颗，每颗有90%概率永久增加先天呼吸1点（先天上限40点）；第11颗起只保留药品自身效果。",
+            "desc_0": "毛毛虫全版本累计前10颗，每颗有90%概率永久增加先天呼吸1点（先天上限40点）；第11颗起只保留药品自身效果。"
+          },
+          "stacking": {
+            "stack_limit": 100
+          }
+        },
+        "medicine": {
+          "innate": {
+            "innate_medicine_profile": {
+              "schema_version": 1,
+              "implementation": "data_only",
+              "family_id": "breath",
+              "attribute": "breath",
+              "tier_id": "t3",
+              "success_probability": 0.9,
+              "counter_key": "innate_medicine:breath",
+              "growth": {
+                "attribute_gain": 1,
+                "innate_cap": 40,
+                "first_portions": 10,
+                "counter_scope": "character_family",
+                "count_on": "consumed_portion",
+                "count_failed_rolls": true,
+                "consumption_limit": null,
+                "after_first_portions": "inherent_effects_only",
+                "inherent_effects_on_every_portion": true
+              },
+              "upgrade": {
+                "station": "pharmacy",
+                "mode": "adjacent_tier",
+                "same_family": true,
+                "same_tier": true,
+                "min_inputs": 1,
+                "max_inputs": 100,
+                "output_count": 1,
+                "probability": {
+                  "formula": "power",
+                  "denominator": 100,
+                  "exponent": 1.5
+                },
+                "consume_inputs_on_failure": true,
+                "counts_as_consumption": false,
+                "ordinary_success_modifiers": false,
+                "craftable_from_raw": false,
+                "next_item_id": "potion_innate_breath_t4"
+              },
+              "pending_values": {
+                "inherent_effects": null,
+                "weight_kg": null,
+                "base_value": null,
+                "spoilage_ticks": null,
+                "acquisition": null,
+                "upgrade_unlock": null,
+                "upgrade_equipment": null,
+                "upgrade_ticks": null,
+                "upgrade_stamina": null,
+                "upgrade_experience": null,
+                "upgrade_equipment_wear": null,
+                "upgrade_failure_byproduct": null
+              }
+            }
+          }
+        }
+      },
+      "category": "potion",
+      "sub_category": "innate_medicine",
+      "tags": "medicine;innate_growth"
+    },
+    "potion_innate_breath_t4": {
+      "item_id": "potion_innate_breath_t4",
+      "editor_name": "初回限定生产版毛毛虫",
+      "weight_kg": 0,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "初回限定生产版毛毛虫",
+            "name_0": "初回限定生产版毛毛虫",
+            "sn": "初回限定生产版毛毛虫",
+            "placeholder_name": "未识别药品",
+            "fn_before": "一种药品。",
+            "fn": "毛毛虫全版本累计前10颗，每颗必定永久增加先天呼吸1点（先天上限40点）；第11颗起只保留药品自身效果。",
+            "desc_0": "毛毛虫全版本累计前10颗，每颗必定永久增加先天呼吸1点（先天上限40点）；第11颗起只保留药品自身效果。"
+          },
+          "stacking": {
+            "stack_limit": 100
+          }
+        },
+        "medicine": {
+          "innate": {
+            "innate_medicine_profile": {
+              "schema_version": 1,
+              "implementation": "data_only",
+              "family_id": "breath",
+              "attribute": "breath",
+              "tier_id": "t4",
+              "success_probability": 1,
+              "counter_key": "innate_medicine:breath",
+              "growth": {
+                "attribute_gain": 1,
+                "innate_cap": 40,
+                "first_portions": 10,
+                "counter_scope": "character_family",
+                "count_on": "consumed_portion",
+                "count_failed_rolls": true,
+                "consumption_limit": null,
+                "after_first_portions": "inherent_effects_only",
+                "inherent_effects_on_every_portion": true
+              },
+              "upgrade": {
+                "station": "pharmacy",
+                "mode": "adjacent_tier",
+                "same_family": true,
+                "same_tier": true,
+                "min_inputs": 1,
+                "max_inputs": 100,
+                "output_count": 1,
+                "probability": {
+                  "formula": "power",
+                  "denominator": 100,
+                  "exponent": 1.5
+                },
+                "consume_inputs_on_failure": true,
+                "counts_as_consumption": false,
+                "ordinary_success_modifiers": false,
+                "craftable_from_raw": false,
+                "next_item_id": null
+              },
+              "pending_values": {
+                "inherent_effects": null,
+                "weight_kg": null,
+                "base_value": null,
+                "spoilage_ticks": null,
+                "acquisition": null,
+                "upgrade_unlock": null,
+                "upgrade_equipment": null,
+                "upgrade_ticks": null,
+                "upgrade_stamina": null,
+                "upgrade_experience": null,
+                "upgrade_equipment_wear": null,
+                "upgrade_failure_byproduct": null
+              }
+            }
+          }
+        }
+      },
+      "category": "potion",
+      "sub_category": "innate_medicine",
+      "tags": "medicine;innate_growth"
+    },
+    "potion_innate_dexterity_t1": {
+      "item_id": "potion_innate_dexterity_t1",
+      "editor_name": "通常版咪咪脆",
+      "weight_kg": 0,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "通常版咪咪脆",
+            "name_0": "通常版咪咪脆",
+            "sn": "通常版咪咪脆",
+            "placeholder_name": "未识别药品",
+            "fn_before": "一种药品。",
+            "fn": "咪咪脆全版本累计前10颗，每颗有70%概率永久增加先天身手1点（先天上限40点）；第11颗起只保留药品自身效果。",
+            "desc_0": "咪咪脆全版本累计前10颗，每颗有70%概率永久增加先天身手1点（先天上限40点）；第11颗起只保留药品自身效果。"
+          },
+          "stacking": {
+            "stack_limit": 100
+          }
+        },
+        "medicine": {
+          "innate": {
+            "innate_medicine_profile": {
+              "schema_version": 1,
+              "implementation": "data_only",
+              "family_id": "dexterity",
+              "attribute": "dexterity",
+              "tier_id": "t1",
+              "success_probability": 0.7,
+              "counter_key": "innate_medicine:dexterity",
+              "growth": {
+                "attribute_gain": 1,
+                "innate_cap": 40,
+                "first_portions": 10,
+                "counter_scope": "character_family",
+                "count_on": "consumed_portion",
+                "count_failed_rolls": true,
+                "consumption_limit": null,
+                "after_first_portions": "inherent_effects_only",
+                "inherent_effects_on_every_portion": true
+              },
+              "upgrade": {
+                "station": "pharmacy",
+                "mode": "adjacent_tier",
+                "same_family": true,
+                "same_tier": true,
+                "min_inputs": 1,
+                "max_inputs": 100,
+                "output_count": 1,
+                "probability": {
+                  "formula": "power",
+                  "denominator": 100,
+                  "exponent": 1.5
+                },
+                "consume_inputs_on_failure": true,
+                "counts_as_consumption": false,
+                "ordinary_success_modifiers": false,
+                "craftable_from_raw": false,
+                "next_item_id": "potion_innate_dexterity_t2"
+              },
+              "pending_values": {
+                "inherent_effects": null,
+                "weight_kg": null,
+                "base_value": null,
+                "spoilage_ticks": null,
+                "acquisition": null,
+                "upgrade_unlock": null,
+                "upgrade_equipment": null,
+                "upgrade_ticks": null,
+                "upgrade_stamina": null,
+                "upgrade_experience": null,
+                "upgrade_equipment_wear": null,
+                "upgrade_failure_byproduct": null
+              }
+            }
+          }
+        }
+      },
+      "category": "potion",
+      "sub_category": "innate_medicine",
+      "tags": "medicine;innate_growth"
+    },
+    "potion_innate_dexterity_t2": {
+      "item_id": "potion_innate_dexterity_t2",
+      "editor_name": "初回版咪咪脆",
+      "weight_kg": 0,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "初回版咪咪脆",
+            "name_0": "初回版咪咪脆",
+            "sn": "初回版咪咪脆",
+            "placeholder_name": "未识别药品",
+            "fn_before": "一种药品。",
+            "fn": "咪咪脆全版本累计前10颗，每颗有80%概率永久增加先天身手1点（先天上限40点）；第11颗起只保留药品自身效果。",
+            "desc_0": "咪咪脆全版本累计前10颗，每颗有80%概率永久增加先天身手1点（先天上限40点）；第11颗起只保留药品自身效果。"
+          },
+          "stacking": {
+            "stack_limit": 100
+          }
+        },
+        "medicine": {
+          "innate": {
+            "innate_medicine_profile": {
+              "schema_version": 1,
+              "implementation": "data_only",
+              "family_id": "dexterity",
+              "attribute": "dexterity",
+              "tier_id": "t2",
+              "success_probability": 0.8,
+              "counter_key": "innate_medicine:dexterity",
+              "growth": {
+                "attribute_gain": 1,
+                "innate_cap": 40,
+                "first_portions": 10,
+                "counter_scope": "character_family",
+                "count_on": "consumed_portion",
+                "count_failed_rolls": true,
+                "consumption_limit": null,
+                "after_first_portions": "inherent_effects_only",
+                "inherent_effects_on_every_portion": true
+              },
+              "upgrade": {
+                "station": "pharmacy",
+                "mode": "adjacent_tier",
+                "same_family": true,
+                "same_tier": true,
+                "min_inputs": 1,
+                "max_inputs": 100,
+                "output_count": 1,
+                "probability": {
+                  "formula": "power",
+                  "denominator": 100,
+                  "exponent": 1.5
+                },
+                "consume_inputs_on_failure": true,
+                "counts_as_consumption": false,
+                "ordinary_success_modifiers": false,
+                "craftable_from_raw": false,
+                "next_item_id": "potion_innate_dexterity_t3"
+              },
+              "pending_values": {
+                "inherent_effects": null,
+                "weight_kg": null,
+                "base_value": null,
+                "spoilage_ticks": null,
+                "acquisition": null,
+                "upgrade_unlock": null,
+                "upgrade_equipment": null,
+                "upgrade_ticks": null,
+                "upgrade_stamina": null,
+                "upgrade_experience": null,
+                "upgrade_equipment_wear": null,
+                "upgrade_failure_byproduct": null
+              }
+            }
+          }
+        }
+      },
+      "category": "potion",
+      "sub_category": "innate_medicine",
+      "tags": "medicine;innate_growth"
+    },
+    "potion_innate_dexterity_t3": {
+      "item_id": "potion_innate_dexterity_t3",
+      "editor_name": "完全生产限定版咪咪脆",
+      "weight_kg": 0,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "完全生产限定版咪咪脆",
+            "name_0": "完全生产限定版咪咪脆",
+            "sn": "完全生产限定版咪咪脆",
+            "placeholder_name": "未识别药品",
+            "fn_before": "一种药品。",
+            "fn": "咪咪脆全版本累计前10颗，每颗有90%概率永久增加先天身手1点（先天上限40点）；第11颗起只保留药品自身效果。",
+            "desc_0": "咪咪脆全版本累计前10颗，每颗有90%概率永久增加先天身手1点（先天上限40点）；第11颗起只保留药品自身效果。"
+          },
+          "stacking": {
+            "stack_limit": 100
+          }
+        },
+        "medicine": {
+          "innate": {
+            "innate_medicine_profile": {
+              "schema_version": 1,
+              "implementation": "data_only",
+              "family_id": "dexterity",
+              "attribute": "dexterity",
+              "tier_id": "t3",
+              "success_probability": 0.9,
+              "counter_key": "innate_medicine:dexterity",
+              "growth": {
+                "attribute_gain": 1,
+                "innate_cap": 40,
+                "first_portions": 10,
+                "counter_scope": "character_family",
+                "count_on": "consumed_portion",
+                "count_failed_rolls": true,
+                "consumption_limit": null,
+                "after_first_portions": "inherent_effects_only",
+                "inherent_effects_on_every_portion": true
+              },
+              "upgrade": {
+                "station": "pharmacy",
+                "mode": "adjacent_tier",
+                "same_family": true,
+                "same_tier": true,
+                "min_inputs": 1,
+                "max_inputs": 100,
+                "output_count": 1,
+                "probability": {
+                  "formula": "power",
+                  "denominator": 100,
+                  "exponent": 1.5
+                },
+                "consume_inputs_on_failure": true,
+                "counts_as_consumption": false,
+                "ordinary_success_modifiers": false,
+                "craftable_from_raw": false,
+                "next_item_id": "potion_innate_dexterity_t4"
+              },
+              "pending_values": {
+                "inherent_effects": null,
+                "weight_kg": null,
+                "base_value": null,
+                "spoilage_ticks": null,
+                "acquisition": null,
+                "upgrade_unlock": null,
+                "upgrade_equipment": null,
+                "upgrade_ticks": null,
+                "upgrade_stamina": null,
+                "upgrade_experience": null,
+                "upgrade_equipment_wear": null,
+                "upgrade_failure_byproduct": null
+              }
+            }
+          }
+        }
+      },
+      "category": "potion",
+      "sub_category": "innate_medicine",
+      "tags": "medicine;innate_growth"
+    },
+    "potion_innate_dexterity_t4": {
+      "item_id": "potion_innate_dexterity_t4",
+      "editor_name": "初回限定生产版咪咪脆",
+      "weight_kg": 0,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "初回限定生产版咪咪脆",
+            "name_0": "初回限定生产版咪咪脆",
+            "sn": "初回限定生产版咪咪脆",
+            "placeholder_name": "未识别药品",
+            "fn_before": "一种药品。",
+            "fn": "咪咪脆全版本累计前10颗，每颗必定永久增加先天身手1点（先天上限40点）；第11颗起只保留药品自身效果。",
+            "desc_0": "咪咪脆全版本累计前10颗，每颗必定永久增加先天身手1点（先天上限40点）；第11颗起只保留药品自身效果。"
+          },
+          "stacking": {
+            "stack_limit": 100
+          }
+        },
+        "medicine": {
+          "innate": {
+            "innate_medicine_profile": {
+              "schema_version": 1,
+              "implementation": "data_only",
+              "family_id": "dexterity",
+              "attribute": "dexterity",
+              "tier_id": "t4",
+              "success_probability": 1,
+              "counter_key": "innate_medicine:dexterity",
+              "growth": {
+                "attribute_gain": 1,
+                "innate_cap": 40,
+                "first_portions": 10,
+                "counter_scope": "character_family",
+                "count_on": "consumed_portion",
+                "count_failed_rolls": true,
+                "consumption_limit": null,
+                "after_first_portions": "inherent_effects_only",
+                "inherent_effects_on_every_portion": true
+              },
+              "upgrade": {
+                "station": "pharmacy",
+                "mode": "adjacent_tier",
+                "same_family": true,
+                "same_tier": true,
+                "min_inputs": 1,
+                "max_inputs": 100,
+                "output_count": 1,
+                "probability": {
+                  "formula": "power",
+                  "denominator": 100,
+                  "exponent": 1.5
+                },
+                "consume_inputs_on_failure": true,
+                "counts_as_consumption": false,
+                "ordinary_success_modifiers": false,
+                "craftable_from_raw": false,
+                "next_item_id": null
+              },
+              "pending_values": {
+                "inherent_effects": null,
+                "weight_kg": null,
+                "base_value": null,
+                "spoilage_ticks": null,
+                "acquisition": null,
+                "upgrade_unlock": null,
+                "upgrade_equipment": null,
+                "upgrade_ticks": null,
+                "upgrade_stamina": null,
+                "upgrade_experience": null,
+                "upgrade_equipment_wear": null,
+                "upgrade_failure_byproduct": null
+              }
+            }
+          }
+        }
+      },
+      "category": "potion",
+      "sub_category": "innate_medicine",
+      "tags": "medicine;innate_growth"
+    },
+    "potion_innate_flexibility_t1": {
+      "item_id": "potion_innate_flexibility_t1",
+      "editor_name": "通常版达达糖",
+      "weight_kg": 0,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "通常版达达糖",
+            "name_0": "通常版达达糖",
+            "sn": "通常版达达糖",
+            "placeholder_name": "未识别药品",
+            "fn_before": "一种药品。",
+            "fn": "达达糖全版本累计前10颗，每颗有70%概率永久增加先天柔韧1点（先天上限40点）；第11颗起只保留药品自身效果。",
+            "desc_0": "达达糖全版本累计前10颗，每颗有70%概率永久增加先天柔韧1点（先天上限40点）；第11颗起只保留药品自身效果。"
+          },
+          "stacking": {
+            "stack_limit": 100
+          }
+        },
+        "medicine": {
+          "innate": {
+            "innate_medicine_profile": {
+              "schema_version": 1,
+              "implementation": "data_only",
+              "family_id": "flexibility",
+              "attribute": "flexibility",
+              "tier_id": "t1",
+              "success_probability": 0.7,
+              "counter_key": "innate_medicine:flexibility",
+              "growth": {
+                "attribute_gain": 1,
+                "innate_cap": 40,
+                "first_portions": 10,
+                "counter_scope": "character_family",
+                "count_on": "consumed_portion",
+                "count_failed_rolls": true,
+                "consumption_limit": null,
+                "after_first_portions": "inherent_effects_only",
+                "inherent_effects_on_every_portion": true
+              },
+              "upgrade": {
+                "station": "pharmacy",
+                "mode": "adjacent_tier",
+                "same_family": true,
+                "same_tier": true,
+                "min_inputs": 1,
+                "max_inputs": 100,
+                "output_count": 1,
+                "probability": {
+                  "formula": "power",
+                  "denominator": 100,
+                  "exponent": 1.5
+                },
+                "consume_inputs_on_failure": true,
+                "counts_as_consumption": false,
+                "ordinary_success_modifiers": false,
+                "craftable_from_raw": false,
+                "next_item_id": "potion_innate_flexibility_t2"
+              },
+              "pending_values": {
+                "inherent_effects": null,
+                "weight_kg": null,
+                "base_value": null,
+                "spoilage_ticks": null,
+                "acquisition": null,
+                "upgrade_unlock": null,
+                "upgrade_equipment": null,
+                "upgrade_ticks": null,
+                "upgrade_stamina": null,
+                "upgrade_experience": null,
+                "upgrade_equipment_wear": null,
+                "upgrade_failure_byproduct": null
+              }
+            }
+          }
+        }
+      },
+      "category": "potion",
+      "sub_category": "innate_medicine",
+      "tags": "medicine;innate_growth"
+    },
+    "potion_innate_flexibility_t2": {
+      "item_id": "potion_innate_flexibility_t2",
+      "editor_name": "初回版达达糖",
+      "weight_kg": 0,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "初回版达达糖",
+            "name_0": "初回版达达糖",
+            "sn": "初回版达达糖",
+            "placeholder_name": "未识别药品",
+            "fn_before": "一种药品。",
+            "fn": "达达糖全版本累计前10颗，每颗有80%概率永久增加先天柔韧1点（先天上限40点）；第11颗起只保留药品自身效果。",
+            "desc_0": "达达糖全版本累计前10颗，每颗有80%概率永久增加先天柔韧1点（先天上限40点）；第11颗起只保留药品自身效果。"
+          },
+          "stacking": {
+            "stack_limit": 100
+          }
+        },
+        "medicine": {
+          "innate": {
+            "innate_medicine_profile": {
+              "schema_version": 1,
+              "implementation": "data_only",
+              "family_id": "flexibility",
+              "attribute": "flexibility",
+              "tier_id": "t2",
+              "success_probability": 0.8,
+              "counter_key": "innate_medicine:flexibility",
+              "growth": {
+                "attribute_gain": 1,
+                "innate_cap": 40,
+                "first_portions": 10,
+                "counter_scope": "character_family",
+                "count_on": "consumed_portion",
+                "count_failed_rolls": true,
+                "consumption_limit": null,
+                "after_first_portions": "inherent_effects_only",
+                "inherent_effects_on_every_portion": true
+              },
+              "upgrade": {
+                "station": "pharmacy",
+                "mode": "adjacent_tier",
+                "same_family": true,
+                "same_tier": true,
+                "min_inputs": 1,
+                "max_inputs": 100,
+                "output_count": 1,
+                "probability": {
+                  "formula": "power",
+                  "denominator": 100,
+                  "exponent": 1.5
+                },
+                "consume_inputs_on_failure": true,
+                "counts_as_consumption": false,
+                "ordinary_success_modifiers": false,
+                "craftable_from_raw": false,
+                "next_item_id": "potion_innate_flexibility_t3"
+              },
+              "pending_values": {
+                "inherent_effects": null,
+                "weight_kg": null,
+                "base_value": null,
+                "spoilage_ticks": null,
+                "acquisition": null,
+                "upgrade_unlock": null,
+                "upgrade_equipment": null,
+                "upgrade_ticks": null,
+                "upgrade_stamina": null,
+                "upgrade_experience": null,
+                "upgrade_equipment_wear": null,
+                "upgrade_failure_byproduct": null
+              }
+            }
+          }
+        }
+      },
+      "category": "potion",
+      "sub_category": "innate_medicine",
+      "tags": "medicine;innate_growth"
+    },
+    "potion_innate_flexibility_t3": {
+      "item_id": "potion_innate_flexibility_t3",
+      "editor_name": "完全生产限定版达达糖",
+      "weight_kg": 0,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "完全生产限定版达达糖",
+            "name_0": "完全生产限定版达达糖",
+            "sn": "完全生产限定版达达糖",
+            "placeholder_name": "未识别药品",
+            "fn_before": "一种药品。",
+            "fn": "达达糖全版本累计前10颗，每颗有90%概率永久增加先天柔韧1点（先天上限40点）；第11颗起只保留药品自身效果。",
+            "desc_0": "达达糖全版本累计前10颗，每颗有90%概率永久增加先天柔韧1点（先天上限40点）；第11颗起只保留药品自身效果。"
+          },
+          "stacking": {
+            "stack_limit": 100
+          }
+        },
+        "medicine": {
+          "innate": {
+            "innate_medicine_profile": {
+              "schema_version": 1,
+              "implementation": "data_only",
+              "family_id": "flexibility",
+              "attribute": "flexibility",
+              "tier_id": "t3",
+              "success_probability": 0.9,
+              "counter_key": "innate_medicine:flexibility",
+              "growth": {
+                "attribute_gain": 1,
+                "innate_cap": 40,
+                "first_portions": 10,
+                "counter_scope": "character_family",
+                "count_on": "consumed_portion",
+                "count_failed_rolls": true,
+                "consumption_limit": null,
+                "after_first_portions": "inherent_effects_only",
+                "inherent_effects_on_every_portion": true
+              },
+              "upgrade": {
+                "station": "pharmacy",
+                "mode": "adjacent_tier",
+                "same_family": true,
+                "same_tier": true,
+                "min_inputs": 1,
+                "max_inputs": 100,
+                "output_count": 1,
+                "probability": {
+                  "formula": "power",
+                  "denominator": 100,
+                  "exponent": 1.5
+                },
+                "consume_inputs_on_failure": true,
+                "counts_as_consumption": false,
+                "ordinary_success_modifiers": false,
+                "craftable_from_raw": false,
+                "next_item_id": "potion_innate_flexibility_t4"
+              },
+              "pending_values": {
+                "inherent_effects": null,
+                "weight_kg": null,
+                "base_value": null,
+                "spoilage_ticks": null,
+                "acquisition": null,
+                "upgrade_unlock": null,
+                "upgrade_equipment": null,
+                "upgrade_ticks": null,
+                "upgrade_stamina": null,
+                "upgrade_experience": null,
+                "upgrade_equipment_wear": null,
+                "upgrade_failure_byproduct": null
+              }
+            }
+          }
+        }
+      },
+      "category": "potion",
+      "sub_category": "innate_medicine",
+      "tags": "medicine;innate_growth"
+    },
+    "potion_innate_flexibility_t4": {
+      "item_id": "potion_innate_flexibility_t4",
+      "editor_name": "初回限定生产版达达糖",
+      "weight_kg": 0,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "初回限定生产版达达糖",
+            "name_0": "初回限定生产版达达糖",
+            "sn": "初回限定生产版达达糖",
+            "placeholder_name": "未识别药品",
+            "fn_before": "一种药品。",
+            "fn": "达达糖全版本累计前10颗，每颗必定永久增加先天柔韧1点（先天上限40点）；第11颗起只保留药品自身效果。",
+            "desc_0": "达达糖全版本累计前10颗，每颗必定永久增加先天柔韧1点（先天上限40点）；第11颗起只保留药品自身效果。"
+          },
+          "stacking": {
+            "stack_limit": 100
+          }
+        },
+        "medicine": {
+          "innate": {
+            "innate_medicine_profile": {
+              "schema_version": 1,
+              "implementation": "data_only",
+              "family_id": "flexibility",
+              "attribute": "flexibility",
+              "tier_id": "t4",
+              "success_probability": 1,
+              "counter_key": "innate_medicine:flexibility",
+              "growth": {
+                "attribute_gain": 1,
+                "innate_cap": 40,
+                "first_portions": 10,
+                "counter_scope": "character_family",
+                "count_on": "consumed_portion",
+                "count_failed_rolls": true,
+                "consumption_limit": null,
+                "after_first_portions": "inherent_effects_only",
+                "inherent_effects_on_every_portion": true
+              },
+              "upgrade": {
+                "station": "pharmacy",
+                "mode": "adjacent_tier",
+                "same_family": true,
+                "same_tier": true,
+                "min_inputs": 1,
+                "max_inputs": 100,
+                "output_count": 1,
+                "probability": {
+                  "formula": "power",
+                  "denominator": 100,
+                  "exponent": 1.5
+                },
+                "consume_inputs_on_failure": true,
+                "counts_as_consumption": false,
+                "ordinary_success_modifiers": false,
+                "craftable_from_raw": false,
+                "next_item_id": null
+              },
+              "pending_values": {
+                "inherent_effects": null,
+                "weight_kg": null,
+                "base_value": null,
+                "spoilage_ticks": null,
+                "acquisition": null,
+                "upgrade_unlock": null,
+                "upgrade_equipment": null,
+                "upgrade_ticks": null,
+                "upgrade_stamina": null,
+                "upgrade_experience": null,
+                "upgrade_equipment_wear": null,
+                "upgrade_failure_byproduct": null
+              }
+            }
+          }
+        }
+      },
+      "category": "potion",
+      "sub_category": "innate_medicine",
+      "tags": "medicine;innate_growth"
+    },
+    "potion_innate_focus_t1": {
+      "item_id": "potion_innate_focus_t1",
+      "editor_name": "通常版杏球杯",
+      "weight_kg": 0,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "通常版杏球杯",
+            "name_0": "通常版杏球杯",
+            "sn": "通常版杏球杯",
+            "placeholder_name": "未识别药品",
+            "fn_before": "一种药品。",
+            "fn": "杏球杯全版本累计前10颗，每颗有70%概率永久增加先天专注1点（先天上限40点）；第11颗起只保留药品自身效果。",
+            "desc_0": "杏球杯全版本累计前10颗，每颗有70%概率永久增加先天专注1点（先天上限40点）；第11颗起只保留药品自身效果。"
+          },
+          "stacking": {
+            "stack_limit": 100
+          }
+        },
+        "medicine": {
+          "innate": {
+            "innate_medicine_profile": {
+              "schema_version": 1,
+              "implementation": "data_only",
+              "family_id": "focus",
+              "attribute": "focus",
+              "tier_id": "t1",
+              "success_probability": 0.7,
+              "counter_key": "innate_medicine:focus",
+              "growth": {
+                "attribute_gain": 1,
+                "innate_cap": 40,
+                "first_portions": 10,
+                "counter_scope": "character_family",
+                "count_on": "consumed_portion",
+                "count_failed_rolls": true,
+                "consumption_limit": null,
+                "after_first_portions": "inherent_effects_only",
+                "inherent_effects_on_every_portion": true
+              },
+              "upgrade": {
+                "station": "pharmacy",
+                "mode": "adjacent_tier",
+                "same_family": true,
+                "same_tier": true,
+                "min_inputs": 1,
+                "max_inputs": 100,
+                "output_count": 1,
+                "probability": {
+                  "formula": "power",
+                  "denominator": 100,
+                  "exponent": 1.5
+                },
+                "consume_inputs_on_failure": true,
+                "counts_as_consumption": false,
+                "ordinary_success_modifiers": false,
+                "craftable_from_raw": false,
+                "next_item_id": "potion_innate_focus_t2"
+              },
+              "pending_values": {
+                "inherent_effects": null,
+                "weight_kg": null,
+                "base_value": null,
+                "spoilage_ticks": null,
+                "acquisition": null,
+                "upgrade_unlock": null,
+                "upgrade_equipment": null,
+                "upgrade_ticks": null,
+                "upgrade_stamina": null,
+                "upgrade_experience": null,
+                "upgrade_equipment_wear": null,
+                "upgrade_failure_byproduct": null
+              }
+            }
+          }
+        }
+      },
+      "category": "potion",
+      "sub_category": "innate_medicine",
+      "tags": "medicine;innate_growth"
+    },
+    "potion_innate_focus_t2": {
+      "item_id": "potion_innate_focus_t2",
+      "editor_name": "初回版杏球杯",
+      "weight_kg": 0,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "初回版杏球杯",
+            "name_0": "初回版杏球杯",
+            "sn": "初回版杏球杯",
+            "placeholder_name": "未识别药品",
+            "fn_before": "一种药品。",
+            "fn": "杏球杯全版本累计前10颗，每颗有80%概率永久增加先天专注1点（先天上限40点）；第11颗起只保留药品自身效果。",
+            "desc_0": "杏球杯全版本累计前10颗，每颗有80%概率永久增加先天专注1点（先天上限40点）；第11颗起只保留药品自身效果。"
+          },
+          "stacking": {
+            "stack_limit": 100
+          }
+        },
+        "medicine": {
+          "innate": {
+            "innate_medicine_profile": {
+              "schema_version": 1,
+              "implementation": "data_only",
+              "family_id": "focus",
+              "attribute": "focus",
+              "tier_id": "t2",
+              "success_probability": 0.8,
+              "counter_key": "innate_medicine:focus",
+              "growth": {
+                "attribute_gain": 1,
+                "innate_cap": 40,
+                "first_portions": 10,
+                "counter_scope": "character_family",
+                "count_on": "consumed_portion",
+                "count_failed_rolls": true,
+                "consumption_limit": null,
+                "after_first_portions": "inherent_effects_only",
+                "inherent_effects_on_every_portion": true
+              },
+              "upgrade": {
+                "station": "pharmacy",
+                "mode": "adjacent_tier",
+                "same_family": true,
+                "same_tier": true,
+                "min_inputs": 1,
+                "max_inputs": 100,
+                "output_count": 1,
+                "probability": {
+                  "formula": "power",
+                  "denominator": 100,
+                  "exponent": 1.5
+                },
+                "consume_inputs_on_failure": true,
+                "counts_as_consumption": false,
+                "ordinary_success_modifiers": false,
+                "craftable_from_raw": false,
+                "next_item_id": "potion_innate_focus_t3"
+              },
+              "pending_values": {
+                "inherent_effects": null,
+                "weight_kg": null,
+                "base_value": null,
+                "spoilage_ticks": null,
+                "acquisition": null,
+                "upgrade_unlock": null,
+                "upgrade_equipment": null,
+                "upgrade_ticks": null,
+                "upgrade_stamina": null,
+                "upgrade_experience": null,
+                "upgrade_equipment_wear": null,
+                "upgrade_failure_byproduct": null
+              }
+            }
+          }
+        }
+      },
+      "category": "potion",
+      "sub_category": "innate_medicine",
+      "tags": "medicine;innate_growth"
+    },
+    "potion_innate_focus_t3": {
+      "item_id": "potion_innate_focus_t3",
+      "editor_name": "完全生产限定版杏球杯",
+      "weight_kg": 0,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "完全生产限定版杏球杯",
+            "name_0": "完全生产限定版杏球杯",
+            "sn": "完全生产限定版杏球杯",
+            "placeholder_name": "未识别药品",
+            "fn_before": "一种药品。",
+            "fn": "杏球杯全版本累计前10颗，每颗有90%概率永久增加先天专注1点（先天上限40点）；第11颗起只保留药品自身效果。",
+            "desc_0": "杏球杯全版本累计前10颗，每颗有90%概率永久增加先天专注1点（先天上限40点）；第11颗起只保留药品自身效果。"
+          },
+          "stacking": {
+            "stack_limit": 100
+          }
+        },
+        "medicine": {
+          "innate": {
+            "innate_medicine_profile": {
+              "schema_version": 1,
+              "implementation": "data_only",
+              "family_id": "focus",
+              "attribute": "focus",
+              "tier_id": "t3",
+              "success_probability": 0.9,
+              "counter_key": "innate_medicine:focus",
+              "growth": {
+                "attribute_gain": 1,
+                "innate_cap": 40,
+                "first_portions": 10,
+                "counter_scope": "character_family",
+                "count_on": "consumed_portion",
+                "count_failed_rolls": true,
+                "consumption_limit": null,
+                "after_first_portions": "inherent_effects_only",
+                "inherent_effects_on_every_portion": true
+              },
+              "upgrade": {
+                "station": "pharmacy",
+                "mode": "adjacent_tier",
+                "same_family": true,
+                "same_tier": true,
+                "min_inputs": 1,
+                "max_inputs": 100,
+                "output_count": 1,
+                "probability": {
+                  "formula": "power",
+                  "denominator": 100,
+                  "exponent": 1.5
+                },
+                "consume_inputs_on_failure": true,
+                "counts_as_consumption": false,
+                "ordinary_success_modifiers": false,
+                "craftable_from_raw": false,
+                "next_item_id": "potion_innate_focus_t4"
+              },
+              "pending_values": {
+                "inherent_effects": null,
+                "weight_kg": null,
+                "base_value": null,
+                "spoilage_ticks": null,
+                "acquisition": null,
+                "upgrade_unlock": null,
+                "upgrade_equipment": null,
+                "upgrade_ticks": null,
+                "upgrade_stamina": null,
+                "upgrade_experience": null,
+                "upgrade_equipment_wear": null,
+                "upgrade_failure_byproduct": null
+              }
+            }
+          }
+        }
+      },
+      "category": "potion",
+      "sub_category": "innate_medicine",
+      "tags": "medicine;innate_growth"
+    },
+    "potion_innate_focus_t4": {
+      "item_id": "potion_innate_focus_t4",
+      "editor_name": "初回限定生产版杏球杯",
+      "weight_kg": 0,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "初回限定生产版杏球杯",
+            "name_0": "初回限定生产版杏球杯",
+            "sn": "初回限定生产版杏球杯",
+            "placeholder_name": "未识别药品",
+            "fn_before": "一种药品。",
+            "fn": "杏球杯全版本累计前10颗，每颗必定永久增加先天专注1点（先天上限40点）；第11颗起只保留药品自身效果。",
+            "desc_0": "杏球杯全版本累计前10颗，每颗必定永久增加先天专注1点（先天上限40点）；第11颗起只保留药品自身效果。"
+          },
+          "stacking": {
+            "stack_limit": 100
+          }
+        },
+        "medicine": {
+          "innate": {
+            "innate_medicine_profile": {
+              "schema_version": 1,
+              "implementation": "data_only",
+              "family_id": "focus",
+              "attribute": "focus",
+              "tier_id": "t4",
+              "success_probability": 1,
+              "counter_key": "innate_medicine:focus",
+              "growth": {
+                "attribute_gain": 1,
+                "innate_cap": 40,
+                "first_portions": 10,
+                "counter_scope": "character_family",
+                "count_on": "consumed_portion",
+                "count_failed_rolls": true,
+                "consumption_limit": null,
+                "after_first_portions": "inherent_effects_only",
+                "inherent_effects_on_every_portion": true
+              },
+              "upgrade": {
+                "station": "pharmacy",
+                "mode": "adjacent_tier",
+                "same_family": true,
+                "same_tier": true,
+                "min_inputs": 1,
+                "max_inputs": 100,
+                "output_count": 1,
+                "probability": {
+                  "formula": "power",
+                  "denominator": 100,
+                  "exponent": 1.5
+                },
+                "consume_inputs_on_failure": true,
+                "counts_as_consumption": false,
+                "ordinary_success_modifiers": false,
+                "craftable_from_raw": false,
+                "next_item_id": null
+              },
+              "pending_values": {
+                "inherent_effects": null,
+                "weight_kg": null,
+                "base_value": null,
+                "spoilage_ticks": null,
+                "acquisition": null,
+                "upgrade_unlock": null,
+                "upgrade_equipment": null,
+                "upgrade_ticks": null,
+                "upgrade_stamina": null,
+                "upgrade_experience": null,
+                "upgrade_equipment_wear": null,
+                "upgrade_failure_byproduct": null
+              }
+            }
+          }
+        }
+      },
+      "category": "potion",
+      "sub_category": "innate_medicine",
+      "tags": "medicine;innate_growth"
+    },
+    "potion_innate_jingu_t1": {
+      "item_id": "potion_innate_jingu_t1",
+      "editor_name": "通常版剥剥星",
+      "weight_kg": 0,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "通常版剥剥星",
+            "name_0": "通常版剥剥星",
+            "sn": "通常版剥剥星",
+            "placeholder_name": "未识别药品",
+            "fn_before": "一种药品。",
+            "fn": "剥剥星全版本累计前10颗，每颗有70%概率永久增加先天筋骨1点（先天上限40点）；第11颗起只保留药品自身效果。",
+            "desc_0": "剥剥星全版本累计前10颗，每颗有70%概率永久增加先天筋骨1点（先天上限40点）；第11颗起只保留药品自身效果。"
+          },
+          "stacking": {
+            "stack_limit": 100
+          }
+        },
+        "medicine": {
+          "innate": {
+            "innate_medicine_profile": {
+              "schema_version": 1,
+              "implementation": "data_only",
+              "family_id": "jingu",
+              "attribute": "jingu",
+              "tier_id": "t1",
+              "success_probability": 0.7,
+              "counter_key": "innate_medicine:jingu",
+              "growth": {
+                "attribute_gain": 1,
+                "innate_cap": 40,
+                "first_portions": 10,
+                "counter_scope": "character_family",
+                "count_on": "consumed_portion",
+                "count_failed_rolls": true,
+                "consumption_limit": null,
+                "after_first_portions": "inherent_effects_only",
+                "inherent_effects_on_every_portion": true
+              },
+              "upgrade": {
+                "station": "pharmacy",
+                "mode": "adjacent_tier",
+                "same_family": true,
+                "same_tier": true,
+                "min_inputs": 1,
+                "max_inputs": 100,
+                "output_count": 1,
+                "probability": {
+                  "formula": "power",
+                  "denominator": 100,
+                  "exponent": 1.5
+                },
+                "consume_inputs_on_failure": true,
+                "counts_as_consumption": false,
+                "ordinary_success_modifiers": false,
+                "craftable_from_raw": false,
+                "next_item_id": "potion_innate_jingu_t2"
+              },
+              "pending_values": {
+                "inherent_effects": null,
+                "weight_kg": null,
+                "base_value": null,
+                "spoilage_ticks": null,
+                "acquisition": null,
+                "upgrade_unlock": null,
+                "upgrade_equipment": null,
+                "upgrade_ticks": null,
+                "upgrade_stamina": null,
+                "upgrade_experience": null,
+                "upgrade_equipment_wear": null,
+                "upgrade_failure_byproduct": null
+              }
+            }
+          }
+        }
+      },
+      "category": "potion",
+      "sub_category": "innate_medicine",
+      "tags": "medicine;innate_growth"
+    },
+    "potion_innate_jingu_t2": {
+      "item_id": "potion_innate_jingu_t2",
+      "editor_name": "初回版剥剥星",
+      "weight_kg": 0,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "初回版剥剥星",
+            "name_0": "初回版剥剥星",
+            "sn": "初回版剥剥星",
+            "placeholder_name": "未识别药品",
+            "fn_before": "一种药品。",
+            "fn": "剥剥星全版本累计前10颗，每颗有80%概率永久增加先天筋骨1点（先天上限40点）；第11颗起只保留药品自身效果。",
+            "desc_0": "剥剥星全版本累计前10颗，每颗有80%概率永久增加先天筋骨1点（先天上限40点）；第11颗起只保留药品自身效果。"
+          },
+          "stacking": {
+            "stack_limit": 100
+          }
+        },
+        "medicine": {
+          "innate": {
+            "innate_medicine_profile": {
+              "schema_version": 1,
+              "implementation": "data_only",
+              "family_id": "jingu",
+              "attribute": "jingu",
+              "tier_id": "t2",
+              "success_probability": 0.8,
+              "counter_key": "innate_medicine:jingu",
+              "growth": {
+                "attribute_gain": 1,
+                "innate_cap": 40,
+                "first_portions": 10,
+                "counter_scope": "character_family",
+                "count_on": "consumed_portion",
+                "count_failed_rolls": true,
+                "consumption_limit": null,
+                "after_first_portions": "inherent_effects_only",
+                "inherent_effects_on_every_portion": true
+              },
+              "upgrade": {
+                "station": "pharmacy",
+                "mode": "adjacent_tier",
+                "same_family": true,
+                "same_tier": true,
+                "min_inputs": 1,
+                "max_inputs": 100,
+                "output_count": 1,
+                "probability": {
+                  "formula": "power",
+                  "denominator": 100,
+                  "exponent": 1.5
+                },
+                "consume_inputs_on_failure": true,
+                "counts_as_consumption": false,
+                "ordinary_success_modifiers": false,
+                "craftable_from_raw": false,
+                "next_item_id": "potion_innate_jingu_t3"
+              },
+              "pending_values": {
+                "inherent_effects": null,
+                "weight_kg": null,
+                "base_value": null,
+                "spoilage_ticks": null,
+                "acquisition": null,
+                "upgrade_unlock": null,
+                "upgrade_equipment": null,
+                "upgrade_ticks": null,
+                "upgrade_stamina": null,
+                "upgrade_experience": null,
+                "upgrade_equipment_wear": null,
+                "upgrade_failure_byproduct": null
+              }
+            }
+          }
+        }
+      },
+      "category": "potion",
+      "sub_category": "innate_medicine",
+      "tags": "medicine;innate_growth"
+    },
+    "potion_innate_jingu_t3": {
+      "item_id": "potion_innate_jingu_t3",
+      "editor_name": "完全生产限定版剥剥星",
+      "weight_kg": 0,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "完全生产限定版剥剥星",
+            "name_0": "完全生产限定版剥剥星",
+            "sn": "完全生产限定版剥剥星",
+            "placeholder_name": "未识别药品",
+            "fn_before": "一种药品。",
+            "fn": "剥剥星全版本累计前10颗，每颗有90%概率永久增加先天筋骨1点（先天上限40点）；第11颗起只保留药品自身效果。",
+            "desc_0": "剥剥星全版本累计前10颗，每颗有90%概率永久增加先天筋骨1点（先天上限40点）；第11颗起只保留药品自身效果。"
+          },
+          "stacking": {
+            "stack_limit": 100
+          }
+        },
+        "medicine": {
+          "innate": {
+            "innate_medicine_profile": {
+              "schema_version": 1,
+              "implementation": "data_only",
+              "family_id": "jingu",
+              "attribute": "jingu",
+              "tier_id": "t3",
+              "success_probability": 0.9,
+              "counter_key": "innate_medicine:jingu",
+              "growth": {
+                "attribute_gain": 1,
+                "innate_cap": 40,
+                "first_portions": 10,
+                "counter_scope": "character_family",
+                "count_on": "consumed_portion",
+                "count_failed_rolls": true,
+                "consumption_limit": null,
+                "after_first_portions": "inherent_effects_only",
+                "inherent_effects_on_every_portion": true
+              },
+              "upgrade": {
+                "station": "pharmacy",
+                "mode": "adjacent_tier",
+                "same_family": true,
+                "same_tier": true,
+                "min_inputs": 1,
+                "max_inputs": 100,
+                "output_count": 1,
+                "probability": {
+                  "formula": "power",
+                  "denominator": 100,
+                  "exponent": 1.5
+                },
+                "consume_inputs_on_failure": true,
+                "counts_as_consumption": false,
+                "ordinary_success_modifiers": false,
+                "craftable_from_raw": false,
+                "next_item_id": "potion_innate_jingu_t4"
+              },
+              "pending_values": {
+                "inherent_effects": null,
+                "weight_kg": null,
+                "base_value": null,
+                "spoilage_ticks": null,
+                "acquisition": null,
+                "upgrade_unlock": null,
+                "upgrade_equipment": null,
+                "upgrade_ticks": null,
+                "upgrade_stamina": null,
+                "upgrade_experience": null,
+                "upgrade_equipment_wear": null,
+                "upgrade_failure_byproduct": null
+              }
+            }
+          }
+        }
+      },
+      "category": "potion",
+      "sub_category": "innate_medicine",
+      "tags": "medicine;innate_growth"
+    },
+    "potion_innate_jingu_t4": {
+      "item_id": "potion_innate_jingu_t4",
+      "editor_name": "初回限定生产版剥剥星",
+      "weight_kg": 0,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "初回限定生产版剥剥星",
+            "name_0": "初回限定生产版剥剥星",
+            "sn": "初回限定生产版剥剥星",
+            "placeholder_name": "未识别药品",
+            "fn_before": "一种药品。",
+            "fn": "剥剥星全版本累计前10颗，每颗必定永久增加先天筋骨1点（先天上限40点）；第11颗起只保留药品自身效果。",
+            "desc_0": "剥剥星全版本累计前10颗，每颗必定永久增加先天筋骨1点（先天上限40点）；第11颗起只保留药品自身效果。"
+          },
+          "stacking": {
+            "stack_limit": 100
+          }
+        },
+        "medicine": {
+          "innate": {
+            "innate_medicine_profile": {
+              "schema_version": 1,
+              "implementation": "data_only",
+              "family_id": "jingu",
+              "attribute": "jingu",
+              "tier_id": "t4",
+              "success_probability": 1,
+              "counter_key": "innate_medicine:jingu",
+              "growth": {
+                "attribute_gain": 1,
+                "innate_cap": 40,
+                "first_portions": 10,
+                "counter_scope": "character_family",
+                "count_on": "consumed_portion",
+                "count_failed_rolls": true,
+                "consumption_limit": null,
+                "after_first_portions": "inherent_effects_only",
+                "inherent_effects_on_every_portion": true
+              },
+              "upgrade": {
+                "station": "pharmacy",
+                "mode": "adjacent_tier",
+                "same_family": true,
+                "same_tier": true,
+                "min_inputs": 1,
+                "max_inputs": 100,
+                "output_count": 1,
+                "probability": {
+                  "formula": "power",
+                  "denominator": 100,
+                  "exponent": 1.5
+                },
+                "consume_inputs_on_failure": true,
+                "counts_as_consumption": false,
+                "ordinary_success_modifiers": false,
+                "craftable_from_raw": false,
+                "next_item_id": null
+              },
+              "pending_values": {
+                "inherent_effects": null,
+                "weight_kg": null,
+                "base_value": null,
+                "spoilage_ticks": null,
+                "acquisition": null,
+                "upgrade_unlock": null,
+                "upgrade_equipment": null,
+                "upgrade_ticks": null,
+                "upgrade_stamina": null,
+                "upgrade_experience": null,
+                "upgrade_equipment_wear": null,
+                "upgrade_failure_byproduct": null
+              }
+            }
+          }
+        }
+      },
+      "category": "potion",
+      "sub_category": "innate_medicine",
+      "tags": "medicine;innate_growth"
+    },
     "potion_mobility_poultice": {
       "item_id": "potion_mobility_poultice",
       "editor_name": "红花药泥",

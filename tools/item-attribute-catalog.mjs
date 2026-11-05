@@ -26,6 +26,7 @@ export const CATEGORY_GROUP_FIELDS = {
     seed: ['harvest_item_id', 'seed_tier']
   },
   medicine: {
+    innate: ['innate_medicine_profile'],
     use: ['usable', 'use_action', 'use_buff_id', 'use_charges', 'use_effect'],
     compound: ['pharmacy_compound', 'concentration_capacity'],
     effects: ['pharmacy_addiction_gain', 'pharmacy_relief_stages', 'pharmacy_oral_toxicity', 'pharmacy_extra_toxicity_decay', 'pharmacy_legacy']

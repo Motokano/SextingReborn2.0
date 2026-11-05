@@ -148,6 +148,11 @@
     },
     "medicine": {
       "groups": {
+        "innate": {
+          "fields": [
+            "innate_medicine_profile"
+          ]
+        },
         "use": {
           "fields": [
             "usable",

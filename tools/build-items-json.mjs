@@ -3,7 +3,7 @@
  * 用法：node tools/build-items-json.mjs
  * 合并顺序（先出现的 id 优先，后表重复 id 会跳过并打印警告）：
  *   consumables_base → materials_all → manufacturing_materials_base → seeds_farming → product_base → fishing_components_base → currency_base
- *   → compost_matrix_base → fertilizer_anaerobic_base → agriculture_injectables_base → soil_amendments_base → pharmacy_base → books_base
+ *   → compost_matrix_base → fertilizer_anaerobic_base → agriculture_injectables_base → soil_amendments_base → pharmacy_base → books_base → innate_medicines_base
  */
 import fs from 'fs';
 import path from 'path';
@@ -14,6 +14,7 @@ import { sewingTemplates } from './build-sewing-catalog.mjs';
 import { applyWaterFlaskStorage, applyWaterFlaskUse } from './water-flask-storage-fields.mjs';
 import { syncBackpackCatalog } from './build-backpack-catalog.mjs';
 import { applyBookLearning } from './book-item-fields.mjs';
+import { applyInnateMedicines } from './innate-medicine-item-fields.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -53,7 +54,8 @@ const MERGE_FILES = [
   'agriculture_injectables_base.csv',
   'soil_amendments_base.csv',
   'pharmacy_base.csv',
-  'books_base.csv'
+  'books_base.csv',
+  'innate_medicines_base.csv'
 ];
 
 function parseCsv(text) {
@@ -383,6 +385,7 @@ function main() {
   applyWaterFlaskStorage(merged, JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'water-flask-storage.json'), 'utf8')));
   applyWaterFlaskUse(merged, JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'water-flask-use.json'), 'utf8')));
   applyBookLearning(merged, JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'book-learning.json'), 'utf8')));
+  applyInnateMedicines(merged, JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'innate-medicines.json'), 'utf8')));
   const ordered = {};
   Object.keys(merged)
     .sort()

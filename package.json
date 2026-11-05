@@ -35,6 +35,7 @@
     "test:sleep": "node tools/test-stamina-recovery.mjs && node tools/test-fatigue-balance.mjs && node --test tools/test-sleep-runtime.mjs",
     "dev": "node tools/serve-live.mjs",
     "build:items": "node tools/build-items-json.mjs",
+    "test:innate-medicines": "node --test tools/test-innate-medicine-items.mjs",
     "test:item-attributes": "node tools/test-item-attribute-modules.mjs",
     "test:item-instances": "node tools/test-item-instance-identity.mjs",
     "test:backpack": "node --test tools/test-backpack-system.mjs tools/test-inventory-transfer.mjs",
