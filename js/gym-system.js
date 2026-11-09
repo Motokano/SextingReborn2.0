@@ -76,10 +76,12 @@
   return '';
  }
  function efficiency(a){const IE=g.InventoryEquipment;return D.trainingEfficiency(level(a),IE.getSkillLevel(IE.SPECIAL_ANATOMY_STUDIES_SKILL_ID),g);}
- function rewards(a,eff=efficiency(a)){const rate=fatigueRate();return [...a.main.map(id=>({id,role:'主练',base:a.mainPct})),...a.assist.map(id=>({id,role:'辅助',base:a.assistPct}))].map(r=>({id:r.id,role:r.role,pct:Math.round(r.base*rate*eff.multiplier*1e6)/1e6}));}
+ function rewards(a){return D.growthTargets(a);}
+ function growthTotal(a,eff=efficiency(a)){return D.growthTotal(a,eff.multiplier,fatigueRate(),id=>M().getProgress(id));}
  function pay(j){
   const a=action(j.actionId),why=trainReason(a);if(why){state.job=null;return false;}
-  j.efficiency=efficiency(a);j.rewards=rewards(a,j.efficiency);j.ticks=0;j.paid=cost(a);
+  j.efficiency=efficiency(a);j.totalPct=growthTotal(a,j.efficiency);j.allocationVersion=1;
+  j.rewards=D.distributeGrowth(a,j.totalPct,id=>M().getProgress(id));j.ticks=0;j.paid=cost(a);
   S().setResting(false);S().setStaminaRegenActionActive(false);S().setSitMeditationActive(false);
   S().consumeStamina(j.paid,{raw:true,source:'gym',fatiguePerStamina:D.TRAINING_FATIGUE_PER_STAMINA});return true;
  }
@@ -146,12 +148,18 @@
   const j=s.job;if(j==null)return true;const a=action(j.actionId),p=j.position;
   if(!a||!s.levels[a.station]||j.kind!=='train'||![1,4,8].includes(j.groups)||!Number.isInteger(j.remaining)||j.remaining<1||j.remaining>j.groups||j.finished!==j.groups-j.remaining||!Number.isInteger(j.ticks)||j.ticks<0||j.ticks>=a.ticks||j.tickMs!==3000||typeof j.stopAfter!=='boolean'||!Number.isFinite(j.paid)||j.paid<=0||!p||p.mapId!=='M0_Base_Inside_lv_1'||!Number.isInteger(p.x)||!Number.isInteger(p.y))return false;
   const e=j.efficiency;if(e!=null&&(!Number.isSafeInteger(e.anatomyLevel)||e.anatomyLevel<0||!['equipment','anatomyBonus','nutritionBonus','multiplier'].every(k=>Number.isFinite(e[k])&&e[k]>=0)))return false;
-  const ids=[...a.main,...a.assist];return Array.isArray(j.rewards)&&j.rewards.length===ids.length&&j.rewards.every((r,i)=>r.id===ids[i]&&Number.isFinite(r.pct)&&r.pct>=0&&['主练','辅助'].includes(r.role));
+  const targets=D.growthTargets(a);
+  if(!Array.isArray(j.rewards)||j.rewards.length!==targets.length||!j.rewards.every((r,i)=>r.id===targets[i].id&&Number.isFinite(r.pct)&&r.pct>=0&&r.role===targets[i].role))return false;
+  // Paid legacy groups keep their recorded amounts; subsequent groups use the pool.
+  if(j.allocationVersion===undefined)return j.totalPct===undefined;
+  const units=v=>Math.round(v*1e6),precise=v=>Number.isSafeInteger(units(v))&&Math.abs(v-units(v)/1e6)<1e-10;
+  return j.allocationVersion===1&&Number.isFinite(j.totalPct)&&j.totalPct>=0&&j.totalPct<=targets.length*100&&precise(j.totalPct)
+   &&j.rewards.every(r=>r.pct<=100&&precise(r.pct))&&j.rewards.reduce((sum,r)=>sum+units(r.pct),0)===units(j.totalPct);
  }
  function resume(){if(!state.job)return;if(blocked()){interrupt();return;}g.SceneApp?.prepareFacilityAction();S().stopStudy();g.GymPanel?.show(action(state.job.actionId).station,'train');schedule();}
  function restore(s,rollback){stopTimer();state=s&&validate(s)?{...fresh(),...copy(s)}:fresh();error='';last=null;g.GameEngine?.getMap();if(!rollback)Promise.resolve().then(()=>{notify();resume();});}
  function interrupt(){stopTimer();state.job=null;error='';g.GymPanel?.close();}
- const api={ready:null,footprints,actions:D.ACTIONS,stations:D.STATIONS,action,station,level,moduleKey,fatigueRate,cost,trainReason,rewards,upgradeInfo,plan,build,upgrade,forgePlates,startTraining,advance,at,usable,validate,restore,interrupt,resume,applyEntranceToMap,canInspectEntrance,entrancePlan,openEntrance,
+ const api={ready:null,footprints,actions:D.ACTIONS,stations:D.STATIONS,action,station,level,moduleKey,fatigueRate,cost,trainReason,rewards,growthTotal,upgradeInfo,plan,build,upgrade,forgePlates,startTraining,advance,at,usable,validate,restore,interrupt,resume,applyEntranceToMap,canInspectEntrance,entrancePlan,openEntrance,
   efficiency,isActive:()=>!!state.job,allowsTick:o=>!state.job||(advancing&&o?.source==='gym'),getState:()=>copy(state),getLayout:()=>layout,getLast:()=>last,getError:()=>error,
   dismissResult(){last=null;notify();},retry(){error='';notify();schedule();},stop(){if(!state.job)return;const r=transact(()=>{state.job.stopAfter=true;});if(r.ok)schedule();return r;},subscribe(fn){listeners.add(fn);return ()=>listeners.delete(fn);}
  };

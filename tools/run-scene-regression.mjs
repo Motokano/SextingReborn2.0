@@ -9,7 +9,7 @@ const names = [
   'footwork-parry','parry-variant-retirement','jab-power-range','enemy-attack-power-ranges','combat-loadout',
   'breath-burst','direction-indicator','movement-reserves','story-opening',
   'svelte-interactions','svelte-panels','svelte-hud-game','svelte-facilities','svelte-hud','svelte-carry','ui-window-recovery',
-  'gym-runtime','sleep-runtime','facility-world-time','bathroom-facility','book-reading','outdoor-facilities',
+  'gym-runtime','gym-growth-pool','sleep-runtime','facility-world-time','bathroom-facility','book-reading','outdoor-facilities',
   'pharmacy-panel-state','pharmacy-unlock','pharmacy-results','pharmacy-equipment','sewing-station',
   'muscle-neck-rewards','muscle-head-rewards','muscle-mouth-rewards','muscle-calf-rewards','muscle-hand-rewards',
   'muscle-limb-damage','muscle-thigh-rewards','muscle-back-rewards','muscle-chest-rewards','muscle-abdomen-rewards',

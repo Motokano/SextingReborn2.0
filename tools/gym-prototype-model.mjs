@@ -1,6 +1,6 @@
 // PROTOTYPE: percentage rewards after complete actions, using real Muscles and Survival.
 // Memory only. No SaveSystem, player inventory, production crafting, or production unlock UI.
-import { ACTIONS, STATIONS, MATERIALS, EFFICIENCY, TRAINING_FATIGUE_PER_STAMINA, trainingEfficiency, moduleKey } from './gym-prototype-data.mjs';
+import { ACTIONS, STATIONS, MATERIALS, EFFICIENCY, TRAINING_FATIGUE_PER_STAMINA, trainingEfficiency, moduleKey, growthTargets, growthTotal, distributeGrowth } from './gym-prototype-data.mjs';
 const clone = v => JSON.parse(JSON.stringify(v));
 const round = n => Math.round(n * 1000000) / 1000000;
 const handModules = {
@@ -27,11 +27,8 @@ export function createGymPrototype(g, config) {
   const fatigueRate = () => S.getFatigue() >= 80 ? 0 : S.getFatigue() > 50 ? .5 : 1;
   const percent = id => M.isUnlocked(id) ? 100 : state.progress[id] || 0;
   const efficiency = a => trainingEfficiency(level(a),state.anatomyLevel,g);
-  function rewardPreview(a,eff = efficiency(a)) {
-    const fatigue = fatigueRate();
-    return [...a.main.map(id => ({id,role:'主练',base:a.mainPct})), ...a.assist.map(id => ({id,role:'辅助',base:a.assistPct}))]
-      .map(r => ({...r, pct:round(r.base * eff.multiplier * fatigue), before:percent(r.id)}));
-  }
+  const rewardPreview = a => growthTargets(a);
+  const totalGrowth = (a,eff=efficiency(a)) => growthTotal(a,eff.multiplier,fatigueRate(),percent);
   function cost(a) { return S.getActionStaminaCost(a.cost); }
   function fatigueCost(a) { return round(cost(a) * TRAINING_FATIGUE_PER_STAMINA); }
   function trainReason(a) {
@@ -46,7 +43,8 @@ export function createGymPrototype(g, config) {
   function payNextGroup(job) {
     const a = getAction(job.actionId), why = trainReason(a);
     if (why) { state.job = null; log(why); return false; }
-    job.efficiency = efficiency(a); job.rewards = rewardPreview(a,job.efficiency); job.ticks = 0; job.paid = cost(a);
+    job.efficiency = efficiency(a); job.totalPct = totalGrowth(a,job.efficiency); job.allocationVersion = 1;
+    job.rewards = distributeGrowth(a,job.totalPct,percent,g.Math?.random||Math.random); job.ticks = 0; job.paid = cost(a);
     job.fatigueRate = fatigueRate();
     S.setResting(false); S.setStaminaRegenActionActive(false); S.setSitMeditationActive(false);
     S.consumeStamina(job.paid, {raw:true});
@@ -159,7 +157,7 @@ export function createGymPrototype(g, config) {
   }
   reset();
   return {get state(){return state;},muscles,actions:ACTIONS,stations:STATIONS,materials:MATERIALS,
-    getAction,station,percent,cost,fatigueCost,level,fatigueRate,rewardPreview,trainReason,upgradeInfo,afford,efficiency,
+    getAction,station,percent,cost,fatigueCost,level,fatigueRate,rewardPreview,totalGrowth,trainReason,upgradeInfo,afford,efficiency,
     setAnatomyLevel(value){idle();if(!Number.isSafeInteger(value)||value<0)throw Error('解剖学等级无效');state.anatomyLevel=value;},
     setNutrition(value){idle();if(!Number.isFinite(value)||value<0||value>100)throw Error('营养值无效');S.setState({nutrition:value});},
     startTraining,tick,recover,build,upgrade,forgePlates,eat,reset,

@@ -1,3 +1,4 @@
+import {startTraining} from './lib/gym-training-test.mjs';
 import {openMuscleRewards,readMuscleGroup,completionText} from './lib/muscle-atlas-test.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -119,7 +120,7 @@ for(const full of [false,true])test(`abdomen ${full?'Svelte':'classic'}: trainin
   let serial=102000;const timers=new Map(),oldSet=g.setTimeout,oldClear=g.clearTimeout;
   g.setTimeout=(fn,ms,...args)=>ms===3000?(timers.set(++serial,fn),serial):oldSet(fn,ms,...args);g.clearTimeout=id=>{if(!timers.delete(id))oldClear(id);};
   const step=()=>{assert.equal(timers.size,1);const [id,fn]=timers.entries().next().value;timers.delete(id);fn();};
-  assert.equal(G.startTraining(a.id).ok,true);step();const before=copy(M.getState()),save=SS.saveNow;SS.saveNow=()=>false;step();SS.saveNow=save;
+  assert.equal(startTraining(g,a.id).ok,true);step();const before=copy(M.getState()),save=SS.saveNow;SS.saveNow=()=>false;step();SS.saveNow=save;
   assert.deepEqual(copy(M.getState()),before);near(M.getFoodExperienceMultiplier(),1.36);assert.equal(M.getFoodBuffDurationBonus(),0);assert.equal(CA.getBodyPartDestroyMax('abdomen'),80);assert.equal(S.getSexualAbility(),25);
   G.retry();step();assert.equal(M.getFoodExperienceMultiplier(),1.4);assert.equal(M.getFoodBuffDurationBonus(),1);assert.equal(CA.getBodyPartDestroyMax('abdomen'),88);assert.equal(S.getSexualAbility(),27);
   const saved=copy(SS.buildSnapshotForDebug());for(let i=0;i<2;i++){assert.equal(SS.applySnapshotForDebug(saved),true);await h.drain();assert.equal(M.getFoodBuffDurationBonus(),1);assert.equal(S.getSexualAbility(),27);}

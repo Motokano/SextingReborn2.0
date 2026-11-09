@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import {boot} from './ui-game-fixture.mjs';
 import {createGymPrototype} from './gym-prototype-model.mjs';
 import {ACTIONS,STATIONS,moduleKey} from './gym-prototype-data.mjs';
+import {startTraining} from './lib/gym-training-test.mjs';
 const copy=v=>JSON.parse(JSON.stringify(v));
 const near=(a,b)=>assert.ok(Math.abs(a-b)<1e-6,`${a} != ${b}`);
 const addedActions=['prone_extension','bird_dog','pelvic_tilt','diaphragmatic_breathing','rib_expansion','controlled_exhalation','pelvic_floor_hold','perineal_control','scapular_depression','finger_extension','thumb_extension','thumb_abduction','finger_adduction','intrinsic_grip','palm_cup','chin_tuck','cervical_extension','suboccipital_stability','chin_resistance','hyoid_control','pitch_glide','vocal_onset','airway_control'];
@@ -14,7 +15,7 @@ test('gym actions cover every existing non-head muscle and no head muscle',()=>{
  for(const a of ACTIONS){
   assert.ok(STATIONS.some(s=>s.id===a.station),a.id+' has a facility');
   const targets=[...a.main,...a.assist];assert.equal(new Set(targets).size,targets.length,a.id+' cannot pay a muscle twice');
-  assert.ok(a.main.length>0&&a.mainPct>0&&a.assistPct>0);
+  assert.ok(a.main.length>0&&a.growthPct>0);
   for(const id of targets){assert.ok(muscles.has(id),id+' exists');assert.notEqual(muscles.get(id).group,'head',id+' is not in head');covered.add(id);}
  }
  assert.deepEqual([...covered].sort(),expected);assert.equal(covered.size,381);
@@ -53,7 +54,7 @@ for(const mode of [false,true])test(`expanded gym ${mode?'Svelte':'classic'}: ne
    const a=G.action(id);S.setState({stamina:100,fatigue:0,satiety:100,thirst:100,nutrition:20});
    if(a.station!==stationId){await enter(a.station);stationId=a.station;}
    g.document.querySelector(`#gym-panel [data-action="${id}"]`).click();
-   const before=progress(),rewards=G.rewards(a),cost=G.cost(a),tick=S.getState().tickCount;
+   const before=progress(),total=G.growthTotal(a),cost=G.cost(a),tick=S.getState().tickCount;
    if(a.station==='handsfeet'){
     assert.equal(G.upgradeInfo(a).key,'handsfeet_hands');near(G.efficiency(a).equipment,1.15);
     g.document.querySelector('#gym-panel [data-tab="upgrade"]').click();
@@ -61,6 +62,7 @@ for(const mode of [false,true])test(`expanded gym ${mode?'Svelte':'classic'}: ne
     g.document.querySelector('#gym-panel [data-tab="train"]').click();
    }
    const train=g.document.querySelector('#gym-panel [data-op="train"]');assert.equal(train.disabled,false,id+' available');train.click();
+   const rewards=G.getState().job.rewards;near(rewards.reduce((sum,r)=>sum+r.pct,0),total);
    assert.equal(G.getState().job.actionId,id);near(S.getStamina(),100-cost);near(S.getFatigue(),cost*1.5);
    clock.step();assert.deepEqual(progress(),before,id+' pays nothing before completion');
    if(id==='finger_extension'){
@@ -81,8 +83,8 @@ for(const mode of [false,true])test(`expanded gym ${mode?'Svelte':'classic'}: ne
   // Prototype shares the hand module, instead of falling through to the toe module.
   g.GymPanel.close();const demo=createGymPrototype({Muscles:M,Survival:S,GameTime:g.GameTime},JSON.parse(fs.readFileSync('data/survival-config.json','utf8')));
   demo.reset('built');Object.assign(demo.state.levels,{handsfeet_hands:2,handsfeet_ankle:3,handsfeet_toes:4});demo.setNutrition(20);
-  const a=demo.getAction('finger_extension'),reward=demo.rewardPreview(a)[0];assert.equal(demo.upgradeInfo(a).key,'handsfeet_hands');near(reward.pct,.253);
-  demo.startTraining(a.id);demo.tick();near(demo.percent(reward.id),0);demo.tick();near(demo.percent(reward.id),.253);
+  const a=demo.getAction('finger_extension');assert.equal(demo.upgradeInfo(a).key,'handsfeet_hands');near(demo.totalGrowth(a),1.518);
+  demo.startTraining(a.id);const reward=demo.state.job.rewards[0];demo.tick();near(demo.percent(reward.id),0);demo.tick();near(demo.percent(reward.id),reward.pct);
   assert.deepEqual(h.errors,[]);
  }finally{await h.close();}
 });
@@ -125,14 +127,15 @@ for(const mode of [false,true])test(`formal gym ${mode?'Svelte':'classic'}: NPC,
   await g.NPCSystem.openMenu(g.GymFacility.npcId('floor'));await h.drain();assert.equal(g.NPCSystem.isMenuOpen(),true);g.NPCSystem.menu.choose(0);assert.equal(g.GymPanel.isOpen(),true,JSON.stringify({at:G.at('floor'),usable:G.usable('floor'),created:g.CharacterAttributes.isCharacterCreationCompleted(),error:G.getError()}));
   const ids=G.action('pushup').main,first=ids[0],initialFatigue=S.getFatigue();
   assert.equal(G.startTraining('pushup',1).ok,true);assert.equal(clock.timers.size,1);assert.equal(S.getFatigue()-initialFatigue,15);assert.equal(M.getProgress(first),0);
+  const firstReward=G.getState().job.rewards[0].pct;
   const ticks=S.getState().tickCount;S.advanceTick({source:'rest'});assert.equal(S.getState().tickCount,ticks,'other clocks blocked');
   const before=E.getState();g.SceneCtx.actions.tryIntentMove(6,5,1,0,'test');assert.deepEqual(copy(E.getState()),copy(before));
   clock.step();assert.equal(M.getProgress(first),0,'no partial-group reward');const snap=copy(g.SaveSystem.buildSnapshotForDebug());
   assert.equal(g.SaveSystem.applySnapshotForDebug(snap),true);await h.drain();assert.equal(clock.timers.size,1);assert.equal(S.getFatigue(),initialFatigue+15,'resume does not charge again');
   const save=g.SaveSystem.saveNow;g.SaveSystem.saveNow=()=>false;clock.step();assert.equal(G.getState().job.ticks,1);assert.equal(M.getProgress(first),0);assert.equal(S.getState().tickCount,snap.player.survival.tickCount);assert.equal(clock.timers.size,0);assert.match(G.getError(),/保存/);
-  g.SaveSystem.saveNow=save;G.retry();clock.step();assert.equal(G.isActive(),false);assert.equal(M.getProgress(first),.18);G.advance();assert.equal(M.getProgress(first),.18,'no repeated reward');
-  const progress=copy(M.getState());progress.progress[first]=99.9;M.setState(progress);S.setState({stamina:100,fatigue:0});assert.equal(G.startTraining('pushup').ok,true);clock.step();clock.step();assert.equal(M.isUnlocked(first),true);assert.equal(M.getProgress(first),100);
-  S.setState({stamina:100,fatigue:60});const beforeHalf=M.getProgress(ids[1]);assert.equal(G.startTraining('pushup').ok,true);clock.step();clock.step();assert.ok(Math.abs(M.getProgress(ids[1])-beforeHalf-.09)<1e-8);S.setState({fatigue:80});assert.equal(G.startTraining('pushup').ok,false);S.setState({stamina:100,fatigue:0});
+  g.SaveSystem.saveNow=save;G.retry();clock.step();assert.equal(G.isActive(),false);assert.equal(M.getProgress(first),firstReward);G.advance();assert.equal(M.getProgress(first),firstReward,'no repeated reward');
+  const progress=copy(M.getState());progress.progress[first]=99.9;M.setState(progress);S.setState({stamina:100,fatigue:0});assert.equal(startTraining(g,'pushup').ok,true);clock.step();clock.step();assert.equal(M.isUnlocked(first),true);assert.equal(M.getProgress(first),100);
+  S.setState({stamina:100,fatigue:60});const beforeHalf=M.getProgress(ids[1]);assert.equal(G.startTraining('pushup').ok,true);const half=G.getState().job;near(half.totalPct,.44);const halfGain=half.rewards.find(r=>r.id===ids[1]).pct;clock.step();clock.step();near(M.getProgress(ids[1])-beforeHalf,halfGain);S.setState({fatigue:80});assert.equal(G.startTraining('pushup').ok,false);S.setState({stamina:100,fatigue:0});
   E.setState('M0_Base_Inside_lv_1',7,3);const buildCost=G.station('dumbbell').build,offer=G.plan(buildCost),inventory=copy(g.InventoryEquipment.getState());assert.equal(offer.ok,true);
   g.SaveSystem.saveNow=()=>false;assert.equal(G.build('dumbbell',offer.signature).ok,false);assert.deepEqual(copy(g.InventoryEquipment.getState()),inventory);assert.equal(G.getState().levels.dumbbell,undefined);
   g.SaveSystem.saveNow=save;assert.equal(G.build('dumbbell',offer.signature).ok,true);assert.equal(G.getState().levels.dumbbell,1);const inventoryAfter=copy(g.InventoryEquipment.getState());assert.equal(G.build('dumbbell',offer.signature).ok,false);assert.deepEqual(copy(g.InventoryEquipment.getState()),inventoryAfter);
@@ -152,8 +155,8 @@ test('continuous groups pause on hidden, stop at fatigue threshold, cancel on co
   S.setState({stamina:100,fatigue:0});assert.equal(G.startTraining('pushup',8).ok,true);
   let hidden=true;Object.defineProperty(g.document,'hidden',{get:()=>hidden,configurable:true});g.document.dispatchEvent(new g.Event('visibilitychange'));assert.equal(clock.timers.size,0);assert.equal(G.getState().job.ticks,0);
   hidden=false;g.document.dispatchEvent(new g.Event('visibilitychange'));assert.equal(clock.timers.size,1);
-  for(let group=0;group<6;group++){clock.step();clock.step();}
-  assert.equal(G.isActive(),false);assert.equal(S.getFatigue(),90);assert.equal(M.getProgress(G.action('pushup').main[0]),.9,'four full groups, two half groups');
+  for(let group=0;group<6;group++){near(G.getState().job.totalPct,group<4?.88:.44);clock.step();clock.step();}
+  assert.equal(G.isActive(),false);assert.equal(S.getFatigue(),90);near([...G.action('pushup').main,...G.action('pushup').assist].reduce((n,id)=>n+M.getProgress(id),0),4.4,'four full pools, two half pools');
   S.setState({stamina:100,fatigue:0});assert.equal(G.startTraining('crunch').ok,true);const before=M.getProgress(G.action('crunch').main[0]);S.setState({isComa:true});clock.step();assert.equal(G.isActive(),false);assert.equal(M.getProgress(G.action('crunch').main[0]),before);S.setState({isComa:false});
   g.GameEngine.setState('M0_Base_Inside_lv_1',4,6);assert.equal(G.build('handsfeet',G.plan(G.station('handsfeet').build).signature).ok,true);
   assert.equal(G.upgrade('grip',1,G.plan(G.upgradeInfo(G.action('grip')).costs).signature).ok,true);assert.equal(G.level(G.action('grip')),2);assert.equal(G.level(G.action('calf_raise')),1);assert.equal(G.level(G.action('toe_curl')),1);
@@ -215,44 +218,53 @@ for(const mode of [false,true])test(`gym growth ${mode?'Svelte':'classic'}: anat
  try{
   const clock=await setup(h),G=g.GymSystem,S=g.Survival,M=g.Muscles,IE=g.InventoryEquipment,B=g.BuffSystem,SS=g.SaveSystem;
   const anatomy=lv=>{const inv=copy(IE.getState());inv.skills[IE.SPECIAL_ANATOMY_STUDIES_SKILL_ID].level=lv;IE.setState(inv);};
-  const push=G.action('pushup'),main=push.main[0],assist=push.assist[0];
-  near(G.rewards(push)[0].pct,.18);
-  anatomy(1);near(G.rewards(push)[0].pct,.1836);
-  anatomy(10);near(G.rewards(push)[0].pct,.216);
+  const push=G.action('pushup'),main=push.main[0];
+  near(push.growthPct,.88);near(G.growthTotal(push),.88);
+  anatomy(1);near(G.growthTotal(push),.8976);
+  anatomy(10);near(G.growthTotal(push),1.056);
   for(const [nutrition,bonus]of [[0,0],[30,0],[31,.1],[70,.1],[71,.1],[100,.1]]){
-   S.setState({nutrition});near(G.efficiency(push).nutritionBonus,bonus);near(G.rewards(push)[0].pct,bonus?.234:.216);
+   S.setState({nutrition});near(G.efficiency(push).nutritionBonus,bonus);near(G.growthTotal(push),bonus?1.144:1.056);
   }
   assert.equal(B.hasBuffByBuffId('player','survival_nutrition_peak'),true);
   B.applyBuff('player','survival_nutrition_abundant','gym_test',{});
   near(G.efficiency(push).nutritionBonus,.1,'overlapping tier buffs do not stack');
   const st=G.getState();st.levels.floor=2;G.restore(st,true);S.setState({nutrition:40,fatigue:0,stamina:100});
-  near(G.efficiency(push).multiplier,1.495);near(G.rewards(push)[0].pct,.2691);
-  near(G.rewards(push).find(r=>r.id===assist).pct,.0598);
-  S.setState({fatigue:60});near(G.rewards(push)[0].pct,.13455);
+  near(G.efficiency(push).multiplier,1.495);near(G.growthTotal(push),1.3156);
+  const random=g.Math.random;g.Math.random=()=>{throw Error('preview must not roll');};
+  try{for(let i=0;i<4;i++){near(G.growthTotal(push),1.3156);assert.equal(G.rewards(push).length,8);}}finally{g.Math.random=random;}
+  S.setState({fatigue:60});near(G.growthTotal(push),.6578);
   S.setState({fatigue:80});assert.equal(G.startTraining('pushup').ok,false);
-  S.setState({fatigue:0});assert.equal(G.startTraining('pushup',4).ok,true);
+  S.setState({fatigue:0});let roll=0;g.Math.random=()=>.1+(roll++%8)*.1;
+  try{assert.equal(G.startTraining('pushup',4).ok,true);}finally{g.Math.random=random;}
+  const first=copy(G.getState().job);near(first.totalPct,1.3156);near(first.rewards.reduce((n,r)=>n+r.pct,0),1.3156);
+  assert.ok(new Set(first.rewards.map(r=>r.pct)).size>1,'each group has a real random allocation');
   assert.equal(S.getStamina(),90);assert.equal(S.getFatigue(),15,'growth bonuses do not discount costs');
   const panel=g.document.querySelector('#gym-panel');assert.match(panel.textContent,/解剖学 \+20%/);assert.match(panel.textContent,/营养 \+10%/);
+  assert.equal(panel.querySelector('.growth-total').textContent,'+1.3156%');assert.ok([...panel.querySelectorAll('.reward-row>b')].every(el=>el.textContent==='随机'));
   anatomy(20);S.setState({nutrition:20});clock.step();near(M.getProgress(main),0);
   const pending=copy(SS.buildSnapshotForDebug());assert.equal(SS.applySnapshotForDebug(pending),true);await h.drain();
-  near(G.getState().job.rewards[0].pct,.2691);assert.match(panel.textContent,/解剖学 \+20%/,'display retains this group\'s locked bonus');
-  const save=SS.saveNow;SS.saveNow=()=>false;clock.step();near(M.getProgress(main),0);near(G.getState().job.rewards[0].pct,.2691);
-  SS.saveNow=save;G.retry();clock.step();near(M.getProgress(main),.2691);
-  near(G.getState().job.rewards[0].pct,.2898,'next group uses new skill and nutrition');
+  assert.deepEqual(copy(G.getState().job.rewards),first.rewards);assert.match(panel.textContent,/解剖学 \+20%/,'display retains this group\'s locked bonus');
+  const save=SS.saveNow;SS.saveNow=()=>false;clock.step();near(M.getProgress(main),0);assert.deepEqual(copy(G.getState().job.rewards),first.rewards);
+  SS.saveNow=save;G.retry();clock.step();for(const r of first.rewards)near(M.getProgress(r.id),r.pct);
+  const second=copy(G.getState().job);near(second.totalPct,1.4168,'next group uses new skill and nutrition');
+  assert.notDeepEqual(second.rewards,first.rewards);
   near(G.getState().job.efficiency.multiplier,1.61);assert.match(panel.textContent,/解剖学 \+40%/);assert.match(panel.textContent,/营养 \+0%/);
-  G.stop();clock.step();clock.step();near(M.getProgress(main),.5589);assert.equal(G.isActive(),false);
+  G.stop();clock.step();clock.step();for(const r of first.rewards)near(M.getProgress(r.id),r.pct+second.rewards.find(x=>x.id===r.id).pct);assert.equal(G.isActive(),false);
   // Pre-change jobs lack a breakdown, but their saved reward still finishes unchanged.
-  const legacy=copy(pending);delete legacy.gym.job.efficiency;
+  const legacy=copy(pending);delete legacy.gym.job.efficiency;delete legacy.gym.job.totalPct;delete legacy.gym.job.allocationVersion;
+  legacy.gym.job.rewards.forEach(r=>{r.pct=r.role==='主练'?.2691:.0598;});
   assert.equal(SS.applySnapshotForDebug(legacy),true);await h.drain();G.stop();clock.step();near(M.getProgress(main),.2691);
   anatomy(1000);S.setState({stamina:100,fatigue:0,nutrition:80});const high=G.getState();high.levels.floor=4;G.restore(high,true);
   const abs=G.action('crunch').main[0],muscles=copy(M.getState());muscles.progress[abs]=99.9;M.setState(muscles);
-  assert.equal(G.startTraining('crunch').ok,true);assert.ok(G.getState().job.rewards[0].pct>1,'large legitimate gains are not rejected by old 1% validation');
+  assert.equal(startTraining(g,'crunch').ok,true);assert.ok(G.getState().job.rewards.some(r=>r.pct>1),'large legitimate pool shares remain valid');near(G.getState().job.rewards[0].pct,.1,'allocation caps the nearly complete muscle before saving');
+  const bad=copy(G.getState());bad.job.totalPct+=1;assert.equal(G.validate(bad),false,'pool mismatch is rejected');
+  const duplicate=copy(G.getState());duplicate.job.rewards[1].id=duplicate.job.rewards[0].id;assert.equal(G.validate(duplicate),false,'a muscle cannot be paid twice');
   clock.step();const highSave=copy(SS.buildSnapshotForDebug());assert.equal(SS.applySnapshotForDebug(highSave),true);await h.drain();clock.step();near(M.getProgress(abs),100);assert.equal(M.isUnlocked(abs),true);
   // The standalone demo uses the same formula and Survival nutrition thresholds.
   const demo=createGymPrototype({Muscles:M,Survival:S,GameTime:g.GameTime},JSON.parse(fs.readFileSync('data/survival-config.json','utf8')));
   demo.state.levels.floor=2;demo.setAnatomyLevel(10);demo.setNutrition(40);
-  near(demo.rewardPreview(demo.getAction('pushup'))[0].pct,.2691);demo.setNutrition(80);near(demo.efficiency(demo.getAction('pushup')).nutritionBonus,.1);
-  demo.startTraining('pushup');demo.state.anatomyLevel=20;S.setState({nutrition:20});demo.tick();near(demo.percent(main),0);demo.tick();near(demo.percent(main),.2691);
+  near(demo.totalGrowth(demo.getAction('pushup')),1.3156);demo.setNutrition(80);near(demo.efficiency(demo.getAction('pushup')).nutritionBonus,.1);
+  demo.startTraining('pushup');const demoRewards=copy(demo.state.job.rewards);near(demoRewards.reduce((n,r)=>n+r.pct,0),1.3156);demo.state.anatomyLevel=20;S.setState({nutrition:20});demo.tick();near(demo.percent(main),0);demo.tick();for(const r of demoRewards)near(demo.percent(r.id),r.pct);
   assert.deepEqual(h.errors,[]);
  }finally{await h.close();}
 });

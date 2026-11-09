@@ -1,3 +1,4 @@
+import {startTraining} from './lib/gym-training-test.mjs';
 import {openMuscleRewards,readMuscleGroup,completionText} from './lib/muscle-atlas-test.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -102,7 +103,7 @@ for(const full of [false,true])test(`pelvis ${full?'Svelte':'classic'}: final tr
   g.setTimeout=(fn,ms,...args)=>ms===3000?(timers.set(++serial,fn),serial):oldSet(fn,ms,...args);
   g.clearTimeout=id=>{if(!timers.delete(id))oldClear(id);};
   const step=()=>{assert.equal(timers.size,1);const [id,fn]=timers.entries().next().value;timers.delete(id);fn();};
-  assert.equal(G.startTraining(a.id).ok,true);step();const before=copy(M.getState()),save=SS.saveNow;
+  assert.equal(startTraining(g,a.id).ok,true);step();const before=copy(M.getState()),save=SS.saveNow;
   SS.saveNow=()=>false;step();SS.saveNow=save;assert.deepEqual(copy(M.getState()),before);
   near(CA.getState().acquired.breath,baseline*1.16);near(S.getState().diqi_cap_limit,expectedBefore);assert.equal(M.getDiqiCapMultiplier(),1);
   G.retry();step();near(CA.getState().acquired.breath,baseline*1.17);near(S.getState().diqi_cap_limit,expectedAfter);assert.equal(M.getDiqiCapMultiplier(),1.2);

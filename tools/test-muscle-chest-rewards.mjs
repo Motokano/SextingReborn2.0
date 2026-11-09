@@ -1,3 +1,4 @@
+import {startTraining} from './lib/gym-training-test.mjs';
 import {openMuscleRewards,readMuscleGroup,completionText} from './lib/muscle-atlas-test.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -90,7 +91,7 @@ for(const full of [false,true])test(`chest ${full?'Svelte':'classic'}: final dia
   let serial=103000;const timers=new Map(),oldSet=g.setTimeout,oldClear=g.clearTimeout;
   g.setTimeout=(fn,ms,...args)=>ms===3000?(timers.set(++serial,fn),serial):oldSet(fn,ms,...args);g.clearTimeout=id=>{if(!timers.delete(id))oldClear(id);};
   const step=()=>{assert.equal(timers.size,1);const [id,fn]=timers.entries().next().value;timers.delete(id);fn();};
-  assert.equal(G.startTraining(a.id).ok,true);step();const before=copy(M.getState()),save=SS.saveNow;SS.saveNow=()=>false;step();SS.saveNow=save;
+  assert.equal(startTraining(g,a.id).ok,true);step();const before=copy(M.getState()),save=SS.saveNow;SS.saveNow=()=>false;step();SS.saveNow=save;
   assert.deepEqual(copy(M.getState()),before);near(M.getParryChanceBonus(),.072);near(CA.getParryChance(.2),parry);assert.equal(CA.getBodyPartDestroyMax('chest'),100);
   G.retry();step();near(M.getParryChanceBonus(),.076);near(CA.getParryChance(.2),parry+.004);assert.equal(CA.getBodyPartDestroyMax('chest'),110);
   near(CA.getState().acquired.breath,baseline);near(S.getState().diqi_cap_limit,cap);assert.deepEqual(copy(CA.getState().innate),innate);assert.equal(M.getSexualAbilityBonus(),0);

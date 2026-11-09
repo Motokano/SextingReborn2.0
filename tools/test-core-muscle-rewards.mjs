@@ -1,3 +1,4 @@
+import {startTraining} from './lib/gym-training-test.mjs';
 import {openMuscleRewards,readMuscleGroup,completionText} from './lib/muscle-atlas-test.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -99,7 +100,7 @@ for(const full of [false,true])test(`muscle milestones ${full?'Svelte':'classic'
   g.setTimeout=(fn,ms,...args)=>ms===3000?(timers.set(++serial,fn),serial):oldSet(fn,ms,...args);
   g.clearTimeout=id=>{if(!timers.delete(id))oldClear(id);};
   const step=()=>{assert.equal(timers.size,1);const [id,fn]=timers.entries().next().value;timers.delete(id);fn();};
-  assert.equal(G.startTraining('diaphragmatic_breathing').ok,true);
+  assert.equal(startTraining(g,'diaphragmatic_breathing').ok,true);
   step();assertInnate(0);assert.equal(M.isGroupComplete('chest'),false);
   const before=copy(M.getState()),save=SS.saveNow;
   SS.saveNow=()=>false;step();SS.saveNow=save;
