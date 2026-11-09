@@ -25,7 +25,7 @@ function harness({ width = 1440, storage, native = false } = {}) {
     hudDebugActions: { 'status-attr-exp-debug-plus-jingu': () => debugCalls++ },
   };
   g.UIText = { t(name, args = {}) { return String(dictionary[name] || name).replace(/\{(\w+)\}/g, (_, k) => args[k] ?? ''); } };
-  g.CharacterAttributes = { getCarryCapacity: () => 30, getEffectiveAttr: () => 12, getBaseInnateAttr: () => 9, getPartDestroy: id => id === 'lhand' ? destroyed : 0, getBodyPartDestroyMax: () => 100, getAttributeExpState: () => ({ jingu: { exp: 567 } }), getDestroyRecoverBlockTicks: () => 3 };
+  g.CharacterAttributes = { getCarryCapacity: () => 30, getEffectiveAttr: () => 12, getBaseInnateAttr: () => 9, getInnateAttr: () => 9, getPartDestroy: id => id === 'lhand' ? destroyed : 0, getBodyPartDestroyMax: () => 100, getAttributeExpState: () => ({ jingu: { exp: 567 } }), getDestroyRecoverBlockTicks: () => 3 };
   g.InventoryEquipment = { getCurrentCarryWeight: () => carry, getPotential: () => 240, getCombatExperience: () => 80, getPlayerStunValue: () => 0, isPlayerStunned: () => false };
   g.Survival = { getState: () => state, getMood: () => state.mood, getSatietyZone: () => 'normal', getMoodRangeByValue: () => 'normal', getStudyState: () => ({ active: study }), getStudySkillId: () => 'training', getEnergy: () => state.energy, getPainInfo: () => ({ effective: 20, tier: 'mild', unmedicated: 40, ignored_ratio: .5 }) };
   g.CombatSkills = { getSkill: () => ({ name: '呼吸研习' }) };
@@ -73,6 +73,11 @@ test('all HUD domains wait for ready, then render actual values with one owner a
     assert.match(h.doc.querySelector('#status-satiety-text').textContent, /72\s*\/ 120/);
     assert.equal(h.doc.querySelector('#status-attr-jingu').textContent, '12');
     assert.equal(h.doc.querySelector('#status-attr-jingu').title, '先天 9 · 当前 12');
+    h.g.CharacterAttributes.getInnateAttr = () => 11;
+    h.g.CharacterAttributes.getEffectiveAttr = () => 14;
+    await h.refresh();
+    assert.equal(h.doc.querySelector('#status-attr-jingu').title, '先天 11 · 当前 14', 'HUD includes earned innate bonuses');
+    assert.equal(h.g.CharacterAttributes.getBaseInnateAttr('jingu'), 9);
     assert.equal(h.doc.querySelector('#status-attr-exp-exp-jingu').textContent, '567');
     assert.match(h.doc.querySelector('#moss-capacity-left').textContent, /11.6/);
     assert.equal(h.doc.querySelector('#hud-weather').textContent, '晴');

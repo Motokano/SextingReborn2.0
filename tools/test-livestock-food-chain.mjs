@@ -10,9 +10,8 @@ const ctx=vm.createContext({console,Math:Object.assign(Object.create(Math),{rand
 vm.runInContext(read('js/station-craft-core.js'),ctx);vm.runInContext(read('js/cooking-station.js'),ctx);ctx.CookingStation.setConfig({methods,recipes});
 vm.runInContext(read('js/recipe-system.js'),ctx);
 const router=ctx.RecipeSystem;router.setTables({recipes:unified},JSON.parse(read('data/recipe-methods.json')),JSON.parse(read('data/life-skill-recipe-interfaces.json')));
-const app=read('js/scene-app.js');
-vm.runInContext("var cookingRecipeProcessorRegistered=false;var COOKING_DEFAULT_PROCESSOR_ID='processor.life_cooking.default';\n"+app.slice(app.indexOf('    function registerCookingRecipeProcessorIfNeeded()'),app.indexOf('    function registerPharmacyRecipeProcessorIfNeeded()')),ctx);
-ctx.registerCookingRecipeProcessorIfNeeded();
+vm.runInContext(read('js/scene/station.js'),ctx);
+ctx.StationActions.initialize();ctx.StationActions.registerCookingRecipeProcessorIfNeeded();
 for(const [suffix,expected]of [['chop',3],['ground',1]]){
  const r=recipes.find(x=>x.recipe_id==='cook_livestock_cured_pork_'+suffix),u=unified['life_cooking.'+r.recipe_id];
  assert.deepEqual(r.inputs,u.inputs);assert.equal(u.main_output.count,expected);

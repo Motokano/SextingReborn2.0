@@ -890,13 +890,25 @@
         return state.combat.stun_rounds_left > 0;
     }
 
+    /** 本次眩晕入条增量；可传锁定倍率，1表示调用方已完成结算。 */
+    function getPlayerStunGain(amount, gainMultiplier) {
+        var a = Math.max(0, Math.floor(Number(amount) || 0));
+        if (a <= 0) return 0;
+        if (gainMultiplier == null) {
+            gainMultiplier = global.Muscles && global.Muscles.getStunGainMultiplier ? global.Muscles.getStunGainMultiplier() : 1;
+        }
+        gainMultiplier = Number(gainMultiplier);
+        if (!isFinite(gainMultiplier)) gainMultiplier = 1;
+        return Math.max(1, Math.round(a * Math.max(0, Math.min(1, gainMultiplier))));
+    }
+
     /**
      * 玩家眩晕累积：加 stun 值；≥100 → 归 0 + 眩晕 1 回合（stun_rounds_left=1）。
      * @returns {{triggered:boolean, value:number}} triggered=是否触发眩晕
      */
-    function addPlayerStun(amount) {
+    function addPlayerStun(amount, gainMultiplier) {
         ensureCombatState();
-        var a = Math.max(0, Math.floor(Number(amount) || 0));
+        var a = getPlayerStunGain(amount, gainMultiplier);
         if (a <= 0) return { triggered: false, value: getPlayerStunValue() };
         state.combat.stun_value = Math.min(100, state.combat.stun_value + a);
         var triggered = false;
@@ -3272,6 +3284,7 @@
         setPlayerStunValue: setPlayerStunValue,
         isPlayerStunned: isPlayerStunned,
         addPlayerStun: addPlayerStun,
+        getPlayerStunGain: getPlayerStunGain,
         consumePlayerStunRoundIfBlocking: consumePlayerStunRoundIfBlocking,
         getHeadAntiStunPct: getHeadAntiStunPct,
         getShoeSharedMods: getShoeSharedMods,

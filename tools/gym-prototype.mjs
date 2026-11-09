@@ -3,13 +3,15 @@
 import {createGymPrototype} from './gym-prototype-model.mjs';
 import {createGymScene} from './gym-prototype-scene.mjs';
 import {EFFICIENCY} from './gym-prototype-data.mjs';
+import {createMuscleAtlas,seedMuscleAtlas} from './muscle-atlas-prototype.mjs';
 export async function mountGymPrototype({sceneFactory=createGymScene,initialScenario='fresh'}={}){
 const M=window.Muscles,S=window.Survival,$=id=>document.getElementById(id);
 const esc=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const pct=v=>Number(v).toFixed(3),gain=v=>Number(v).toFixed(4).replace(/0+$/,'').replace(/\.$/,'');
 const dis=yes=>yes?'disabled':'';
-let demo,scene,texts,config,mode='',stationId='',selected='pushup',tab='train',group='chest',query='',batch=1,lastActions={};
+let demo,scene,texts,config,mode='',stationId='',selected='pushup',tab='train',batch=1,lastActions={};
 let timer=null,due=0,tickStarted=0,noticeTimer,moving=false;
+let atlas=null;
 const busy=()=>!!demo?.state.job,current=()=>demo.getAction(selected);
 function notice(message){$('notice').textContent=message;$('notice').hidden=false;clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>$('notice').hidden=true,3200);}
 function stopClock(){if(timer!==null)clearTimeout(timer);timer=null;due=0;}
@@ -36,13 +38,6 @@ function upgradeHTML(){
 function facilityHTML(){const s=demo.station(stationId);if(!demo.state.levels[s.id])return `<div class="build-view"><h3>建造 · ${s.name}</h3>${costs(s.build)}<button id="build" class="primary" ${dis(busy()||!demo.afford(s.build))}>建造</button></div>`;
   return `<nav class="tabs" aria-label="设施功能"><button data-tab="train" class="${tab==='train'?'active':''}" ${dis(busy())}>训练</button><button data-tab="upgrade" class="${tab==='upgrade'?'active':''}" ${dis(busy())}>升级</button></nav>${tab==='upgrade'?upgradeHTML():trainHTML()}`;
 }
-function muscleListHTML(){return M.getMusclesByGroup(group).filter(m=>!query||m.name.includes(query)).map(m=>`<div class="muscle ${M.isUnlocked(m.id)?'lit':''}"><div class="muscle-top"><span>${esc(m.name)}</span><b>${M.isUnlocked(m.id)?'✓ ':''}${pct(demo.percent(m.id))}%</b></div><div class="bar"><i style="width:${demo.percent(m.id)}%"></i></div><div class="muscle-bottom"><span>${esc(M.getEffectsText(m.id))}</span></div></div>`).join('');}
-function passiveHTML(){
-  if(!M.isGroupComplete(group))return '<div class="passive">被动槽 · 未解锁</div>';
-  const equipped=M.getEquippedPassiveForGroup(group),def=equipped&&M.getPassiveById(equipped),options=M.getPassives().filter(p=>p.allowed_groups.includes(group));
-  return `<div class="passive">被动槽 · ${def?esc(texts[def.name_key]||def.id):'已解锁'}<div class="passive-actions">${equipped?`<button data-unequip="${equipped}">卸下</button>`:options.map(p=>`<button data-equip="${p.id}" ${dis(!M.canEquipPassive(p.id,group).ok)}>${esc(texts[p.name_key]||p.id)}</button>`).join('')}</div></div>`;
-}
-function ledgerHTML(){const bonus=M.getStatBonus();return `<div class="ledger-toolbar"><select id="group" aria-label="肌群">${M.getGroups().map(gr=>`<option value="${gr.id}" ${gr.id===group?'selected':''}>${gr.name} · ${M.getMusclesByGroup(gr.id).filter(m=>M.isUnlocked(m.id)).length}/${M.getMusclesByGroup(gr.id).length}</option>`).join('')}</select><span>点亮 ${M.getUnlockedIds().length} / ${demo.muscles.length}</span></div><div class="search"><input id="muscle-search" aria-label="肌肉名称" placeholder="肌肉名称" value="${esc(query)}"></div><div class="muscle-list" id="muscle-list">${muscleListHTML()}</div>${passiveHTML()}<div class="stats">${Object.entries({jingu:'筋骨',flexibility:'柔韧',breath:'呼吸',dexterity:'身手'}).map(([id,name])=>`<span>${name}<b>+${bonus.acquired[id]}</b></span>`).join('')}${bonus.maxQi?`<span>底气<b>+${bonus.maxQi}</b></span>`:''}</div>`;}
 function supplyHTML(){const st=demo.state;return `<div class="utility-view"><div class="inventory"><div><span>食物</span><b>${st.food}</b></div><div><span>饮水</span><b>${st.water}</b></div></div><div class="utility-buttons"><button data-eat="food" ${dis(busy()||S.getSatiety()>=100||!st.food)}>进食</button><button data-eat="water" ${dis(busy()||S.getThirst()>=100||!st.water)}>饮水</button></div><div class="inventory">${Object.entries(demo.materials).map(([id,name])=>`<div><span>${name}</span><b>${st.materials[id]}</b></div>`).join('')}</div><div class="forge-row"><h3>配重片组 ×1</h3>${costs({metal:12,parts:2})}<button id="forge" class="primary" ${dis(busy()||!demo.afford({metal:12,parts:2}))}>制作</button></div></div>`;}
 function bedHTML(){
   const st=S.getState(),j=demo.state.job;
@@ -53,16 +48,21 @@ function render(){
   const st=S.getState();$('resources').innerHTML=resource('体力','stamina',st.stamina)+resource('疲劳','fatigue',st.fatigue)+resource('饱食','satiety',st.satiety)+resource('饮水','thirst',st.thirst);
   const win=$('interaction'),body=$('window-content');
   if(mode){
-    const scroll=body.scrollTop,actionScroll=body.querySelector('.action-list')?.scrollTop||0,searchFocus=document.activeElement?.id==='muscle-search',caret=searchFocus?document.activeElement.selectionStart:0;
+    const scroll=body.scrollTop,actionScroll=body.querySelector('.action-list')?.scrollTop||0;
     win.dataset.mode=mode;$('interaction-title').textContent=mode==='facility'?demo.station(stationId).name:mode==='ledger'?'肌群':mode==='bed'?'旧床':'物资架';
-    body.innerHTML=mode==='facility'?facilityHTML():mode==='ledger'?ledgerHTML():mode==='bed'?bedHTML():supplyHTML();
+    if(mode==='ledger'){
+      if(!atlas)atlas=createMuscleAtlas({host:body,M,demo,texts,onClose:close});
+      else atlas.refresh();
+    }else{
+      atlas?.destroy();atlas=null;
+      body.innerHTML=mode==='facility'?facilityHTML():mode==='bed'?bedHTML():supplyHTML();
+    }
     body.scrollTop=scroll;if(body.querySelector('.action-list'))body.querySelector('.action-list').scrollTop=actionScroll;
-    if(!win.open){win.showModal();$('close').focus({preventScroll:true});}
-    if(searchFocus){$('muscle-search').focus();$('muscle-search').setSelectionRange(caret,caret);}
+    if(!win.open){win.showModal();(mode==='ledger'?body.querySelector('[data-close]'):$('close')).focus({preventScroll:true});}
   }
   controls();scene?.refresh();updateClock();
 }
-function close(){mode='';$('interaction').close();scene?.clearSelection();}
+function close(){mode='';atlas?.destroy();atlas=null;$('interaction').close();scene?.clearSelection();}
 function activePlace(){const j=demo.state.job;return j?.kind==='train'?demo.getAction(j.actionId).station:j?'bed':null;}
 function openPlace(id,locked=false,requestedTab='train'){
   if(busy()&&activePlace()!==id){notice('进行中');return;}
@@ -83,8 +83,9 @@ function updateClock(){
   const status=document.hidden?'已暂停':left+'秒';globalJob.textContent=name+' · '+status;
   if($('job-time'))$('job-time').textContent=status;if($('job-bar'))$('job-bar').style.width=Math.min(100,(j.ticks+fraction)/total*100)+'%';
 }
-function reset(){if(!demo||!scene||busy()||moving)return;window.NPCSystem.menu.close();close();stopClock();demo.reset($('scenario').value);lastActions=$('scenario').value==='near'?{dumbbell:'lateral_raise'}:{};group=$('scenario').value==='near'?'shoulder_l':'chest';query='';scene.reset();render();}
+function reset(){if(!demo||!scene||busy()||moving)return;window.NPCSystem.menu.close();close();stopClock();demo.reset($('scenario').value);lastActions=$('scenario').value==='near'?{dumbbell:'lateral_raise'}:$('scenario').value==='core-near'?{floor:'diaphragmatic_breathing'}:{};scene.reset();render();}
 $('window-content').addEventListener('click',e=>{
+  if(e.target.closest('.muscle-atlas'))return;
   const b=e.target.closest('button');if(!b||b.disabled)return;
   perform(()=>{
     if(b.dataset.action){selected=b.dataset.action;lastActions[stationId]=selected;}
@@ -92,8 +93,6 @@ $('window-content').addEventListener('click',e=>{
     else if(b.dataset.module)selected=b.dataset.module;
     else if(b.dataset.recover)demo.recover(b.dataset.recover);
     else if(b.dataset.eat){demo.eat(b.dataset.eat);notice(b.dataset.eat==='food'?'饱食 +25':'饮水 +25');}
-    else if(b.dataset.equip)M.equipPassive(b.dataset.equip,group);
-    else if(b.dataset.unequip)M.unequipPassive(b.dataset.unequip);
     else if(b.id==='build'){demo.build(stationId);notice(demo.station(stationId).name+' · 已建造');}
     else if(b.id==='upgrade'){demo.upgrade(selected);notice('升级完成');}
     else if(b.id==='train'){demo.startTraining(selected,batch);tab='train';}
@@ -102,8 +101,7 @@ $('window-content').addEventListener('click',e=>{
     else if(b.id==='dismiss-result')demo.state.last=null;
   });
 });
-$('window-content').addEventListener('change',e=>{if(e.target.id==='batch')batch=Number(e.target.value);if(e.target.id==='group'){group=e.target.value;query='';render();}});
-$('window-content').addEventListener('input',e=>{if(e.target.id==='muscle-search'){query=e.target.value;$('muscle-list').innerHTML=muscleListHTML();}});
+$('window-content').addEventListener('change',e=>{if(e.target.id==='batch')batch=Number(e.target.value);});
 $('close').onclick=close;$('interaction').addEventListener('cancel',e=>{e.preventDefault();close();});
 $('interaction').addEventListener('click',e=>{if(e.target===$('interaction')){const r=e.target.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)close();}});
 $('muscles').onclick=()=>{mode='ledger';render();};
@@ -124,6 +122,7 @@ async function boot(){
   window.GymFacility.bind({position:()=>scene.getActor(),placement:id=>scene.getPlacement(id),level:id=>demo.state.levels[id]||0,job:()=>demo.state.job,action:id=>demo.getAction(id),open:(id,action)=>{openPlace(id,false,action);return true;}});
   await Promise.all(demo.stations.map(s=>window.NPCSystem.preloadNpc(window.GymFacility.npcId(s.id))));
   render();window.GymPrototype={demo,scene,refresh:render};setInterval(updateClock,150);
+  if(new URLSearchParams(location.search).has('atlas')){seedMuscleAtlas(demo,M);mode='ledger';render();}
 }
 controls();
 await boot();

@@ -2,16 +2,17 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 const projectionSource=fs.readFileSync('js/core/map-projection.js','utf8');
-const app=fs.readFileSync('js/scene-app.js','utf8');
-const update=app.match(/function updatePlayerDirectionIndicator\(\) \{[\s\S]*?\n    \}/)[0];
+const mapView=fs.readFileSync('js/scene/map.js','utf8');
 const dirs=[[0,-1],[1,-1],[1,0],[1,1],[0,1],[-1,1],[-1,0],[-1,-1]];
 for(const mode of ['legacy','isometric']){
  const ctx={URLSearchParams,location:{search:'?view='+mode}}; vm.createContext(ctx);vm.runInContext(projectionSource,ctx);
- const element={style:{}};ctx.window=ctx;ctx.document={getElementById:()=>element};ctx.CELL_PX=101;ctx.normalizeFacingDir=x=>x;
- vm.runInContext(update,ctx);
+ const element={style:{}};ctx.window=ctx;
+ ctx.document={getElementById:id=>id==='player-direction-indicator'?element:null};
+ ctx.GameEngine={CELL_PX:101};ctx.SceneCtx={};ctx.addEventListener=()=>{};
+ vm.runInContext(mapView,ctx);ctx.SceneMapView.initialize();ctx.SceneMapView.bind();
  const p=ctx.MapProjection.create({width:3,height:3},101);
  for(let d=0;d<8;d++){
-  ctx.currentFacingDir=d;vm.runInContext('updatePlayerDirectionIndicator()',ctx);
+  ctx.PlayerFacing.setDir(d);
   const match=element.style.transform.match(/^matrix\(([^)]+)\)$/);
   assert.ok(match, mode+' '+d+': the entire triangle must use ground projection');
   const [a,b,c,e,x,y]=match[1].split(',').map(Number);

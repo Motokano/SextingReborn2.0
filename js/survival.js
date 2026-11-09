@@ -24,7 +24,7 @@
         energy: 100,
         mood: 500,
         composure: 10,
-        sexual_ability: 0,
+        sexual_ability: 0, // 基础值；肌肉隐藏奖励按点亮记录派生，不回写此值。
         gender_value: 0,
         nutrition: 40,
         dirtyness: 0,
@@ -251,6 +251,12 @@
         if (options.getNingqiBonus) getNingqiBonus = options.getNingqiBonus;
     }
 
+    function getSexualAbility() {
+        var bonus = global.Muscles && typeof global.Muscles.getSexualAbilityBonus === 'function'
+            ? global.Muscles.getSexualAbilityBonus() : 0;
+        return clamp(Math.round(state.sexual_ability + bonus), get('sexual_ability_min', 0), get('sexual_ability_max', 100));
+    }
+
     function getState() {
         return {
             food_metabolism: foodState ? JSON.parse(JSON.stringify(foodState)) : null,
@@ -262,7 +268,8 @@
             energy_max: get('energy_max', 100),
             mood: state.mood,
             composure: state.composure,
-            sexual_ability: state.sexual_ability,
+            sexual_ability: getSexualAbility(),
+            sexual_ability_base: state.sexual_ability,
             gender_value: state.gender_value,
             nutrition: state.nutrition,
             dirtyness: state.dirtyness,
@@ -321,7 +328,12 @@
         if (s.energy !== undefined) state.energy = round1(clamp(s.energy, 0, get('energy_max', 100)));
         if (s.mood !== undefined) state.mood = clamp(Math.round(s.mood), get('mood_min', 0), get('mood_max', 1000));
         if (s.composure !== undefined) state.composure = clamp(Math.round(s.composure), get('composure_min', 0), get('composure_max', 20));
-        if (s.sexual_ability !== undefined) state.sexual_ability = clamp(Math.round(s.sexual_ability), get('sexual_ability_min', 0), get('sexual_ability_max', 100));
+        // 新快照保存基础值，旧档的 sexual_ability 原本未含肌肉奖励，直接作为基础值迁入。
+        // 不从封顶后的总值反减奖励，避免丢失基础值或在读档／事务回退时重复加点。
+        if (s.sexual_ability_base !== undefined || s.sexual_ability !== undefined) {
+            var sexualAbilityBase = s.sexual_ability_base !== undefined ? s.sexual_ability_base : s.sexual_ability;
+            state.sexual_ability = clamp(Math.round(sexualAbilityBase), get('sexual_ability_min', 0), get('sexual_ability_max', 100));
+        }
         if (s.gender_value !== undefined) state.gender_value = clamp(Math.round(s.gender_value), get('gender_value_min', 0), get('gender_value_max', 100));
         if (s.nutrition !== undefined) state.nutrition = clamp(Number(s.nutrition) || 0, get('nutrition_min', 0), get('nutrition_max', 100));
         if (s.dirtyness !== undefined) state.dirtyness = clamp(Math.round(s.dirtyness), get('dirtyness_min', 0), get('dirtyness_max', 100));
@@ -513,6 +525,10 @@
             cap += Math.max(0, lv * nPeakPct);
         }
         cap += sumDiqiCapLimitFlatBonuses();
+        // 肌群全通的底气上限奖励为独立乘区，包含上述营养与平值，仍受原硬上限限制。
+        if (global.Muscles && typeof global.Muscles.getDiqiCapMultiplier === 'function') {
+            cap *= global.Muscles.getDiqiCapMultiplier();
+        }
         var hardMax = Number(get('diqi_cap_limit_hard_max', 999999));
         if (isFinite(hardMax) && hardMax >= 0) cap = Math.min(cap, Math.floor(hardMax));
         return Math.max(0, cap);
@@ -1923,7 +1939,9 @@
         // Sleep has its own fixed food/water cost; digestion and outstanding labor still settle.
         if (sleeping && metabolismCfg) metabolismCfg = Object.assign({}, metabolismCfg, { base_expenditure: 0 });
         if (metabolismCfg) {
-            var mealResult = global.FoodMetabolism.tick(foodState, { satiety: state.satiety, nutrition: state.nutrition, weight_kg: state.weight_kg, height_cm: getHeightCm() }, metabolismCfg, { preserveReserves: stepTick });
+            var foodExpMultiplier = global.Muscles && typeof global.Muscles.getFoodExperienceMultiplier === 'function'
+                ? global.Muscles.getFoodExperienceMultiplier() : 1;
+            var mealResult = global.FoodMetabolism.tick(foodState, { satiety: state.satiety, nutrition: state.nutrition, weight_kg: state.weight_kg, height_cm: getHeightCm() }, metabolismCfg, { preserveReserves: stepTick, foodExpMultiplier: foodExpMultiplier });
             state.satiety = mealResult.satiety;
             state.nutrition = mealResult.nutrition;
             state.weight_kg = mealResult.weight_kg;
@@ -2328,6 +2346,7 @@
         getMood: getMood,
         syncMoodStateBuff: syncMoodStateBuff,
         getComposure: getComposure,
+        getSexualAbility: getSexualAbility,
         getNutrition: getNutrition,
         getDirtyness: getDirtyness,
         getThirstMax: function () { return get('thirst_max', 100); },

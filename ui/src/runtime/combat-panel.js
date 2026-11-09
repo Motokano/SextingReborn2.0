@@ -13,6 +13,8 @@ export function combatPanel(g, publish, t) {
     const dependencies = () => ({ getSkillLevel: id => IE.getSkillLevel(id) || 0, getMoveUsage: id => IE.getState().skills?.[id]?.move_usage || {}, CombatSkills: g.CombatSkills });
     const equipped = () => IE.getCombatState();
     const skills = category => g.CombatSkills?.getSkillsByCategory(category) || [];
+    const getChain = id => g.Muscles?.getChainSlot(id);
+    const chainView = chain => chain && ({ ...chain, passive: passiveName(g.Muscles.getPassiveById(g.Muscles.getEquippedPassiveForSlot(chain.id))) });
     const getGroup = id => g.Muscles?.getGroups().find(gr => gr.id === id);
     const groupEntries = id => g.Muscles?.getMusclesByGroup(id) || [];
     const countUnlocked = id => groupEntries(id).filter(m => g.Muscles.isUnlocked(m.id)).length;
@@ -26,7 +28,7 @@ export function combatPanel(g, publish, t) {
     function validPicker() {
         if (!picker) return false;
         const c = equipped();
-        if (['muscles', 'passive'].includes(picker.kind)) return s.mode === 'muscles' && learnedMuscles() && !!getGroup(picker.id) && (picker.kind !== 'passive' || g.Muscles.isGroupComplete(picker.id));
+        if (['muscles', 'passive'].includes(picker.kind)) return false;
         if (s.mode === 'muscles') return false;
         if (picker.kind === 'hub') return c.hubs[picker.id] === picker.skillId;
         if (!Object.hasOwn(limbKeys, picker.id) || c.limbs[picker.id]?.active !== picker.skillId) return false;
@@ -43,8 +45,22 @@ export function combatPanel(g, publish, t) {
         const AP = g.Muscles, groups = AP?.getGroups() || [], map = AP?.getEquippedMap() || {};
         const bonus = AP?.getStatBonus() || {}, totals = { maxQi: bonus.maxQi, ...bonus.acquired };
         const all = groups.map(gr => ({ id: gr.id, name: gr.name, region: groupRegion(gr), total: groupEntries(gr.id).length, count: countUnlocked(gr.id), complete: AP.isGroupComplete(gr.id), passive: passiveName(AP.getPassiveById(map[gr.id])) }));
-        return { regions: Object.entries(regions).map(([id, name]) => ({ id, name })), region, groups: all.filter(gr => gr.region === region), total: all.reduce((n, gr) => n + gr.total, 0), count: all.reduce((n, gr) => n + gr.count, 0), complete: all.filter(gr => gr.complete).length, groupTotal: all.length,
-            bonuses: Object.entries(totals).filter(([key, value]) => statLabels[key] && value).map(([key, value]) => ({ name: statLabels[key], value })) };
+        return { chains: AP.getChainSlots().map(chainView), regions: Object.entries(regions).map(([id, name]) => ({ id, name })), region, groups: all.filter(gr => gr.region === region), total: all.reduce((n, gr) => n + gr.total, 0), count: all.reduce((n, gr) => n + gr.count, 0), complete: all.filter(gr => gr.complete).length, groupTotal: all.length,
+            bonuses: Object.entries(totals).filter(([key, value]) => statLabels[key] && value).map(([key, value]) => ({ name: statLabels[key], value }))
+                .concat(Object.entries(bonus.innate || {}).filter(([key, value]) => statLabels[key] && value).map(([key, value]) => ({ name: statLabels[key].replace('后天', '先天'), value })))
+                .concat(Object.entries(bonus.skillDamagePercent || {}).filter(([, value]) => value).map(([limb, delta]) => AP.getEffectDisplay({ type: 'limbSkillDamagePercent', limb, delta })))
+                .concat(Object.entries(bonus.attackSpeedFlat || {}).filter(([, value]) => value).map(([limb, delta]) => AP.getEffectDisplay({ type: 'limbAttackSpeedFlat', limb, delta })))
+                .concat(Object.entries(bonus.attackSpeedPercent || {}).filter(([, value]) => value).map(([limb, delta]) => AP.getEffectDisplay({ type: 'limbAttackSpeedPercent', limb, delta })))
+                .concat(Object.entries(bonus.destroyMaxPercent || {}).filter(([, value]) => value).map(([limb, delta]) => AP.getEffectDisplay({ type: 'limbDestroyMaxPercent', limb, delta })))
+                .concat(Object.entries(bonus.destroyMaxFlat || {}).filter(([, value]) => value).map(([limb, delta]) => AP.getEffectDisplay({ type: 'limbDestroyMaxFlat', limb, delta })))
+                .concat(Object.entries(bonus.acquiredPercent || {}).filter(([, value]) => value).map(([attribute, delta]) => AP.getEffectDisplay({ type: 'acquiredAttributePercent', attribute, delta })))
+                .concat(bonus.carryCapacityKg ? [AP.getEffectDisplay({ type: 'carryCapacityKg', delta: bonus.carryCapacityKg })] : [])
+                .concat(bonus.diqiCapPercent ? [AP.getEffectDisplay({ type: 'diqiCapPercent', delta: bonus.diqiCapPercent })] : [])
+                .concat(bonus.foodExpPercent ? [AP.getEffectDisplay({ type: 'foodExpPercent', delta: bonus.foodExpPercent })] : [])
+                .concat(bonus.foodBuffDurationTicks ? [AP.getEffectDisplay({ type: 'foodBuffDurationTicks', delta: bonus.foodBuffDurationTicks })] : [])
+                .concat(bonus.headDamageReductionPercent ? [AP.getEffectDisplay({ type: 'headDamageReductionPercent', delta: bonus.headDamageReductionPercent })] : [])
+                .concat(bonus.stunGainReductionPercent ? [AP.getEffectDisplay({ type: 'stunGainReductionPercent', delta: bonus.stunGainReductionPercent })] : [])
+                .concat(bonus.parryChancePercent ? [AP.getEffectDisplay({ type: 'parryChancePercent', delta: bonus.parryChancePercent })] : []) };
     }
     function readPicker() {
         const p = picker, CS = g.CombatSkills, CV = g.CombatVariants, AP = g.Muscles, c = equipped();
@@ -65,16 +81,16 @@ export function combatPanel(g, publish, t) {
         } else if (p.kind === 'muscles') {
             const gr = getGroup(p.id), list = groupEntries(p.id), pages = Math.max(1, Math.ceil(list.length / 8));
             p.page = Math.max(0, Math.min(p.page || 0, pages - 1));
-            Object.assign(result, { title: gr.name, count: countUnlocked(p.id), total: list.length, page: p.page, pages, complete: AP.isGroupComplete(p.id), passive: passiveName(AP.getPassiveById(AP.getEquippedPassiveForGroup(p.id))) });
-            result.items = list.slice(p.page * 8, p.page * 8 + 8).map(m => ({ id: m.id, name: gr.side === 'L' ? m.name.replace(/（左）$/, '') : gr.side === 'R' ? m.name.replace(/（右）$/, '') : m.name, fullName: m.name, unlocked: AP.isUnlocked(m.id), progress: AP.getProgress(m.id), effects: (m.effects || []).filter(e => e.delta).map(e => ({ name: statLabels[e.type] || e.type, value: e.delta })) }));
+            Object.assign(result, { title: gr.name, count: countUnlocked(p.id), total: list.length, page: p.page, pages, complete: AP.isGroupComplete(p.id), completionRewards: AP.getGroupCompletionEffects(p.id).map(e => AP.getEffectDisplay(e)), chain: chainView(AP.getChainSlotForGroup(p.id)) });
+            result.items = list.slice(p.page * 8, p.page * 8 + 8).map(m => ({ id: m.id, name: gr.side === 'L' ? m.name.replace(/（左）$/, '') : gr.side === 'R' ? m.name.replace(/（右）$/, '') : m.name, fullName: m.name, unlocked: AP.isUnlocked(m.id), progress: AP.getProgress(m.id), effects: (m.effects || []).filter(e => e.delta).map(e => AP.getEffectDisplay(e)) }));
         } else if (p.kind === 'passive') {
-            result.title = `${getGroup(p.id).name} · 大型被动`;
+            result.title = `${getChain(p.id).name} · 动力链`;
             const map = AP.getEquippedMap();
-            result.items = AP.getPassives().filter(passive => passive.allowed_groups?.includes(p.id)).map(passive => {
+            result.items = AP.getPassives().filter(passive => passive.allowed_slots?.includes(p.id)).map(passive => {
                 const at = Object.keys(map).find(id => map[id] === passive.id), selected = map[p.id] === passive.id, check = AP.canEquipPassive(passive.id, p.id);
-                return { id: passive.id, name: passiveName(passive), description: t(passive.desc_key).split('\n\n').at(-1), selected, disabled: !selected && !check.ok, action: selected ? 'unequip' : 'equip', actionLabel: selected ? '卸下' : at ? `${getGroup(at)?.name || at}已装` : check.ok ? '装配' : check.reason === 'slot_occupied' ? '槽位已占用' : '所需肌群未全通' };
+                return { id: passive.id, name: passiveName(passive), description: t(passive.desc_key).split('\n\n').at(-1), selected, disabled: !selected && !check.ok, action: selected ? 'unequip' : 'equip', actionLabel: selected ? '卸下' : at ? `${getChain(at)?.name || at}已装` : check.ok ? '装配' : check.reason === 'slot_occupied' ? '槽位已占用' : '该部位未全通' };
             });
-            result.empty = '暂无适用被动';
+            result.empty = '暂无适用动力链';
         } else if (p.kind === 'detail') {
             const sk = CS.getSkill(p.skillId), seq = c.move_sequences?.[p.id] || [], move = sk?.moves?.find(m => m.id === seq[0]);
             Object.assign(result, { title: `${label(p.id)} · 配置详情`, name: sk?.name || '未装配', level: IE.getSkillLevel(p.skillId), description: sk?.description || '', move: move?.name || '未选招式', multiplier: moveMultiplier(p.skillId, move), report: api.recipeReport().errors, reportOpen: !!s.recipeSchemaListOpen });
@@ -83,7 +99,7 @@ export function combatPanel(g, publish, t) {
     }
     function refresh() {
         if (!api.getOpen('combat')) { picker = null; editingOrder = false; publish('combat', { open: false }); return; }
-        if (!learnedMuscles() && s.mode === 'muscles') s.mode = 'skills';
+        s.mode = 'skills'; // Muscles are entered only through the top-right HUD.
         if (picker && !validPicker()) picker = null;
         const c = equipped(), ids = IE.COMBAT_LIMB_IDS || Object.keys(limbKeys), order = IE.getLimbStrikeOrderSlice?.() || ids.slice();
         publish('combat', { open: true, muscle: s.mode === 'muscles', unlocked: learnedMuscles(), editingOrder,
@@ -94,18 +110,18 @@ export function combatPanel(g, publish, t) {
     }
     function select(mode, id) {
         if (!api.getOpen('combat')) return;
-        if (mode === 'mode' && ['skills', 'muscles'].includes(id)) {
-            if (id === 'muscles' && !learnedMuscles()) return;
+        if (mode === 'mode' && id === 'skills') {
             s.mode = id; picker = null;
-        } else if (mode === 'region' && Object.hasOwn(regions, id) && learnedMuscles()) { region = id; picker = null; }
+        }
         refresh();
     }
     function openPicker(kind, id, index = 0) {
+        if (['muscles', 'passive'].includes(kind)) return;
         if (!api.getOpen('combat')) return;
         const muscle = ['muscles', 'passive'].includes(kind), c = equipped();
         if (muscle) {
-            if (s.mode !== 'muscles' || !learnedMuscles() || !getGroup(id) || (kind === 'passive' && !g.Muscles.isGroupComplete(id))) return;
-            s.curMuscleCat = id;
+            if (s.mode !== 'muscles' || !learnedMuscles() || (kind === 'muscles' ? !getGroup(id) : !getChain(id)?.unlocked)) return;
+            if (kind === 'muscles') s.curMuscleCat = id;
         } else {
             if (s.mode === 'muscles') return;
             if (kind === 'hub') { if (!['breath', 'footwork'].includes(id)) return; }
@@ -146,13 +162,13 @@ export function combatPanel(g, publish, t) {
     function unlock() { /* Progress is awarded by completed training. */ }
     function passive(id, action, session) {
         if (!currentSession(session) || !validPicker() || picker.kind !== 'passive') return;
-        const AP = g.Muscles, def = AP.getPassiveById(id), group = getGroup(picker.id);
-        if (!def?.allowed_groups?.includes(group.id)) return;
-        if (action === 'unequip' && AP.getEquippedPassiveForGroup(group.id) === id) {
-            if (AP.unequipPassive(id)?.ok) g.GameLog?.log(t('log.system.muscle.passive_unequipped', { name: passiveName(def) }), 'system');
-        } else if (action === 'equip' && AP.canEquipPassive(id, group.id)?.ok && AP.equipPassive(id, group.id)?.ok) {
-            g.GameLog?.log(t('log.system.muscle.passive_equipped', { name: passiveName(def), group: group.name }), 'system');
-            picker = null;
+        const AP = g.Muscles, def = AP.getPassiveById(id), chain = getChain(picker.id);
+        if (!def?.allowed_slots?.includes(chain.id)) return;
+        if (!['equip', 'unequip'].includes(action) || (action === 'unequip' && AP.getEquippedPassiveForSlot(chain.id) !== id)) return;
+        const result = AP.setChainPassive(chain.id, action === 'equip' ? id : null);
+        if (result.ok) {
+            g.GameLog?.log(t(action === 'equip' ? 'log.system.muscle.passive_equipped' : 'log.system.muscle.passive_unequipped', { name: passiveName(def), group: chain.name }), 'system');
+            if (action === 'equip') picker = null;
         }
         refresh();
     }

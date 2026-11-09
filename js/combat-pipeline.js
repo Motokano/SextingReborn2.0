@@ -506,6 +506,10 @@
             pChance = clamp(pChance + gb.chance, 0, caps.chance);
             pReduce = clamp(pReduce + gb.unload + global.ModularWeaponCombat.unloadBonus('player'), 0, caps.shunt);
         }
+        // 全局肌肉招架加值不分承担肢，与其他来源共用最终上限，不增加卸力。
+        if (global.Muscles && global.Muscles.getParryChanceBonus) {
+            pChance = clamp(pChance + global.Muscles.getParryChanceBonus(), 0, caps.chance);
+        }
         // Knee consumes one imbalance stack before this roll, including a deferred simultaneous strike.
         if(ctx.targetUnloadMultiplier!=null)pReduce*=ctx.targetUnloadMultiplier;
         ctx.parryChance = pChance;
@@ -833,8 +837,10 @@
             resist = Math.min(0.9, resist + global.BuffSystem.getAntiStunPct('player'));
         }
         var net = Math.max(1, Math.round(gain * (1 - resist)));
+        // 独立增长倍率在防具／药物抗性结算后应用；同速阶段锁定结果，提交不重复减免。
+        if (IE.getPlayerStunGain) net = IE.getPlayerStunGain(net);
         if (isSimultaneousDryRun(ctx)) { ctx.pendingStunGain = net; return ctx; }
-        var r = IE.addPlayerStun(net);
+        var r = IE.addPlayerStun(net, 1);
         if (!isSimultaneousDryRun(ctx)) {
             if (global.GameLog && typeof global.GameLog.log === 'function' && global.UIText && typeof global.UIText.t === 'function') {
                 try {
@@ -909,7 +915,10 @@
                 if (isFinite(finalTakenMul) && finalTakenMul >= 0) dmg = dmg * finalTakenMul;
             }
         }
-        // 痛打落水狗（damage_scale_by_target_debuff_stacks）：后遗症解析器写入的最终伤害乘区（11-skills 8.3.6 扩展#5 消费点）
+        // 颈部独立卸力：玩家头部受击在全部防御与承伤修正后乘算，最终取整前执行一次。
+        if (def.kind === 'player' && ctx.hitPart === 'head' && global.Muscles && global.Muscles.getHeadDamageMultiplier) {
+            dmg *= global.Muscles.getHeadDamageMultiplier();
+        }
         dmg = Math.max(0, Math.floor(Number(dmg) || 0));
         ctx.finalDamage = dmg;
         if (isSimultaneousDryRun(ctx)) {
@@ -962,7 +971,7 @@
         }
         applyDestroyToDefender(sub);
         if (sub.pendingStunGain && global.InventoryEquipment && global.InventoryEquipment.addPlayerStun) {
-            global.InventoryEquipment.addPlayerStun(sub.pendingStunGain);
+            global.InventoryEquipment.addPlayerStun(sub.pendingStunGain, 1);
         }
         finishAction(Object.assign({}, sub, { simultaneousDryRun: false }));
         if (!global.BuffSystem || typeof global.BuffSystem.triggerBuffPipeline !== 'function') return;

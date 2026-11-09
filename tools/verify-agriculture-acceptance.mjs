@@ -25,27 +25,28 @@ function check(id, label, ok, detail) {
 }
 
 function main() {
-  const sceneApp = read("js/scene-app.js");
+  const agricultureActions = read("js/scene/agriculture.js");
+  const worldTick = read("js/scene/world.js");
   const agPanel = read("js/agriculture-panel.js");
   const agMap = read("js/agriculture-map.js");
   const saveSys = read("js/save-system.js");
   const playerItems = read("js/agriculture-player-items.js");
-  const mapJson = JSON.parse(read("data/maps/M0_Base_Inside_lv_1.json"));
+  const mapJson = JSON.parse(read("data/maps/M0_Base_Outside_lv_1.json"));
   const buildCosts = JSON.parse(read("data/agriculture-build-costs.json"));
   const npcJson = JSON.parse(read("data/npc/npc_station_agriculture_base.json"));
 
   check(
     "tick_global",
     "全局 tick：advanceTick → tickAgricultureAfterWorldTick",
-    sceneApp.includes("tickAgricultureAfterWorldTick()") &&
-      sceneApp.includes("AM.runAgricultureMapTick"),
+    worldTick.includes("tickAgricultureAfterWorldTick()") &&
+      agricultureActions.includes("AM.runAgricultureMapTick"),
     ""
   );
 
   check(
     "panel_freeze",
     "关面板冻工程：仅 agriculturePanelOpen 时 advanceConstructionTask",
-    sceneApp.includes("agriculturePanelOpen && st.task") &&
+    agricultureActions.includes("agriculturePanelOpen && st.task") &&
       agMap.includes('reason: \'panel_closed\''),
     ""
   );
@@ -55,17 +56,17 @@ function main() {
     "收获：peek → 入包 → commit（背包满保留 crop）",
     agMap.includes("function peekHarvestAt") &&
       agMap.includes("function commitHarvestAt") &&
-      sceneApp.includes("peekHarvestAt") &&
-      sceneApp.includes("commitHarvestAt") &&
-      sceneApp.includes("inventory_full"),
+      agricultureActions.includes("peekHarvestAt") &&
+      agricultureActions.includes("commitHarvestAt") &&
+      agricultureActions.includes("inventory_full"),
     ""
   );
 
   check(
     "harvest_prof",
     "收获熟练度：life_planting + harvestCount（仅入包成功）",
-    sceneApp.includes("incrementSkillMoveUsage(PLANTING_SKILL_ID, 'harvest', n)") ||
-      sceneApp.includes('incrementSkillMoveUsage(PLANTING_SKILL_ID, "harvest", n)'),
+    agricultureActions.includes("incrementSkillMoveUsage(PLANTING_SKILL_ID, 'harvest', n)") ||
+      agricultureActions.includes('incrementSkillMoveUsage(PLANTING_SKILL_ID, "harvest", n)'),
     "addAgricultureHarvestProficiency(placed)"
   );
 
@@ -80,7 +81,7 @@ function main() {
     "seeds_backpack",
     "种子列表仅背包：listSeeds",
     playerItems.includes("function listSeeds") &&
-      sceneApp.includes("API.listSeeds"),
+      agricultureActions.includes("API.listSeeds"),
     ""
   );
 
@@ -120,6 +121,8 @@ function main() {
     cwd: root,
     encoding: "utf8",
   });
+  const runtimeTest = spawnSync(process.execPath, ["--test", "tools/test-scene-entry-runtime.mjs", "tools/test-facility-world-time.mjs"], {cwd:root,encoding:"utf8"});
+  check("scene_runtime", "正式模块运行：收获入包/部分提交/零产量、世界时钟和工程冻结", runtimeTest.status===0, (runtimeTest.stdout + runtimeTest.stderr).trim());
   check(
     "test_map",
     "node tools/test-agriculture-map.mjs",

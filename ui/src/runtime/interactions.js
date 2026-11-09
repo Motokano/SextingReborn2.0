@@ -45,14 +45,16 @@ export function mountInteractions(g) {
   disposers.push(g.SceneHud.subscribe('status', () => { refreshActions(); refreshBelt(); }));
   g.AppBoot.afterReady.push(() => { ready = true; refreshActions(); refreshBelt(); });
   flushSync();
-  const navKeys={backpack:'btn.backpack.title',equipment:'btn.equipment.title',survival:'btn.skill_overview.title',combat:'btn.combat.title',save:'btn.save.title','reset-demo-save':'btn.reset.demo.title'};
+  const navKeys={backpack:'btn.backpack.title',equipment:'btn.equipment.title',survival:'btn.skill_overview.title',muscles:'btn.muscles.title',combat:'btn.combat.title',save:'btn.save.title','reset-demo-save':'btn.reset.demo.title'};
   const nav = writable({labels:{}});
-  const refreshNav = () => nav.set({labels:Object.fromEntries(Object.entries(navKeys).map(([id,key]) => [id,text(g,key)]))});
+  const refreshNav = () => nav.set({hidden:{muscles:!g.MusclePanel.isAvailable()},labels:Object.fromEntries(Object.entries(navKeys).map(([id,key]) => [id,text(g,key)]))});
   refreshNav(); g.AppBoot.afterReady.push(refreshNav);
+  disposers.push(g.SceneHud.subscribe('status', refreshNav));
   const navSpecs = [
     ['backpack','🎒','M7 8V6a5 5 0 0 1 10 0v2 M5 8h14l1 13H4L5 8Z M8 13h8v5H8z'],
     ['equipment','♙','m8 3-6 4 3 5 3-2v11h8V10l3 2 3-5-6-4c0 4-8 4-8 0Z'],
     ['survival','🌿','M5 21c0-8 5-14 14-18 1 10-2 16-10 15 M5 21 16 8'],
+    ['muscles','体','M12 3v18 M5 8l7-3 7 3 M5 8v8l7 5 7-5V8 M5 16l7-5 7 5'],
     ['combat','⚔️','m4 3 13 13 M3 4l3-1 13 12-4 4L3 6V4Z M14 20l6-6 M17 18l4 4'],
     ['save','💾','M4 4h6l2 2h8v15H4V4Z M8 11h8 M8 15h8'],
     ['reset-demo-save','🧹','M5 8a8 8 0 1 1-1 8 M5 3v5h5']

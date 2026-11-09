@@ -18,6 +18,18 @@
         return Math.max(1, Number(base) * mult + extra);
     }
 
+    /** base 为已结算全局修正的速度；肢体百分比复用原速度加算区，再加固定奖励。 */
+    function playerAttackSpeed(base, attackInfo) {
+        var a = attackInfo || {}, M = global.Muscles;
+        var eligible = !a.weaponId && !a.weaponIntent && M;
+        var bonus = eligible && M.getAttackSpeedBonusForLimb
+            ? M.getAttackSpeedBonusForLimb(a.limbId) : 0;
+        var pct = eligible && M.getAttackSpeedPercentForLimb ? M.getAttackSpeedPercentForLimb(a.limbId) : 0;
+        var CA = global.CharacterAttributes;
+        var extra = pct && CA && CA.getCombatSpeed ? CA.getCombatSpeed(pct) - CA.getCombatSpeed() : 0;
+        return Math.max(1, Number(base) + extra + bonus);
+    }
+
     /**
      * 玩家当前攻击生效的后遗症 id 列表（34 号草案阶段三：来源为肌群大型被动的装配；
      * 生效边界见 Muscles.getEquippedPostEffectIdsForAttack —— 招式形态调用装配肌群才触发，
@@ -64,7 +76,8 @@
         if (!isFinite(VpRaw)) VpRaw = 0;
         if (!isFinite(VeRaw)) VeRaw = 0;
         // 保留小数比较（05 5.7：内部小数，仅展示取整）；同速 = 精确相等时同时结算
-        var Vp = effectiveSpeed('player', VpRaw);
+        var playerBaseSpeed = effectiveSpeed('player', VpRaw);
+        var Vp = playerAttackSpeed(playerBaseSpeed, o);
         var Ve = effectiveSpeed(String(o.enemyOwnerId || ''), VeRaw);
         if (Vp < 1) Vp = 1;
         if (Ve < 1) Ve = 1;
@@ -108,13 +121,13 @@
         }
 
         if (atkForced) {
-            return { mode: 'sequential', firstStrike: 'player', attackerForced: true, defenderForced: false, canceledForced: canceled,playerSpeed:Vp,enemySpeed:Ve };
+            return { mode: 'sequential', firstStrike: 'player', attackerForced: true, defenderForced: false, canceledForced: canceled,playerSpeed:Vp,playerBaseSpeed:playerBaseSpeed,enemySpeed:Ve };
         }
         if (defForced) {
-            return { mode: 'sequential', firstStrike: 'enemy', attackerForced: false, defenderForced: true, canceledForced: canceled,playerSpeed:Vp,enemySpeed:Ve };
+            return { mode: 'sequential', firstStrike: 'enemy', attackerForced: false, defenderForced: true, canceledForced: canceled,playerSpeed:Vp,playerBaseSpeed:playerBaseSpeed,enemySpeed:Ve };
         }
 
-        return { mode: mode, firstStrike: firstStrike, attackerForced: false, defenderForced: false, canceledForced: canceled,playerSpeed:Vp,enemySpeed:Ve };
+        return { mode: mode, firstStrike: firstStrike, attackerForced: false, defenderForced: false, canceledForced: canceled,playerSpeed:Vp,playerBaseSpeed:playerBaseSpeed,enemySpeed:Ve };
     }
 
     function getEnemyAttackSkillId() {
@@ -127,6 +140,7 @@
 
     global.CombatInitiative = {
         effectiveSpeed: effectiveSpeed,
+        playerAttackSpeed: playerAttackSpeed,
         getPlayerPostEffectIds: getPlayerPostEffectIds,
         hasInitiativeAlwaysFirstAmong: hasInitiativeAlwaysFirstAmong,
         resolvePlayerInitiatedExchange: resolvePlayerInitiatedExchange,

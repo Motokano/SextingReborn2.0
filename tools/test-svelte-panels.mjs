@@ -53,14 +53,14 @@ test('P3 native/Svelte same save: backpack details/equipment, skill tabs, shared
             const IE = f.g.InventoryEquipment;
             IE.getState().skills[(IE.SPECIAL_MERIDIAN_STUDIES_SKILL_ID || 'special_meridian_studies')] = { level: 1 };
             f.g.SceneApp.closePublicModal('modal-combat');
-            f.g.SceneApp.openCombatPanel();
             await f.drain();
-            await click(f, '[data-mode="muscles"]');
+            f.g.SceneHud.refresh('status');
+            await click(f, '#btn-muscles');
         }
-        assert.equal(n.document.querySelectorAll('.muscle-table tbody tr').length, 4);
-        eq(leaf(g, '.muscle-table tbody tr'), leaf(n, '.muscle-table tbody tr'));
-        for (const f of [old, h]) await click(f, '[data-group-open=shoulder_l]');
-        eq(leaf(g, '.muscle-tile'), leaf(n, '.muscle-tile'));
+        assert.equal(n.document.querySelectorAll('#modal-muscles [data-slot]').length, 7);
+        eq(leaf(g, '#modal-muscles [data-slot]'), leaf(n, '#modal-muscles [data-slot]'));
+        for (const f of [old, h]) await click(f, '#modal-muscles [data-group=shoulder_l]');
+        eq(leaf(g, '.ma-muscle-info'), leaf(n, '.ma-muscle-info'));
         assert.deepEqual(h.errors, []);
         assert.deepEqual(old.errors, []);
     }
@@ -95,62 +95,53 @@ test('approved default loadout: ownership, breathing costs, muscle gate/progress
         assert.equal(ticks, 3, 'equipping breathing costs one tick');
 
         IE.getState().skills.special_meridian_studies = { level: 1 };
-        g.SvelteCombat.refresh(); await h.drain();
-        await click(h, '[data-mode=muscles]');
-        await click(h, '[data-group-open=shoulder_l]');
-        assert.ok(d.querySelector('#modal-combat .window').inert);
-        const muscle = AP.getMusclesByGroup('shoulder_l')[0];
-        await click(h, `[data-muscle=${muscle.id}] button`);
-        assert.equal(AP.isUnlocked(muscle.id), true);
-        assert.ok(d.activeElement.closest(`[data-muscle=${muscle.id}]`), 'unlock keeps focus on the same tile');
-        const bonus = AP.getStatBonus();
-        for (const [key, name] of [['jingu', '后天筋骨'], ['flexibility', '后天柔韧'], ['breath', '后天呼吸'], ['dexterity', '后天身手']]) {
-            if (bonus.acquired[key]) assert.ok(compact(d.querySelector('.muscle-bonuses').textContent).includes(name + '+' + bonus.acquired[key]));
-        }
-        assert.equal(d.querySelector('[data-group-passive=shoulder_l]'), null, 'partial group cannot equip a passive');
-        d.activeElement.dispatchEvent(new g.KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
-        await h.drain();
-        assert.equal(d.querySelector('#combat-loadout-picker'), null);
-        assert.equal(g.SceneApp.panelApi.getOpen('combat'), true, 'nested Escape keeps main loadout open');
-        assert.equal(ticks, 3, 'nested navigation and unlock do not advance time');
-
-        for (const group of ['shoulder_l', 'shoulder_r']) for (const entry of AP.getMusclesByGroup(group)) AP.unlock(entry.id);
-        g.SvelteCombat.refresh(); await h.drain();
-        await click(h, '[data-group-passive=shoulder_l]');
-        const equip = d.querySelector('[data-passive]:not(:disabled)'), passiveId = equip.dataset.passive;
-        equip.click(); await h.drain();
-        assert.equal(AP.getEquippedPassiveForGroup('shoulder_l'), passiveId);
-        await click(h, '[data-region=rhand]');
-        await click(h, '[data-group-passive=shoulder_r]');
-        assert.equal(d.querySelector(`[data-passive=${passiveId}]`).disabled, true, 'equipped passive remains globally unique');
-        await click(h, '#combat-loadout-picker .close');
-        await click(h, '[data-region=headneck]');
-        await click(h, '[data-group-open=head]');
-        const firstPage = [...d.querySelectorAll('[data-muscle]')].map(el => el.dataset.muscle);
-        assert.equal(firstPage.length, 8);
-        await click(h, '[aria-label="下一页肌肉"]');
-        assert.ok([...d.querySelectorAll('[data-muscle]')].every(el => !firstPage.includes(el.dataset.muscle)));
-        await click(h, '[aria-label="上一页肌肉"]');
-        eq([...d.querySelectorAll('[data-muscle]')].map(el => el.dataset.muscle), firstPage);
-        await click(h, '#combat-loadout-picker .close');
-
-        const savedMuscles = JSON.parse(JSON.stringify(AP.getState())), savedCombat = IE.getCombatState(), snapshot = g.SaveSystem.buildSnapshotForDebug();
-        AP.setState({ unlocked: {}, equipped: {} });
-        IE.setCombatState({ hubs: { breath: null } });
-        assert.equal(g.SaveSystem.applySnapshotForDebug(snapshot), true);
-        eq(AP.getState(), savedMuscles); eq(IE.getCombatState(), savedCombat);
-        g.SceneApp.openCombatPanel(); await h.drain();
-        await click(h, '[data-mode=muscles]');
-        await click(h, '[data-region=lhand]');
-        await click(h, '[data-group-open=shoulder_l]');
-        IE.getState().skills.special_meridian_studies.level = 0;
-        g.SvelteCombat.refresh(); await h.drain();
-        assert.equal(d.querySelector('#combat-loadout-picker'), null, 'losing the gate dismisses old muscle UI');
-        assert.equal(d.querySelector('[data-mode=muscles]'), null);
+        g.SceneHud.refresh('status'); await h.drain();
+        assert.equal(d.querySelector('#modal-combat [data-mode=muscles]'),null,'muscle entry is exclusively in the HUD');
         await click(h, '#combat-modal-close');
+        await click(h, '#btn-muscles');
+        assert.equal(ticks,5,'each panel keeps its original opening/closing cost');
+        await click(h, '#modal-muscles [data-group=shoulder_l]');
+        const muscle=AP.getMusclesByGroup('shoulder_l')[0];
+        await click(h, '#modal-muscles [data-muscle="'+muscle.id+'"]');
+        assert.equal(AP.isUnlocked(muscle.id),false,'viewing does not unlock');
+        AP.addGrowth(muscle.id,19.75);g.SceneHud.refresh('status');await h.drain();
+        assert.match(d.querySelector('.ma-muscle-progress').textContent,/19\.750%/);
+        AP.addGrowth(muscle.id,80.25);g.SceneHud.refresh('status');await h.drain();
+        assert.equal(AP.isUnlocked(muscle.id),true);assert.match(d.querySelector('.ma-muscle-progress').textContent,/100\.000%/);
+        await click(h, '#modal-muscles [data-view=rewards]');
+        const bonus=AP.getStatBonus();
+        for(const [key,name] of [['jingu','后天筋骨'],['flexibility','后天柔韧'],['breath','后天呼吸'],['dexterity','后天身手']]){
+            if(bonus.acquired[key])assert.ok(compact(d.querySelector('.ma-rewards-overview').textContent).includes(name+'+'+bonus.acquired[key]));
+        }
+        await click(h, '#modal-muscles [data-view=chain]');
+        assert.equal(d.querySelector('#modal-muscles [data-passive]').disabled,true,'partial body cannot equip');
+        assert.equal(ticks,5,'reading growth is free');
+        d.activeElement.dispatchEvent(new g.KeyboardEvent('keydown',{key:'Escape',bubbles:true,cancelable:true}));await h.drain();
+        assert.equal(g.MusclePanel.isOpen(),false);assert.equal(g.SceneApp.combatApi.getOpen('combat'),false);
+        assert.equal(ticks,6);
+        for(const group of ['shoulder_l','upperarm_l','forearm_l','hand_l','shoulder_r','upperarm_r','forearm_r','hand_r'])for(const entry of AP.getMusclesByGroup(group))AP.unlock(entry.id);
+        await click(h,'#btn-muscles');await click(h,'#modal-muscles [data-view=chain]');
+        const equip=d.querySelector('#modal-muscles [data-passive]:not(:disabled)'),passiveId=equip.dataset.passive;
+        equip.click();await h.drain();assert.equal(AP.getEquippedPassiveForGroup('shoulder_l'),passiveId);
+        await click(h,'#modal-muscles [data-slot=rhand]');
+        assert.equal(d.querySelector('#modal-muscles [data-chain-id="'+passiveId+'"]').disabled,true,'passives stay globally unique');
+        await click(h,'#modal-muscles [data-slot=head]');await click(h,'#modal-muscles [data-view=muscles]');
+        const head=AP.getMusclesByGroup('head');
+        assert.equal(d.querySelectorAll('#modal-muscles [data-muscle]').length,97);
+        const search=d.querySelector('#modal-muscles [data-search]');search.value=head[0].name;search.dispatchEvent(new g.Event('input',{bubbles:true}));await h.drain();
+        assert.equal(d.querySelectorAll('#modal-muscles [data-muscle]').length,1);
+        assert.equal(d.querySelector('#modal-muscles [data-muscle]').dataset.muscle,head[0].id);
+        const savedMuscles=JSON.parse(JSON.stringify(AP.getState())),savedCombat=IE.getCombatState(),snapshot=g.SaveSystem.buildSnapshotForDebug();
+        AP.setState({unlocked:{},equipped:{}});IE.setCombatState({hubs:{breath:null}});
+        assert.equal(g.SaveSystem.applySnapshotForDebug(snapshot),true);
+        eq(AP.getState(),savedMuscles);eq(IE.getCombatState(),savedCombat);
+        IE.getState().skills.special_meridian_studies.level=0;g.SceneHud.refresh('status');await h.drain();
+        assert.equal(g.MusclePanel.isOpen(),false,'lost gate dismisses the atlas');
+        assert.equal(d.getElementById('btn-muscles').hidden,true);
         assert.deepEqual(h.errors, []);
     } finally { await h.close(); }
 });
+
 test('P3 inventory single consumption, identity on drop/pick/equip, stale click rejected, all seven medication targets', async () => {
     const h = await boot(true), g = h.g, IE = g.InventoryEquipment, d = g.document;
     try {
@@ -459,30 +450,18 @@ test('P3 study controls, muscle unlock/passive equipment and variant slots use e
         await click(h, '[data-skill-tab=special]');
         await click(h, '.survival-plus-btn');
         await click(h, '#survival-modal-close');
-        g.SceneApp.openCombatPanel();
-        await h.drain();
-        await click(h, '[data-mode=muscles]');
-        await click(h, '[data-group-open=shoulder_l]');
-        const id = g.Muscles.getMusclesByGroup('shoulder_l')[0].id;
-        await click(h, `[data-muscle=${id}] button`);
-        assert.equal(g.Muscles.isUnlocked(id), true);
-        await click(h, '#combat-loadout-picker .close');
-        for (const group of g.Muscles.getGroups())
-            for (const m of g.Muscles.getMuscleEntriesByGroup(group.id))
-                g.Muscles.unlock(m.id);
-        g.SveltePanels.refresh('combat');
-        await h.drain();
-        await click(h, '[data-group-passive=shoulder_l]');
-        const equip = d.querySelector('[data-passive]:not(:disabled)');
-        assert.ok(equip);
-        equip.click();
-        await h.drain();
-        assert.equal(g.Muscles.getEquippedPassiveIds().length, 1);
-        await click(h, '[data-group-passive=shoulder_l]');
-        await click(h, '.passive-option.active button');
-        assert.equal(g.Muscles.getEquippedPassiveIds().length, 0);
-        await click(h, '#combat-loadout-picker .close');
-        await click(h, '[data-mode=skills]');
+        g.SceneHud.refresh('status');await click(h,'#btn-muscles');
+        await click(h,'#modal-muscles [data-group=shoulder_l]');
+        const id=g.Muscles.getMusclesByGroup('shoulder_l')[0].id;
+        await click(h,'#modal-muscles [data-muscle="'+id+'"]');
+        assert.equal(g.Muscles.isUnlocked(id),false,'viewing never grants growth');
+        for(const group of g.Muscles.getGroups())for(const m of g.Muscles.getMuscleEntriesByGroup(group.id))g.Muscles.addGrowth(m.id,100);
+        g.SceneHud.refresh('status');await h.drain();
+        await click(h,'#modal-muscles [data-view=chain]');
+        const equip=d.querySelector('#modal-muscles [data-passive]:not(:disabled)');assert.ok(equip);
+        const passiveId=equip.dataset.chainId;equip.click();await h.drain();assert.equal(g.Muscles.getEquippedPassiveIds().length,1);
+        await click(h,'#modal-muscles [data-chain-id="'+passiveId+'"]');assert.equal(g.Muscles.getEquippedPassiveIds().length,0);
+        await click(h,'#modal-muscles [data-close]');g.SceneApp.openCombatPanel();await h.drain();
         const state = IE.getState();
         for (const cat of g.CombatSkills.getCategories())
             for (const sk of g.CombatSkills.getSkillsByCategory(cat.id)) {

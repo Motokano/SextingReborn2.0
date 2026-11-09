@@ -37,14 +37,12 @@
 - `UIText.t(key, vars?)`：取文案（缺 key 直接 throw）
 - `UIText.applyDom(root?)`：扫描 `[data-ui]` 并注入；任意节点失败会抛出带节点信息的错误
 
-### 2.4 `js/scene-app.js`（场景模块）
+### 2.4 `js/scene-app.js`（纯接线入口，2026-11-08）
 
-- 负责“场景初始化、配置加载、UI 交互、渲染驱动”。
-- 不再自启动，暴露：
-  - `window.SceneApp.init()`
-  - `window.SceneApp.loadConfig()`
-  - `window.SceneApp.render()`
-- 内部通过 `ui(key, vars)` 统一取文案（对 `UIText.t()` 的包装）。
+- 只按 [职责清单](../architecture/scene-modules.json) 调用所有模块的 `initialize()`，再调用所有模块的 `bind()`；不定义业务函数、规则、状态或回调。
+- `js/scene/startup.js` 负责启动时序和依赖接线，`config.js` 负责配置装载，`session.js` 负责角色恢复，其他动作与界面按职责独立维护。
+- `js/scene/public.js` 只绑定旧的 `SceneApp.init/loadConfig/render` 等兼容接口；文案适配由 `SceneFeedback` 拥有。
+- 不得把接线模块变为替代主文件。完整约束及自动检查见 [场景入口规则](../architecture/scene-entry.md)。
 
 ### 2.5 `js/bootstrap.js`（单一启动入口 + 扩展挂点）
 
@@ -75,9 +73,9 @@
 
 ## 4. 扩展约定（新增模块不破坏启动）
 
-新增模块时，建议：
+新增模块时，必须遵守 [场景入口规则](../architecture/scene-entry.md)，并且：
 
-- 新模块以独立脚本文件形式加载（放在 `bootstrap.js` 之前）。
+- 场景模块在两个登记入口页面同步加载，放在 `scene-app.js` 之前；入口再先于 `bootstrap.js`。新增模块、公开接口、依赖和验证须更新职责清单。
 - 使用 `AppBoot.addBeforeStart/AfterStart` 注册启动逻辑，不要直接在模块文件顶层调用 `init()`。
 - 所有新增 UI 文案必须进入 `data/ui_text_zhCN.json`，并通过 `UIText.t()`/`ui()` 获取。
 - 若模块引入新 `[data-ui]` 节点，必须保证字典 key 齐全；否则启动会主动失败，避免隐性脱钩。

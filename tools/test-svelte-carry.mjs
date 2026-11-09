@@ -19,7 +19,7 @@ function harness({ pilot = true, storage = null } = {}) {
     shouldShowLeftHudBlock(id) { return this.leftHudBlockVisibilityRules[id] !== false; },
     shouldShowSurvivalMetric(id) { return this.survivalMetricVisibilityRules[id] !== false; },
   };
-  g.CharacterAttributes = { getCarryCapacity: () => 30, getEffectiveAttr: () => 10, getBaseInnateAttr: () => 10, getPartDestroy: () => 0, getBodyPartDestroyMax: () => 100 };
+  g.CharacterAttributes = { getCarryCapacity: () => 30, getEffectiveAttr: () => 10, getBaseInnateAttr: () => 10, getInnateAttr: () => 10, getPartDestroy: () => 0, getBodyPartDestroyMax: () => 100 };
   g.InventoryEquipment = { getCurrentCarryWeight: () => weight };
   g.Survival = { getState: () => ({ weight_kg: 70, satiety: 80, thirst: 70, stamina: 60, energy: 50, fatigue: 10, nutrition: 80 }), getMood: () => 400 };
   g.NPCSystem = { isDemoFlagTrue: () => true };

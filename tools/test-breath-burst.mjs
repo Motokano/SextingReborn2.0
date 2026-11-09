@@ -79,8 +79,16 @@ Object.assign(c,{E:c.GameEngine,IE:c.InventoryEquipment,CombatWorld:W,guardPlaye
  pickWorldMeleeAttackIntent:()=>({skillId:'combat_basic_unarmed',moveId,limbId:moveId==='front_kick'?'lfoot':'lhand',advanceCursor:false}),getWorldTotalTicks:()=>ticks,
  ui:k=>k,showMsg:()=>{},getCombatSkillName:x=>x,getMoveDisplayName:(s,m)=>m,getFormTagsForMove:()=>[],bumpCombatRenderProfile:()=>{},render:()=>{},SceneHud:{refresh:()=>{}},
  SceneCtx:{actions:{},clearPlayerExchangeLimbLocks:()=>{}},PlayerFacing:{getDir:()=>2}});
-const scene=read('js/scene-app.js');let begin=scene.indexOf('window.SceneCtx.actions.attackEnemy = function'),end=scene.indexOf('window.SceneCtx.actions.interactNpc =',begin);
-vm.runInContext(scene.slice(begin,end),c);
+c.SceneAccess={guardPlayerComaBlocked:()=>false,isPreCreationGameplayRestricted:()=>false};
+c.SceneFeedback={ui:k=>k,showMsg:()=>{}};
+c.WorldTick={getWorldTotalTicks:()=>ticks};
+c.SceneMapView={bumpCombatRenderProfile:()=>{},render:()=>{}};
+load('scene/selection');c.CombatSelection.initialize();
+load('scene/combat-exchange');c.CombatExchange.initialize();
+// Exercise the whole production module through its public action, including
+// explicit move selection, instead of extracting a function from scene-app.
+c.SceneCtx.actions.attackEnemy=(id,meta)=>c.CombatExchange.attackEnemy(id,{...meta,
+ skill_id:'combat_basic_unarmed',move_id:moveId,limb_id:moveId==='front_kick'?'lfoot':'lhand'});
 BS.removeBuffByBuffId('player','buff_breath_burst');state.qi_li_current=100;st.x=2;enemy.x=3;dealt=0;enemySpent=0;
 c.SceneCtx.actions.attackEnemy('target',{x:3,y:2,fromX:2,fromY:2});
 assert.equal(enemy.x,4);assert.equal(dealt,0);assert.equal(enemySpent,25);assert.equal(ticks,1);

@@ -69,7 +69,7 @@ export function readGrowth(g: any, ready: boolean) {
   }
   return { ready, available: attrsKnown || resourcesKnown, attrsKnown, resourcesKnown, study,
     attrs: attrsKnown ? attrIds.map(id => ({ id, label: text(g, 'status.attr.' + id),
-      value: finite(CA.getEffectiveAttr(id)), base: finite(CA.getBaseInnateAttr?.(id)),
+      value: finite(CA.getEffectiveAttr(id)), base: finite(CA.getInnateAttr?.(id)),
       exp: Math.max(0, Math.floor(Number(exp[id]?.exp) || 0)) })) : [],
     potential: resourcesKnown ? IE.getPotential?.() ?? null : null,
     experience: resourcesKnown ? IE.getCombatExperience?.() ?? null : null };

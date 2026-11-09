@@ -37,25 +37,58 @@ const groups = [
     { id: 'foot_r', name: '右脚', icon: '👣', type: 'side', side: 'R', limb: 'rfoot' }
 ];
 
-// 各群默认效果模板（四维均衡：肌肉不奖励专注，见 34-muscle-system-rework.md §2.3）
-// 每块肌肉 1 点为主；胸（呼吸肌群 18 块）与盆底（17 块）×2 呼吸用于调平四维总量。
-// 全量点满后：筋骨 128 / 身手 126 / 呼吸 125 / 柔韧 133（±4%），专注恒为 0。
+// 各群默认效果模板（奖励重设见 34-muscle-system-rework.md §13）。
+// 未重设群沿用原固定奖励；胸部统一为招架率，盆底为呼吸百分比。
+// 手脚改为对应肢体技能增伤，前臂改为同侧出招速度，肩带改为筋骨百分比；不再有单块固定后天身手。
 const TPL = {
     head: [{ type: 'flexibility', delta: 1 }],
-    neck: [{ type: 'breath', delta: 1 }],
-    back: [{ type: 'jingu', delta: 1 }],
-    chest: [{ type: 'breath', delta: 2 }],
-    abdomen: [{ type: 'flexibility', delta: 1 }],
-    pelvis: [{ type: 'breath', delta: 2 }],
-    shoulder: [{ type: 'dexterity', delta: 1 }],
-    upperarm: [{ type: 'jingu', delta: 1 }],
-    forearm: [{ type: 'dexterity', delta: 1 }],
-    hand: [{ type: 'dexterity', delta: 1 }],
-    hip: [{ type: 'jingu', delta: 1 }],
-    thigh: [{ type: 'jingu', delta: 1 }],
-    calf: [{ type: 'flexibility', delta: 1 }],
-    foot: [{ type: 'dexterity', delta: 1 }]
+    neck: [{ type: 'headDamageReductionPercent', delta: 0.2 }],
+    chest: [{ type: 'parryChancePercent', delta: 0.4 }],
+    abdomen: [{ type: 'foodExpPercent', delta: 4 }],
+    pelvis: [{ type: 'acquiredAttributePercent', attribute: 'breath', delta: 1 }],
+    shoulder: [{ type: 'acquiredAttributePercent', attribute: 'jingu', delta: 1 }],
+    upperarm: [{ type: 'parryChancePercent', delta: 0.1 }],
+    forearm: [{ type: 'limbAttackSpeedPercent', delta: 0.5 }],
+    hand: [{ type: 'limbSkillDamagePercent', delta: 1 }],
+    hip: [{ type: 'acquiredAttributePercent', attribute: 'dexterity', delta: 0.5 }],
+    thigh: [{ type: 'parryChancePercent', delta: 0.1 }],
+    calf: [{ type: 'limbAttackSpeedPercent', delta: 0.5 }],
+    foot: [{ type: 'limbSkillDamagePercent', delta: 1 }]
 };
+
+// 背部按稳定英文键分配奖励，左右同名肌肉同属性；各8对，共16条/属性。
+// 不按目录下标分配，避免调整清单顺序时改变已点亮肌肉的奖励。
+const BACK_ATTRIBUTE_PAIRS = {
+    jingu: ['trapezius', 'latissimus_dorsi', 'teres_major', 'rhomboid_minor',
+        'rhomboid_major', 'longissimus', 'spinalis', 'iliocostalis_lumborum'],
+    flexibility: ['multifidus', 'rotatores', 'intertransversarii', 'interspinales',
+        'semispinalis_thoracis', 'semispinalis_cervicis', 'iliocostalis_cervicis', 'longissimus_cervicis'],
+    breath: ['serratus_posterior_superior', 'serratus_posterior_inferior', 'levatores_costarum', 'subcostales',
+        'iliocostalis', 'iliocostalis_thoracis', 'longissimus_thoracis', 'spinalis_thoracis'],
+    dexterity: ['semispinalis_capitis', 'rectus_capitis_posterior_major', 'rectus_capitis_posterior_minor',
+        'obliquus_capitis_superior', 'obliquus_capitis_inferior', 'longissimus_capitis', 'spinalis_capitis', 'spinalis_cervicis']
+};
+
+// 头部嘴部相关奖励：唇颊/口周、咀嚼、舌、软腭与咽部，共59条。
+// 与进食成长的41条名单不同；这里仅设定点亮奖励，不扩大成长来源。
+const HEAD_FOOD_EXPERIENCE_MUSCLES = new Set([
+    'levator_labii_alaque_nasi', 'levator_labii_superioris', 'zygomaticus_minor', 'zygomaticus_major',
+    'levator_anguli_oris', 'risorius', 'depressor_anguli_oris', 'depressor_labii_inferioris', 'mentalis',
+    'buccinator', 'orbicularis_oris', 'masseter', 'temporalis', 'medial_pterygoid', 'lateral_pterygoid',
+    'genioglossus', 'hyoglossus', 'styloglossus',
+    'superior_longitudinal_lingual', 'inferior_longitudinal_lingual', 'transverse_lingual', 'vertical_lingual',
+    'tensor_veli_palatini', 'levator_veli_palatini', 'palatoglossus', 'palatopharyngeus', 'musculus_uvulae',
+    'superior_pharyngeal_constrictor', 'middle_pharyngeal_constrictor', 'inferior_pharyngeal_constrictor',
+    'stylopharyngeus', 'salpingopharyngeus'
+]);
+
+const HEAD_FOCUS_MUSCLES = new Set([
+    'orbicularis_oculi', 'levator_palpebrae_superioris',
+    'corrugator_supercilii', 'depressor_supercilii', 'procerus',
+    'superior_rectus', 'inferior_rectus', 'medial_rectus', 'lateral_rectus', 'superior_oblique', 'inferior_oblique',
+    'auricularis_anterior', 'auricularis_superior', 'auricularis_posterior', 'tensor_tympani', 'stapedius'
+]);
+const HEAD_DESTROY_MAX_MUSCLES = new Set(['frontalis', 'occipitalis', 'nasalis']);
 
 // 肌肉清单：{ group, cn, en, single?, effects? }
 // 侧群 group 用基础名（shoulder/upperarm/...），脚本展开 _l/_r
@@ -127,7 +160,7 @@ const MUSCLES = [
     { group: 'chest', cn: '肋间内肌', en: 'internal_intercostal' },
     { group: 'chest', cn: '肋间最内肌', en: 'innermost_intercostal' },
     { group: 'chest', cn: '胸横肌', en: 'transversus_thoracis' },
-    { group: 'chest', cn: '膈肌', en: 'diaphragm', single: true, effects: [{ type: 'maxQi', delta: 10 }] },
+    { group: 'chest', cn: '膈肌', en: 'diaphragm', single: true },
 
     // ===== 腹 =====
     { group: 'abdomen', cn: '腹直肌', en: 'rectus_abdominis' },
@@ -351,7 +384,7 @@ const MUSCLES = [
 const SIDE_GROUPS = ['shoulder', 'upperarm', 'forearm', 'hand', 'hip', 'thigh', 'calf', 'foot'];
 const AXIAL_GROUPS = ['head', 'neck', 'back', 'chest', 'abdomen', 'pelvis'];
 
-// 大型被动（阶段三：后遗症迁入，见 34-muscle-system-rework.md §3）
+// 动力链（七部位槽，见 34-muscle-system-rework.md §13.28）
 // post_effect_id 指向 data/post-effects.json 的效果层条目；装配/触发口径见 §3.2/§3.5。
 // 挥拳形态被动：允许槽 = 刺拳/摆拳形态调用的同侧侧群（§4 映射表；不装中轴，保持单侧生效）。
 const PASSIVES = [
@@ -360,6 +393,7 @@ const PASSIVES = [
         name_key: 'posteffect.no_second_thought.name',
         desc_key: 'posteffect.no_second_thought.desc',
         allowed_groups: ['hand_l', 'hand_r', 'upperarm_l', 'upperarm_r', 'shoulder_l', 'shoulder_r', 'forearm_l', 'forearm_r'],
+        allowed_slots: ['lhand', 'rhand'],
         slots_cost: 1,
         post_effect_id: 'post_no_second_thought'
     },
@@ -368,9 +402,20 @@ const PASSIVES = [
         name_key: 'posteffect.po_xiang.name',
         desc_key: 'posteffect.po_xiang.desc',
         allowed_groups: ['hand_l', 'hand_r', 'upperarm_l', 'upperarm_r', 'shoulder_l', 'shoulder_r', 'forearm_l', 'forearm_r'],
+        allowed_slots: ['lhand', 'rhand'],
         slots_cost: 1,
         post_effect_id: 'post_po_xiang'
-    }
+    },
+    ...['post_wound_on_wound', 'post_dog_beat_down'].map(id => ({
+        id,
+        name_key: 'posteffect.' + id.replace(/^post_/, '') + '.name',
+        desc_key: 'posteffect.' + id.replace(/^post_/, '') + '.desc',
+        allowed_groups: ['hand_l', 'hand_r', 'forearm_l', 'forearm_r', 'upperarm_l', 'upperarm_r', 'shoulder_l', 'shoulder_r',
+            'foot_l', 'foot_r', 'calf_l', 'calf_r', 'thigh_l', 'thigh_r', 'hip_l', 'hip_r'],
+        allowed_slots: ['lhand', 'rhand', 'lfoot', 'rfoot'],
+        slots_cost: 1,
+        post_effect_id: id
+    }))
 ];
 
 const muscles = [];
@@ -381,14 +426,51 @@ function addMuscle(groupId, name, en, effects) {
         id: groupId + '_' + en,
         name: name,
         group: groupId,
-        effects: effects || [],
+        effects: (effects || []).map(e => ['limbSkillDamagePercent', 'limbAttackSpeedPercent'].includes(e.type)
+            ? { ...e, limb: groups.find(g => g.id === groupId).limb } : e),
         unlock_cost: 1
     });
     totalCount++;
 }
 
+const backAttributes = new Map();
+for (const [attribute, pairs] of Object.entries(BACK_ATTRIBUTE_PAIRS)) {
+    if (pairs.length !== 8) throw new Error('背部每项属性必须分配8对肌肉：' + attribute);
+    for (const en of pairs) {
+        if (backAttributes.has(en)) throw new Error('背部奖励重复分配：' + en);
+        backAttributes.set(en, attribute);
+    }
+}
+const backPairs = MUSCLES.filter(m => m.group === 'back');
+if (backPairs.length !== 32 || backPairs.some(m => m.single || m.effects || !backAttributes.has(m.en))) {
+    throw new Error('背部必须有32对肌肉，且每对都有唯一属性奖励');
+}
+
+const headFoodMuscles = MUSCLES.filter(m => m.group === 'head' && HEAD_FOOD_EXPERIENCE_MUSCLES.has(m.en));
+if (new Set(headFoodMuscles.map(m => m.en)).size !== HEAD_FOOD_EXPERIENCE_MUSCLES.size
+    || headFoodMuscles.some(m => m.effects) || headFoodMuscles.reduce((n, m) => n + (m.single ? 1 : 2), 0) !== 59) {
+    throw new Error('头部嘴部相关食物经验奖励必须完整覆盖59条肌肉');
+}
+
+for (const [keys, count] of [[HEAD_FOCUS_MUSCLES, 16], [HEAD_DESTROY_MAX_MUSCLES, 3]]) {
+    const entries = MUSCLES.filter(m => m.group === 'head' && keys.has(m.en));
+    if (keys.size !== count || new Set(entries.map(m => m.en)).size !== count
+        || entries.some(m => m.single || m.effects || HEAD_FOOD_EXPERIENCE_MUSCLES.has(m.en))) {
+        throw new Error('眼耳眉专注与头皮鼻部损毁上限奖励必须完整覆盖各自成对肌肉');
+    }
+}
+if ([...HEAD_FOCUS_MUSCLES].some(en => HEAD_DESTROY_MAX_MUSCLES.has(en))) throw new Error('头部奖励重复分配');
+
 MUSCLES.forEach(function (m) {
-    const eff = m.effects || TPL[m.group] || [];
+    const eff = m.group === 'back'
+        ? [{ type: 'acquiredAttributePercent', attribute: backAttributes.get(m.en), delta: 0.5 }]
+        : m.group === 'head' && HEAD_FOOD_EXPERIENCE_MUSCLES.has(m.en)
+        ? [{ type: 'foodExpPercent', delta: 1 }]
+        : m.group === 'head' && HEAD_FOCUS_MUSCLES.has(m.en)
+        ? [{ type: 'acquiredAttributePercent', attribute: 'focus', delta: 0.5 }]
+        : m.group === 'head' && HEAD_DESTROY_MAX_MUSCLES.has(m.en)
+        ? [{ type: 'limbDestroyMaxFlat', limb: 'head', delta: 2 }]
+        : m.effects || TPL[m.group] || [];
     if (SIDE_GROUPS.indexOf(m.group) >= 0) {
         // 侧群：展开左右
         addMuscle(m.group + '_l', m.cn + '（左）', m.en + '_l', eff);

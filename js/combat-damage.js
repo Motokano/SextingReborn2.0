@@ -15,7 +15,7 @@
         return s <= 150 ? s * 0.7 : 105 + 220 * (1 - Math.exp(-(s - 150) / 450));
     }
     function attack(p) {
-        var growth = Math.max(0, 1 + number(p.levelBonus) + number(p.proficiencyBonus) + number(p.innateBonus) + number(p.experienceBonus));
+        var growth = Math.max(0, 1 + number(p.levelBonus) + number(p.proficiencyBonus) + number(p.innateBonus) + number(p.experienceBonus) + number(p.muscleBonus));
         return Math.max(0, number(p.base) * growth * number(p.move, 1) * number(p.power, 1) * number(p.breath, 1));
     }
     function addPath(path, type) { return path.indexOf(type) < 0 ? path.concat([type]) : path.slice(); }

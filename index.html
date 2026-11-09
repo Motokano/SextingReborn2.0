@@ -3597,6 +3597,7 @@
 <link rel="stylesheet" href="css/toolbench-panel.css">
     <link rel="stylesheet" href="css/game-theme.css">
     <link rel="stylesheet" href="css/game-theme-systems.css">
+    <link rel="stylesheet" href="css/muscle-atlas.css">
     <link rel="stylesheet" href="css/dungeon.css">
     <link rel="stylesheet" href="css/npc-menu.css?v=shared-panel-stove-20261027">
     <link rel="stylesheet" href="css/dungeon-loot-effects.css">
@@ -3813,6 +3814,7 @@
                     <button type="button" class="hud-btn" id="btn-backpack" data-ui="btn.backpack.title" data-ui-attr="title">🎒</button>
                     <button type="button" class="hud-btn" id="btn-equipment" data-ui="btn.equipment.title" data-ui-attr="title">♙</button>
                     <button type="button" class="hud-btn" id="btn-survival" data-ui="btn.skill_overview.title" data-ui-attr="title">🌿</button>
+                    <button type="button" class="hud-btn" id="btn-muscles" data-ui="btn.muscles.title" data-ui-attr="title" title="肌肉" hidden>体</button>
                     <button type="button" class="hud-btn" id="btn-combat" data-ui="btn.combat.title" data-ui-attr="title">⚔️</button>
                     <div class="hud-dropdown-wrap" id="player-actions-hud-wrap" style="display:none;">
                         <button type="button" class="hud-btn" id="btn-player-actions" data-ui="btn.player.actions.title" data-ui-attr="title">⚙</button>
@@ -4221,6 +4223,7 @@
             </div>
         </div>
         <!-- 战斗技能枢纽弹窗（布局参考 reference/combat_skill.html） -->
+        <div id="modal-muscles" role="dialog" aria-modal="true" aria-label="肌肉与动力链" tabindex="-1"><div class="muscle-atlas-host"></div></div>
         <div id="modal-combat">
             <div class="combat-panel">
                 <header class="combat-header">
@@ -4228,7 +4231,6 @@
                         <h2 class="combat-panel-title" data-ui="combat.panel.title"></h2>
                         <nav class="combat-main-tabs" aria-label="模式">
                             <button type="button" class="combat-main-tab active" data-mode="skills" data-ui="combat.tab.skills"></button>
-                            <button type="button" class="combat-main-tab" data-mode="muscles" data-ui="combat.tab.muscles"></button>
                         </nav>
                     </div>
                     <button type="button" class="combat-close" id="combat-modal-close" aria-label="关闭">✖</button>
@@ -4617,6 +4619,36 @@
     <script src="js/gym-panel.js"></script>
     <script src="js/gym-entrance-panel.js"></script>
     <script src="js/gym-scene.js"></script>
+    <script src="js/scene/context.js"></script>
+    <script src="js/scene/feedback.js"></script>
+    <script src="js/scene/access.js"></script>
+    <script src="js/scene/map.js"></script>
+    <script src="js/scene/config.js"></script>
+    <script src="js/scene/character.js"></script>
+    <script src="js/scene/status.js"></script>
+    <script src="js/scene/actions.js"></script>
+    <script src="js/scene/station.js"></script>
+    <script src="js/scene/world.js"></script>
+    <script src="js/scene/movement.js"></script>
+    <script src="js/scene/inventory.js"></script>
+    <script src="js/scene/agriculture.js"></script>
+    <script src="js/scene/livestock.js"></script>
+    <script src="js/scene/warehouse.js"></script>
+    <script src="js/scene/compost.js"></script>
+    <script src="js/scene/combat.js"></script>
+    <script src="js/scene/selection.js"></script>
+    <script src="js/scene/combat-exchange.js"></script>
+    <script src="js/muscle-atlas-view.js"></script>
+    <script src="js/scene/muscles.js"></script>
+    <script src="js/scene/debug.js"></script>
+    <script src="js/scene/skills.js"></script>
+    <script src="js/scene/saves.js"></script>
+    <script src="js/scene/windows.js"></script>
+    <script src="js/scene/session.js"></script>
+    <script src="js/scene/startup.js"></script>
+    <script src="js/scene/items.js"></script>
+    <script src="js/scene/navigation.js"></script>
+    <script src="js/scene/public.js"></script>
     <script src="js/scene-app.js"></script>
     <script src="assets/ui/svelte-hud.js?v=checkpoint-stove-20261027"></script>
     <script src="assets/ui/combat-loadout.js"></script>

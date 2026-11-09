@@ -1,0 +1,864 @@
+{
+  "schemaVersion": 1,
+  "entryPages": [
+    "index.html",
+    "tools/street-thug-boss-room-game.html"
+  ],
+  "modules": [
+    {
+      "global": "SceneContextState",
+      "file": "js/scene/context.js",
+      "responsibility": "场景公开上下文、认知可见性与临时交互标记",
+      "exports": [
+        "bind",
+        "initialize"
+      ],
+      "mutableExports": [],
+      "dependencies": [
+        "SceneStatusPanel"
+      ],
+      "verification": [
+        "tools/test-svelte-hud-game.mjs"
+      ]
+    },
+    {
+      "global": "SceneFeedback",
+      "file": "js/scene/feedback.js",
+      "responsibility": "文案与日志适配",
+      "exports": [
+        "bind",
+        "initialize",
+        "showMsg",
+        "ui"
+      ],
+      "mutableExports": [],
+      "dependencies": [],
+      "verification": [
+        "tools/test-svelte-hud-game.mjs"
+      ]
+    },
+    {
+      "global": "SceneAccess",
+      "file": "js/scene/access.js",
+      "responsibility": "场景动作资格与互斥门控",
+      "exports": [
+        "ACTION_TYPES",
+        "bind",
+        "canWorkFacilityLabor",
+        "checkUseRouteGate",
+        "guardPlayerActionBlocked",
+        "guardPlayerComaBlocked",
+        "initialize",
+        "isPlayerActionDisabledByBuff",
+        "isPlayerComaActive",
+        "isPreCreationGameplayRestricted",
+        "isStoryMovementLocked",
+        "showIntroBlockedMsg",
+        "syncIntroShellUi"
+      ],
+      "mutableExports": [],
+      "dependencies": [
+        "MusclePanel",
+        "PlayerActions",
+        "SceneFeedback",
+        "SceneStatusPanel"
+      ],
+      "verification": [
+        "tools/test-sewing-station.mjs",
+        "tools/test-gym-runtime.mjs"
+      ]
+    },
+    {
+      "global": "SceneMapView",
+      "file": "js/scene/map.js",
+      "responsibility": "地图装载合并、角色朝向与渲染调度",
+      "exports": [
+        "bind",
+        "bootstrapMapsFromJson",
+        "bumpCombatRenderProfile",
+        "initialize",
+        "markCellDirty",
+        "refreshRenderProfile",
+        "render",
+        "setFacingFromMove",
+        "setPlayerAvatarSprites"
+      ],
+      "mutableExports": [],
+      "dependencies": [
+        "CombatPanel"
+      ],
+      "verification": [
+        "tools/test-direction-indicator.mjs"
+      ]
+    },
+    {
+      "global": "SceneConfig",
+      "file": "js/scene/config.js",
+      "responsibility": "场景配置加载与默认数据",
+      "exports": [
+        "bind",
+        "initialize",
+        "loadConfig"
+      ],
+      "mutableExports": [],
+      "dependencies": [
+        "AgricultureActions",
+        "PlayerActions",
+        "SceneDebug",
+        "SceneFeedback",
+        "StationActions"
+      ],
+      "verification": [
+        "tools/test-pharmacy-unlock.mjs"
+      ]
+    },
+    {
+      "global": "SceneCharacter",
+      "file": "js/scene/character.js",
+      "responsibility": "创角、确认事务与角色展示同步",
+      "exports": [
+        "bind",
+        "hideCreationOverlay",
+        "initialize",
+        "legacyCreation",
+        "openCharacterCreationAfterIntro",
+        "recalcCharacterStatsFromIE",
+        "updateRoleNameFromCharacter"
+      ],
+      "mutableExports": [],
+      "dependencies": [
+        "SceneAccess",
+        "SceneFeedback",
+        "SceneMapView",
+        "StationActions"
+      ],
+      "verification": [
+        "tools/test-story-opening.mjs",
+        "tools/test-svelte-interactions.mjs"
+      ]
+    },
+    {
+      "global": "SceneStatusPanel",
+      "file": "js/scene/status.js",
+      "responsibility": "原生 HUD 展示与刷新",
+      "exports": [
+        "BODY_PART_IDS",
+        "BODY_PART_LABELS",
+        "bind",
+        "initialize",
+        "setupCombatEngagementFeedback",
+        "timeHudVisible",
+        "updateStatusPanel"
+      ],
+      "mutableExports": [
+        "timeHudVisible"
+      ],
+      "dependencies": [
+        "CombatPanel",
+        "PlayerActions",
+        "SceneCharacter",
+        "SceneFeedback"
+      ],
+      "verification": [
+        "tools/test-svelte-hud-game.mjs"
+      ]
+    },
+    {
+      "global": "PlayerActions",
+      "file": "js/scene/actions.js",
+      "responsibility": "采集、休息、调息、快捷动作及行动菜单",
+      "exports": [
+        "bind",
+        "bindQuickBarPinSlotsOnce",
+        "bindReadyControls",
+        "clearQuickBarPinSlot",
+        "executeQuickBarPinnedSlot",
+        "gatheringIdleAt",
+        "gatheringIdleTimer",
+        "getIdleTickMs",
+        "getQuickBarPinLabel",
+        "idleTickMs",
+        "initialize",
+        "legacyActionMenu",
+        "onGatherClick",
+        "prepareDeath",
+        "prepareFacilityAction",
+        "prepareFacilityLabor",
+        "refreshPlayerActionsMenuUi",
+        "restIdleTimer",
+        "runContextAction",
+        "setRestingActionActive",
+        "startRestIdleTimer",
+        "stopGatheringIdle",
+        "stopGatheringIdleFromScene",
+        "stopRestIdleTimer",
+        "tiaoXiIdleTimer",
+        "trySleepAtBed"
+      ],
+      "mutableExports": [
+        "idleTickMs"
+      ],
+      "dependencies": [
+        "AgricultureActions",
+        "CombatPanel",
+        "InventoryPanel",
+        "ItemUseActions",
+        "LivestockActions",
+        "SavePanel",
+        "SceneAccess",
+        "SceneFeedback",
+        "SceneMapView",
+        "SceneStatusPanel",
+        "SkillOverview",
+        "StationActions",
+        "WarehouseActions"
+      ],
+      "verification": [
+        "tools/test-sleep-runtime.mjs",
+        "tools/test-facility-world-time.mjs"
+      ]
+    },
+    {
+      "global": "StationActions",
+      "file": "js/scene/station.js",
+      "responsibility": "制作启动、站点资源与制作计时",
+      "exports": [
+        "bind",
+        "canAddFuelAtCurrentTile",
+        "canPourWaterAtCurrentTile",
+        "canTakeWaterAtCurrentTile",
+        "getCookingStationAccessories",
+        "getKnownCookingRecipeIds",
+        "getKnownPharmacyRecipeIds",
+        "initialize",
+        "onAddFuelClick",
+        "onPourWaterClick",
+        "onTakeWaterClick",
+        "placeTempCookingStation",
+        "registerCookingRecipeProcessorIfNeeded",
+        "registerPharmacyRecipeProcessorIfNeeded",
+        "removeTempCookingStation",
+        "resetCookingStateForNewCharacter",
+        "setCookingStationAccessories",
+        "startCookingCraftIdleIfNeeded",
+        "stopCookingCraftIdle",
+        "stopPharmacyCraftIdle",
+        "tickPharmacyTempStationsAfterWorldTick",
+        "tryCompoundAtStation",
+        "tryCookAtStation",
+        "tryPharmacyAtStation"
+      ],
+      "mutableExports": [],
+      "dependencies": [
+        "InventoryPanel",
+        "PlayerActions",
+        "SceneAccess",
+        "SceneFeedback",
+        "SceneMapView",
+        "SceneStatusPanel",
+        "WorldTick"
+      ],
+      "verification": [
+        "tools/test-pharmacy-results.mjs",
+        "tools/test-facility-world-time.mjs"
+      ]
+    },
+    {
+      "global": "WorldTick",
+      "file": "js/scene/world.js",
+      "responsibility": "世界时间推进及各系统后置结算顺序",
+      "exports": [
+        "advanceWorldTicks",
+        "bind",
+        "getWorldTotalTicks",
+        "initialize",
+        "patchSurvivalTickForCookingCraftOnce",
+        "patchSurvivalTickForPharmacyCraftOnce",
+        "patchSurvivalTickForWorldSystemsOnce"
+      ],
+      "mutableExports": [],
+      "dependencies": [
+        "AgricultureActions",
+        "LivestockActions",
+        "SceneFeedback",
+        "StationActions",
+        "WarehouseActions"
+      ],
+      "verification": [
+        "tools/test-facility-world-time.mjs"
+      ]
+    },
+    {
+      "global": "SceneMovement",
+      "file": "js/scene/movement.js",
+      "responsibility": "移动、等待、交互意图与蹑步",
+      "exports": [
+        "bind",
+        "initialize",
+        "interactNpc",
+        "onEngineChanged",
+        "tryFootworkNieBuJump",
+        "tryIntentMove",
+        "tryMoveTo",
+        "turnToward",
+        "waitInPlace"
+      ],
+      "mutableExports": [],
+      "dependencies": [
+        "PlayerActions",
+        "SceneAccess",
+        "SceneFeedback",
+        "SceneMapView",
+        "WarehouseActions"
+      ],
+      "verification": [
+        "tools/test-scene-entry-runtime.mjs",
+        "tools/test-combat-map-transition.mjs"
+      ]
+    },
+    {
+      "global": "InventoryPanel",
+      "file": "js/scene/inventory.js",
+      "responsibility": "原生背包/装备面板与显示会话",
+      "exports": [
+        "EQUIP_SLOT_GROUPS",
+        "EQUIP_SLOT_LABELS",
+        "backpackPanelOpen",
+        "backpackUIState",
+        "bind",
+        "closeBackpackPanel",
+        "closeGroundBackpackView",
+        "initialize",
+        "openBackpackPanel",
+        "openEquipmentPanel",
+        "openGroundItems",
+        "updateBackpackPanel"
+      ],
+      "mutableExports": [],
+      "dependencies": [
+        "ItemUseActions",
+        "SceneAccess",
+        "SceneFeedback",
+        "SceneMapView",
+        "SceneStatusPanel"
+      ],
+      "verification": [
+        "tools/test-svelte-panels.mjs",
+        "tools/test-modular-weapon-scene.mjs"
+      ]
+    },
+    {
+      "global": "AgricultureActions",
+      "file": "js/scene/agriculture.js",
+      "responsibility": "农业作业、扣料退料、收获与农业会话",
+      "exports": [
+        "agricultureCropDefsDoc",
+        "agricultureSoilsDoc",
+        "bind",
+        "buildAgricultureEnv",
+        "canUseOutdoorFacility",
+        "closeAgriculturePanel",
+        "getAgricultureInjectables",
+        "getAgricultureMapState",
+        "getAgricultureMapStateMutable",
+        "getAgriculturePlantOptions",
+        "getAgricultureSoilAmendmentOptions",
+        "initialize",
+        "isAgricultureAutoTickEnabled",
+        "isAgricultureUnlocked",
+        "openAgriculturePanel",
+        "payAgricultureBuildCost",
+        "setAgricultureAutoTickEnabled",
+        "setAgricultureMapState",
+        "stopAgricultureAutoTick",
+        "syncOutdoorFacilityPanels",
+        "tickAgricultureAfterWorldTick",
+        "tryAgricultureAction",
+        "unlockAgriculture",
+        "updateAgriculturePanel"
+      ],
+      "mutableExports": [
+        "agricultureCropDefsDoc",
+        "agricultureSoilsDoc"
+      ],
+      "dependencies": [
+        "LivestockActions",
+        "PlayerActions",
+        "SceneAccess",
+        "SceneCharacter",
+        "SceneFeedback",
+        "SceneMapView",
+        "SceneStatusPanel",
+        "WorldTick"
+      ],
+      "verification": [
+        "tools/test-scene-entry-runtime.mjs",
+        "tools/test-facility-world-time.mjs"
+      ]
+    },
+    {
+      "global": "LivestockActions",
+      "file": "js/scene/livestock.js",
+      "responsibility": "畜牧世界推进与面板会话",
+      "exports": [
+        "bind",
+        "closeLivestockPanel",
+        "initialize",
+        "isLivestockAutoTickEnabled",
+        "livestockPanelOpen",
+        "openLivestockPanel",
+        "setLivestockAutoTickEnabled",
+        "stopLivestockAutoTick",
+        "tickLivestockAfterWorldTick",
+        "updateLivestockPanel"
+      ],
+      "mutableExports": [],
+      "dependencies": [
+        "AgricultureActions",
+        "PlayerActions",
+        "SceneAccess",
+        "SceneFeedback",
+        "SceneMapView"
+      ],
+      "verification": [
+        "tools/test-facility-world-time.mjs"
+      ]
+    },
+    {
+      "global": "WarehouseActions",
+      "file": "js/scene/warehouse.js",
+      "responsibility": "仓库工作推进与仓库会话",
+      "exports": [
+        "baseWarehousePanelOpen",
+        "bind",
+        "closeBaseWarehousePanel",
+        "closeHideoutWarehousePanel",
+        "initialize",
+        "isHideoutWarehouseConstructionLive",
+        "openBaseWarehousePanel",
+        "openHideoutWarehousePanel",
+        "takeFromBaseWarehouse",
+        "tickHideoutWarehouseAfterWorldTick"
+      ],
+      "mutableExports": [],
+      "dependencies": [
+        "InventoryPanel",
+        "SceneAccess",
+        "SceneFeedback",
+        "SceneMapView"
+      ],
+      "verification": [
+        "tools/test-facility-world-time.mjs"
+      ]
+    },
+    {
+      "global": "CompostBindings",
+      "file": "js/scene/compost.js",
+      "responsibility": "制肥面板的原生交互绑定",
+      "exports": [
+        "bind",
+        "initialize"
+      ],
+      "mutableExports": [],
+      "dependencies": [
+        "InventoryPanel",
+        "SceneFeedback"
+      ],
+      "verification": [
+        "tools/test-compost-panel.js"
+      ]
+    },
+    {
+      "global": "CombatPanel",
+      "file": "js/scene/combat.js",
+      "responsibility": "战斗装配面板及其公开展示动作",
+      "exports": [
+        "COMBAT_LIMB_IDS",
+        "bind",
+        "closeCombatPanel",
+        "combatPanelOpen",
+        "combatUIState",
+        "handleDeployCombat",
+        "initialize",
+        "legacyCombatApi",
+        "limbActionTags",
+        "openCombatPanel",
+        "renderCombatModal",
+        "safeSetCombatState"
+      ],
+      "mutableExports": [
+        "combatPanelOpen"
+      ],
+      "dependencies": [
+        "CombatSelection",
+        "MusclePanel",
+        "SceneAccess",
+        "SceneDebug",
+        "SceneFeedback",
+        "SceneMapView"
+      ],
+      "verification": [
+        "tools/test-combat-loadout.mjs"
+      ]
+    },
+    {
+      "global": "CombatSelection",
+      "file": "js/scene/selection.js",
+      "responsibility": "战斗招式名称、标签与实际攻击意图选择",
+      "exports": [
+        "bind",
+        "buildDefaultMoveSequenceArray",
+        "getCombatSkillName",
+        "getFormTagsForMove",
+        "getMoveDisplayName",
+        "initialize"
+      ],
+      "mutableExports": [],
+      "dependencies": [
+        "SceneFeedback"
+      ],
+      "verification": [
+        "tools/test-breath-burst.mjs"
+      ]
+    },
+    {
+      "global": "CombatExchange",
+      "file": "js/scene/combat-exchange.js",
+      "responsibility": "一轮交战：先后手、整招重复、同速提交、伤后重选与收束",
+      "exports": [
+        "attackEnemy",
+        "bind",
+        "initialize"
+      ],
+      "mutableExports": [],
+      "dependencies": [
+        "CombatSelection",
+        "SceneAccess",
+        "SceneFeedback",
+        "SceneMapView",
+        "WorldTick"
+      ],
+      "verification": [
+        "tools/test-modular-weapon-scene.mjs",
+        "tools/test-breath-burst.mjs"
+      ]
+    },
+    {
+      "global": "MusclePanel",
+      "file": "js/scene/muscles.js",
+      "responsibility": "肌肉图谱与动力链面板、解剖学入口门槛及装配动作",
+      "exports": [
+        "bind",
+        "close",
+        "equip",
+        "initialize",
+        "isAvailable",
+        "isOpen",
+        "open",
+        "renderMusclePassivePanel",
+        "toggle"
+      ],
+      "mutableExports": [],
+      "dependencies": [
+        "CombatPanel",
+        "SceneAccess",
+        "SceneFeedback"
+      ],
+      "verification": [
+        "tools/test-muscle-head-rewards.mjs",
+        "tools/test-muscle-navigation.mjs"
+      ]
+    },
+    {
+      "global": "SceneDebug",
+      "file": "js/scene/debug.js",
+      "responsibility": "调试操作与配方校验展示",
+      "exports": [
+        "bind",
+        "bindPharmacyDebug",
+        "debugCombatPlus50",
+        "debugOpenPanel",
+        "getRecipeSchemaValidationReport",
+        "initialize",
+        "legacyDebugPanelOpeners",
+        "renderRecipeSchemaValidationDebugList"
+      ],
+      "mutableExports": [],
+      "dependencies": [
+        "AgricultureActions",
+        "CombatPanel",
+        "InventoryPanel",
+        "LivestockActions",
+        "SavePanel",
+        "SceneFeedback",
+        "SceneMapView",
+        "SceneStatusPanel",
+        "SceneWindows",
+        "SkillOverview",
+        "WarehouseActions"
+      ],
+      "verification": [
+        "tools/test-svelte-hud-game.mjs"
+      ]
+    },
+    {
+      "global": "SkillOverview",
+      "file": "js/scene/skills.js",
+      "responsibility": "生存/生活/特殊技能总览",
+      "exports": [
+        "LIFE_SKILL_TABLE",
+        "addSkillLevelGeneric",
+        "bind",
+        "closeSurvivalPanel",
+        "currentSkillOverviewTab",
+        "initialize",
+        "openSurvivalPanel",
+        "renderSurvivalModal",
+        "survivalPanelOpen"
+      ],
+      "mutableExports": [
+        "currentSkillOverviewTab"
+      ],
+      "dependencies": [
+        "CombatPanel",
+        "SceneFeedback",
+        "SceneMapView",
+        "SceneStatusPanel"
+      ],
+      "verification": [
+        "tools/test-svelte-panels.mjs"
+      ]
+    },
+    {
+      "global": "SavePanel",
+      "file": "js/scene/saves.js",
+      "responsibility": "存档窗口与清档确认",
+      "exports": [
+        "bind",
+        "closeSavePanel",
+        "initialize",
+        "openSavePanel",
+        "requestResetProgress",
+        "savePanelOpen"
+      ],
+      "mutableExports": [],
+      "dependencies": [
+        "SceneCharacter",
+        "SceneFeedback",
+        "SceneMapView"
+      ],
+      "verification": [
+        "tools/test-svelte-panels.mjs"
+      ]
+    },
+    {
+      "global": "SceneWindows",
+      "file": "js/scene/windows.js",
+      "responsibility": "窗口注册、布局菜单与可见性",
+      "exports": [
+        "bind",
+        "initialize",
+        "openUiWindowsMenu",
+        "registerUiWindows"
+      ],
+      "mutableExports": [],
+      "dependencies": [
+        "SceneFeedback"
+      ],
+      "verification": [
+        "tools/test-ui-windows.mjs"
+      ]
+    },
+    {
+      "global": "SceneSession",
+      "file": "js/scene/session.js",
+      "responsibility": "地图就绪后的读档、新角色与活动恢复",
+      "exports": [
+        "afterMaps",
+        "bind",
+        "initialize"
+      ],
+      "mutableExports": [],
+      "dependencies": [
+        "SceneAccess",
+        "SceneCharacter",
+        "SceneMapView",
+        "StationActions"
+      ],
+      "verification": [
+        "tools/test-story-opening.mjs",
+        "tools/test-death-system.mjs"
+      ]
+    },
+    {
+      "global": "SceneStartup",
+      "file": "js/scene/startup.js",
+      "responsibility": "启动时序与已加载模块的依赖接线",
+      "exports": [
+        "bind",
+        "init",
+        "initialize"
+      ],
+      "mutableExports": [],
+      "dependencies": [
+        "CombatExchange",
+        "InventoryPanel",
+        "PlayerActions",
+        "SceneAccess",
+        "SceneCharacter",
+        "SceneConfig",
+        "SceneDebug",
+        "SceneFeedback",
+        "SceneMapView",
+        "SceneMovement",
+        "SceneSession",
+        "SceneStatusPanel",
+        "SceneWindows",
+        "StationActions",
+        "WorldTick"
+      ],
+      "verification": [
+        "tools/test-ui-bridge.mjs",
+        "tools/test-scene-entry-runtime.mjs"
+      ],
+      "compositionCalls": [
+        "@promise.catch",
+        "@promise.then",
+        "Promise.all",
+        "Promise.resolve",
+        "window.CombatWorld.setUiDeps",
+        "window.CompostPanel.setUiDeps",
+        "window.CookingStation.setUiDeps",
+        "window.CookingStationPanel.init",
+        "window.CookingStationPanel.refreshIfOpen",
+        "window.CookingStationPanel.setUiDeps",
+        "window.GameLog.log",
+        "window.InventoryPanel.updateBackpackPanel",
+        "window.ItemUse.setUiDeps",
+        "window.LivestockState.setUiDeps",
+        "window.PharmacyStation.setUiDeps",
+        "window.PharmacyStationPanel.init",
+        "window.PharmacyStationPanel.refreshIfOpen",
+        "window.PharmacyStationPanel.setUiDeps",
+        "window.PlayerActions.bindQuickBarPinSlotsOnce",
+        "window.PlayerActions.bindReadyControls",
+        "window.SaveSystem.init",
+        "window.SceneConfig.loadConfig",
+        "window.SceneDebug.bindPharmacyDebug",
+        "window.SceneFeedback.ui",
+        "window.SceneHud.register",
+        "window.SceneHud.subscribe",
+        "window.SceneMapView.bootstrapMapsFromJson",
+        "window.SceneMapView.render",
+        "window.SceneMapView.setPlayerAvatarSprites",
+        "window.SceneRenderer.render",
+        "window.SceneStatusPanel.setupCombatEngagementFeedback",
+        "window.SceneSystems.init",
+        "window.SceneUi.setUiDeps",
+        "window.SceneWindows.registerUiWindows",
+        "window.WorldTick.patchSurvivalTickForWorldSystemsOnce"
+      ]
+    },
+    {
+      "global": "ItemUseActions",
+      "file": "js/scene/items.js",
+      "responsibility": "完整物品使用/装备动作与事务",
+      "exports": [
+        "bind",
+        "initialize",
+        "tryDrinkWaterFlask",
+        "tryEquipItemFromContainer",
+        "tryUseItemFromContainer",
+        "tryUseQuickBeltDigit"
+      ],
+      "mutableExports": [],
+      "dependencies": [
+        "InventoryPanel",
+        "PlayerActions",
+        "SceneAccess",
+        "SceneFeedback",
+        "SceneMapView",
+        "SceneStatusPanel",
+        "WorldTick"
+      ],
+      "verification": [
+        "tools/test-muscle-mouth-rewards.mjs",
+        "tools/test-svelte-interactions.mjs"
+      ]
+    },
+    {
+      "global": "SceneNavigation",
+      "file": "js/scene/navigation.js",
+      "responsibility": "公共界面导航",
+      "exports": [
+        "bind",
+        "closePublicModal",
+        "initialize",
+        "legacyPanelApi",
+        "navigate"
+      ],
+      "mutableExports": [],
+      "dependencies": [
+        "AgricultureActions",
+        "CombatPanel",
+        "CombatSelection",
+        "InventoryPanel",
+        "ItemUseActions",
+        "LivestockActions",
+        "MusclePanel",
+        "SavePanel",
+        "SceneCharacter",
+        "SceneDebug",
+        "SceneFeedback",
+        "SceneMapView",
+        "SceneStatusPanel",
+        "SkillOverview",
+        "WarehouseActions"
+      ],
+      "verification": [
+        "tools/test-svelte-interactions.mjs"
+      ]
+    },
+    {
+      "global": "ScenePublicApi",
+      "file": "js/scene/public.js",
+      "responsibility": "既有 SceneApp 兼容出口；只转发，不新增玩法规则",
+      "exports": [
+        "bind",
+        "initialize"
+      ],
+      "mutableExports": [],
+      "dependencies": [
+        "AgricultureActions",
+        "CombatPanel",
+        "InventoryPanel",
+        "ItemUseActions",
+        "LivestockActions",
+        "PlayerActions",
+        "SavePanel",
+        "SceneAccess",
+        "SceneCharacter",
+        "SceneConfig",
+        "SceneDebug",
+        "SceneMapView",
+        "SceneNavigation",
+        "SceneStartup",
+        "SceneWindows",
+        "SkillOverview",
+        "StationActions",
+        "WarehouseActions",
+        "WorldTick"
+      ],
+      "verification": [
+        "tools/test-scene-entry-runtime.mjs"
+      ],
+      "compositionCalls": [
+        "window.CombatPanel.legacyCombatApi",
+        "window.PlayerActions.legacyActionMenu",
+        "window.SceneCharacter.legacyCreation",
+        "window.SceneDebug.legacyDebugPanelOpeners",
+        "window.SceneNavigation.legacyPanelApi"
+      ]
+    }
+  ]
+}

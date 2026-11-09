@@ -86,7 +86,7 @@ function numeric(id,value,max,unit=''){const el=$(id);if(!el)return;const html=n
 function update(){
  const s=g.Survival&&g.Survival.getState();const CA=g.CharacterAttributes,IE=g.InventoryEquipment;
  if(s){numeric('status-satiety-text',s.satiety,120);numeric('status-thirst-text',s.thirst,100);numeric('status-stamina-text',s.stamina,s.stamina_max||100);numeric('status-energy-text',s.energy,s.energy_max||100);numeric('status-fatigue-text',s.fatigue,100);numeric('status-nutrition',s.nutrition,100);numeric('status-mood',g.Survival.getMood?g.Survival.getMood():s.mood,1000);numeric('status-dirtyness',s.dirtyness,100);}
- if(CA){['jingu','flexibility','breath','dexterity','focus'].forEach(id=>{const el=$('status-attr-'+id);if(el){el.title='先天 '+number(CA.getBaseInnateAttr(id))+' · 当前 '+String(CA.getEffectiveAttr(id));el.textContent=String(Number(Number(CA.getEffectiveAttr(id)).toFixed(1)));}});}
+ if(CA){['jingu','flexibility','breath','dexterity','focus'].forEach(id=>{const el=$('status-attr-'+id);if(el){el.title='先天 '+number(CA.getInnateAttr(id))+' · 当前 '+String(CA.getEffectiveAttr(id));el.textContent=String(Number(Number(CA.getEffectiveAttr(id)).toFixed(1)));}});}
  const rows=$('limb-rows');
  if(CA&&rows){
   if(!rows.querySelector('.field-caption')){const cap=document.createElement('div');cap.className='field-caption';cap.textContent='累计损毁 / 损毁上限';rows.prepend(cap);}

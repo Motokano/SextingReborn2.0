@@ -159,9 +159,9 @@ body :is(#modal-combat.combat-loadout,#combat-loadout-picker) .muscle-totals sma
 body :is(#modal-combat.combat-loadout,#combat-loadout-picker) .muscle-table-wrap{padding:0 23px 8px;overflow-x:auto}
 body :is(#modal-combat.combat-loadout,#combat-loadout-picker) .muscle-table{width:100%;min-width:510px;border-collapse:separate;border-spacing:0;table-layout:fixed;text-align:left}
 body :is(#modal-combat.combat-loadout,#combat-loadout-picker) .muscle-table thead th{padding:10px 16px 12px;border-bottom:1px solid #7e785744;box-shadow:0 1px #0007;font-size:11px;font-weight:400;letter-spacing:.08em;color:#aab297}
-body :is(#modal-combat.combat-loadout,#combat-loadout-picker) .muscle-table thead th:nth-child(1){width:22%}
-body :is(#modal-combat.combat-loadout,#combat-loadout-picker) .muscle-table thead th:nth-child(2){width:28%}
-body :is(#modal-combat.combat-loadout,#combat-loadout-picker) .muscle-table thead th:nth-child(3){width:38%}
+body :is(#modal-combat.combat-loadout,#combat-loadout-picker) .muscle-table thead th:nth-child(1){width:35%}
+body :is(#modal-combat.combat-loadout,#combat-loadout-picker) .muscle-table thead th:nth-child(2){width:45%}
+body :is(#modal-combat.combat-loadout,#combat-loadout-picker) .muscle-table thead th:nth-child(3){width:20%}
 body :is(#modal-combat.combat-loadout,#combat-loadout-picker) .muscle-table thead th:nth-child(4){width:12%}
 body :is(#modal-combat.combat-loadout,#combat-loadout-picker) .muscle-table tbody :is(td,th){padding:20px 16px;border-bottom:1px solid #7b765536;border-top:1px solid #060c0870;vertical-align:middle;font-weight:400;text-shadow:0 1px #0009}
 body :is(#modal-combat.combat-loadout,#combat-loadout-picker) .muscle-table tbody tr:last-child :is(td,th){border-bottom:0}
@@ -285,3 +285,15 @@ body :is(#modal-combat.combat-loadout,#combat-loadout-picker) .table-slot.filled
 body :is(#modal-combat.combat-loadout,#combat-loadout-picker) .muscle-tile{text-align:left}
 @media(max-width:600px){#modal-combat.combat-loadout,#combat-loadout-picker{padding:12px}body :is(#modal-combat.combat-loadout,#combat-loadout-picker) .window{max-height:calc(100dvh - 24px)}body :is(#modal-combat.combat-loadout,#combat-loadout-picker) .window-head{gap:10px}body :is(#modal-combat.combat-loadout,#combat-loadout-picker) .window-head h1{font-size:18px;letter-spacing:1px;gap:7px}body :is(#modal-combat.combat-loadout,#combat-loadout-picker) .window-tabs button{padding:5px 10px}}
 @media(prefers-reduced-motion:reduce){body :is(#modal-combat.combat-loadout,#combat-loadout-picker) button{transition:none}}
+
+body #modal-combat.combat-loadout .chain-section{padding:0 23px 18px}
+body #modal-combat.combat-loadout .chain-heading{display:flex;justify-content:space-between;color:#cbbd97;font-size:13px;margin-bottom:9px}
+body #modal-combat.combat-loadout .chain-heading small{color:#99a38e}
+body #modal-combat.combat-loadout .chain-slots{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+body #modal-combat.combat-loadout .chain-slot{display:flex;flex-direction:column;gap:7px;align-items:center;padding:10px 3px;border:1px solid #67734644;border-radius:4px;background:var(--case-grain),#18251b;color:#96a086;min-width:0}
+body #modal-combat.combat-loadout .chain-slot strong{font:16px 'SimSun',serif;color:#c9cbb4}
+body #modal-combat.combat-loadout .chain-slot span{font-size:11px}
+body #modal-combat.combat-loadout .chain-slot small{font-size:10px;font-variant-numeric:tabular-nums}
+body #modal-combat.combat-loadout .chain-slot:disabled{opacity:.7;cursor:default}
+body #modal-combat.combat-loadout .chain-slot.ready{border-color:#a7996977;color:#d3c39b}
+@media(max-width:560px){body #modal-combat.combat-loadout .chain-section{padding:0 12px 12px}body #modal-combat.combat-loadout .chain-slots{grid-template-columns:repeat(4,minmax(0,1fr))}}

@@ -103,8 +103,7 @@
     }
 
     /** 各部位损毁「满值」：优先 `survival-config.body_part_destroy_max`，缺键时四肢回退 `limb_destroy_max`，躯干回退 09 设计值 */
-    function getBodyPartDestroyMax(canonicalOrHudKey) {
-        var key = normalizePartDestroyKey(canonicalOrHudKey);
+    function getBaseBodyPartDestroyMax(key) {
         var tab = getCfg('body_part_destroy_max', null);
         if (tab && typeof tab === 'object' && tab[key] != null) {
             var tv = Math.floor(Number(tab[key]) || 0);
@@ -115,6 +114,16 @@
         var designFb = { head: 50, chest: 100, abdomen: 80 };
         if (designFb[key] != null) return Math.max(1, designFb[key]);
         return Math.max(1, limbFb);
+    }
+
+    function getBodyPartDestroyMax(canonicalOrHudKey) {
+        var key = normalizeDestroyKeyForCombat(canonicalOrHudKey);
+        var base = getBaseBodyPartDestroyMax(key);
+        var pct = global.Muscles && typeof global.Muscles.getDestroyMaxPercentForLimb === 'function'
+            ? global.Muscles.getDestroyMaxPercentForLimb(key) : 0;
+        var flat = global.Muscles && typeof global.Muscles.getDestroyMaxFlatForLimb === 'function'
+            ? global.Muscles.getDestroyMaxFlatForLimb(key) : 0;
+        return Math.max(1, Math.floor(base * (100 + pct) / 100 + flat));
     }
 
     function mergePartDestroyScalar(rawKey, val) {
@@ -286,7 +295,7 @@
     /** 47 §4.2：外部实际值乘区（成瘾阶段惩罚）；缺省 1 = 无影响。 */
     var externalAcquiredMultiplier = { jingu: 1, flexibility: 1, breath: 1, dexterity: 1, focus: 1 };
 
-    // 肌肉/来源带来的“先天五维”奖励缓存（每次重算时覆盖写入；先天成就待定，见 34 §6）
+    // 肌肉带来的先天五维奖励缓存，每次重算覆盖；不混入创角基础值或重复累加。
     var innateBonusFromMuscles = { jingu: 0, flexibility: 0, breath: 0, dexterity: 0, focus: 0 };
 
     /** 缓存：重算后写入，公式与 UI 只读缓存 */
@@ -534,8 +543,8 @@
         state.acquired.dexterity += externalAcquiredBonus.dexterity || 0;
         state.acquired.focus += externalAcquiredBonus.focus || 0;
 
-        // 肌肉来源（替代原经脉穴位，见 34-muscle-system-rework.md）：后天四维（不奖励专注）+ 底气上限 maxQi；先天成就待定（34 §6）
-        var extraMaxQi = 0;
+        // 肌肉来源：单块后天奖励、底气上限，以及核心／头部等完成条件的先天奖励。
+        var extraMaxQi = 0, extraCarryCapacityKg = 0;
         for (var k in innateBonusFromMuscles) {
             if (innateBonusFromMuscles.hasOwnProperty(k)) innateBonusFromMuscles[k] = 0;
         }
@@ -547,8 +556,12 @@
             state.acquired.breath      += acq.breath      || 0;
             state.acquired.dexterity   += acq.dexterity   || 0;
             state.acquired.focus       += acq.focus       || 0;
-            // innate（先天成就）保持 0：原任督/全通先天奖励的去留见 34 §6 未决项
+            var innate = bonus.innate || {};
+            ATTR_IDS.forEach(function (id) {
+                innateBonusFromMuscles[id] = Number(innate[id]) || 0;
+            });
             extraMaxQi = bonus.maxQi || 0;
+            extraCarryCapacityKg = Number(bonus.carryCapacityKg) || 0;
         }
 
         // 47 §4.2：成瘾阶段惩罚——按「实际值乘区」作用在后天五维（不动上限条，读取五维的公式自然连带）。
@@ -566,6 +579,9 @@
         var breathPct = Number(breathSkill && breathSkill.acquired_total_attribute_pct) || 0;
         ['jingu', 'flexibility', 'breath', 'dexterity', 'focus'].forEach(function (key) {
             state.acquired[key] += (getInnateAttr(key) + state.acquired[key]) * breathPct;
+            // 整群奖励按本次重算的后天值放大，左右加算，不乘先天、不回写成长来源。
+            var musclePercent = bonus && bonus.acquiredPercent ? Number(bonus.acquiredPercent[key]) || 0 : 0;
+            state.acquired[key] *= 1 + musclePercent / 100;
         });
         var jingu = getEffectiveAttr('jingu');
         var flexibility = getEffectiveAttr('flexibility');
@@ -588,6 +604,8 @@
         if (global.BuffSystem && typeof global.BuffSystem.getPharmacyCarryCapacityBonus === 'function') {
             cache.carry_capacity += global.BuffSystem.getPharmacyCarryCapacityBonus('player');
         }
+        // 肩带全通的固定公斤奖励独立相加，不受筋骨／力量或属性乘区放大。
+        cache.carry_capacity += extraCarryCapacityKg;
 
         var vBase = getCfg('base_speed_no_footwork', getCfg('base_speed_no_qinggong', 1));
         var dexPct = getCfg('dexterity_speed_pct_per_point', 0.005);
@@ -770,11 +788,12 @@
         return Math.min(Ccap, Math.max(0, withBonus));
     }
 
-    /** 招架成功率（柔韧倍率 + 硬上限 75%） */
+    /** 招架成功率（柔韧倍率 + 肌肉全局加值，沿原硬上限） */
     function getParryChance(baseParryChance) {
         var mult = getCfg('parry_flexibility_mult_per_point', 0.005);
         var cap = getCfg('parry_chance_cap', 0.75);
         var raw = baseParryChance * (1 + mult * getEffectiveAttr('flexibility'));
+        if (global.Muscles && global.Muscles.getParryChanceBonus) raw += global.Muscles.getParryChanceBonus();
         return Math.min(cap, Math.max(0, raw));
     }
 

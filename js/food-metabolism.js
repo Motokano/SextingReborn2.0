@@ -31,6 +31,9 @@
         var preserveReserves = !!(options && options.preserveReserves);
         var intake = 0, exp = {}, composition = [0, 0, 0, 0];
         var mult = multiplier(body.nutrition, cfg);
+        // 只放大本刻新消化的食物经验；余数与已到账经验不能再次乘算。
+        var foodExpMultiplier = Number(options && options.foodExpMultiplier);
+        if (isFinite(foodExpMultiplier) && foodExpMultiplier > 0) mult *= foodExpMultiplier;
         s.portions.forEach(function (p) {
             var f = p.profile, fraction = 1 / f.digestion_ticks;
             intake += f.satiety_total * fraction;

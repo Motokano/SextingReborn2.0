@@ -113,8 +113,18 @@
     "test:ui-facilities": "npm run build:ui && node --test tools/test-svelte-facilities.mjs",
     "build:forging": "node tools/build-forging-runtime.mjs",
     "test:forging": "node tools/build-forging-runtime.mjs --check && node tools/test-forging-runtime.mjs && node tools/test-forging-integration.mjs",
-    "test:gym": "node --test tools/test-gym-runtime.mjs tools/test-gym-npcs.mjs tools/test-gym-wall.mjs tools/test-npc-interaction-checks.mjs",
-    "test:outdoor-facilities": "node tools/test-facility-labor.mjs && node tools/test-device-pawns.mjs && node --test tools/test-outdoor-facilities.mjs tools/test-facility-appearance.mjs"
+    "test:gym": "node --test tools/test-gym-runtime.mjs tools/test-gym-npcs.mjs tools/test-gym-wall.mjs tools/test-npc-interaction-checks.mjs tools/test-core-muscle-rewards.mjs tools/test-muscle-chains.mjs tools/test-muscle-limb-damage.mjs tools/test-muscle-hand-rewards.mjs tools/test-muscle-calf-rewards.mjs tools/test-muscle-thigh-rewards.mjs tools/test-muscle-hip-rewards.mjs tools/test-muscle-shoulder-rewards.mjs tools/test-muscle-pelvis-rewards.mjs tools/test-muscle-abdomen-rewards.mjs tools/test-muscle-chest-rewards.mjs tools/test-muscle-back-rewards.mjs tools/test-muscle-neck-rewards.mjs tools/test-muscle-mouth-rewards.mjs tools/test-muscle-head-rewards.mjs tools/test-muscle-navigation.mjs",
+    "test:outdoor-facilities": "node tools/test-facility-labor.mjs && node tools/test-device-pawns.mjs && node --test tools/test-outdoor-facilities.mjs tools/test-facility-appearance.mjs",
+    "test": "npm run test:scene-architecture && npm run test:scene-entry",
+    "check:architecture": "node tools/check-scene-entry.mjs",
+    "test:scene-architecture": "node --test tools/test-scene-entry-architecture.mjs",
+    "test:scene-entry": "node --test --test-concurrency=2 tools/test-scene-entry-runtime.mjs tools/test-modular-weapon-scene.mjs tools/test-combat-map-transition.mjs tools/test-breath-burst.mjs tools/test-player-death-combat.mjs tools/test-direction-indicator.mjs tools/test-compost-panel.js tools/test-sewing-station.mjs tools/test-ui-bridge.mjs",
+    "test:scene-regression": "node tools/run-scene-regression.mjs",
+    "predev": "npm run check:architecture",
+    "predev:ui": "npm run check:architecture",
+    "prebuild:ui": "npm run check:architecture",
+    "prebuild:combat-ui": "npm run check:architecture",
+    "test:muscle-ui": "node --test tools/test-muscle-navigation.mjs"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "6.2.4",

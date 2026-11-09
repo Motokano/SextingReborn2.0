@@ -1,5 +1,7 @@
 # scene-app 组合根化拆解执行计划
 
+> **2026-11-08 已由正式入口规则替代。** 主文件已按职责迁出实现，仅保留模块 `initialize/bind`；不再允许本文历史方案中的 `init`、门控、刷新、面板和跨系统动作留在主文件。后续维护必须遵守 [场景入口规则](architecture/scene-entry.md) 与 [职责清单](architecture/scene-modules.json)。本文以下内容保留作历史阶段记录，旧行数、未完成状态和约 5k 行预期不代表现状。结果见 [验证记录](architecture/scene-refactor-verification.md)。
+
 > **性质**：重构执行计划（非玩法设计正本）。目标：把 `js/scene-app.js` 从「12480 行的上帝对象」收敛为「只引用子模块的组合根」。
 > **快照日期**：2026 拆解盘点基线。行号与函数/变量清单以 [refactor-scene-app-inventory.md](refactor-scene-app-inventory.md) 为准；随迁移推进更新本文件与清单。
 > **原则**：只搬移接线不改行为；每阶段可运行可回归；存档键不变；index.html 加载序规则不变。

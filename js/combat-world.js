@@ -482,6 +482,7 @@
         var ca = global.CharacterAttributes;
         var strength = a.kind === 'player' && ca && ca.getEffectiveAttr ? ca.getEffectiveAttr('jingu') : tpl && tpl.jingu;
         var speed = a.kind === 'player' && ca && ca.getCombatSpeed ? ca.getCombatSpeed() : tpl && tpl.speed;
+        if (ctx.resourceResult && Number.isFinite(ctx.resourceResult.attackerSpeed)) speed = ctx.resourceResult.attackerSpeed;
         displacementQueue.push({ map: map, mapId: state.mapId, target: target, ctx: ctx,
             cells: Math.max(0, Math.floor(Number(effect.cells) || 0)),
             multiplier: 1.3,

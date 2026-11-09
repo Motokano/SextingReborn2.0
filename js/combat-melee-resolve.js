@@ -476,6 +476,9 @@
             var defenderOwner=global.CombatEnemies && global.CombatEnemies.getOwnerId ? global.CombatEnemies.getOwnerId(opts.enemyId,opts.enemyMapId,opts.targetIndex) : String(opts.enemyId||'');
             Vdef = global.CombatInitiative.effectiveSpeed(defenderOwner, Vdef);
         }
+        if (!opts.speedsResolved && !weaponAction && global.CombatInitiative) {
+            Vatk = global.CombatInitiative.playerAttackSpeed(Vatk, { limbId: limbId });
+        }
 
         var P = CA && typeof CA.getHitRate === 'function' ? CA.getHitRate(Vatk, Vdef) : 0.8;
         if (global.BuffSystem && global.BuffSystem.getHitChanceDeltaPercent) P = clamp(P + global.BuffSystem.getHitChanceDeltaPercent('player') / 100, 0, 0.99);
@@ -604,7 +607,10 @@
         var innateBonus = Math.max(0, innate - baseline) * 0.1;
         if (weaponAction) innateBonus = 0;
         var experienceBonus = IE.getCombatExperienceDamageMultiplier ? IE.getCombatExperienceDamageMultiplier() - 1 : 0;
-        var addTerms = [levelBonus, Rmove, innateBonus, experienceBonus];
+        // 按本次出招的技能装配肢体取值；兵器独立装配位不继承腿部奖励。
+        var muscleBonus = !weaponAction && global.Muscles && global.Muscles.getSkillDamageBonusForLimb
+            ? global.Muscles.getSkillDamageBonusForLimb(limbId) : 0;
+        var addTerms = [levelBonus, Rmove, innateBonus, experienceBonus, muscleBonus];
         var increasedSum = sumPositive(addTerms);
         var decreasedSum = sumNegativeAbs(addTerms);
         var dmgBonusAdd = increasedSum - decreasedSum;
@@ -626,7 +632,7 @@
         var lessSum = sumNegativeAbs([lessMult - 1]);
         var independentMult = moreMult * lessMult;
         var rawDamage = global.CombatDamage.attack({ base: baseWeapon, levelBonus: levelBonus,
-            proficiencyBonus: Rmove, innateBonus: innateBonus, experienceBonus: experienceBonus,
+            proficiencyBonus: Rmove, innateBonus: innateBonus, experienceBonus: experienceBonus, muscleBonus: muscleBonus,
             move: Mmove, power: pk, breath: breathMult });
         rawDamage = Math.max(0, rawDamage);
         var baseTypedDamage = createEmptyTypedDamage();
@@ -782,12 +788,15 @@
             moreSum: moreSum,
             lessSum: lessSum,
             moveProfRatio: Rmove,
+            muscleDamageBonus: muscleBonus,
             movePowerMultiplier: Mmove,
             movePowerRange: { min: movePower.min, max: movePower.max },
             skillTotalProfRatio: 0,
             baseFist: baseWeapon,
             kProbe: Kprobe,
             hitChance: P,
+            attackerSpeed: Vatk,
+            defenderSpeed: Vdef,
             qiIntended: qiIntended,
             qiSpent: qiSpent,
             qiRestoreAmt: qiRestoreAmt,
@@ -933,6 +942,8 @@
             powerLevel: 10,
             hitPartModifierKey: mapHitPartToModifierKey(hitPart),
             hitChance: P,
+            attackerSpeed: Vatk,
+            defenderSpeed: Vdef,
             qiIntended: 0,
             qiSpent: qiSpent,
             diqiIntended: 0,

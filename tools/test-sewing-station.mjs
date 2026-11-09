@@ -36,6 +36,14 @@ c.GameEngine.setState(map.map_id,6,11);assert.equal(P.open(),false,'same tile is
 const chain=['sewing_tape','sewing_scale','sewing_mannequin','sewing','sewing_bucket'];
 chain.forEach((key,i)=>{const p=c.FacilityUnlockConfig.projects[key];assert.deepEqual(Array.from(p.position),[6,11]);assert(!p.groups.some(g=>g.id==='parts'));if(i)assert.equal(p.requires,c.FacilityUnlockConfig.projects[chain[i-1]].unlock);});
 assert(!read('sewing-station.html').includes('js/sewing-prototype.js'),'live UI never loads demo actions');
-assert(read('js/scene-app.js').includes('SewingStationPanel.isOpen()'),'map movement is locked');
+c.document.getElementById=()=>null;
+vm.runInContext(read('js/scene/access.js'),c);c.SceneAccess.initialize();
+vm.runInContext(read('js/scene/movement.js'),c);c.SceneMovement.initialize();
+c.GameEngine.setState(map.map_id,6,12);assert.equal(P.open(),true);
+const beforeMove=copy(c.GameEngine.getState());
+assert.equal(c.SceneAccess.isStoryMovementLocked(),true,'open sewing locks movement');
+c.SceneMovement.tryMoveTo(7,12,1,0);
+assert.deepEqual(copy(c.GameEngine.getState()),beforeMove,'actual movement entry respects sewing lock');
+P.close();assert.equal(c.SceneAccess.isStoryMovementLocked(),false);
 assert(read('js/save-system.js').includes('SewingStationPanel.close()'),'load closes stale view');
 console.log('PASS: base NPC mapping, unlock chain, adjacency, production UI isolation, bucket bounds, real inventory deductions and save rollback.');

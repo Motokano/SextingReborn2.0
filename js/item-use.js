@@ -484,6 +484,9 @@
         if (!dims.length) return { granted: false, reason: 'no_dims' };
         var mult = (typeof Surv.getNutritionExpMultiplier === 'function') ? Number(Surv.getNutritionExpMultiplier()) : 1;
         if (!isFinite(mult) || mult <= 0) mult = 1;
+        if (global.Muscles && typeof global.Muscles.getFoodExperienceMultiplier === 'function') {
+            mult *= global.Muscles.getFoodExperienceMultiplier();
+        }
         var grants = [];
         var i;
         for (i = 0; i < dims.length; i++) {

@@ -147,6 +147,12 @@ export function createGymPrototype(g, config) {
         else { state.progress[m.id] = 100; M.unlock(m.id); }
       }
       log('试玩情境：左右肩带只剩三角肌未点亮，成长度99.90%。');
+    } else if (scenario === 'core-near') {
+      for (const group of ['chest','back','abdomen','pelvis']) for (const m of M.getMusclesByGroup(group)) {
+        if (m.id === 'chest_diaphragm') state.progress[m.id] = 99.9;
+        else { state.progress[m.id] = 100; M.unlock(m.id); }
+      }
+      log('试玩情境：核心肌群只剩膈肌未点亮，成长度99.900%。');
     } else if (scenario === 'tired') { S.setState({fatigue:65,stamina:30}); log('试玩情境：疲劳65，训练收益减半，可以睡眠。'); }
     else if (scenario === 'low') { S.setState({stamina:5}); log('试玩情境：体力不足，可使用补给进行休息。'); }
     else log('基础训练区已开放，所有肌肉成长度从0%开始。');

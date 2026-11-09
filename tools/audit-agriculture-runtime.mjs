@@ -82,17 +82,18 @@ out.data={crops:Object.keys(defs.crops).length,legacyCrops:Object.keys(defs.lega
   const after={total:c.crop.totalTicks,remaining:c.crop.remainingTicks,power:s.power_charge};
   A.addPowerCharge(s,10);out.power={start,after,restoredTotal:c.crop.totalTicks,restoredPower:s.power_charge};
 }
-// Execute the unchanged scene action function, substituting only external inventory/UI services.
+// Load the complete production action module; substitute only external inventory/UI services.
 {
-  const scene=read('js/scene-app.js');
-  const action=scene.slice(scene.indexOf('    function tryAgricultureAction('),scene.indexOf('    function payAgricultureBuildCost('));
   const s=layout(A,env);const c=plant(A,env,s,3,1,'maize');c.crop.settled=true;c.crop.harvestCount=0;c.crop.result='withered';A.setState(s);
-  const ctx={window:{AgricultureMap:A,AgriculturePlayerItems:{}},AgricultureMap:A,isAgricultureUnlocked:()=>true,buildAgricultureEnv:()=>env,addAgricultureHarvestProficiency:()=>{},IE:{putItemIntoDefaultContainer:()=>({placed:true})}};
-  vm.createContext(ctx);vm.runInContext(action,ctx);
-  out.sceneZeroHarvest={result:ctx.tryAgricultureAction('harvest',{x:3,y:1}),cropRemains:!!c.crop};
-  c.crop.harvestCount=3;let space=2;ctx.IE.putItemIntoDefaultContainer=()=>({placed:space-->0});
-  out.scenePartialHarvest={result:ctx.tryAgricultureAction('harvest',{x:3,y:1}),remaining:c.crop.harvestCount};
-  ctx.IE.putItemIntoDefaultContainer=()=>({placed:true});ctx.tryAgricultureAction('harvest',{x:3,y:1});out.sceneFinalHarvestClears=!c.crop;
+  const ctx={AgricultureMap:A,AgriculturePlayerItems:{},SceneCtx:{agriculture_unlocked:true},FacilityLabor:{nearby:()=>true,isUnlocked:()=>true},SceneAccess:{isPlayerComaActive:()=>false,isPlayerActionDisabledByBuff:()=>false,ACTION_TYPES:{NPC_INTERACT:'npc_interact'}},InventoryEquipment:{putItemIntoDefaultContainer:()=>({placed:true}),incrementSkillMoveUsage(){}}};ctx.window=ctx;
+  ctx.CompostPanel={ensureLifePlantingSkillEntry(){}};ctx.SceneCharacter={recalcCharacterStatsFromIE(){}};
+  vm.createContext(ctx);vm.runInContext(read('js/scene/agriculture.js'),ctx);ctx.AgricultureActions.initialize();
+  ctx.AgricultureActions.agricultureCropDefsDoc=defs;ctx.AgricultureActions.agricultureSoilsDoc=soils;
+  const action=ctx.AgricultureActions.tryAgricultureAction;
+  out.sceneZeroHarvest={result:action('harvest',{x:3,y:1}),cropRemains:!!c.crop};
+  plant(A,env,s,3,1,'maize');c.crop.settled=true;c.crop.harvestCount=3;let space=2;ctx.InventoryEquipment.putItemIntoDefaultContainer=()=>({placed:space-->0});
+  out.scenePartialHarvest={result:action('harvest',{x:3,y:1}),remaining:c.crop.harvestCount};
+  ctx.InventoryEquipment.putItemIntoDefaultContainer=()=>({placed:true});action('harvest',{x:3,y:1});out.sceneFinalHarvestClears=!c.crop;
 }
 // Compare historical runtime function text with the current working tree, without claiming HEAD is deployed.
 {

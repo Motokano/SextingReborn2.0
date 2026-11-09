@@ -28,6 +28,7 @@
     "dungeon.claimBag": true,
     "dungeon.claimBatch": true,
     "checkpoint.task": true,
-    "gym": true
+    "gym": true,
+    "muscles.chain": true
   }
 }

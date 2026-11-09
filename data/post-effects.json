@@ -1,5 +1,5 @@
 {
-  "_comment": "战斗后遗症（效果层）：34 号草案阶段三起，装配口径改为「肌群大型被动」——data/muscles.json 的 passives 段声明 allowed_groups/slots_cost，装配到已全通肌群槽；本条只保留效果定义（effect_type/effect_params/valid_* 运行时二次校验）。valid_move_ids：未写或空数组时任意招式生效；显式列出时仅对命中 id 的招式生效。effect_type 与先手等见 docs/design/11-skills.md、07-combat-core.md。mechanic_shared_with_enemy：与敌人共用同一 effect_type / Buff 语义，敌人侧在敌表或管线上下文中挂载等价 post_effect_ids 即可。",
+  "_comment": "战斗后遗症（效果层）：34 §13.28 将肌群被动更名为动力链，装配到头胸腹双手双脚共七个部位槽，部位所含肌肉全亮才开放。data/muscles.json 的 passives.allowed_slots/slots_cost 声明装配范围，allowed_groups 保留原招式形态调用范围。本条只保留效果定义（effect_type/effect_params/valid_* 运行时二次校验）。valid_move_ids：未写或空数组时任意招式生效；显式列出时仅对命中 id 的招式生效。effect_type 与先手等见 docs/design/11-skills.md、07-combat-core.md。mechanic_shared_with_enemy：与敌人共用同一 effect_type / Buff 语义，敌人侧在敌表或管线上下文中挂载等价 post_effect_ids 即可。",
   "post_no_second_thought": {
     "id": "post_no_second_thought",
     "name_key": "posteffect.no_second_thought.name",

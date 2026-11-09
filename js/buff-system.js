@@ -825,6 +825,11 @@
             var durMul = Number(global.PharmacyEffects.getBuffDurationMultiplier(tpl));
             if (isFinite(durMul) && durMul > 0 && durMul !== 1) dur = Math.max(1, Math.round(dur * durMul));
         }
+        // 只延长玩家食物的余味 Buff；每次按模板时长重算，刷新或读档不累计加时。
+        if (oid === PLAYER_OWNER_ID && dur > 0 && !tpl.manualLifetime && !tpl.pharmacy_generated &&
+            tpl.judgment_tags.food_special === 'true' && global.Muscles && typeof global.Muscles.getFoodBuffDurationBonus === 'function') {
+            dur += global.Muscles.getFoodBuffDurationBonus();
+        }
         if (existing) {
             existing.metaskill_source = (global.CombatMetaSkills && global.CombatMetaSkills.currentSource()) || existing.metaskill_source || null;
             var currentStacks = Math.max(0, parseInt(existing.stacks, 10) || 0);

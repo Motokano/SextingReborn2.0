@@ -39,7 +39,7 @@ assert.ok(Math.abs(probability(5000)-.5)<1e-5,'probability curve unchanged');
  c.CharacterAttributes={getCfg:(k,d)=>cfg[k]??d,getEffectiveAttr:()=>0,grantAttributeExp:(_owner,grants)=>{granted+=grants.reduce((n,g)=>n+g.exp,0);}};
  c.InventoryEquipment={};
  c.CombatParry={resolveParryPhaseContext:()=>({skip:false,guardLimb:'lhand',parrySkillId:'test',skillLevel:1})};
- c.CombatSkills={getParryValues:()=>({success:1,reduce:0})};
+ c.CombatSkills={getSkill:()=>null,getParryValues:()=>({success:1,reduce:0})};
  c.CombatPipeline.setConfig({pipelines:{test:{phases:[{handler:'builtin.parry_player_combat_parry'}]}}});
  c.CombatPipeline.runPipeline('test',{hitRollSuccess:true,rawDamage:10,defender:{kind:'player'}});
  assert.equal(granted,1);

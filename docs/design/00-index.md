@@ -1,3 +1,5 @@
+> **2026-11-08 场景主入口重构**：[入口与模块规则](../architecture/scene-entry.md)、[战斗规则映射](../architecture/combat-rule-map.md)、[验证记录](../architecture/scene-refactor-verification.md)。主 JS 只做初始化与接线，自动检查阻止业务回流。
+
 > **2026-10-02 攻击特效接入**：[69 攻击特效规范与正式接入](69-combat-fx-art-direction.md)：第 13 版卡通笔触、九招特征、侧向鞭腿与 1.5× 节奏已确认；正式战斗按实际逐段结果驱动，敌我共用，变式兼容与验收边界见正文。
 
 > **2026-09-24 天气首版接入**：[实施记录](weather-implementation.md)：统一天气、玩家体温、防护来源接口、存档、身体惩罚与可感知提示已接入；采用用户授权的试玩初值，具体装备/功法和各生产玩法响应另定。

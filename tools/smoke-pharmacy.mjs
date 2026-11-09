@@ -18,6 +18,8 @@ import assert from 'node:assert';
 import os from 'node:os';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { boot } from './ui-game-fixture.mjs';
+import { verifySceneItemContract } from './lib/scene-item-contract.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '..');
@@ -841,13 +843,16 @@ ok('醒神 buff → BuffSystem.getAntiStunPct（供战斗管线叠加）');
 
 console.log('\n⑫ k231 配药面板接线（静态口径）');
 const panelSrc = readText('js/pharmacy-station-panel.js');
-const sceneSrc = readText('js/scene-app.js');
 assert(panelSrc.includes('compound_mode'), '面板含配药模式状态');
 assert(panelSrc.includes('tryCompoundAtStation'), '面板调用配药入口');
 assert(panelSrc.includes('pharmacy-status-kv'), '面板状态区 id 与 index.html 对齐（历史 pharmacy-kv 死引用已修）');
 assert(!panelSrc.includes('pharmacy-help'), '制药帮助入口及渲染已移除');
-assert(sceneSrc.includes('window.SceneApp.tryCompoundAtStation'), 'scene-app 导出配药入口');
-assert(sceneSrc.includes('PharmacyCompounding.setConfig'), 'scene-app 装载配药规则（含相冲表）');
+const sceneHarness = await boot(false);
+try {
+  assert.strictEqual(sceneHarness.g.SceneApp.tryCompoundAtStation, sceneHarness.g.StationActions.tryCompoundAtStation, '正式启动导出同一配药入口');
+  assert.deepStrictEqual(JSON.parse(JSON.stringify(sceneHarness.g.PharmacyCompounding.getConfig())), JSON.parse(JSON.stringify(PCC.getConfig())), '正式配置加载与独立配药配置一致');
+  assert.deepStrictEqual(sceneHarness.errors, []);
+} finally { await sceneHarness.close(); }
 const uiText = loadJson('data/ui_text_zhCN.json');
 ['pharmacy.mode.compound', 'pharmacy.compound.concentration', 'pharmacy.btn.compound_start',
   'pharmacy.compound.fail.over_capacity', 'pharmacy.compound.fail.solvent_required'].forEach((k) => {
@@ -900,7 +905,7 @@ console.log('\n⑭ k246 §8 收口（多次用量 / 调和·卷制 method）');
 // 一盒多次用量：药膏 use_charges=3
 assert.strictEqual(items.potion_mobility_salve.use_charges, 3, '活络药膏模板声明 3 次用量');
 assert(readText('js/inventory-equipment.js').includes('inst.charges'), '实例复制保留 charges（剩余次数不丢）');
-assert(readText('js/scene-app.js').includes('item.use.charges_left'), '使用流程处理次数递减与提示');
+assert(verifySceneItemContract(IU, items.potion_mobility_salve), '完整物品动作保留次数、失败退回、门禁和耗时');
 ok('外敷按次用量（模板 use_charges → 实例 charges 递减）');
 
 // 新 method：调和 / 卷制 + 配件物品
@@ -1157,13 +1162,8 @@ assert.strictEqual(PE.getScaledSideEffectBuffId('moderate'), 'buff_pharm_sideeff
 ok('免疫减轻副作用强度（§4.5）');
 
 console.log('\n⑱ A2 战斗中/静止门禁（接线口径）');
-const sceneSrc2 = readText('js/scene-app.js');
-assert(sceneSrc2.includes('function isPlayerInCombat'), '交战判定已实现（地图存活敌人 ≤2 格）');
-assert(sceneSrc2.includes('function checkUseRouteGate'), '给药途径门禁已实现');
-assert(sceneSrc2.includes("route !== 'topical' && route !== 'inject'"), '只有外敷/注射受战斗门禁');
-assert(sceneSrc2.includes("reason: 'must_be_still'"), '注射需静止');
+// Complete SceneAccess/ItemUseActions are exercised by verifySceneItemContract above.
 assert(uiText['item.use.fail.in_combat'] && uiText['item.use.fail.must_be_still'], '门禁文案已配');
-assert(!sceneSrc2.includes("route === 'drink' && isPlayerInCombat"), '口服不受战斗门禁（§5.2 战斗中可用）');
 ok('外敷/注射战斗中不可 + 注射需静止（口服/吸入不受限）');
 
 console.log('\n⑲ A3 口服走 43 消化（drink 剂型按 tick 缓释）');
@@ -1379,7 +1379,7 @@ assert.strictEqual(IU.getUseTickCost({ use_action: 'topical' }), 1, '外敷 1 ti
 assert.strictEqual(IU.getUseTickCost({ use_action: 'inhale' }), 2, '吸入 2 tick');
 assert.strictEqual(IU.getUseTickCost({ use_action: 'inject' }), 3, '刺入 3 tick');
 assert.strictEqual(IU.getUseTickCost({}), 1, '非药品默认 1 tick');
-assert(readText('js/scene-app.js').includes('advanceWorldTicks(useTicks)'), '使用流程按途径推进 tick');
+assert(verifySceneItemContract(IU, items.potion_mobility_salve), '使用流程按四途径实际推进 tick');
 ok('四途径使用耗时：口服/外敷 1 · 吸入 2 · 刺入 3（配置化）');
 
 console.log('\n㉕ 成瘾/免疫/致死窗口数值（2026-09 定稿）');
