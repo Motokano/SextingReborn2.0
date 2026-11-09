@@ -96,7 +96,6 @@
 | 各 *-panel.js | 先抽出动作、计时、守卫再迁移视图 | 所有业务调用点切到控制器，渲染/绑定/模板都无正式消费者 | 非 UI 的业务代码不得随文件一起丢失 |
 | sewing-station.html/js/sewing-station-view.js | 迁移完整内部页面，明确原 URL 策略 | 主流程无 iframe/parent 旧 UI 依赖；原 URL 不留破损页面 | 原型与生产页面区分，不能误删 sewing-prototype |
 | js/scene-systems.js | 键盘路由与按钮绑定分离 | 只保留单套输入路由，旧按钮监听移除 | 游戏意图控制，不把世界规则搬进组件 |
-| js/background-music.js | 去掉按钮查找与写入 | 按钮由 TopBar 渲染；控制器只管音频/偏好 | 唯一播放器和浏览器播放生命周期 |
 | SceneHud.refresh 过渡路由及旧 API 别名 | 登记每个调用方，按阶段减少 | 所有正式调用方转向明确失效/订阅机制后移除；若保留公共 facade，必须只有新数据路由，无旧渲染 | 业务需要的公共通知能力 |
 | ui-theme-review、ui-jianghu-demo、debug-hash-router | 正式功能与开发预览分离 | U37 完成；正式入口无原型注入，调试入口有记录 | 独立原型/开发检查可保留 |
 | _archive-js 与 tools 原型 | 不用于生产 | 不纳入删除要求 | 美术/设计/历史参考完整保留 |

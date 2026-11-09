@@ -101,8 +101,9 @@ test('navigation, action menu and pins preserve business routes and no duplicate
     key(g,'Escape',d.querySelector('#btn-player-actions'));await h.drain();
     d.querySelector('#action-bar-pin-0').click();await h.drain();assert.equal(g.Survival.getState().isResting,true);
     d.querySelector('#action-bar-pin-0').click();await h.drain();assert.equal(g.Survival.getState().isResting,false);
-    const enabled=g.BackgroundMusic.getEnabled();d.querySelector('#btn-bgm').click();await h.drain();assert.equal(g.BackgroundMusic.getEnabled(),!enabled);
-    assert.equal(d.querySelectorAll('#global-background-music').length,1);assert.deepEqual(h.errors,[]);
+    assert.equal(g.BackgroundMusic,undefined);
+    assert.equal(d.querySelector('#btn-bgm'),null);
+    assert.equal(d.querySelector('audio'),null);assert.deepEqual(h.errors,[]);
   }finally{await h.close();}
 });
 

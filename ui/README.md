@@ -78,7 +78,7 @@ node tools/test-reset-progress-dialog.mjs
 | 腰带 U12 | QuickBelt + readBelt/beltActions | 口袋/背心顺序、1–9、已知物品名、使用/装备/丢弃、原两侧浮窗定位；按实例检查过期操作 |
 | 提示 U16 | Tooltip + SceneUi.buildItemTooltipView | 属性、部位、Buff、物品说明模块、字段规则、连接树；查询阶段过滤未知内容，无 HTML 解析或 @html |
 | 确认 U18 | ResetConfirmation + ResetProgressDialog.attachView | 原文案、尺寸、取消、清除失败重试、成功重载；测试只使用内存存储和模拟删除函数 |
-| 导航 U02 | NavButton、ActionMenu | 原图标路径、标题与切换行为；BackgroundMusic 仍只有一个 Audio/存储键，只迁移按钮 |
+| 导航 U02 | NavButton、ActionMenu | 原图标路径、标题与切换行为；背景音乐及其开关已于 2026-11-09 移除 |
 | 输入 | createOverlayHost | 顶层弹窗优先、Tab 循环、Escape、焦点恢复、对话 Enter/空格；既有 P3/P4 modal 仅登记外层焦点/关闭业务，不重建内容 |
 
 原入口不再加载 React、ReactDOM、dialogue-react-view.js。原生对照使用 DialogueUI 已有原生分支；旧文件/参考页尚未整体清理，留到 P5 的依赖审计。P2 组件替换原节点并停止旧绑定，不保留隐藏按钮代理。对话头像、地图渲染、玩法计时与存档格式未替换。

@@ -12,7 +12,6 @@
 | SceneApp.actionMenu / runContextAction / navigate | 统一直接调用原动作与开关面板；不模拟旧按钮 |
 | SceneUi.basicTooltipView/buildItemTooltipView/showTooltipView | 结构化节点只包含已允许显示的文本；字段/模块/连接按原规则查询，专业旧调用方保留到 P3/P4 |
 | ResetProgressDialog.attachView/close/confirm | 失败留窗重试，成功只调用一次重载；原 open/isOpen 兼容 |
-| BackgroundMusic.getEnabled/attachView | 只移交按钮；Audio 实例、偏好存储和浏览器播放重试保留 |
 | SvelteInteractions | 页面级组件/焦点/输入/提示组合，dispose 幂等；原生专业 modal 只登记外层，不接管内部内容 |
 
 ## P1 已实装接口（2026-10-14）
@@ -110,7 +109,6 @@ UiBridge 是 UI 与当前全局模块之间的适配层，不取代游戏核心�
 | 沤肥 | CompostPanel 内投入/领取/熟练度/观察处理；CompostSystem | 将混合业务提取为 CompostController | 观察时机、开关耗时、批次阶段、领取原子性保持 |
 | 缝纫 | SewingSystem.start/step/cancel；SewingStationPanel 的补料、装配、测量路径 | 控制器统一驱动作业，替代 parent 依赖 | UI 卸载和业务离开分开；保存失败退料逻辑保留 |
 | 钓鱼/狩猎 | Panel 中 action 路由、领域状态机与守卫 | 提取命令路由与结果订阅，视图重新组件化 | 保留忙碌、退出代价、收获/放流/收容；不能多执行一次回合 |
-| 音乐 | BackgroundMusic.setEnabled | 保留唯一 Audio 实例；增加读取/通知或桥接 | 不再由音乐模块直接抓取/改写按钮；交互解锁播放保留 |
 
 ## 共用组件表
 
@@ -174,7 +172,6 @@ UiBridge 是 UI 与当前全局模块之间的适配层，不取代游戏核心�
 | 当前 C 布局 | ui_windows_moss_c_v1；version=1、lock、windows | 兼容读取/写入；保留 x/y/w/h/visible/minimized/folded/barX/barY；按紧凑尺寸和视口校验 | 位置、折叠、关闭、锁定跨刷新与迁移保持 |
 | 老布局 | ui_windows_v1 | 保持现有首次转换规则：偏好/锁定迁移，不搬旧像素坐标；不删除旧键 | attrs/resources/attr-exp 合并成长不产生重复窗口 |
 | 窗口 ID | win-limbs、win-survival、win-attrs、win-carry、win-buff、win-battle-resources、win-log、win-time 等 | ID 保持；win-role/win-resources/win-attr-exp 兼容别名不进菜单；其余 anchored 层也登记 | 结束注册前不清理暂未挂载 ID；剧情 hideLayer/restoreLayer 继续可用 |
-| 音乐 | sexting-reborn.bgm.enabled | 保留设备偏好，不随换角色重置 | 重载保留；单 Audio；不可播放时等待用户交互 |
 | 旧日志位置 | game_log_panel_pos | 沿用旧键退役处理，布局统一归窗口系统 | 不复活旧窄条布局 |
 | UI 草稿 | 搜索、分页、选中项、存档账号/密码输入等 | 默认仅会话内；不新增角色存档字段；密码不持久化 | 换档/清空重置草稿，选中实例失效后安全清除 |
 | 清空存档 | SaveSystem.clearAllLocalProgress | 原进度清理范围与成功/失败行为保持；不顺带抹除设备布局/音乐 | 清空失败不重新加载；取消不写存储 |

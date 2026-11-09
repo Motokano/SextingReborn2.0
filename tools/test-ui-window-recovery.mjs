@@ -40,9 +40,12 @@ for (const full of [false, true]) for (const savedHidden of [false, true]) {
       assert.equal(doc.querySelector(row + ' input').checked, false);
       await click(h, row);
       assert.equal(g.UIWindows.getVisible('win-actions-right'), true);
-      for (const id of ['btn-backpack', 'btn-survival', 'btn-combat', 'btn-save', 'btn-bgm']) {
+      for (const id of ['btn-backpack', 'btn-survival', 'btn-combat', 'btn-save']) {
         assert.ok(exposed(g, doc.getElementById(id)), id + ' restored');
       }
+      assert.equal(doc.getElementById('btn-bgm'), null, 'removed music control stays absent');
+      assert.equal(doc.querySelector('audio'), null, 'navigation does not create a music player');
+      assert.equal(g.BackgroundMusic, undefined);
       assert.equal(g.GameTime.getState().totalTicks, ticks, 'window preferences do not advance the game');
       if (savedHidden) assert.equal(g.UIWindows.getVisible('win-log'), false, 'other preferences preserved');
       await new Promise(resolve => setTimeout(resolve, 250));

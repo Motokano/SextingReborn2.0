@@ -9,7 +9,7 @@
 | 编号 | 界面/现有节点 | 当前渲染或交互来源 | 数据及动作边界 | 目标组件 | 阶段 |
 | --- | --- | --- | --- | --- | --- |
 | U01 | 应用外壳、场景容器、加载失败 | index.html；js/bootstrap.js；js/scene-app.js；js/scene-renderer.js | 等待配置/地图/读档；渲染器独占地图子树；启动失败保留无框架兜底 | GameApp、SceneHost、BootStatus | P1/P5 |
-| U02 | 顶栏、时间/日期/天气、导航、音乐 | #top-hud、#right-hud；scene-renderer.updateTopTimeHud；weather；ui-moss-game；background-music | GameTime、Weather、NPC 观测解锁；导航调用原动作；音乐只有一个播放器 | TopBar、EnvironmentReadout、GameNavigation | P1；导航细节 P2 |
+| U02 | 顶栏、时间/日期/天气、导航 | #top-hud、#right-hud；scene-renderer.updateTopTimeHud；weather；ui-moss-game | GameTime、Weather、NPC 观测解锁；导航调用原动作 | TopBar、EnvironmentReadout、GameNavigation | P1；导航细节 P2 |
 | U03 | 身体 #status-limbs、#limb-rows | scene-app.updateLimbBlock；ui-moss-game | CharacterAttributes 七部位累计损毁与上限；body_detail 控制精确读数及恢复提示 | BodyPanel | P1 |
 | U04 | 生存 #status-survival 及 ⋯ | scene-app.updateStatusPanel；ui-moss-game | Survival；六项主指标、情绪/清洁补充；每项独立门控 | SurvivalPanel | P1 |
 | U05 | 成长 #status-attrs-block、#status-resources、#status-attr-exp-block | scene-app.updateStatusPanel；ui-moss-game | 属性、潜能、战斗经验、研习、属性经验；attrs/resources 分别门控 | GrowthPanel | P1 |
@@ -69,7 +69,7 @@
 | X02 | ui-moss-prototype.html、js/ui-moss-prototype.js、独立 sewing 原型、tools 内锻造/战斗试玩 | 保留原型与参考 | 正式游戏不依赖原型脚本渲染玩家界面；后续玩法正式接入时再登记新行 |
 | X03 | _archive-js/svelte 和 game-state-core | 保持归档 | 不恢复为生产依赖，不把历史试作记为迁移完成 |
 | X04 | bootstrap 的灾难性加载失败提示 | 允许极小的原生 DOM 兜底 | 仅当 Svelte 包无法加载/启动时显示，不能承载正常游戏功能 |
-| X05 | BackgroundMusic 的 Audio 元素、浏览器剪贴板/下载能力 | 保留浏览器设施 | 可见控制与反馈属于 Svelte；原音频控制器不再写按钮 DOM |
+| X05 | 浏览器剪贴板/下载能力 | 保留浏览器设施 | 可见控制与反馈属于 Svelte |
 
 ## 防漏检查表
 
