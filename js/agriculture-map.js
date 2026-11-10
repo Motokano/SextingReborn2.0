@@ -2813,11 +2813,28 @@
         if (!c.crop || !c.crop.settled) return { ok: false, reason: 'not_harvestable' };
         var crop = c.crop;
         var payload = buildHarvestPayload(crop);
+        clearCropPlot(state, x, y);
+        return payload;
+      }
+
+      function clearCropPlot(state, x, y) {
+        var c = cell(state, x, y);
+        var crop = c.crop;
         c.previousCropId = crop.cropId;
         c.crop = null;
         syncPlotSeaweedRequests(state, x, y);
         syncPlotFertilizerRequests(state, x, y);
-        return payload;
+      }
+
+      // Abandon the current planting without harvesting; soil and structures remain.
+      function tryClearCropAt(state, x, y) {
+        if (!Number.isInteger(x) || !Number.isInteger(y) || !inBounds(x, y)) return { ok: false, reason: 'out_of_bounds' };
+        if (state.task) return { ok: false, reason: 'task_busy' };
+        var c = cell(state, x, y);
+        if (c.kind !== 'land' || !c.crop) return { ok: false, reason: 'no_crop' };
+        var result = { ok: true, cropId: c.crop.cropId, cropName: c.crop.name };
+        clearCropPlot(state, x, y);
+        return result;
       }
 
       function tryHarvestAt(state, x, y) {
@@ -3016,6 +3033,7 @@
         peekHarvestAt: peekHarvestAt,
         commitHarvestAt: commitHarvestAt,
         tryHarvestAt: tryHarvestAt,
+        tryClearCropAt: tryClearCropAt,
         tryApplySoilAmendAt: tryApplySoilAmendAt,
         getPoolLevel: getPoolLevel,
         nextPoolUpgradeLevel: nextPoolUpgradeLevel,

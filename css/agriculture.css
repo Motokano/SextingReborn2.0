@@ -1,0 +1,414 @@
+/* Deliberately scoped: the existing game is the backdrop, not the prototype's stylesheet. */
+:is(#agriculture-ui-prototype, #modal-agriculture){--au-font:"Noto Sans SC","Noto Sans CJK SC","Microsoft YaHei UI","Microsoft YaHei","PingFang SC",system-ui,sans-serif;--ink:#e6e3d2;--muted:#88978b;--gold:#c5af77;--line:#7e8c6630;--panel:#18251f;--green:#9bae7c;--risk:#d39868;position:fixed;inset:0;z-index:200000;color:var(--ink);font:13px/1.5 var(--au-font);letter-spacing:0;font-variant-numeric:tabular-nums lining-nums;font-synthesis:none;isolation:isolate}
+:is(#agriculture-ui-prototype, #modal-agriculture) *{box-sizing:border-box}
+:is(#agriculture-ui-prototype, #modal-agriculture) button,:is(#agriculture-ui-prototype, #modal-agriculture) input{font:inherit}
+:is(#agriculture-ui-prototype, #modal-agriculture) button{border:0;color:inherit;cursor:pointer;transition:background .18s,color .18s,border-color .18s,opacity .18s;box-shadow:none;outline-offset:3px}
+:is(#agriculture-ui-prototype, #modal-agriculture) button:focus-visible{outline:2px solid #e0c685}
+:is(#agriculture-ui-prototype, #modal-agriculture) button:disabled{cursor:default;opacity:.35}
+:is(#agriculture-ui-prototype, #modal-agriculture) h1,:is(#agriculture-ui-prototype, #modal-agriculture) h2,:is(#agriculture-ui-prototype, #modal-agriculture) p{margin:0}
+:is(#agriculture-ui-prototype, #modal-agriculture) svg{display:block;flex-shrink:0}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-icon{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-backdrop{position:absolute;inset:0;background:radial-gradient(ellipse at 45% 30%,#182b1bb0,#06100bed);backdrop-filter:blur(5px);z-index:-1}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-window{position:absolute;inset:24px 24px 74px;max-width:1580px;margin:auto;display:flex;flex-direction:column;border:1px solid #a0a27e4d;background:var(--panel);box-shadow:0 25px 100px #0008,0 0 0 5px #101d194d;overflow:hidden;border-radius:5px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-header{height:82px;flex-shrink:0;padding:0 28px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(110deg,#27352a,#19281f);border-bottom:1px solid var(--line)}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-brand{display:flex;gap:17px;align-items:center}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-brand>.au-icon{width:35px;height:35px;color:var(--gold);stroke-width:1}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-eyebrow{font:11px/1.5 var(--au-font);letter-spacing:.19em;color:var(--gold)}
+:is(#agriculture-ui-prototype, #modal-agriculture) h1{font:600 26px/1.35 var(--au-font);letter-spacing:0}
+:is(#agriculture-ui-prototype, #modal-agriculture) h1 span{font:13px/1.4 var(--au-font);color:var(--muted);letter-spacing:.1em;margin-left:19px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-header-right{display:flex;gap:28px;align-items:center}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-power{display:flex;align-items:center;gap:8px;font:18px var(--au-font);color:var(--gold)}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-power .au-icon{width:15px;height:15px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-power small{font:12px var(--au-font);color:var(--muted);margin-left:4px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-icon-button{background:transparent;padding:8px;color:var(--muted)}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-icon-button:hover{color:var(--gold);background:#ffffff08}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-layout{flex:1;min-height:0;display:grid}
+:is(#agriculture-ui-prototype, #modal-agriculture) .a-layout{--au-detail-width:240px;grid-template-columns:minmax(400px,1fr) var(--au-detail-width)}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-section-heading{display:flex;justify-content:space-between;align-items:center;font-size:13px;letter-spacing:.025em;color:#d0d3b9;margin:22px 0 14px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-section-heading:first-child{margin-top:0}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-section-heading small{color:var(--muted);font-size:11px;letter-spacing:0}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-stats{display:flex;gap:0;padding:0 0 17px;border-bottom:1px solid var(--line)}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-stats button{flex:1;background:none;display:flex;flex-direction:column;align-items:center;padding:0 5px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-stats button+button{border-left:1px solid var(--line)}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-stats b{font:27px/1.3 var(--au-font);font-weight:400;color:#bcc9a4}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-stats button:nth-child(2) b{color:#d7bb75}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-stats button:nth-child(3) b{color:#c9966d}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-stats span{font-size:12px;color:var(--muted);margin-top:4px;white-space:nowrap}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-map-section{display:flex;min-width:0;min-height:0;flex-direction:column;background:radial-gradient(ellipse at 48% 45%,#34402a66,transparent 68%),#17251e;overflow:hidden;container:agriculture-field / inline-size}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-map-top{height:58px;flex-shrink:0;padding:0 22px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #8b987b18;gap:10px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-layers{display:flex;gap:4px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-layers button{position:relative;display:flex;align-items:center;gap:7px;padding:9px 12px;background:transparent;border-radius:3px;color:var(--muted);font-size:13px;white-space:nowrap}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-layers .au-icon{width:15px;height:15px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-layers button[aria-pressed=true]{color:#e2d19f;background:#a4b18113}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-layers button[aria-pressed=true]:after{content:"";position:absolute;bottom:-11px;left:12px;right:12px;height:2px;background:var(--gold)}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-layers button:hover{background:#b1bf9710;color:var(--ink)}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-coordinates{color:var(--gold);font:12px var(--au-font);white-space:nowrap}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-coordinates i{font:11px var(--au-font);color:var(--muted);margin-left:6px;font-style:normal}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-field-stage{position:relative;flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:24px 28px 35px;container-type:size;background-image:radial-gradient(#96a4780c .7px,transparent .7px);background-size:5px 5px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-map-frame{position:relative;width:min(100cqw - 60px,100cqh - 49px);aspect-ratio:1;flex-shrink:0;box-shadow:0 18px 40px #07100b85,0 0 35px #647c4515;border:5px solid #414732;border-radius:5px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-map{width:100%;height:100%;display:grid;grid-template-columns:repeat(11,1fr);grid-template-rows:repeat(11,1fr);gap:1px;background:#252f20;padding:1px;border:1px solid #85815a45;overflow:hidden;border-radius:1px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-axis{position:absolute;display:grid;font:11px var(--au-font);color:#97a08299;text-align:center}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-axis.top{left:0;right:0;top:-20px;grid-template-columns:repeat(11,1fr)}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-axis.left{top:0;bottom:0;left:-22px;width:14px;grid-template-rows:repeat(11,1fr);align-items:center}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-tile{position:relative;display:flex;align-items:center;justify-content:center;min-width:0;min-height:0;background-color:#39412a;background-image:radial-gradient(ellipse at var(--grain) 23%,#77825226,transparent 60%),radial-gradient(#a7a07816 .7px,transparent .7px);background-size:100% 100%,6px 5px;padding:0;border:1px solid #85905a0b;border-radius:2px;overflow:visible}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-tile:hover{outline:1px solid #c4c68c;z-index:3;filter:brightness(1.12)}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-tile.tilled{background-color:#514735;background-image:radial-gradient(ellipse at var(--grain) 23%,#907b4b26,transparent 60%),radial-gradient(#baa67726 .7px,transparent .7px);box-shadow:inset 0 1px 2px #b4a67913,inset 1px -2px 2px #1d291b60}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-tile.land>.au-soil-surface{position:absolute;inset:0;width:100%;height:100%;border-radius:1px;z-index:0;pointer-events:none}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-tile.land.selected>.au-soil-surface{filter:brightness(1.12)}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-tile.land.valid-target>.au-soil-surface{opacity:.7}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-soil-swatch{display:block;width:30px;height:30px;flex-shrink:0;border:1px solid #a5aa7c55;border-radius:4px;overflow:hidden;box-shadow:0 2px 4px #0b180b40}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-soil-swatch>.au-soil-surface{width:100%;height:100%}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-tile .au-botanical{position:absolute;inset:-8% -8% 0;width:116%;height:108%;filter:drop-shadow(1px 3px 1px #12180b88) hue-rotate(var(--tile-hue));z-index:2;pointer-events:none}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-device{height:90%;width:90%;filter:drop-shadow(1px 3px 2px #152012b0);pointer-events:none;z-index:2}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-tile.selected{outline:2px solid #d6c18b;outline-offset:1px;z-index:4;background-color:#6e6745;box-shadow:0 0 15px #d6bb4a22}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-tile.linked{outline:1px dashed #acc1ad;outline-offset:1px;z-index:3}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-corner{position:absolute;width:9px;height:9px;z-index:5;border-color:#fae3a1;border-style:solid;pointer-events:none}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-corner.tl{top:-4px;left:-4px;border-width:2px 0 0 2px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-corner.br{bottom:-4px;right:-4px;border-width:0 2px 2px 0}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-growth{position:absolute;height:2px;left:20%;right:20%;bottom:4%;background:#172619;z-index:3;pointer-events:none}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-growth i{display:block;height:100%;background:#a9ba7a}
+/* Motion, silhouette and ground light distinguish the three states without tiny badges. */
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-crop-fx{position:absolute;inset:0;pointer-events:none;z-index:3;--fx-color:#a4d78c}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-crop-fx.ready{--fx-color:#f2d486}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-crop-fx.risk{--fx-color:#e3a475}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-fx-ground{position:absolute;inset:10% 0 0;background:radial-gradient(ellipse at 50% 78%,color-mix(in srgb,var(--fx-color) 26%,transparent),transparent 67%);animation:au-field-breathe 4.8s ease-in-out var(--plot-phase) infinite}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-fx-ground:after{content:"";position:absolute;left:13%;right:13%;bottom:11%;height:21%;border:1px solid color-mix(in srgb,var(--fx-color) 63%,transparent);border-top-color:transparent;border-radius:50%;box-shadow:0 3px 6px color-mix(in srgb,var(--fx-color) 14%,transparent)}
+:is(#agriculture-ui-prototype, #modal-agriculture) .ready .au-fx-ground{background:radial-gradient(ellipse at 50% 70%,#edcf783d,transparent 72%)}
+:is(#agriculture-ui-prototype, #modal-agriculture) .ready .au-fx-ground:after{border-color:#e9ca7b99;box-shadow:0 0 7px #f4ce6244}
+:is(#agriculture-ui-prototype, #modal-agriculture) .risk .au-fx-ground:after{border-style:dashed;border-top-color:#e3a47535}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-field-mote{position:absolute;inset:0;opacity:0;animation:au-growth-lift var(--duration) ease-in-out var(--delay) infinite}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-field-mote:before{content:"";position:absolute;left:var(--x);top:var(--y);width:5px;height:8px;border-radius:85% 0 85% 0;background:#c4e6a2;box-shadow:0 0 6px #a6d78980;transform:rotate(28deg)}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-growth-leaf:nth-of-type(3):before{width:2px;height:2px;border-radius:50%}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-care-fleck{animation-name:au-care-fall}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-care-fleck:before{width:2px;height:6px;border-radius:1px;background:#f2bd91;box-shadow:0 0 5px #e09a6980;transform:rotate(-28deg)}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-care-wave{position:absolute;left:10%;right:10%;bottom:9%;height:25%;border:1px solid #e7a16b;border-top-color:transparent;border-radius:50%;opacity:0;animation:au-care-ripple 3.8s ease-out var(--plot-phase) infinite}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-care-wave.echo{animation-delay:calc(var(--plot-phase) - 1.9s)}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-map[data-layer=growth] [data-status=good]>.au-botanical:not(.au-plot-art),
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-map[data-layer=growth] [data-status=good] .au-crop-body{transform-origin:50% 88%;animation:au-plant-sway 5.6s ease-in-out var(--plot-phase) infinite}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-tile[data-status=risk] .au-growth i{background:#ce976d}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-tile[data-status=ready] .au-growth i{background:#e0c47c}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-tile.faded .au-crop-fx{visibility:hidden}
+@keyframes au-field-breathe{0%,100%{opacity:.55}50%{opacity:1}}
+@keyframes au-plant-sway{0%,100%{transform:rotate(-1.7deg)}50%{transform:rotate(1.7deg)}}
+@keyframes au-growth-lift{0%{opacity:0;transform:translate(0,7%) scale(.8)}20%{opacity:.9}75%{opacity:.75}100%{opacity:0;transform:translate(var(--drift),-62%) scale(1)}}
+@keyframes au-care-fall{0%{opacity:0;transform:translate(0,-7%) rotate(-6deg)}25%{opacity:.8}75%{opacity:.55}100%{opacity:0;transform:translate(var(--drift),52%) rotate(14deg)}}
+@keyframes au-care-ripple{0%{opacity:0;transform:scale(.5)}22%{opacity:.8}100%{opacity:0;transform:scale(1.18)}}
+/* Ripe crops shed warm motes instead of wearing a status badge. */
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-harvest-fx{position:absolute;inset:0;z-index:4;pointer-events:none}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-harvest-fx:before{content:"";position:absolute;inset:12% 0 -6%;background:radial-gradient(ellipse at 50% 68%,#efd17930,transparent 68%)}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-harvest-fx>i{position:absolute;inset:0;opacity:0;animation:au-harvest-drift var(--duration) linear var(--delay) infinite}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-harvest-fx>i:before{content:"";position:absolute;left:var(--x);top:var(--y);width:var(--size);height:var(--size);border-radius:50%;background:#fff1bb;box-shadow:0 0 4px 1px #f5cb72b3,0 0 9px #e8bd5266}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-harvest-fx>.au-harvest-star:before{width:calc(var(--size) * 1.35);height:calc(var(--size) * 1.35);border-radius:0;background:#fff4ce;clip-path:polygon(50% 0,63% 36%,100% 50%,63% 63%,50% 100%,37% 63%,0 50%,37% 36%);filter:drop-shadow(0 0 2px #ffe39c)}
+@keyframes au-harvest-drift{
+  0%{opacity:0;transform:translate3d(0,8%,0) scale(.7)}
+  18%{opacity:.8}
+  45%{opacity:1;transform:translate3d(calc(var(--drift)*-.35),-15%,0) scale(1)}
+  75%{opacity:.65}
+  100%{opacity:0;transform:translate3d(var(--drift),-42%,0) scale(.6)}
+}
+@media(prefers-reduced-motion:reduce){
+  :is(#agriculture-ui-prototype, #modal-agriculture) .au-crop-fx *,:is(#agriculture-ui-prototype, #modal-agriculture) .au-map[data-layer=growth] [data-status=good]>.au-botanical:not(.au-plot-art),:is(#agriculture-ui-prototype, #modal-agriculture) .au-map[data-layer=growth] [data-status=good] .au-crop-body{animation:none}
+  :is(#agriculture-ui-prototype, #modal-agriculture) .au-field-mote{opacity:.7}
+  :is(#agriculture-ui-prototype, #modal-agriculture) .au-care-wave{opacity:.5}
+  :is(#agriculture-ui-prototype, #modal-agriculture) .au-care-wave.echo{display:none}
+  :is(#agriculture-ui-prototype, #modal-agriculture) .au-harvest-fx>i{animation:none;opacity:.8}
+  :is(#agriculture-ui-prototype, #modal-agriculture) .au-harvest-fx>i:nth-child(-n+4){display:none}
+}
+:is(#agriculture-ui-prototype, #modal-agriculture).au-motion-paused .au-crop-fx *,:is(#agriculture-ui-prototype, #modal-agriculture).au-motion-paused .au-botanical,:is(#agriculture-ui-prototype, #modal-agriculture).au-motion-paused .au-crop-body{animation-play-state:paused!important}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-map{position:relative;isolation:isolate}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-tile.channel,:is(#agriculture-ui-prototype, #modal-agriculture) .au-tile.pool{background:transparent!important;border-color:transparent;box-shadow:none}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-water-fx{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none;contain:strict}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-metric{position:absolute;bottom:0;left:0;right:0;z-index:4;background:#10281ddb;line-height:1.5;text-align:center;font-size:11px;color:#e5dcb6;letter-spacing:0}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-map[data-layer=water] .has-crop{background-color:#345951}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-map[data-layer=water] .au-botanical,:is(#agriculture-ui-prototype, #modal-agriculture) .au-map[data-layer=nutrients] .au-botanical,:is(#agriculture-ui-prototype, #modal-agriculture) .au-map[data-layer=soil] .au-botanical{opacity:.36}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-map[data-layer=nutrients] .has-crop{background-color:#685d3e}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-map[data-layer=water] .land>.au-soil-surface,:is(#agriculture-ui-prototype, #modal-agriculture) .au-map[data-layer=nutrients] .land>.au-soil-surface{opacity:.3}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-map[data-layer=soil] .land>.au-soil-surface{filter:brightness(1.12)}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-map[data-layer=soil] .au-metric{font-size:9px;line-height:1.45;background:#18221de6}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-tile.faded{opacity:.32}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-tile.valid-target{box-shadow:inset 0 0 0 1px #c7bf7a60;background-color:#5b5b37}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-tile.valid-target:hover:after{content:'＋';font:28px var(--au-font);color:#ddd5a3;z-index:5}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-compass{position:absolute;right:24px;top:20px;display:flex;flex-direction:column;align-items:center;color:#82907580;font:11px var(--au-font);gap:4px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-compass i{width:8px;height:17px;background:linear-gradient(90deg,#a3ac84 50%,#4f6049 50%);clip-path:polygon(50% 0,100% 100%,50% 75%,0 100%)}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-field-caption{position:absolute;bottom:12px;color:#899c7b80;font-size:11px;letter-spacing:.12em}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-map-bottom{height:52px;flex-shrink:0;display:flex;align-items:center;justify-content:flex-end;gap:12px;padding:0 20px;border-top:1px solid #8b987b18}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-inspector{display:flex;flex-direction:column;border-left:1px solid var(--line);background:linear-gradient(130deg,#25332b,#19271f 60%);min-height:0;min-width:0}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-inspector-top{height:44px;flex-shrink:0;padding:0 22px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #8b987b18;color:var(--muted);font-size:12px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-inspector-top small{font:13px var(--au-font);color:var(--gold)}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-inspector-scroll{padding:0 24px 16px;overflow:auto;flex:1;min-height:0;scrollbar-width:thin;scrollbar-color:#57624c transparent}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-crop-hero{height:130px;display:flex;justify-content:center;align-items:center;position:relative;margin:8px -4px 0;background:radial-gradient(ellipse at 50% 70%,#99a36414,transparent 65%)}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-crop-hero>.au-botanical{width:126px;height:126px;z-index:1;filter:drop-shadow(2px 8px 5px #09170b80)}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-botanical-orbit{position:absolute;width:100px;height:100px;border:1px solid #b3b87a25;border-radius:50%;top:15px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-botanical-orbit:before{content:"";position:absolute;inset:6px;border:1px dashed #b3b87a20;border-radius:50%}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-hero-index{position:absolute;right:0;bottom:8px;font:38px var(--au-font);color:#8d9b7021}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-crop-heading{display:flex;align-items:center;justify-content:space-between;margin:7px 0 19px;gap:10px}
+:is(#agriculture-ui-prototype, #modal-agriculture) h2{font:600 21px/1.4 var(--au-font);letter-spacing:0}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-tag{display:inline-flex;align-items:center;gap:5px;font-size:11px;white-space:nowrap;color:#adbb94;letter-spacing:0}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-tag i{width:4px;height:4px;background:currentColor;border-radius:50%}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-tag.risk{color:var(--risk)}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-tag.ready{color:#d9bc7d}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-progress-label{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted);margin-bottom:8px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-progress-label b{font-size:13px;font-weight:400;color:#d5c699}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-progress{height:3px;background:#83906f20;border-radius:3px;overflow:hidden}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-progress i{height:100%;display:block;background:linear-gradient(90deg,#778b58,#c8bf89)}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-supply-section{margin-top:20px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-supply-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;font-size:12px;font-weight:500;color:var(--ink)}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-supply-title small{font-size:11px;font-weight:400;color:var(--muted)}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-supply-card{padding:0 10px;border:1px solid var(--line);border-radius:5px;background:#6f87550a}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-supply-item{display:grid;grid-template-columns:minmax(0,1fr) auto 24px;align-items:baseline;gap:3px 8px;padding:11px 0}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-supply-item+.au-supply-item{border-top:1px solid var(--line)}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-supply-name{font-size:12px;color:var(--ink)}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-supply-value{font:600 16px/1.35 var(--au-font);color:var(--ink);text-align:right}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-supply-state{font-size:11px;white-space:nowrap;text-align:right}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-supply-range{grid-column:1/-1;font-size:11px;color:var(--muted)}
+:is(#agriculture-ui-prototype, #modal-agriculture) .good-text{color:#a5b68b}
+:is(#agriculture-ui-prototype, #modal-agriculture) .warn-text{color:#cda073}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-source-list{display:flex;flex-direction:column;gap:6px;margin-top:16px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-source{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border:1px solid #82957625;border-radius:3px;background:#15251a66;font-size:12px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-source b{font:13px var(--au-font);color:var(--gold)}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-source:hover{border-color:#acb58766}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-plot-context{margin-top:12px;font-size:12px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-context-link,:is(#agriculture-ui-prototype, #modal-agriculture) .au-context-row,:is(#agriculture-ui-prototype, #modal-agriculture) .au-soil-details summary{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;min-height:39px;padding:9px 0;border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent;color:var(--muted);font-size:12px;text-align:left}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-context-link:hover{background:#8a9d6710;border-color:var(--line)}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-context-link b,:is(#agriculture-ui-prototype, #modal-agriculture) .au-context-row b{font:500 12px var(--au-font)}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-context-link b{display:flex;align-items:center;gap:7px;color:var(--gold)}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-context-link b>span{font-size:11px;opacity:.65}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-soil-details summary{cursor:pointer;list-style:none}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-soil-details summary::-webkit-details-marker{display:none}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-context-soil{display:flex;align-items:center;gap:7px;color:var(--ink)}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-context-soil b{font:400 12px var(--au-font)}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-context-soil .au-soil-swatch{width:18px;height:18px;border-radius:3px;box-shadow:none}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-context-soil i{width:6px;height:6px;border-right:1px solid var(--muted);border-bottom:1px solid var(--muted);transform:rotate(45deg);margin:0 2px 3px 3px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-soil-details[open] .au-context-soil i{transform:rotate(225deg);margin-bottom:-2px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-detail-values{display:grid;grid-template-columns:auto minmax(0,1fr);gap:9px 8px;margin:0;padding:12px 0;border-bottom:1px solid var(--line);font-size:11px;color:var(--muted)}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-detail-values dt,:is(#agriculture-ui-prototype, #modal-agriculture) .au-detail-values dd{margin:0}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-detail-values dd{text-align:right;color:var(--ink)}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-action-slot{flex-shrink:0;padding:14px 22px;border-top:1px solid var(--line);display:flex;flex-direction:column;align-items:stretch;gap:6px;background:#1c2a22}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-primary,:is(#agriculture-ui-prototype, #modal-agriculture) .au-secondary{display:flex;align-items:center;justify-content:center;gap:8px;min-height:39px;padding:9px 12px;font-size:12px;border-radius:3px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-primary{background:linear-gradient(110deg,#c9b885,#a99b69);color:#243024;box-shadow:inset 0 0 0 1px #f7dba444}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-primary:hover:not(:disabled){background:#d8c38c}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-secondary{background:#a3b28012;border:1px solid #97a27448;color:#c9c9a4}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-secondary:hover{background:#a3b28026}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-secondary.au-remove-action{color:#c6a18b;border-color:#b5896f50;background:#aa765509}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-secondary.au-remove-action:hover:not(:disabled){background:#aa76551c;border-color:#c3977990}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-remove-reason{color:var(--muted);font-size:11px;text-align:center}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-text-button{background:transparent;color:var(--gold);font-size:12px;padding:4px;white-space:nowrap}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-footer{height:49px;flex-shrink:0;display:flex;justify-content:flex-end;align-items:center;gap:20px;padding:0 24px;background:#142219;border-top:1px solid var(--line);font-size:12px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-season-note{color:#7c8c7499;font:12px var(--au-font);letter-spacing:0}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-wait{display:flex;align-items:center;gap:12px;padding:6px 0;background:transparent;color:var(--muted);font-size:12px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-wait-track{width:38px;height:21px;display:flex;align-items:center;padding:3px;border:1px solid #84927666;border-radius:20px;background:#0e1c15;transition:background .18s,border-color .18s}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-wait-track i{width:13px;height:13px;border-radius:50%;background:#899580;box-shadow:0 1px 3px #0004;transition:transform .18s,background .18s}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-wait[aria-checked=true]{color:#d0bb83}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-wait[aria-checked=true] .au-wait-track{background:#b8a46e;border-color:#d3bd84}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-wait[aria-checked=true] .au-wait-track i{transform:translateX(17px);background:#f2e8c8}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-switcher{position:absolute;bottom:15px;left:50%;transform:translateX(-50%);height:44px;display:flex;align-items:center;gap:12px;border-radius:6px;padding:0 8px;background:#e1dfd0;color:#26382e;box-shadow:0 5px 22px #0008;border:1px solid #fff6;white-space:nowrap}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-switcher button{background:transparent;min-width:28px;padding:4px 8px;font:17px var(--au-font);border-radius:3px;color:#324f3f}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-switcher button:hover{background:#6d826626}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-switcher>span{display:flex;flex-direction:column;text-align:center;min-width:115px;line-height:1.35}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-switcher small{font-size:10px;color:#77816b;letter-spacing:.14em}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-switcher b{font-size:13px;font-weight:500}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-switcher i{height:18px;width:1px;background:#7f86664d}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-switcher .au-reset{font:12px var(--au-font)}
+:is(#agriculture-ui-prototype, #modal-agriculture).closed{pointer-events:none}
+:is(#agriculture-ui-prototype, #modal-agriculture).closed .au-switcher{pointer-events:auto}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-toast{position:absolute;left:50%;bottom:82px;transform:translateX(-50%);background:#e2d6ad;color:#34402a;padding:9px 22px;border-radius:4px;box-shadow:0 4px 20px #0005;font-size:13px;pointer-events:none;z-index:8;white-space:nowrap}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-toast:empty{display:none}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-empty-plot{height:160px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;color:var(--muted)}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-empty-plot>.au-icon{width:62px;height:62px;stroke-width:.7;color:#8b9b6b}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-empty-plot span{font:12px var(--au-font);letter-spacing:.1em}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-soil-info{display:flex;align-items:center;gap:12px;padding:15px 0;border-bottom:1px solid var(--line);font-size:12px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-soil-info>.au-icon{color:#b2ab7c;width:28px;height:28px;stroke-width:1}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-soil-info small{display:block;font-size:11px;color:var(--muted);margin-top:4px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-fact{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #8b987b16;font-size:13px;color:var(--muted)}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-fact b{font:17px var(--au-font);color:#d5ceb0}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-seeds{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-seeds button{display:flex;align-items:center;background:#10231766;text-align:left;padding:8px 4px;border:1px solid var(--line);border-radius:3px;font-size:13px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-seeds button[aria-pressed=true]{border-color:var(--gold);background:#72845d25}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-seeds .au-botanical{width:42px;height:49px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-seeds small{display:block;font:12px var(--au-font);color:var(--muted);margin-top:5px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-preview{margin-top:24px;padding:15px;border:1px dashed #9bac6e66;border-radius:3px;background:#9bac6e0a}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-preview b{display:block;font-size:12px;font-weight:400;color:#c9c99f;margin:10px 0 4px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-preview p{font-size:12px;color:var(--muted);margin-top:8px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-inspector-scroll>.au-section-heading:first-child{margin-top:24px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-rate{display:block;margin-top:25px;font-size:13px;color:var(--muted)}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-rate output{float:right;color:var(--gold);font:17px var(--au-font)}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-rate input{display:block;width:100%;margin:18px 0 10px;accent-color:#c5b27e;cursor:pointer}
+:is(#agriculture-ui-prototype, #modal-agriculture) .device-hero>.au-icon{width:65px;height:65px;stroke-width:.7;color:#8fb5a8}
+:is(#agriculture-ui-prototype, #modal-agriculture) .device-hero>.au-device{width:110px;height:110px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-big-number{font:50px var(--au-font);color:#9db7a6;margin-top:28px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-big-number small{font:12px var(--au-font);color:var(--muted)}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-muted{color:var(--muted);font-size:13px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-harvest-yield{display:flex;align-items:center;gap:10px;margin-top:24px;padding:17px 0;border-bottom:1px solid var(--line);color:var(--gold);font-size:12px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-harvest-yield b{font:23px var(--au-font);margin-left:auto}
+/* B: a continuous field with floating controls and an independently floating inspector. */
+:is(#agriculture-ui-prototype, #modal-agriculture)[data-variant=B] .au-window{background:#203024}
+:is(#agriculture-ui-prototype, #modal-agriculture)[data-variant=B] .au-header{background:#1d2c21;border-bottom-color:#83936b22}
+:is(#agriculture-ui-prototype, #modal-agriculture) .b-layout{position:relative;display:block;background:radial-gradient(ellipse at 35% 40%,#4f61404d,transparent 70%),#203024}
+:is(#agriculture-ui-prototype, #modal-agriculture) .b-layout .au-map-section{position:absolute;inset:0 300px 0 0;background:none}
+:is(#agriculture-ui-prototype, #modal-agriculture) .b-layout .au-map-top{justify-content:flex-end;border:0;height:52px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .b-layout .au-layers{padding:4px;border:1px solid #a3b18133;background:#142319aa;border-radius:4px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .b-layout .au-layers button[aria-pressed=true]:after{display:none}
+:is(#agriculture-ui-prototype, #modal-agriculture) .b-layout .au-coordinates{display:none}
+:is(#agriculture-ui-prototype, #modal-agriculture) .b-layout .au-field-stage{padding-left:135px;padding-right:10px;padding-bottom:14px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .b-layout .au-map-frame{width:min(100cqw - 155px,100cqh - 26px);transform:rotate(-3deg);box-shadow:0 25px 80px #020d0b99,0 0 80px #8b9d5344;border-width:8px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .b-layout .au-inspector{position:absolute;right:21px;top:17px;bottom:20px;width:280px;border:1px solid #99a67d4d;box-shadow:0 10px 40px #05160c55;border-radius:5px;background:#192a20ed;z-index:2}
+:is(#agriculture-ui-prototype, #modal-agriculture) .b-layout .au-map-bottom{border:0;padding:0 25px;justify-content:flex-end;height:57px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .b-layout .au-field-caption{display:none}
+:is(#agriculture-ui-prototype, #modal-agriculture) .b-layout .au-compass{right:20px;top:8px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-field-float{position:absolute;left:30px;top:34px;width:138px;z-index:1}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-field-float h2{font-size:43px;letter-spacing:.25em;margin:8px 0 26px;color:#d8d7b9}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-field-float .au-stats{flex-direction:column;border:0;gap:16px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-field-float .au-stats button{align-items:flex-start;flex-direction:row;gap:12px;justify-content:flex-start;border:0;padding:0}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-field-float .au-stats b{width:31px;font-size:26px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-field-float .au-stats span{align-self:center}
+/* C: a pale field ledger; list selection leads, the map is the spatial reference. */
+:is(#agriculture-ui-prototype, #modal-agriculture)[data-variant=C]{--ink:#323f30;--muted:#7e836e;--gold:#89723e;--line:#8c8a6740;--panel:#e0deca;--green:#697a49;--risk:#a0653e}
+:is(#agriculture-ui-prototype, #modal-agriculture)[data-variant=C] .au-header{background:#e6e3d2;border-bottom-color:#8a8e7138}
+:is(#agriculture-ui-prototype, #modal-agriculture)[data-variant=C] .au-header h1 span{color:#8c907c}
+:is(#agriculture-ui-prototype, #modal-agriculture) .c-layout{grid-template-columns:300px minmax(380px,1fr) 290px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-ledger{display:flex;flex-direction:column;min-height:0;padding:23px 22px 0;border-right:1px solid var(--line);background:radial-gradient(#8a86651a .6px,transparent .7px),linear-gradient(110deg,#e9e6d5,#dcdcc6);background-size:4px 5px,100% 100%}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-ledger-title h2{font-size:30px;margin:5px 0 6px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-ledger-title p{font:13px var(--au-font);color:var(--muted);letter-spacing:.1em}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-ledger .au-stats{margin-top:23px}
+:is(#agriculture-ui-prototype, #modal-agriculture)[data-variant=C] .au-stats b{color:#62774c}
+:is(#agriculture-ui-prototype, #modal-agriculture)[data-variant=C] .au-stats button:nth-child(2) b{color:#927c46}
+:is(#agriculture-ui-prototype, #modal-agriculture)[data-variant=C] .au-stats button:nth-child(3) b{color:#9a6b48}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-list-head{display:flex;justify-content:space-between;padding:15px 0 10px;color:var(--muted);font-size:11px;letter-spacing:.04em}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-ledger-list{flex:1;min-height:0;overflow:auto;scrollbar-width:thin;scrollbar-color:#b1b19a transparent;margin:0 -7px;padding:0 7px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-ledger-row{display:flex;align-items:center;gap:7px;width:100%;padding:10px 4px;text-align:left;border-top:1px solid #9c9c7833;background:transparent}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-ledger-row.active{background:#83885d22;box-shadow:inset 2px 0 #8c8955}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-ledger-row>.au-botanical{width:36px;height:40px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-ledger-row>span:nth-child(2){flex:1}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-ledger-row>span:last-child{text-align:right}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-ledger-row b{font-size:12px;font-weight:500}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-ledger-row small{display:block;font-size:11px;color:var(--muted);margin-top:3px}
+:is(#agriculture-ui-prototype, #modal-agriculture)[data-variant=C] .au-tag{color:#697a49}
+:is(#agriculture-ui-prototype, #modal-agriculture)[data-variant=C] .au-tag.ready{color:#8a783e}
+:is(#agriculture-ui-prototype, #modal-agriculture)[data-variant=C] .au-inspector{background:#e5e3d1}
+:is(#agriculture-ui-prototype, #modal-agriculture)[data-variant=C] .au-action-slot{background:#dbdcc7}
+:is(#agriculture-ui-prototype, #modal-agriculture)[data-variant=C] .au-source{background:#b9bea12b;color:#5c684d;border-color:#959c6e44}
+:is(#agriculture-ui-prototype, #modal-agriculture)[data-variant=C] .au-section-heading{color:#5e6c50}
+:is(#agriculture-ui-prototype, #modal-agriculture)[data-variant=C] .au-progress-label b{color:#656f48}
+
+
+:is(#agriculture-ui-prototype, #modal-agriculture)[data-variant=C] .au-secondary{background:#6f7f4922;color:#637248;border-color:#83955e66}
+:is(#agriculture-ui-prototype, #modal-agriculture)[data-variant=C] .au-good-text{color:#627949}
+:is(#agriculture-ui-prototype, #modal-agriculture)[data-variant=C] .warn-text{color:#a26842}
+:is(#agriculture-ui-prototype, #modal-agriculture)[data-variant=C] .au-fact b{color:#63724e}
+:is(#agriculture-ui-prototype, #modal-agriculture)[data-variant=C] .au-preview b{color:#5e6b49}
+:is(#agriculture-ui-prototype, #modal-agriculture)[data-variant=C] .au-seeds button,:is(#agriculture-ui-prototype, #modal-agriculture)[data-variant=C] .au-structure-options button{background:#c4c8ae66}
+:is(#agriculture-ui-prototype, #modal-agriculture)[data-variant=C] .au-map-section{--ink:#e6e3d2;--muted:#98a18a;--gold:#c5af77;--line:#7e8c6630}
+:is(#agriculture-ui-prototype, #modal-agriculture)[data-variant=C] .au-map-top{padding:0 14px}
+:is(#agriculture-ui-prototype, #modal-agriculture)[data-variant=C] .au-coordinates{display:none}
+:is(#agriculture-ui-prototype, #modal-agriculture)[data-variant=C] .au-map-bottom{justify-content:center;height:52px}
+:is(#agriculture-ui-prototype, #modal-agriculture)[data-variant=C] .au-footer{background:#d4d8bd;color:#6a7355;border-color:#9ba07a44}
+:is(#agriculture-ui-prototype, #modal-agriculture)[data-variant=C] .au-wait{color:#6c744f}
+:is(#agriculture-ui-prototype, #modal-agriculture)[data-variant=C] .au-season-note{color:#8a8e74}
+@media(min-height:850px){:is(#agriculture-ui-prototype, #modal-agriculture) .au-window{inset:34px 34px 80px}:is(#agriculture-ui-prototype, #modal-agriculture) .au-header{height:94px}:is(#agriculture-ui-prototype, #modal-agriculture) .au-crop-hero{height:165px}:is(#agriculture-ui-prototype, #modal-agriculture) .au-crop-hero>.au-botanical{width:150px;height:150px}:is(#agriculture-ui-prototype, #modal-agriculture) .au-botanical-orbit{width:130px;height:130px}}
+@media(max-height:760px){:is(#agriculture-ui-prototype, #modal-agriculture) .au-window{inset:14px 18px 66px}:is(#agriculture-ui-prototype, #modal-agriculture) .au-header{height:68px;padding:0 23px}:is(#agriculture-ui-prototype, #modal-agriculture) .au-section-heading{margin-top:18px;margin-bottom:12px}:is(#agriculture-ui-prototype, #modal-agriculture) .au-crop-hero{height:105px}:is(#agriculture-ui-prototype, #modal-agriculture) .au-crop-hero>.au-botanical{width:105px;height:105px}:is(#agriculture-ui-prototype, #modal-agriculture) .au-botanical-orbit{width:83px;height:83px;top:11px}:is(#agriculture-ui-prototype, #modal-agriculture) .au-crop-heading{margin:4px 0 13px}:is(#agriculture-ui-prototype, #modal-agriculture) .au-source-list{margin-top:12px}:is(#agriculture-ui-prototype, #modal-agriculture) .au-source:not(.au-context-link){padding:7px 8px}:is(#agriculture-ui-prototype, #modal-agriculture) .au-action-slot{padding:11px 22px}:is(#agriculture-ui-prototype, #modal-agriculture) .au-footer{height:44px}:is(#agriculture-ui-prototype, #modal-agriculture) .au-field-stage{padding:23px 20px 25px}:is(#agriculture-ui-prototype, #modal-agriculture) .au-map-frame{width:min(100cqw - 52px,100cqh - 39px)}:is(#agriculture-ui-prototype, #modal-agriculture) .au-field-caption{bottom:7px;font-size:10px}:is(#agriculture-ui-prototype, #modal-agriculture) .au-map-top{height:50px}:is(#agriculture-ui-prototype, #modal-agriculture) .au-layers button[aria-pressed=true]:after{bottom:-7px}:is(#agriculture-ui-prototype, #modal-agriculture) .au-map-bottom{height:46px}:is(#agriculture-ui-prototype, #modal-agriculture) .au-switcher{bottom:11px}:is(#agriculture-ui-prototype, #modal-agriculture) .au-inspector-top{height:38px}:is(#agriculture-ui-prototype, #modal-agriculture) .au-toast{bottom:72px}}
+@media(max-width:1150px){:is(#agriculture-ui-prototype, #modal-agriculture) .a-layout{--au-detail-width:220px;grid-template-columns:minmax(330px,1fr) var(--au-detail-width)}:is(#agriculture-ui-prototype, #modal-agriculture) .au-map-top{padding:0 10px}:is(#agriculture-ui-prototype, #modal-agriculture) .au-layers button{padding:8px 9px;gap:5px}:is(#agriculture-ui-prototype, #modal-agriculture) .au-map-bottom{padding:0 10px;gap:6px}:is(#agriculture-ui-prototype, #modal-agriculture) .au-inspector-scroll{padding-left:18px;padding-right:18px}:is(#agriculture-ui-prototype, #modal-agriculture) .c-layout{grid-template-columns:250px minmax(320px,1fr) 264px}:is(#agriculture-ui-prototype, #modal-agriculture) .au-ledger{padding-left:15px;padding-right:15px}:is(#agriculture-ui-prototype, #modal-agriculture) .au-field-float{width:105px;left:20px}:is(#agriculture-ui-prototype, #modal-agriculture) .b-layout .au-field-stage{padding-left:100px}:is(#agriculture-ui-prototype, #modal-agriculture) .b-layout .au-map-frame{width:min(100cqw - 115px,100cqh - 26px)}}
+@media(max-width:950px){:is(#agriculture-ui-prototype, #modal-agriculture) .a-layout{grid-template-columns:minmax(350px,1fr) var(--au-detail-width)}:is(#agriculture-ui-prototype, #modal-agriculture) .c-layout{grid-template-columns:190px minmax(300px,1fr) 240px}:is(#agriculture-ui-prototype, #modal-agriculture) .au-ledger-row>.au-botanical{display:none}:is(#agriculture-ui-prototype, #modal-agriculture) .au-field-float{display:none}:is(#agriculture-ui-prototype, #modal-agriculture) .b-layout .au-field-stage{padding:22px}:is(#agriculture-ui-prototype, #modal-agriculture) .b-layout .au-map-frame{width:min(100cqw - 25px,100cqh - 26px)}:is(#agriculture-ui-prototype, #modal-agriculture) .au-map-bottom{justify-content:center}}
+@media(max-width:760px){:is(#agriculture-ui-prototype, #modal-agriculture) .au-window{inset:8px 8px 65px;overflow:auto}:is(#agriculture-ui-prototype, #modal-agriculture) .au-header{min-width:600px}:is(#agriculture-ui-prototype, #modal-agriculture) .au-layout{min-width:600px;min-height:440px}:is(#agriculture-ui-prototype, #modal-agriculture) .a-layout{grid-template-columns:minmax(340px,1fr) var(--au-detail-width)}:is(#agriculture-ui-prototype, #modal-agriculture) .c-layout{grid-template-columns:180px 350px 250px;min-width:780px}:is(#agriculture-ui-prototype, #modal-agriculture) h1 span{display:none}:is(#agriculture-ui-prototype, #modal-agriculture) .au-footer{min-width:600px}:is(#agriculture-ui-prototype, #modal-agriculture) .au-season-note{display:none}}
+@media(prefers-reduced-motion:reduce){:is(#agriculture-ui-prototype, #modal-agriculture) *{transition:none!important}}
+/* Keep the eleven-square board as large as its available frame permits. */
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-map-frame{width:min(100cqw - 10px,100cqh - 2px)}
+:is(#agriculture-ui-prototype, #modal-agriculture) .b-layout .au-map-frame{width:min(100cqw - 14px,100cqh - 12px)}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-field-float h2{white-space:nowrap;letter-spacing:.15em;font-size:38px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-field-float .au-eyebrow{font-size:10px;letter-spacing:.12em}
+:is(#agriculture-ui-prototype, #modal-agriculture)[data-variant=C] .good-text{color:#627949}
+:is(#agriculture-ui-prototype, #modal-agriculture)[data-variant=C] .au-tag.risk{color:#a0653e}
+:is(#agriculture-ui-prototype, #modal-agriculture)[data-variant=C] .au-tag.ready{color:#8a783e}
+/* A keeps the field dominant; the detail rail stays compact at every height. */
+:is(#agriculture-ui-prototype, #modal-agriculture)[data-variant=A] .au-header{height:76px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-header .au-stats{margin:0 auto 0 30px;padding:0;border:0;gap:8px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-header .au-stats button{flex:none;flex-direction:row;gap:7px;padding:8px 10px;border:1px solid transparent;border-radius:4px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-header .au-stats button:hover{background:#93a77912}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-header .au-stats button[aria-pressed=true]{border-color:#b7be8c45;background:#93a77918}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-header .au-stats b{font-size:19px;line-height:1.3}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-header .au-stats span{margin:0;font-size:12px}
+@media(max-width:760px){
+ :is(#agriculture-ui-prototype, #modal-agriculture)[data-variant=A] .au-header{height:106px;display:grid;grid-template-columns:1fr auto;gap:6px 16px;padding-top:10px;padding-bottom:8px}
+ :is(#agriculture-ui-prototype, #modal-agriculture)[data-variant=A] .au-header-right{grid-column:2;grid-row:1}
+ :is(#agriculture-ui-prototype, #modal-agriculture) .au-header .au-stats{grid-column:1/-1;grid-row:2;margin:0;gap:10px}
+ :is(#agriculture-ui-prototype, #modal-agriculture) .au-header .au-stats button{padding:5px 10px}
+}
+:is(#agriculture-ui-prototype, #modal-agriculture) .a-layout .au-inspector-top{padding:0 16px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .a-layout .au-inspector-scroll{padding:0 16px 14px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .a-layout .au-action-slot{padding:12px 14px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .a-layout .au-crop-hero{height:112px;margin-top:6px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .a-layout .au-crop-hero>.au-botanical{width:108px;height:108px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .a-layout .au-botanical-orbit{width:90px;height:90px;top:11px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .a-layout .au-crop-heading{flex-wrap:wrap;gap:4px 8px;margin:4px 0 12px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .a-layout .au-crop-heading h2{font-size:19px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .a-layout .au-inspector .au-section-heading{margin:18px 0 10px}
+
+:is(#agriculture-ui-prototype, #modal-agriculture) .a-layout .au-source-list{margin-top:12px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .a-layout .au-structure-badge{margin:-2px 0 12px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .a-layout .au-harvest-yield{margin-top:16px;padding:13px 0}
+:is(#agriculture-ui-prototype, #modal-agriculture) .a-layout .au-seeds button{flex-direction:column;justify-content:center;text-align:center;gap:2px;font-size:12px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .a-layout .au-seeds small{margin-top:2px}
+/* One type family across headings, controls and tabular values. */
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-stats b,:is(#agriculture-ui-prototype, #modal-agriculture) .au-power,:is(#agriculture-ui-prototype, #modal-agriculture) .au-fact b,:is(#agriculture-ui-prototype, #modal-agriculture) .au-rate output{font-weight:600}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-section-heading,:is(#agriculture-ui-prototype, #modal-agriculture) .au-layers button,:is(#agriculture-ui-prototype, #modal-agriculture) .au-primary,:is(#agriculture-ui-prototype, #modal-agriculture) .au-secondary{font-weight:500}
+
+
+
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-axis,:is(#agriculture-ui-prototype, #modal-agriculture) .au-compass{font-size:10px;letter-spacing:0}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-metric{font-size:10px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-tag{font-size:11px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-source b,:is(#agriculture-ui-prototype, #modal-agriculture) .au-inspector-top small{font-size:12px;font-weight:500}
+
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-field-float h2{font-size:32px;letter-spacing:0}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-ledger-title h2{font-size:25px;letter-spacing:0}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-switcher small{font-size:10px;letter-spacing:0}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-switcher b{font-size:12px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-catalog-link{font:12px/1.5 var(--au-font);color:var(--gold);text-decoration:none;white-space:nowrap}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-catalog-link:hover{color:#eee1af}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-seed-group{display:block;width:100%;padding:8px 10px;margin-bottom:12px;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:5px;font:12px/1.5 var(--au-font);color-scheme:dark}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-seed-group option{background:#2a3b2c;color:#e6e3d2}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-switcher .au-catalog-link{color:#5d704e}
+/* Companion structures share a single rear / plant / front SVG, preserving hit targets. */
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-tile.has-structure>.au-plot-art{inset:-5% -5% 0;width:110%;height:105%}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-structure-badge{display:flex;align-items:center;justify-content:center;gap:6px;margin:-5px 0 18px;color:var(--gold);font-size:12px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-structure-badge .au-icon{width:14px;height:14px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-structure-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-structure-options button{padding:9px 4px;border:1px solid var(--line);border-radius:6px;background:#718b5310;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-structure-options button>.au-botanical,:is(#agriculture-ui-prototype, #modal-agriculture) .au-structure-options button>.au-device{width:57px;height:57px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-structure-options button[aria-pressed=true]{border-color:var(--gold);background:#9ca66a20}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-build-hero{text-align:center;padding:3px 0 12px;border-bottom:1px solid var(--line)}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-build-hero>.au-botanical{width:120px;height:120px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-build-hero h2{font:500 19px/1.5 var(--au-font);margin:2px 0 5px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-build-hero>span{font-size:11px;color:var(--muted);line-height:1.7}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-build-reason{font-size:12px;color:var(--risk);text-align:center;padding:2px 0 6px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-requirement{display:flex;align-items:center;gap:10px;padding:0 0 8px;font-size:13px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-requirement>.au-botanical{width:46px;height:46px;flex-shrink:0}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-requirement small{display:block;font-size:11px;margin-top:3px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-requirement>.au-icon{margin-left:auto;color:var(--green);width:16px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-compatible{display:flex;flex-direction:column;gap:7px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-compatible button{display:flex;align-items:center;gap:12px;text-align:left;padding:7px 12px;border:1px solid var(--line);border-radius:5px;background:#8d9f6812;font-size:13px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-compatible .au-botanical{width:42px;height:42px;flex-shrink:0}
+
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-player-status{display:flex;align-items:center;gap:24px;flex:1;min-width:0;max-width:360px;margin-right:auto;padding:0 6px}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-player-meter{flex:1;min-width:0}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-player-reading{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:5px;white-space:nowrap;font-size:11px;color:var(--muted)}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-player-reading b{font-size:12px;font-weight:500;color:#c9d0b8}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-player-reading small{font-size:10px;font-weight:400;color:var(--muted)}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-player-track{height:3px;overflow:hidden;border-radius:2px;background:#87937924}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-player-track i{display:block;height:100%;border-radius:inherit;background:#9aa77a;transition:width .25s ease}
+:is(#agriculture-ui-prototype, #modal-agriculture) .fatigue .au-player-track i{background:#b59b72}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-player-meter.warning .au-player-reading b{color:#d5a478}
+:is(#agriculture-ui-prototype, #modal-agriculture) .au-player-meter.warning .au-player-track i{background:#c79265}
+
+/* Formal modal lifecycle; the approved A layout above is shared unchanged. */
+#modal-agriculture{display:none}
+#modal-agriculture.show{display:block}
+#modal-agriculture .au-construction{padding:12px;border:1px solid var(--line);border-radius:3px;margin-bottom:16px}
+#modal-agriculture .au-construction .au-progress{margin:9px 0}
+#modal-agriculture .au-construction .au-secondary{margin-top:10px}
+#modal-agriculture .au-materials{margin:14px 0;color:var(--muted);font-size:11px}
+#modal-agriculture .au-materials .au-fact{font-size:11px;padding:5px 0}
+#modal-agriculture .au-extra-actions{margin-top:14px}
+#modal-agriculture .au-extra-actions .au-secondary{margin-top:8px}
+#modal-agriculture .au-item-options{display:grid;gap:8px}
+#modal-agriculture .au-item-options button{background:#ffffff04;border:1px solid var(--line);border-radius:3px;padding:10px;text-align:left;display:flex;justify-content:space-between;gap:8px}
+#modal-agriculture .au-item-options small{color:var(--muted)}

@@ -55,14 +55,38 @@ for(const full of [false,true])test(`${full?'Svelte':'native'} outdoor access, s
    }
    const edge=f.id==='farm'?[5,10]:[10,9];E.setState(mapId,...edge);
    assert.equal(g.FacilityLabor.isUnlocked(id),false,'placement does not restore facility');
+   if(id==='agriculture'){
+    await g.NPCSystem.openMenu(f.npc_id);
+    assert.equal(g.NPCSystem.isMenuOpen(),false,'unrestored farm skips the NPC menu');
+    assert.equal(g.FacilityLaborPanel.isOpen(),true,'unrestored farm still requires restoration');
+    g.FacilityLaborPanel.close();
+    g.NPCSystem.setDemoFlag('facility_labor:'+id,g.FacilityLabor.total);
+    g.NPCSystem.setDemoFlag('facility_cleaned:'+id,true);
+    await g.NPCSystem.openMenu(f.npc_id);
+    assert.equal(g.NPCSystem.isMenuOpen(),false);
+    assert.equal(g.FacilityLaborPanel.getView().clean,true,'cleaned farm proceeds to repair');
+    assert.equal(g.FacilityLaborPanel.getView().ready,false,'cleaning does not skip repair');
+    g.FacilityLaborPanel.close();
+   }
    g.NPCSystem.setDemoFlag('facility_cleaned:'+id,true);g.NPCSystem.setDemoFlag('facility_restored:'+id,true);
    let menu;const detach=g.NPCSystem.menu.attachView(v=>menu=v);
    E.setState(mapId,7,14);await g.NPCSystem.openMenu(f.npc_id);assert.equal(menu.open,false,'remote menu stays closed');E.setState(mapId,...edge);
-   await g.NPCSystem.openMenu(f.npc_id);assert.ok(menu.open);
-   const button=menu.buttons.find(b=>/管理/.test(b.text));assert.ok(button);
-   E.setState(mapId,7,14);const before=g.GameTime.getState().totalTicks;g.NPCSystem.menu.choose(button.id);assert.equal(g.GameTime.getState().totalTicks,before,'stale menu costs no time');
-   assert.ok(!g.document.querySelector('#modal-'+id).classList.contains('show'));
-   E.setState(mapId,...edge);await g.NPCSystem.openMenu(f.npc_id);g.NPCSystem.menu.choose(menu.buttons.find(b=>/管理/.test(b.text)).id);await h.drain();
+   if(id==='agriculture'){
+    const before=g.GameTime.getState().totalTicks,pending=g.NPCSystem.openMenu(f.npc_id);
+    E.setState(mapId,7,14);await pending;
+    assert.equal(menu.open,false);assert.ok(!g.document.querySelector('#modal-agriculture').classList.contains('show'));
+    assert.equal(g.GameTime.getState().totalTicks,before,'leaving before the async entry resolves costs no time');
+    E.setState(mapId,...edge);g.SceneCtx.actions.interactNpc(f.npc_id);await h.drain();
+    assert.equal(menu.open,false,'restored farm opens directly without publishing the menu');
+    const opened=g.GameTime.getState().totalTicks;await g.NPCSystem.openMenu(f.npc_id);
+    assert.equal(g.GameTime.getState().totalTicks,opened,'repeated entry does not charge a second opening tick');
+   }else{
+    await g.NPCSystem.openMenu(f.npc_id);assert.ok(menu.open);
+    const button=menu.buttons.find(b=>/管理/.test(b.text));assert.ok(button);
+    E.setState(mapId,7,14);const before=g.GameTime.getState().totalTicks;g.NPCSystem.menu.choose(button.id);assert.equal(g.GameTime.getState().totalTicks,before,'stale menu costs no time');
+    assert.ok(!g.document.querySelector('#modal-'+id).classList.contains('show'));
+    E.setState(mapId,...edge);await g.NPCSystem.openMenu(f.npc_id);g.NPCSystem.menu.choose(menu.buttons.find(b=>/管理/.test(b.text)).id);await h.drain();
+   }
    assert.ok(g.document.querySelector('#modal-'+id).classList.contains('show'),id+' opens at far edge');
    const tick=g.GameTime.getState().totalTicks;E.setState(mapId,7,14);assert.ok(!g.document.querySelector('#modal-'+id).classList.contains('show'));assert.equal(g.GameTime.getState().totalTicks,tick,'forced close is free');detach();
   }

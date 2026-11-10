@@ -1075,6 +1075,13 @@
                 log('NPC 当前不在场（' + t + '）：' + npcId, 'warn');
                 return;
             }
+            if (def.id === 'npc.station.agriculture_base') {
+                closeMenu();
+                if (global.SceneApp && typeof global.SceneApp.openAgriculturePanel === 'function') {
+                    global.SceneApp.openAgriculturePanel();
+                }
+                return;
+            }
             if (global.DungeonCheckpoint && global.DungeonCheckpoint.isKeeper(npcId)) {
                 global.DungeonCheckpoint.open(def);
                 return;

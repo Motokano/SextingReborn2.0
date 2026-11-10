@@ -1,0 +1,148 @@
+{
+  "version": 1,
+  "status": "prototype",
+  "source": "data/agriculture-crop-defs.json",
+  "artSource": "tools/agriculture-structure-art.mjs",
+  "viewBox": [
+    0,
+    0,
+    100,
+    100
+  ],
+  "layers": [
+    "structure-back",
+    "crop",
+    "structure-front"
+  ],
+  "structures": [
+    {
+      "id": "support_frame",
+      "name": "支架",
+      "file": "support_frame.svg",
+      "combinations": [
+        {
+          "cropId": "cucumber",
+          "name": "黄瓜",
+          "file": "cucumber--support_frame.svg"
+        },
+        {
+          "cropId": "green_beans",
+          "name": "扁豆",
+          "file": "green_beans--support_frame.svg"
+        },
+        {
+          "cropId": "garrofo",
+          "name": "大白芸豆",
+          "file": "garrofo--support_frame.svg"
+        },
+        {
+          "cropId": "beans_white_haricot",
+          "name": "白扁豆",
+          "file": "beans_white_haricot--support_frame.svg"
+        }
+      ]
+    },
+    {
+      "id": "protection_cage",
+      "name": "保护笼",
+      "file": "protection_cage.svg",
+      "combinations": [
+        {
+          "cropId": "tomato",
+          "name": "番茄",
+          "file": "tomato--protection_cage.svg"
+        },
+        {
+          "cropId": "tomato_green",
+          "name": "绿番茄",
+          "file": "tomato_green--protection_cage.svg"
+        }
+      ]
+    },
+    {
+      "id": "binding_strap",
+      "name": "捆绑带",
+      "file": "binding_strap.svg",
+      "combinations": [
+        {
+          "cropId": "sugarcane",
+          "name": "甘蔗",
+          "file": "sugarcane--binding_strap.svg"
+        },
+        {
+          "cropId": "plantain",
+          "name": "大蕉",
+          "file": "plantain--binding_strap.svg"
+        }
+      ]
+    },
+    {
+      "id": "water_storage_ridge",
+      "name": "蓄水田埂",
+      "file": "water_storage_ridge.svg",
+      "combinations": [
+        {
+          "cropId": "rice",
+          "name": "大米",
+          "file": "rice--water_storage_ridge.svg"
+        },
+        {
+          "cropId": "rice_bomba",
+          "name": "粳米",
+          "file": "rice_bomba--water_storage_ridge.svg"
+        },
+        {
+          "cropId": "rice_basmati",
+          "name": "长粒香米",
+          "file": "rice_basmati--water_storage_ridge.svg"
+        },
+        {
+          "cropId": "rice_glutinous_round",
+          "name": "圆糯米",
+          "file": "rice_glutinous_round--water_storage_ridge.svg"
+        }
+      ]
+    },
+    {
+      "id": "deep_pool",
+      "name": "深水池",
+      "file": "deep_pool.svg",
+      "combinations": [
+        {
+          "cropId": "lotus_seed",
+          "name": "莲子",
+          "file": "lotus_seed--deep_pool.svg"
+        },
+        {
+          "cropId": "euryale",
+          "name": "芡实",
+          "file": "euryale--deep_pool.svg"
+        }
+      ]
+    },
+    {
+      "id": "shade_cover",
+      "name": "遮光罩",
+      "file": "shade_cover.svg",
+      "combinations": [
+        {
+          "cropId": "sprout",
+          "name": "豆芽",
+          "file": "sprout--shade_cover.svg"
+        }
+      ]
+    },
+    {
+      "id": "canopy",
+      "name": "顶棚",
+      "file": "canopy.svg",
+      "combinations": [
+        {
+          "cropId": "ginger",
+          "name": "生姜",
+          "file": "ginger--canopy.svg"
+        }
+      ]
+    }
+  ]
+}

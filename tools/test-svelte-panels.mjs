@@ -13,6 +13,32 @@ const leaf = (g, selector) => [...g.document.querySelectorAll(selector)].map(el 
 const eq = (a, b) => assert.deepEqual(JSON.parse(JSON.stringify(a)), JSON.parse(JSON.stringify(b)));
 function stateItems(g, items, equipment) { const IE = g.InventoryEquipment, st = JSON.parse(JSON.stringify(IE.getState())); st.inventory_pocket = []; st.inventory_vest = []; st.inventory_backpack = items; const equipmentTable = Object.fromEntries(equipmentIds.map(id => [id, IE.getItemTemplate(id)])); equipmentTable.test_ui_bag = { item_id: 'test_ui_bag', name: '测试背包', equip_slot: 'backpack', backpack_slots: 12, weight_kg: 1 }; IE.setConfig({ equipment: equipmentTable }); st.equipment.backpack = { item_id: 'test_ui_bag' }; st.inventory_vehicle = []; if (equipment)
     Object.assign(st.equipment, equipment); IE.setState(st); }
+
+async function learnAnatomyFromBook(h) {
+    const g = h.g, d = g.document, IE = g.InventoryEquipment;
+    const skillId = IE.SPECIAL_MERIDIAN_STUDIES_SKILL_ID || 'special_meridian_studies';
+    const anatomyRow = () => [...d.querySelectorAll('#survival-skill-table .survival-row')]
+        .find(row => row.querySelector('.survival-name')?.textContent === g.SceneFeedback.ui('special.skill.meridian_studies.name'));
+    assert.equal(IE.getSkillLevel(skillId), 0);
+    assert.ok(anatomyRow(), 'special skills show anatomy before learning');
+    assert.equal(anatomyRow().querySelector('.survival-plus-btn'), null, 'book skills have no free upgrade or self-study button');
+    assert.equal(g.MusclePanel.isAvailable(), false);
+    await click(h, '#survival-modal-close');
+    stateItems(g, [{ item_id: 'book_anatomy_textbook', count: 1, attribute_state: { knowledge: { book: { version: 1, fragments: 100 } } } }]);
+    const bookId = IE.getBackpackArray()[0].instance_id;
+    await click(h, '#btn-backpack');
+    await click(h, `[data-bp-id="${bookId}"]`);
+    assert.equal(d.querySelector('#book-reading-panel [data-book-consume]')?.disabled, false);
+    await click(h, '#book-reading-panel [data-book-consume]');
+    assert.equal(IE.getSkillLevel(skillId), 1, 'consuming the selected full textbook grants exactly one level');
+    assert.ok(!IE.findItemInstanceRecord(bookId), 'learning consumes the selected book');
+    await click(h, '#backpack-panel-close');
+    g.SceneApp.openSurvivalPanel('special');
+    await h.drain();
+    assert.ok(anatomyRow().querySelector('.survival-level').textContent.startsWith('1' + g.SceneFeedback.ui('combat.level.suffix')));
+    assert.equal(anatomyRow().querySelector('.survival-plus-btn'), null, 'learning does not restore the removed shortcuts');
+    assert.equal(g.MusclePanel.isAvailable(), true);
+}
 test('P3 native/Svelte same save: backpack details/equipment, skill tabs, shared loadout and muscles retain text/classes', async () => {
     const old = await boot(false), h = await boot(true), g = h.g, n = old.g;
     try {
@@ -272,7 +298,7 @@ test('P3 combat deploy, sequence picker, variants, hubs, strike order, skills an
         g.SceneApp.closePublicModal('modal-combat');
         g.SceneApp.openSurvivalPanel('special');
         await h.drain();
-        await click(h, '.survival-plus-btn');
+        await learnAnatomyFromBook(h);
         assert.equal(IE.getSkillLevel((IE.SPECIAL_MERIDIAN_STUDIES_SKILL_ID || 'special_meridian_studies')), 1);
         g.SceneApp.closePublicModal('modal-survival');
         await h.drain();
@@ -448,7 +474,7 @@ test('P3 study controls, muscle unlock/passive equipment and variant slots use e
         await click(h, '.survival-row .survival-plus-btn:last-child');
         assert.equal(g.Survival.isStudyActive(), false);
         await click(h, '[data-skill-tab=special]');
-        await click(h, '.survival-plus-btn');
+        await learnAnatomyFromBook(h);
         await click(h, '#survival-modal-close');
         g.SceneHud.refresh('status');await click(h,'#btn-muscles');
         await click(h,'#modal-muscles [data-group=shoulder_l]');

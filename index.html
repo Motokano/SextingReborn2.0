@@ -1655,167 +1655,6 @@
             font-family: "Noto Serif SC", "Source Han Serif SC", "Noto Serif CJK SC", "SimSun", serif;
         }
         #modal-compost-station.show { display: flex; }
-        #modal-agriculture {
-            display: none; position: fixed; inset: 0; z-index: 9200;
-            align-items: center; justify-content: center;
-            background: rgba(0,0,0,0.88); pointer-events: auto;
-            font-family: "Noto Serif SC", "Source Han Serif SC", "Noto Serif CJK SC", "SimSun", serif;
-        }
-        #modal-agriculture.show { display: flex; }
-        #modal-agriculture .agri-panel {
-            width: min(1180px, 96vw); height: min(760px, 90vh);
-            background: #2d2d28; border: 2px solid #4d4d45; border-radius: 10px;
-            overflow: hidden; display: flex; flex-direction: column; font-size: 14px;
-            box-shadow: 0 24px 64px rgba(0,0,0,0.65); color: #e0d7c6;
-            position: relative;
-            background-image: radial-gradient(120% 90% at 50% 0%, rgba(211,160,96,0.08), rgba(45,45,40,0) 45%);
-        }
-        #modal-agriculture .agri-head {
-            padding: 12px 18px; border-bottom: 2px solid #4d4d45; background: #1a1512;
-            display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
-        }
-        #modal-agriculture .agri-head h2 {
-            margin: 0; font-size: 1.05rem; font-weight: 900; color: #e0d7c6; letter-spacing: 0.06em;
-            padding-left: 10px; position: relative;
-        }
-        #modal-agriculture .agri-head h2::before {
-            content: ''; position: absolute; left: 0; top: 50%; width: 3px; height: 15px;
-            border-radius: 2px; transform: translateY(-50%);
-            background: linear-gradient(180deg, #ff8c00 0%, #d3a060 100%);
-        }
-        #modal-agriculture .agri-hint { margin: 0; padding: 8px 18px 0; font-size: 12px; color: #8e8e8e; line-height: 1.5; }
-        #modal-agriculture .agri-close {
-            padding: 8px 12px; font-size: 14px; background: transparent; border: none;
-            color: #8e8e8e; border-radius: 8px; cursor: pointer; font-weight: 800;
-        }
-        #modal-agriculture .agri-close:hover { color: #fff; background: rgba(185,28,28,0.18); }
-        #modal-agriculture .agri-body {
-            flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 300px;
-            gap: 12px; padding: 12px 16px; background: #1a1512;
-        }
-        #modal-agriculture .agri-grid-wrap {
-            border: 2px solid #4d4d45; border-radius: 10px; background: #252520;
-            padding: 10px; overflow: auto; display: flex; align-items: center; justify-content: center;
-        }
-        #modal-agriculture .agri-grid {
-            display: grid; grid-template-columns: repeat(11, 36px); grid-template-rows: repeat(11, 36px);
-            gap: 3px;
-        }
-        #modal-agriculture .agri-cell {
-            width: 36px; height: 36px; border: 1px solid #4d4d45; border-radius: 4px;
-            background: #1e1c18; color: #c8bfb0; font-size: 10px; line-height: 1.1;
-            cursor: pointer; padding: 2px; position: relative; text-align: center;
-            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
-        }
-        #modal-agriculture .agri-cell:hover { border-color: #d3a060; }
-        #modal-agriculture .agri-cell.selected { border-color: #ff8c00; box-shadow: 0 0 12px rgba(255,140,0,0.25); }
-        #modal-agriculture .agri-cell.pool { background: #1a3048; }
-        #modal-agriculture .agri-cell.channel { background: #243040; }
-        #modal-agriculture .agri-cell.channel.trunk { border-color: #5a8ab0; }
-        #modal-agriculture .agri-cell.channel.has-water { background: #2a4a62; }
-        #modal-agriculture .agri-cell.land.tilled { background: #3a3020; }
-        #modal-agriculture .agri-cell.venturi { background: #3a2838; }
-        #modal-agriculture .agri-cell.jar { background: #342a28; }
-        #modal-agriculture .agri-cell.fusion { background: #2e3430; }
-        #modal-agriculture .agri-cell.crop-growing { outline: 1px solid #6a9a50; }
-        #modal-agriculture .agri-cell.crop-ready { outline: 2px solid #d3a060; }
-        #modal-agriculture .agri-cell.crop-fail { outline: 2px solid #8b4040; }
-        #modal-agriculture .agri-cell .agri-cell-task {
-            position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-            background: rgba(0,0,0,0.55); font-size: 9px; font-weight: 800; color: #ff8c00;
-        }
-        #modal-agriculture .agri-side {
-            border: 2px solid #4d4d45; border-radius: 10px; background: #252520;
-            display: flex; flex-direction: column; min-height: 0; overflow: hidden;
-        }
-        #modal-agriculture .agri-task-bar {
-            padding: 10px 12px; border-bottom: 1px solid #3a3228; font-size: 12px; color: #d3a060;
-        }
-        #modal-agriculture .agri-detail {
-            flex: 1; overflow-y: auto; padding: 10px 12px; font-size: 12px; line-height: 1.55;
-        }
-        #modal-agriculture .agri-detail .agri-kv { margin-bottom: 6px; }
-        #modal-agriculture .agri-detail .agri-k { color: #8e8e8e; font-size: 11px; }
-        #modal-agriculture .agri-detail .agri-v { color: #e0d7c6; }
-        #modal-agriculture .agri-actions {
-            border-top: 1px solid #3a3228; padding: 8px 10px; max-height: 42%;
-            overflow-y: auto; display: flex; flex-direction: column; gap: 6px;
-        }
-        #modal-agriculture .agri-actions .agri-act-btn {
-            width: 100%; text-align: left; padding: 6px 10px; border-radius: 6px;
-            border: 1px solid #4d4d45; background: #2a241c; color: #e0d7c6;
-            font-size: 12px; cursor: pointer;
-        }
-        #modal-agriculture .agri-actions .agri-act-btn:hover:not(:disabled) { border-color: #d3a060; color: #d3a060; }
-        #modal-agriculture .agri-actions .agri-act-btn:disabled { opacity: 0.45; cursor: not-allowed; }
-        #modal-agriculture .agri-actions .agri-act-group {
-            font-size: 11px; color: #8e8e8e; margin-top: 4px; letter-spacing: 0.04em;
-        }
-        #modal-agriculture .agri-venturi-conc { margin-top: 4px; }
-        #modal-agriculture .agri-venturi-conc-row {
-            display: flex; align-items: center; gap: 8px; margin-top: 4px;
-        }
-        #modal-agriculture .agri-conc-val {
-            min-width: 28px; text-align: center; color: #d3a060; font-weight: 700;
-        }
-        #modal-agriculture .agri-act-btn.agri-conc-step { min-width: 36px; padding: 6px 8px; }
-        #modal-agriculture .agri-theft-panel {
-            margin-top: 6px; padding: 8px; border: 1px solid #4d4d45; border-radius: 8px; background: #221c18;
-        }
-        #modal-agriculture .agri-theft-toggle {
-            display: flex; align-items: center; gap: 6px; font-size: 12px; color: #e0d7c6; cursor: pointer;
-        }
-        #modal-agriculture .agri-theft-row {
-            display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 8px; font-size: 12px; color: #8e8e8e;
-        }
-        #modal-agriculture .agri-theft-select {
-            background: #2a241c; color: #e0d7c6; border: 1px solid #4d4d45; border-radius: 6px; padding: 4px 6px;
-        }
-        #modal-agriculture .agri-foot {
-            padding: 10px 16px 14px; border-top: 2px solid #4d4d45; background: #1a1512;
-            display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
-        }
-        #modal-agriculture .agri-foot button {
-            padding: 8px 14px; border-radius: 8px; border: 1px solid #4d4d45;
-            background: #2a241c; color: #e0d7c6; font-size: 13px; cursor: pointer; font-weight: 700;
-        }
-        #modal-agriculture .agri-foot button:hover:not(:disabled) { border-color: #d3a060; color: #d3a060; }
-        #modal-agriculture .agri-foot button.primary { border-color: #d3a060; color: #1a1512; background: #d3a060; }
-        #modal-agriculture .agri-foot button.primary:hover { background: #ff8c00; border-color: #ff8c00; }
-        #modal-agriculture .agri-foot button.toggle-on {
-            border-color: #6a9a50; color: #1a1512; background: #6a9a50;
-        }
-        #modal-agriculture .agri-foot button.toggle-on:hover { background: #7fb068; border-color: #7fb068; color: #1a1512; }
-        #modal-agriculture .agri-world-strip {
-            flex: 1 1 100%; width: 100%; font-size: 11px; color: #a89880; line-height: 1.4;
-        }
-        #modal-agriculture .agri-power-badge {
-            padding: 6px 12px; border-radius: 999px; border: 1px solid #4d4d45;
-            background: #221c18; color: #8e8e8e; font-size: 12px; font-weight: 700; white-space: nowrap;
-        }
-        #modal-agriculture .agri-power-badge.on { border-color: #6a9a50; color: #9fc08a; }
-        #modal-agriculture .agri-power-badge.off { border-color: #8b4040; color: #e08a8a; }
-        #modal-agriculture .agri-power-picker {
-            position: absolute; right: 16px; bottom: 64px; z-index: 40; width: min(360px, 92%);
-            background: #2d2d28; border: 2px solid #4d4d45; border-radius: 10px; box-shadow: 0 16px 48px rgba(0,0,0,0.6);
-        }
-        #modal-agriculture .agri-power-picker.hidden { display: none; }
-        #modal-agriculture .agri-power-picker-head {
-            padding: 8px 12px; border-bottom: 1px solid #4d4d45; display: flex; justify-content: space-between; align-items: center;
-            font-size: 12px; font-weight: 800; color: #e0d7c6;
-        }
-        #modal-agriculture .agri-power-picker-head span { cursor: pointer; color: #8e8e8e; padding: 2px 8px; }
-        #modal-agriculture .agri-power-picker-head span:hover { color: #fff; background: rgba(185,28,28,0.18); }
-        #modal-agriculture .agri-power-picker-list { padding: 8px; overflow-y: auto; display: grid; gap: 6px; max-height: 240px; }
-        #modal-agriculture .agri-power-row {
-            display: flex; align-items: center; gap: 8px; padding: 6px 8px;
-            border: 1px solid #4d4d45; border-radius: 8px; background: #221c18; font-size: 12px;
-        }
-        #modal-agriculture .agri-power-row .feed-name { flex: 1; }
-        #modal-agriculture .agri-power-row .feed-meta { color: #8e8e8e; font-size: 11px; }
-        #modal-agriculture .agri-power-row .agri-act-btn { padding: 3px 10px; font-size: 11px; flex-shrink: 0; }
-        #modal-agriculture .agri-power-empty { padding: 12px; font-size: 12px; color: #8e8e8e; }
-        #modal-agriculture .agri-status-msg { flex: 1; font-size: 12px; color: #8e8e8e; min-width: 120px; }
         #modal-compost-station .cs-panel {
             width: min(1180px, 96vw); height: min(760px, 90vh);
             background: #2d2d28; border: 2px solid #4d4d45; border-radius: 10px;
@@ -3492,7 +3331,7 @@
         #modal-livestock .product-row .lv-btn-dim { opacity: 0.45; }
 
     </style>
-    <link rel="stylesheet" href="css/agriculture-overview.css">
+    <link rel="stylesheet" href="css/agriculture.css">
 <style>
         /* 牧场总览与日常收获：状态与空间分离 */
         #modal-livestock button.tab-btn { border: 0; border-left: 3px solid transparent; background: transparent; font-family: inherit; }
@@ -4190,38 +4029,7 @@
                 </div>
             </div>
         </div>
-        <div id="modal-agriculture" aria-hidden="true">
-            <div class="agri-panel">
-                <header class="agri-head">
-                    <h2 data-ui="agriculture.modal.title"></h2>
-                    <button type="button" class="agri-close" id="agriculture-panel-close" data-ui="agriculture.modal.close"></button>
-                </header>
-                <p class="agri-hint" data-ui="agriculture.modal.hint"></p>
-                <div class="agri-body">
-                    <div class="agri-grid-wrap">
-                        <div id="agriculture-grid" class="agri-grid" role="grid" aria-label="agriculture map"></div>
-                    </div>
-                    <aside class="agri-side">
-                        <div id="agriculture-task-bar" class="agri-task-bar"></div>
-                        <div id="agriculture-cell-detail" class="agri-detail"></div>
-                        <div id="agriculture-actions" class="agri-actions"></div>
-                    </aside>
-                </div>
-                <footer class="agri-foot">
-                    <span id="agriculture-world-strip" class="agri-world-strip" aria-live="polite"></span>
-                    <span id="agriculture-power-badge" class="agri-power-badge" style="display:none;">⚡</span>
-                    <button type="button" id="agriculture-power-feed-btn" class="agri-act-btn" style="display:none;" title="把背包里的电池塞进农田储能">🔋 塞电池</button>
-                    <button type="button" id="agriculture-auto-tick-toggle" aria-pressed="false"></button>
-                    <button type="button" class="primary" id="agriculture-advance-tick" data-ui="agriculture.btn.advance_tick"></button>
-                    <button type="button" id="agriculture-cancel-task" data-ui="agriculture.btn.cancel_task"></button>
-                    <span id="agriculture-status-msg" class="agri-status-msg"></span>
-                    <div id="agriculture-power-picker" class="agri-power-picker hidden">
-                        <div class="agri-power-picker-head">塞电池给农田供电<span id="agriculture-power-picker-close">✕</span></div>
-                        <div id="agriculture-power-picker-list" class="agri-power-picker-list"></div>
-                    </div>
-                </footer>
-            </div>
-        </div>
+        <div id="modal-agriculture" data-variant="A" aria-hidden="true"></div>
         <!-- 战斗技能枢纽弹窗（布局参考 reference/combat_skill.html） -->
         <div id="modal-muscles" role="dialog" aria-modal="true" aria-label="肌肉与动力链" tabindex="-1"><div class="muscle-atlas-host"></div></div>
         <div id="modal-combat">
@@ -4532,7 +4340,6 @@
     <script src="js/agriculture-map.js"></script>
     <script src="js/agriculture-config.js"></script>
     <script src="js/agriculture-player-items.js"></script>
-    <script src="js/agriculture-overview.js"></script>
     <script src="js/agriculture-panel.js"></script>
     <script src="js/hideout-warehouse.js"></script>
     <script src="js/hideout-warehouse-panel.js?v=workspace-20260926c"></script>

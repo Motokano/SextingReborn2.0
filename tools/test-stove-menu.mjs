@@ -58,12 +58,19 @@ for(const full of [false,true])test(`${full?'Svelte':'native'} facilities share 
   const beforeMenus=JSON.stringify([g.InventoryEquipment.getState(),g.NPCSystem.getDemoState(),g.GameTime.getState()]);
   for(const def of facilities){
    g.GameEngine.setState(def.location.sceneId,def.location.x,def.location.y+1);
-   if(def.gymStation){
-    const {x,y}=def.location,[w,h]=def.gymStation.footprint,candidates=[];
-    for(let dy=0;dy<h;dy++)for(let dx=0;dx<w;dx++)for(const [ax,ay] of [[1,0],[-1,0],[0,1],[0,-1]])candidates.push({x:x+dx+ax,y:y+dy+ay});
-    const p=candidates.find(p=>g.GameEngine.isWalkable(p.x,p.y));assert.ok(p,def.id+' accessible');g.GameEngine.setState(def.location.sceneId,p.x,p.y);
-   }
+   // A fixed south tile may be outside the map or inside another facility.
+   const footprint=(g.GameEngine.getMap().facility_footprints||[]).find(f=>f.npc_id===def.id);
+   const {x,y}=footprint||def.location,[width,height]=def.gymStation?.footprint||[footprint?.width||1,footprint?.height||1],candidates=[];
+   const directions=def.gymStation?[[1,0],[-1,0],[0,1],[0,-1]]:[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
+   for(let dy=0;dy<height;dy++)for(let dx=0;dx<width;dx++)for(const [ax,ay] of directions)candidates.push({x:x+dx+ax,y:y+dy+ay});
+   const p=candidates.find(p=>g.GameEngine.canStandAt(p.x,p.y));assert.ok(p,def.id+' has an accessible unoccupied neighbor');
+   g.GameEngine.setState(def.location.sceneId,p.x,p.y);
    await g.NPCSystem.openMenu(def.id);await h.drain();
+   if(def.id==='npc.station.agriculture_base'){
+    assert.equal(g.NPCSystem.isMenuOpen(),false,'farm bypasses the shared NPC menu');
+    assert.equal(g.FacilityLaborPanel.isOpen(),true);
+    g.FacilityLaborPanel.close();await h.drain();continue;
+   }
    assert.equal(g.NPCSystem.isMenuOpen(),true,def.id);
    assert.equal(root.classList.contains('npc-menu-checkpoint'),true,def.id);
    assert.equal(d.getElementById('npc-menu-title').textContent,def.displayTitle||def.name);
@@ -105,22 +112,31 @@ for (const full of [false, true]) test(`${full ? 'Svelte' : 'native'} facility e
    ['forging','铸造台','ForgingStationPanel'], ['pharmacy','制药台','PharmacyStationPanel'], ['compost','制肥桶','CompostPanel']
   ]) {
    const project = g.FacilityUnlock.get(id), [x,y] = project.spec.position;
-   g.GameEngine.setState('M0_Base_Inside_lv_1',x,y-1); supply(id);
-   await open(id); assert.deepEqual(names(), ['修复'+title,'查看'+title], id+' initially hides use');
+   // Pharmacy has no inspection entry; no upgrade project is registered in this fixture.
+   const inspection = id === 'pharmacy' ? [] : ['查看'+title];
+   const repairMenu = ['修复'+title,...inspection], useMenu = ['使用'+title,...inspection];
+   // Avoid blocked ground and occupied NPC cells; world ticks relocate characters standing on facilities.
+   const position = [[0,-1],[-1,-1],[1,-1],[-1,0],[1,0],[0,1],[-1,1],[1,1]]
+    .map(([dx,dy]) => [x+dx,y+dy]).find(([px,py]) => g.GameEngine.canStandAt(px,py));
+   assert.ok(position,id+' has an unoccupied test position');
+   g.GameEngine.setState('M0_Base_Inside_lv_1',...position); supply(id);
+   await open(id); assert.deepEqual(names(),repairMenu,id+' initially hides use');
    await click('修复'+title); assert.equal(g.FacilityUnlockPanel.isOpen(),true);
    const first = project.rows().find(row => row.group === project.currentGroup().id);
    assert.equal(project.repair({[first.id]:1}).ok,true);
    g.FacilityUnlockPanel.close(); await h.drain();
-   assert.deepEqual(names(),['修复'+title,'查看'+title],id+' partial progress still needs repair');
+   assert.deepEqual(names(),repairMenu,id+' partial progress still needs repair');
    await click('修复'+title); finish(id);
    g.FacilityUnlockPanel.close(); await h.drain();
-   assert.deepEqual(names(),['使用'+title,'查看'+title],id+' completion replaces repair');
+   assert.deepEqual(names(),useMenu,id+' completion replaces repair');
    const saved = g.SaveSystem.buildSnapshotForDebug();
    g.NPCSystem.setDemoFlag(project.spec.unlock,false); assert.equal(g.SaveSystem.applySnapshotForDebug(saved),true);
-   await open(id); assert.deepEqual(names(),['使用'+title,'查看'+title],id+' restored saves keep completed repair hidden');
+   await open(id); assert.deepEqual(names(),useMenu,id+' restored saves keep completed repair hidden');
    await click('使用'+title); assert.equal(g[panelName].isOpen(),true,id+' opens real use panel');
    g[panelName].close(); await h.drain();
-   await open(id); g.NPCSystem.setDemoFlag(project.spec.unlock,false);
+   await open(id);
+   assert.deepEqual(names(),useMenu,id+' closing the use panel returns to the same valid entry');
+   g.NPCSystem.setDemoFlag(project.spec.unlock,false);
    await click('使用'+title); assert.equal(g[panelName].isOpen(),false,id+' rechecks unlock on click');
    g.NPCSystem.setDemoFlag(project.spec.unlock,true); g.NPCSystem.menu.close();
   }
@@ -135,14 +151,27 @@ for (const full of [false, true]) test(`${full ? 'Svelte' : 'native'} facility e
   for (const [id, restore, use, title] of [['agriculture','恢复农场','管理农田','农田'],['livestock','恢复牧场','管理牧场','牧场']]) {
    const position=id==='agriculture'?[5,10]:[10,9];
    g.NPCSystem.menu.close();g.GameEngine.setState('M0_Base_Outside_lv_1',...position); supply(id);
-   await open(id); assert.deepEqual(names(),[restore,'查看'+title]);
-   await click(restore); assert.equal(g.FacilityLaborPanel.isOpen(),true);
+   await open(id);
+   if(id==='agriculture')assert.equal(g.NPCSystem.isMenuOpen(),false,'farm opens restoration directly');
+   else{assert.deepEqual(names(),[restore,'查看'+title]);await click(restore);}
+   assert.equal(g.FacilityLaborPanel.isOpen(),true);
    g.FacilityLaborPanel.close(); await h.drain();
    g.NPCSystem.setDemoFlag('facility_labor:'+id,g.FacilityLabor.total);
    g.NPCSystem.setDemoFlag('facility_cleaned:'+id,true);
-   await open(id); assert.deepEqual(names(),[restore,'查看'+title],'cleaning alone does not enable management');
+   await open(id);
+   if(id==='agriculture'){
+    assert.equal(g.NPCSystem.isMenuOpen(),false);
+    assert.equal(g.FacilityLaborPanel.isOpen(),true,'cleaning alone still requires repair');
+    assert.equal(g.document.querySelector('#modal-agriculture').classList.contains('show'),false);
+    g.FacilityLaborPanel.close();
+   }else assert.deepEqual(names(),[restore,'查看'+title],'cleaning alone does not enable management');
    g.NPCSystem.menu.close(); finish(id);
-   await open(id); assert.deepEqual(names(),[use,'查看'+title]); g.NPCSystem.menu.close();
+   await open(id);
+   if(id==='agriculture'){
+    assert.equal(g.NPCSystem.isMenuOpen(),false);
+    assert.equal(g.document.querySelector('#modal-agriculture').classList.contains('show'),true,'repaired farm opens its actual panel directly');
+    g.SceneApp.closeAgriculturePanel({automatic:true});
+   }else{assert.deepEqual(names(),[use,'查看'+title]);g.NPCSystem.menu.close();}
   }
   assert.deepEqual(h.errors,[]);
  } finally { await h.close(); }

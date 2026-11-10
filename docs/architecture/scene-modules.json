@@ -358,6 +358,7 @@
         "buildAgricultureEnv",
         "canUseOutdoorFacility",
         "closeAgriculturePanel",
+        "getAgricultureBatteries",
         "getAgricultureInjectables",
         "getAgricultureMapState",
         "getAgricultureMapStateMutable",
@@ -368,6 +369,7 @@
         "isAgricultureUnlocked",
         "openAgriculturePanel",
         "payAgricultureBuildCost",
+        "performAgricultureAction",
         "setAgricultureAutoTickEnabled",
         "setAgricultureMapState",
         "stopAgricultureAutoTick",
@@ -388,12 +390,14 @@
         "SceneCharacter",
         "SceneFeedback",
         "SceneMapView",
+        "SceneMovement",
         "SceneStatusPanel",
         "WorldTick"
       ],
       "verification": [
         "tools/test-scene-entry-runtime.mjs",
-        "tools/test-facility-world-time.mjs"
+        "tools/test-facility-world-time.mjs",
+        "tools/test-agriculture-panel.mjs"
       ]
     },
     {

@@ -1,0 +1,319 @@
+{
+  "version": 1,
+  "status": "prototype",
+  "source": "data/agriculture-crop-defs.json",
+  "artSource": "tools/agriculture-crop-art.mjs",
+  "viewBox": [
+    0,
+    0,
+    100,
+    100
+  ],
+  "anchor": [
+    50,
+    88
+  ],
+  "stage": "mature-identification",
+  "crops": [
+    {
+      "id": "maize",
+      "name": "玉米",
+      "group": "grain",
+      "file": "maize.svg"
+    },
+    {
+      "id": "rice",
+      "name": "大米",
+      "group": "grain",
+      "file": "rice.svg"
+    },
+    {
+      "id": "rice_bomba",
+      "name": "粳米",
+      "group": "grain",
+      "file": "rice_bomba.svg"
+    },
+    {
+      "id": "rice_basmati",
+      "name": "长粒香米",
+      "group": "grain",
+      "file": "rice_basmati.svg"
+    },
+    {
+      "id": "rice_glutinous_round",
+      "name": "圆糯米",
+      "group": "grain",
+      "file": "rice_glutinous_round.svg"
+    },
+    {
+      "id": "wheat",
+      "name": "小麦",
+      "group": "grain",
+      "file": "wheat.svg"
+    },
+    {
+      "id": "wheat_durum",
+      "name": "硬质小麦",
+      "group": "grain",
+      "file": "wheat_durum.svg"
+    },
+    {
+      "id": "euryale",
+      "name": "芡实",
+      "group": "grain",
+      "file": "euryale.svg"
+    },
+    {
+      "id": "tomato",
+      "name": "番茄",
+      "group": "veg",
+      "file": "tomato.svg"
+    },
+    {
+      "id": "tomato_green",
+      "name": "绿番茄",
+      "group": "veg",
+      "file": "tomato_green.svg"
+    },
+    {
+      "id": "cucumber",
+      "name": "黄瓜",
+      "group": "veg",
+      "file": "cucumber.svg"
+    },
+    {
+      "id": "sprout",
+      "name": "豆芽",
+      "group": "veg",
+      "file": "sprout.svg"
+    },
+    {
+      "id": "potato",
+      "name": "土豆",
+      "group": "veg",
+      "file": "potato.svg"
+    },
+    {
+      "id": "green_beans",
+      "name": "扁豆",
+      "group": "veg",
+      "file": "green_beans.svg"
+    },
+    {
+      "id": "garrofo",
+      "name": "大白芸豆",
+      "group": "veg",
+      "file": "garrofo.svg"
+    },
+    {
+      "id": "beans_white_haricot",
+      "name": "白扁豆",
+      "group": "veg",
+      "file": "beans_white_haricot.svg"
+    },
+    {
+      "id": "beet",
+      "name": "红甜菜",
+      "group": "veg",
+      "file": "beet.svg"
+    },
+    {
+      "id": "cabbage",
+      "name": "白菜",
+      "group": "veg",
+      "file": "cabbage.svg"
+    },
+    {
+      "id": "carrot",
+      "name": "胡萝卜",
+      "group": "veg",
+      "file": "carrot.svg"
+    },
+    {
+      "id": "konjac",
+      "name": "魔芋",
+      "group": "veg",
+      "file": "konjac.svg"
+    },
+    {
+      "id": "radish_white",
+      "name": "白萝卜",
+      "group": "veg",
+      "file": "radish_white.svg"
+    },
+    {
+      "id": "celery",
+      "name": "西芹",
+      "group": "veg",
+      "file": "celery.svg"
+    },
+    {
+      "id": "bamboo_shoot",
+      "name": "竹笋",
+      "group": "veg",
+      "file": "bamboo_shoot.svg"
+    },
+    {
+      "id": "onion",
+      "name": "洋葱",
+      "group": "aromatics",
+      "file": "onion.svg"
+    },
+    {
+      "id": "garlic",
+      "name": "大蒜",
+      "group": "aromatics",
+      "file": "garlic.svg"
+    },
+    {
+      "id": "ginger",
+      "name": "生姜",
+      "group": "aromatics",
+      "file": "ginger.svg"
+    },
+    {
+      "id": "shallot",
+      "name": "红葱头",
+      "group": "aromatics",
+      "file": "shallot.svg"
+    },
+    {
+      "id": "leek",
+      "name": "韭葱",
+      "group": "aromatics",
+      "file": "leek.svg"
+    },
+    {
+      "id": "scallion",
+      "name": "大葱",
+      "group": "aromatics",
+      "file": "scallion.svg"
+    },
+    {
+      "id": "cilantro",
+      "name": "芫荽",
+      "group": "aromatics",
+      "file": "cilantro.svg"
+    },
+    {
+      "id": "star_anise",
+      "name": "八角",
+      "group": "spice",
+      "file": "star_anise.svg"
+    },
+    {
+      "id": "sesame",
+      "name": "芝麻",
+      "group": "spice",
+      "file": "sesame.svg"
+    },
+    {
+      "id": "pumpkin_seed",
+      "name": "南瓜籽",
+      "group": "spice",
+      "file": "pumpkin_seed.svg"
+    },
+    {
+      "id": "turmeric",
+      "name": "姜黄",
+      "group": "spice",
+      "file": "turmeric.svg"
+    },
+    {
+      "id": "cumin",
+      "name": "孜然",
+      "group": "spice",
+      "file": "cumin.svg"
+    },
+    {
+      "id": "coriander_seed",
+      "name": "芫荽子",
+      "group": "spice",
+      "file": "coriander_seed.svg"
+    },
+    {
+      "id": "fennel_seed",
+      "name": "小茴香子",
+      "group": "spice",
+      "file": "fennel_seed.svg"
+    },
+    {
+      "id": "mustard_seed",
+      "name": "芥末籽",
+      "group": "spice",
+      "file": "mustard_seed.svg"
+    },
+    {
+      "id": "chili_kashmir",
+      "name": "克什米尔辣椒",
+      "group": "spice",
+      "file": "chili_kashmir.svg"
+    },
+    {
+      "id": "chili_red",
+      "name": "红辣椒",
+      "group": "spice",
+      "file": "chili_red.svg"
+    },
+    {
+      "id": "plantain",
+      "name": "大蕉",
+      "group": "fruit",
+      "file": "plantain.svg"
+    },
+    {
+      "id": "almond",
+      "name": "杏仁",
+      "group": "fruit",
+      "file": "almond.svg"
+    },
+    {
+      "id": "peanut",
+      "name": "花生",
+      "group": "fruit",
+      "file": "peanut.svg"
+    },
+    {
+      "id": "sugarcane",
+      "name": "甘蔗",
+      "group": "fruit",
+      "file": "sugarcane.svg"
+    },
+    {
+      "id": "lemon",
+      "name": "柠檬",
+      "group": "fruit",
+      "file": "lemon.svg"
+    },
+    {
+      "id": "apricot",
+      "name": "杏子",
+      "group": "fruit",
+      "file": "apricot.svg"
+    },
+    {
+      "id": "pear",
+      "name": "梨",
+      "group": "fruit",
+      "file": "pear.svg"
+    },
+    {
+      "id": "cherry",
+      "name": "樱桃",
+      "group": "fruit",
+      "file": "cherry.svg"
+    },
+    {
+      "id": "chestnut",
+      "name": "板栗",
+      "group": "fruit",
+      "file": "chestnut.svg"
+    },
+    {
+      "id": "lotus_seed",
+      "name": "莲子",
+      "group": "fruit",
+      "file": "lotus_seed.svg"
+    }
+  ]
+}

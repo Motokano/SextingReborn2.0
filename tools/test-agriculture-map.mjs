@@ -176,6 +176,41 @@ function main() {
   assert(commitRes.ok, "commit 应成功");
   assert(!cell(stMat, AM, sx, sy).crop, "commit 后 crop 应清除");
 
+  /** 主动清理生长中／已结算作物：只移除作物与供给登记，保留土地和配套设施。 */
+  for (const settled of [false, true]) {
+    const clearState = AM.createDefaultState();
+    const plot = AM.cell(clearState, 5, 5), neighbor = AM.cell(clearState, 6, 5);
+    plot.tilled = true;
+    plot.cropStructure = cropDefsDoc.crops.rice.required_crop_structure_id;
+    assert(AM.tryPlantCropAt(clearState, env, 5, 5, 'rice').ok, '清理测试种植失败');
+    plot.crop.settled = settled;
+    plot.crop.harvestCount = settled ? 4 : 0;
+    const soil = plot.soilId, structure = plot.cropStructure, nextBefore = JSON.stringify(neighbor);
+    const target = { x: 5, y: 5, cropId: 'rice' }, other = { x: 6, y: 5, cropId: 'maize' };
+    clearState.fertilizerRequests = [target, other];
+    clearState.seaweedRequests = { mainstream: [target, other], byBranch: { 0: [target], 1: [other] } };
+    const tickBefore = clearState.tick, powerBefore = clearState.power_charge;
+    const cleared = AM.tryClearCropAt(clearState, 5, 5);
+    assert(cleared.ok && cleared.cropId === 'rice' && !('harvestCount' in cleared), '清理不能返回收获奖励');
+    assert(!plot.crop && plot.previousCropId === 'rice', '清理作物并保留轮作记录');
+    assert(plot.tilled && plot.soilId === soil && plot.cropStructure === structure, '清理必须保留土壤、耕地与设施');
+    assert(JSON.stringify(neighbor) === nextBefore, '清理不能影响邻格');
+    assert(clearState.tick === tickBefore && clearState.power_charge === powerBefore, '清理本身不推进原型时间或消耗储能');
+    assert(JSON.stringify(clearState.fertilizerRequests) === JSON.stringify([other]), '仅移除当前作物肥料请求');
+    assert(JSON.stringify(clearState.seaweedRequests) === JSON.stringify({ mainstream: [other], byBranch: { 1: [other] } }), '仅移除当前作物海藻精请求');
+    const empty = JSON.stringify(clearState);
+    assert(!AM.tryClearCropAt(clearState, 5, 5).ok && JSON.stringify(clearState) === empty, '重复清理必须原子拒绝');
+    for (const [badX, badY] of [[-1, 0], [11, 0], [0.5, 0], [NaN, 0], [0, 0]]) {
+      assert(!AM.tryClearCropAt(clearState, badX, badY).ok && JSON.stringify(clearState) === empty, '非法位置和固定水源不能清理');
+    }
+    const removed = AM.previewChange(clearState, 5, 5, { task: { type: 'remove_crop_structure' } });
+    assert(removed.ok && !AM.cell(removed.state, 5, 5).cropStructure && AM.cell(removed.state, 5, 5).tilled, '清理后允许拆除设施');
+    assert(AM.tryPlantCropAt(clearState, env, 5, 5, 'rice').ok, '保留设施后可重新种植');
+    clearState.task = { type: 'build', x: 3, y: 3, progress: 0 };
+    const busy = JSON.stringify(clearState);
+    assert(!AM.tryClearCropAt(clearState, 5, 5).ok && JSON.stringify(clearState) === busy, '施工占用时不清理');
+  }
+
   /** 固定水源：旧水池字段不再改变分水结果。 */
   const stTh = AM.createDefaultState();
   AM.bindEnv(env);

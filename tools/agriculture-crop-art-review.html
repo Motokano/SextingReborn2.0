@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>农田图鉴 · 作物与设施</title>
+  <link rel="stylesheet" href="agriculture-crop-art-review.css"/>
+</head>
+<body>
+  <main>
+    <header class="gallery-header">
+      <a class="back" href="agriculture-ui-prototype.html?no_reload&variant=A">← 农田</a>
+      <div class="title-row"><div><svg class="leaf-mark" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 29V13M16 21C3 21 3 11 4 7c12 0 12 10 12 14Zm0-4C16 6 23 3 29 3c0 10-6 14-13 14Z"/></svg><h1>作物图鉴</h1><span id="total"></span></div><div class="header-actions"><a class="sheet-download" href="../assets/agriculture/crops-botanical-v1/contact-sheet.svg" download="作物图鉴.svg">下载总览 ↓</a><button id="surface" aria-pressed="false">浅色底</button></div></div>
+    </header>
+    <div class="catalog-modes"><nav aria-label="图鉴内容"><button data-mode="crops" aria-pressed="true">作物 <small>50</small></button><button data-mode="structures" aria-pressed="false">配套设施 <small>7</small></button></nav><button id="composed" aria-pressed="false">显示配套设施</button></div>
+    <div class="toolbar"><nav id="groups" aria-label="作物分类"></nav><label class="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/></svg><input type="search" id="search" placeholder="搜索作物" aria-label="搜索图鉴" autocomplete="off"/></label></div>
+    <div class="results" aria-live="polite"><span id="result-label">全部作物</span><span id="result-count"></span></div>
+    <section id="gallery" aria-label="作物插画"></section>
+    <p id="empty" hidden>未找到作物</p>
+  </main>
+  <dialog id="detail" aria-labelledby="detail-name">
+    <button class="close" aria-label="关闭详情">×</button>
+    <div id="detail-art"></div>
+    <div class="detail-heading"><div><span id="detail-group"></span><h2 id="detail-name"></h2></div><a id="download" download>下载 SVG ↓</a></div>
+    <div id="detail-pairings" aria-label="插画组合"></div>
+    <div class="sizes" aria-label="地块尺寸预览"></div>
+    <div class="detail-footer"><button id="previous" aria-label="上一种作物">←</button><span id="position"></span><button id="next" aria-label="下一种作物">→</button></div>
+  </dialog>
+  <script type="module" src="agriculture-crop-art-review.mjs"></script>
+</body>
+</html>
