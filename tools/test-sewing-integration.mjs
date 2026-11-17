@@ -2,6 +2,8 @@ import fs from 'node:fs';import vm from 'node:vm';import assert from 'node:asser
 const read=p=>fs.readFileSync(p,'utf8'),copy=x=>JSON.parse(JSON.stringify(x)),near=(a,b)=>assert(Math.abs(a-b)<1e-8,`${a} != ${b}`);
 const c=vm.createContext({console,Math,Date});c.window=c;let flags={},battle=true;
 c.NPCSystem={getFlagValue:k=>flags[k],setDemoFlag:(k,v)=>flags[k]=v};c.GameEngine={getState:()=>({mapId:'field',x:4,y:6}),getMap:()=>({ambient_temperature:20})};
+// Gathering records the depletion tick for renewable fiber nodes.
+c.GameTime={getState:()=>({totalTicks:0})};
 for(const p of ['item-attribute-modules','sewing-system','inventory-equipment','survival','combat-skills','combat-hub-actions','combat-damage'])vm.runInContext(read('js/'+p+'.js'),c,{filename:p});
 const IE=c.InventoryEquipment,S=c.SewingSystem,V=c.Survival;IE.setConfig({items:c.ItemAttributeModules.hydrateCatalog(JSON.parse(read('data/item-catalog-v2.json'))),equipment:{old:{item_id:'old',equip_slot:'clothing',pocket_slots:3},vest:{item_id:'vest',equip_slot:'vest',vest_slots:2},bag:{item_id:'bag',equip_slot:'backpack',backpack_slots:20}},modules:{},default_equipment:{}});
 IE.setState({equipment:{backpack:{item_id:'bag'}},inventory_backpack:[],inventory_pocket:[],inventory_vest:[],ground_items:{}});

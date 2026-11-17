@@ -32,6 +32,9 @@ for(let mask=0;mask<128;mask++){
  assert.ok(el.style['--atlas-shadow'].startsWith('url("data:image/png'),'merged shadow is supplied for every state');
 
  for(const p of parts)ca.recoverPartDestroy(p,1000);
+ assert.equal(render.readMask(ca),mask,'ordinary recovery cannot clear full-damage states');
+ // Reset the isolated rendering fixture; gameplay still requires surgery for full damage.
+ ca.setState({part_destroy:Object.fromEntries(parts.map(p=>[p,0]))});
  assert.equal(render.readMask(ca),0);render.update(el);await flush();assert.equal(el.getAttribute('data-rig-state'),'D000');
 }
 assert.equal(requests.length,16,'page cache');assert.equal(draws.length,256,'body and shadow frame caches');

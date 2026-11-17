@@ -16,7 +16,9 @@ try {
   g.GameEngine.setState(D.getRun().mapId,point.access[0]%sim.map.width,Math.floor(point.access[0]/sim.map.width));
   g.SceneCtx.setFacingDir(g.RuinsEncounter.direction(point.access[0],point.cell,sim.map.width));D.sync();
   // Deterministically select each real supply using the container's actual weights.
-  const stock=D.getState().pool.remaining,rows=stock.length?stock:batch.items;
+  // Search lazily appends every unapplied batch, including the medical supplies.
+  const pool=D.getState().pool;
+  const rows=[...pool.remaining,...D.config().pool.batches.filter(b=>!pool.batches[b.id]).flatMap(b=>b.items)];
   const weights=rows.map(row=>point.contentWeights?g.RuinsContainerProfiles.itemWeight(point,row.category||'misc',row.stock,{eligible:true}):row.stock);
   const index=rows.findIndex(r=>r.item_id===material.item_id),total=weights.reduce((a,b)=>a+b,0);
   assert(weights[index]>0);const selected=(weights.slice(0,index).reduce((a,b)=>a+b,0)+weights[index]/2)/total;
