@@ -1329,7 +1329,7 @@
       "recipe_id": "life_pharmacy.crush_baiji_powder",
       "recipe_system": "life_pharmacy",
       "method_id": "life_pharmacy.crushing",
-      "enabled": false,
+      "enabled": true,
       "inputs": [
         {
           "item_id": "herb_baiji",
@@ -1674,7 +1674,7 @@
       "recipe_id": "life_pharmacy.crush_notoginseng_powder",
       "recipe_system": "life_pharmacy",
       "method_id": "life_pharmacy.crushing",
-      "enabled": false,
+      "enabled": true,
       "inputs": [
         {
           "item_id": "herb_notoginseng",
@@ -1990,7 +1990,7 @@
       "recipe_id": "life_pharmacy.blend_coagulant_powder",
       "recipe_system": "life_pharmacy",
       "method_id": "life_pharmacy.blending",
-      "enabled": false,
+      "enabled": true,
       "inputs": [
         {
           "item_id": "med_notoginseng_powder",
@@ -2018,7 +2018,7 @@
       "recipe_id": "life_pharmacy.blend_coagulant_salve",
       "recipe_system": "life_pharmacy",
       "method_id": "life_pharmacy.blending",
-      "enabled": false,
+      "enabled": true,
       "inputs": [
         {
           "item_id": "med_baiji_powder",
@@ -2254,7 +2254,7 @@
       "recipe_id": "life_pharmacy.refine_notoginseng",
       "recipe_system": "life_pharmacy",
       "method_id": "life_pharmacy.filtration",
-      "enabled": false,
+      "enabled": true,
       "inputs": [
         {
           "item_id": "med_notoginseng_powder",
@@ -2478,7 +2478,7 @@
       "recipe_id": "life_pharmacy.purify_notoginseng",
       "recipe_system": "life_pharmacy",
       "method_id": "life_pharmacy.filtration",
-      "enabled": false,
+      "enabled": true,
       "inputs": [
         {
           "item_id": "med_notoginseng_powder_refined",
@@ -3417,6 +3417,38 @@
       "failure_output": null,
       "allowed_station_tags": null,
       "match_weight": 1
+    },
+    "life_pharmacy.medical_alcohol": {
+      "recipe_id": "life_pharmacy.medical_alcohol",
+      "recipe_system": "life_pharmacy",
+      "method_id": "life_pharmacy.medical_alcohol",
+      "enabled": true,
+      "inputs": [
+        {
+          "item_id": "herb_rice",
+          "count": 2
+        },
+        {
+          "item_id": "solvent_water_pure",
+          "count": 2
+        }
+      ],
+      "main_output": {
+        "item_id": "supply_medical_alcohol",
+        "count": 6
+      },
+      "bonus_outputs": [],
+      "required_skill_level_min": null,
+      "recommended_skill_level": 25,
+      "proficiency_usage_key": null,
+      "required_skill_id": null,
+      "recipe_processor_id": null,
+      "base_success_rate": null,
+      "failure_output": null,
+      "allowed_station_tags": null,
+      "match_weight": 1,
+      "cost_override": null,
+      "pharmacy_generated": true
     }
   }
 }

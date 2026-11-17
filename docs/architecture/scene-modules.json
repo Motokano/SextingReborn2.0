@@ -54,14 +54,19 @@
         "isPreCreationGameplayRestricted",
         "isStoryMovementLocked",
         "showIntroBlockedMsg",
-        "syncIntroShellUi"
+        "syncIntroShellUi",
+        "medicalActionReason"
       ],
       "mutableExports": [],
       "dependencies": [
         "MusclePanel",
         "PlayerActions",
         "SceneFeedback",
-        "SceneStatusPanel"
+        "SceneStatusPanel",
+        "MedicalActions",
+        "MedicalKitPanel",
+        "ManufacturingActions",
+        "ManufacturingPanel"
       ],
       "verification": [
         "tools/test-sewing-station.mjs",
@@ -130,7 +135,8 @@
         "SceneAccess",
         "SceneFeedback",
         "SceneMapView",
-        "StationActions"
+        "StationActions",
+        "MedicalActions"
       ],
       "verification": [
         "tools/test-story-opening.mjs",
@@ -211,7 +217,8 @@
         "SceneStatusPanel",
         "SkillOverview",
         "StationActions",
-        "WarehouseActions"
+        "WarehouseActions",
+        "MedicalKitPanel"
       ],
       "verification": [
         "tools/test-sleep-runtime.mjs",
@@ -256,7 +263,8 @@
         "SceneFeedback",
         "SceneMapView",
         "SceneStatusPanel",
-        "WorldTick"
+        "WorldTick",
+        "ManufacturingActions"
       ],
       "verification": [
         "tools/test-pharmacy-results.mjs",
@@ -282,10 +290,15 @@
         "LivestockActions",
         "SceneFeedback",
         "StationActions",
-        "WarehouseActions"
+        "WarehouseActions",
+        "MedicalActions",
+        "ManufacturingActions",
+        "PlayerActions"
       ],
       "verification": [
-        "tools/test-facility-world-time.mjs"
+        "tools/test-facility-world-time.mjs",
+        "tools/test-injuries.mjs",
+        "tools/test-health-vitality-growth.mjs"
       ]
     },
     {
@@ -313,7 +326,8 @@
       ],
       "verification": [
         "tools/test-scene-entry-runtime.mjs",
-        "tools/test-combat-map-transition.mjs"
+        "tools/test-combat-map-transition.mjs",
+        "tools/test-injuries.mjs"
       ]
     },
     {
@@ -340,7 +354,9 @@
         "SceneAccess",
         "SceneFeedback",
         "SceneMapView",
-        "SceneStatusPanel"
+        "SceneStatusPanel",
+        "MedicalKitPanel",
+        "MedicalActions"
       ],
       "verification": [
         "tools/test-svelte-panels.mjs",
@@ -540,11 +556,13 @@
         "SceneAccess",
         "SceneFeedback",
         "SceneMapView",
-        "WorldTick"
+        "WorldTick",
+        "SceneHud"
       ],
       "verification": [
         "tools/test-modular-weapon-scene.mjs",
-        "tools/test-breath-burst.mjs"
+        "tools/test-breath-burst.mjs",
+        "tools/test-health-vitality-growth.mjs"
       ]
     },
     {
@@ -783,11 +801,160 @@
         "SceneFeedback",
         "SceneMapView",
         "SceneStatusPanel",
-        "WorldTick"
+        "WorldTick",
+        "MedicalActions"
       ],
       "verification": [
         "tools/test-muscle-mouth-rewards.mjs",
         "tools/test-svelte-interactions.mjs"
+      ]
+    },
+    {
+      "global": "MedicalActions",
+      "file": "js/scene/medical.js",
+      "responsibility": "医疗用品事务、急救包补充与治疗、逐刻手术及经验奖励资格、制作台基础包制作／不可逆改造；技能经验归 InventoryEquipment，身体规则归 CharacterAttributes",
+      "exports": [
+        "initialize",
+        "bind",
+        "isActive",
+        "getState",
+        "validate",
+        "restore",
+        "refillPlan",
+        "therapyPlan",
+        "modificationPlan",
+        "nearbyWorkbench",
+        "basicCraftPlan",
+        "craftBasic",
+        "refill",
+        "treat",
+        "advance",
+        "cancel",
+        "modify",
+        "allowsTick",
+        "isAdvancing",
+        "hasSaveError",
+        "transfer",
+        "useStandalone",
+        "refillStock",
+        "refillAllPlan",
+        "refillAll",
+        "getProgress",
+        "validateProgress",
+        "restoreProgress",
+        "completeSleep"
+      ],
+      "mutableExports": [],
+      "dependencies": [
+        "SceneAccess",
+        "WorldTick",
+        "PlayerActions",
+        "SceneHud",
+        "InventoryPanel",
+        "SceneMapView",
+        "SceneFeedback",
+        "MedicalKitPanel",
+        "ManufacturingActions",
+        "ManufacturingPanel"
+      ],
+      "verification": [
+        "tools/test-medical-kit-runtime.mjs",
+        "tools/test-medical-kit-loot.mjs",
+        "tools/test-medical-kit-qol.mjs",
+        "tools/test-medical-kit-crafting.mjs",
+        "tools/test-injuries.mjs",
+        "tools/test-medical-skills.mjs"
+      ]
+    },
+    {
+      "global": "MedicalKitPanel",
+      "file": "js/scene/medical-panel.js",
+      "responsibility": "两套正式外壳共用的急救包展示、选择及动作请求；日常固定装备包、制造台选择随身实例",
+      "exports": [
+        "initialize",
+        "bind",
+        "isOpen",
+        "openDaily",
+        "openWorkbench",
+        "close",
+        "refresh"
+      ],
+      "mutableExports": [],
+      "dependencies": [
+        "MedicalActions",
+        "SceneAccess",
+        "PlayerActions",
+        "SceneFeedback",
+        "ManufacturingPanel"
+      ],
+      "verification": [
+        "tools/test-medical-kit-runtime.mjs",
+        "tools/test-medical-kit-loot.mjs",
+        "tools/test-medical-kit-qol.mjs",
+        "tools/test-injuries.mjs"
+      ]
+    },
+    {
+      "global": "ManufacturingActions",
+      "file": "js/scene/manufacturing.js",
+      "responsibility": "医疗用品与生产前置制作、台级及工位建设、逐刻工作和真实资源事务；知识与物品仍归原系统",
+      "exports": [
+        "initialize",
+        "bind",
+        "getState",
+        "validate",
+        "restore",
+        "isWorking",
+        "isInstanceLocked",
+        "allowsTick",
+        "reason",
+        "plan",
+        "start",
+        "step",
+        "claim",
+        "pause",
+        "resume",
+        "cancel",
+        "snapshot"
+      ],
+      "mutableExports": [],
+      "dependencies": [
+        "SceneAccess",
+        "MedicalActions",
+        "ManufacturingPanel",
+        "SceneHud",
+        "InventoryPanel",
+        "SceneMapView",
+        "PlayerActions",
+        "WorldTick"
+      ],
+      "verification": [
+        "tools/test-medical-production.mjs"
+      ]
+    },
+    {
+      "global": "ManufacturingPanel",
+      "file": "js/scene/manufacturing-panel.js",
+      "responsibility": "共用制作台标签界面、已学配方与设施展示；急救包改装使用原共享视图和原动作",
+      "exports": [
+        "initialize",
+        "bind",
+        "isOpen",
+        "open",
+        "close",
+        "refresh"
+      ],
+      "mutableExports": [],
+      "dependencies": [
+        "ManufacturingActions",
+        "MedicalActions",
+        "MedicalKitPanel",
+        "PlayerActions",
+        "SceneFeedback"
+      ],
+      "verification": [
+        "tools/test-medical-production.mjs",
+        "tools/test-medical-kit-crafting.mjs"
       ]
     },
     {

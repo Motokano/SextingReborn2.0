@@ -191,7 +191,7 @@ test('damaged bathroom opens repair while dehydrated and dirty; materials and un
     assert.equal(g.BathroomFacility.isUnlocked(), true);
     await g.NPCSystem.openMenu(def.id); await h.drain();
     buttons = [...g.document.querySelectorAll('#npc-menu-buttons button')];
-    assert.deepEqual(buttons.map(b => b.textContent), ['饮水 · 10分钟', '洗澡 · 30分钟', '给水壶装水']);
+    assert.deepEqual(buttons.map(b => b.textContent), ['饮水 · 10分钟', '洗澡 · 30分钟', '给水壶装水', '取纯净软水 · 1刻']);
     assert.deepEqual(h.errors, []);
   } finally { await h.close(); }
 });
@@ -205,7 +205,7 @@ test('bathroom preserves drinking and showering and offers flask refill through 
     assert.equal(g.BathroomFacility.nearby(def), true);
     g.SceneCtx.actions.interactNpc(def.id); await h.drain();
     const buttons = () => [...g.document.querySelectorAll('#npc-menu-buttons button')];
-    assert.deepEqual(buttons().map(b => b.textContent), ['饮水 · 10分钟', '洗澡 · 30分钟', '给水壶装水']);
+    assert.deepEqual(buttons().map(b => b.textContent), ['饮水 · 10分钟', '洗澡 · 30分钟', '给水壶装水', '取纯净软水 · 1刻']);
     assert.equal(buttons()[2].disabled, true, 'no carried flask');
     assert.equal(buttons()[0].disabled, false); assert.equal(buttons()[1].disabled, false);
     let tick = g.GameTime.getState().totalTicks;

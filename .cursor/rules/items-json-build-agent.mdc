@@ -29,6 +29,8 @@ CSV合并及现有缝纫／食物补表后，`data/water-flask-storage.json` 通
 
 ## 2) 输出 JSON 字段口径（强制）
 
+2026-11-09新增 `medical_supplies_base.csv`，在先天药品表后合并。五种医疗用品为 `supply` 分类，规则正本 `data/medical-supplies.json` 经 `medical-supply-item-fields.mjs` 强校验生成 `medicine.medical_supply.medical_supply_profile`；旧兼容表同名字段。当前仅数据登记、不可食用或通用使用，不提前登记具体伤势Buff或急救包容器。每次独立使用消耗一整份；四种只解除对应部位伤势，敷料无伤势时恢复固定30点、最低至当前部位上限30%（向上取整）。用户后续要求补全现实规格，版本2已写重量、单份堆叠和基价，CSV与JSON `inventory/trade`必须一致；已确认五种均1刻、额外体力0、无技能门槛，止血带及骨折带限四肢，其余七部位。用户最新确认五种用品永久不过期：`expiry_rule.mode=never`、每项 `shelf_life.policy=never`、CSV `spoilage_ticks=0`；拒绝恢复年限、参考刻数或任何自动过期配置。来源 `buy;dungeon;craft`仅登记；制作配方及设施归属待设计，`production_lines`留空。禁止提前填入急救包折扣、具体配方或真实Buff ID；`injury_uniqueness_rule`按部位与伤势组最多1个，普通／大出血共用出血组，骨折及感染分别成组；各模板同步该规则，不提前实现具体伤势Buff。原同类伤势数量待定项删除，`pending_values`为空对象。详见83号。
+
 构建产物 `data/items.json` 中每个 `item_id` 的模板应至少包含：
 - `item_id`
 - `name` / `name_0`（通常来自 CSV 的 `sn`，兼容回退）

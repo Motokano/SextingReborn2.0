@@ -27,6 +27,7 @@ export const CATEGORY_GROUP_FIELDS = {
   },
   medicine: {
     innate: ['innate_medicine_profile'],
+    medical_supply: ['medical_supply_profile'],
     use: ['usable', 'use_action', 'use_buff_id', 'use_charges', 'use_effect'],
     compound: ['pharmacy_compound', 'concentration_capacity'],
     effects: ['pharmacy_addiction_gain', 'pharmacy_relief_stages', 'pharmacy_oral_toxicity', 'pharmacy_extra_toxicity_decay', 'pharmacy_legacy']
@@ -34,6 +35,7 @@ export const CATEGORY_GROUP_FIELDS = {
   equipment: {
     wearable: ['equip_slot', 'req_innate_jingu'],
     water_flask: ['flask_source_multiplier', 'flask_drink_cost', 'flask_drink_ticks', 'flask_effects'],
+    medical_kit: ['medical_kit_body'],
     combat: ['weapon_attack_power', 'attack_power', 'skill_coef', 'form_coefs', 'limb_tags', 'parry_coef', 'speed_coef', 'move_cost_mod', 'damage_type_effects'],
     fishing_tackle: ['fishing_load_rating','fishing_length_dm','fishing_cast_range_dm'],
     armor: ['damage_reduce_blunt_pct', 'damage_reduce_pierce_pct', 'damage_reduce_slash_pct', 'base_shield'],
@@ -43,6 +45,7 @@ export const CATEGORY_GROUP_FIELDS = {
   structure: {
     storage: ['pocket_slots', 'vest_slots', 'backpack_slots', 'backpack_weight_factor'],
     liquid_storage: ['flask_capacity', 'flask_initial_water', 'flask_water_weight_kg'],
+    medical_storage: ['medical_capacities'],
     host: ['module_slots'],
     attachment: ['install_slots', 'occupies', 'max_per_armor'],
     assembly_host: ['assembly_slots'],

@@ -225,7 +225,7 @@
         "med_baiji_powder",
         2
       ],
-      "enabled": false
+      "enabled": true
     },
     {
       "recipe_id": "life_pharmacy.crush_acorus_powder",
@@ -430,7 +430,7 @@
         "med_notoginseng_powder",
         2
       ],
-      "enabled": false
+      "enabled": true
     },
     {
       "recipe_id": "life_pharmacy.brew_calm_brew",
@@ -616,7 +616,7 @@
         "potion_coagulant_powder",
         1
       ],
-      "enabled": false
+      "enabled": true
     },
     {
       "recipe_id": "life_pharmacy.blend_coagulant_salve",
@@ -635,7 +635,7 @@
         "potion_coagulant_salve",
         1
       ],
-      "enabled": false
+      "enabled": true
     },
     {
       "recipe_id": "life_pharmacy.roll_sedative_incense",
@@ -763,7 +763,7 @@
         "med_notoginseng_powder_refined",
         1
       ],
-      "enabled": false
+      "enabled": true
     },
     {
       "recipe_id": "life_pharmacy.refine_psilocybin",
@@ -883,7 +883,7 @@
         "med_notoginseng_powder_purified",
         1
       ],
-      "enabled": false
+      "enabled": true
     },
     {
       "recipe_id": "life_pharmacy.purify_psilocybin",

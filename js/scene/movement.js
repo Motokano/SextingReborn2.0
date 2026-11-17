@@ -39,8 +39,9 @@
         return Math.max(0.01, Math.round(cost * 100) / 100);
     }
 
-    function getStepStaminaCost() {
+    function getStepStaminaCost(moving) {
         var cost = computeMoveStaminaCost();
+        if (moving && window.InjurySystem) cost *= window.InjurySystem.moveMultiplier('player');
         return window.Survival && window.Survival.getActionStaminaCost ? window.Survival.getActionStaminaCost(cost) : cost;
     }
     function turnToward(dx, dy) {
@@ -83,7 +84,7 @@
                 }
                 if (window.SceneAccess.guardPlayerActionBlocked(window.SceneAccess.ACTION_TYPES.MOVE)) return;
                 // 移动耗体力（k17 补全，05 5.5.4）：每格 = 配置基础消耗 × (1+鞋moveCostMod) × 超重系数；体力不足无法移动
-                var moveStaminaCost = getStepStaminaCost();
+                var moveStaminaCost = getStepStaminaCost(true);
                 var survSt = (window.Survival && typeof window.Survival.getState === 'function') ? window.Survival.getState() : null;
                 if (moveStaminaCost > 0 && survSt && Number(survSt.stamina || 0) < moveStaminaCost) {
                     window.SceneFeedback.showMsg(window.SceneFeedback.ui('log.info.move_no_stamina'), 'warn');
@@ -269,6 +270,7 @@
     function tryFootworkNieBuJump(gx, gy) {
                 if (window.SceneAccess.isStoryMovementLocked()) return false;
                 if (window.SceneAccess.guardPlayerComaBlocked()) return false;
+                if (window.SceneAccess.guardPlayerActionBlocked(window.SceneAccess.ACTION_TYPES.MOVE)) return false;
                 if (window.SceneAccess.isPreCreationGameplayRestricted()) {
                     window.SceneAccess.showIntroBlockedMsg();
                     return false;

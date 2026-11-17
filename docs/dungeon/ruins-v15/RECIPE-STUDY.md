@@ -109,6 +109,8 @@
 
 专项：`node tools/test-recipe-study-point.mjs`及加`--svelte`，覆盖真实按钮、范围替换、只解锁一项、未学筛选、不泄露未知配方、1tick、取消／离格／受击／失能、两类奖励保存失败完整回退、全已学三倍书桌潜能、增益实际到账、回执校验、领取互斥、读档防重复、死亡、旧档及旧出征跨层。
 
+2026-11-13重试诊断更正：此前Svelte专项失败源于测试跳过开场后仍保留对话框，输入保护拦截了资料台按钮；在任何保存失败注入前即可复现。测试准备现通过正式对话控制器关闭开场并等待界面释放，再建立地牢场景。首次研读／停止与两类奖励保存失败后的重试均点击真实按钮，原完整回退及只领取一次的断言保留；没有修改游戏存档事务或弹窗输入保护。
+
 本次两套专项与稀有资料室回归通过。浏览器隔离试玩已核对[领取前](../../../reference/recipe-study-point-v1/potential-before.png)和[领取后](../../../reference/recipe-study-point-v1/potential-claimed.png)，真实按钮显示1500潜能并在完成后变为不可用的“已领取”。[潜能奖励试玩](http://127.0.0.1:8044/tools/street-thug-boss-room-generation.html?no_reload&seed=study-room-v1-61&floor=1&area=%E8%B5%84%E6%96%99%E5%AE%A4&studyReward=potential)只在独立内存场景将当前范围设为已掌握，不读取或写入玩家存档。
 
 回归：`tools/dungeon/test.mjs`、`tools/dungeon/test-generation.mjs`、`tools/test-dungeon-poi-layout.mjs`、`tools/test-dungeon-grid-scene-art.mjs`、`tools/test-manufacturing-unlocks.mjs`。检查以隔离内存和测试存储运行，不触碰玩家存档。渲染回归核对正式绘制分支、两态路径、0.12等比显示、固定朝向与共用阴影；本轮没有重新生成或编辑PNG。

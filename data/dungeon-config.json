@@ -635,6 +635,119 @@
             "rarity": "uncommon"
           }
         ]
+      },
+      {
+        "id": "medical-kit-supplies-v1",
+        "items": [
+          {
+            "item_id": "tool_medical_kit_basic",
+            "stock": 12,
+            "rarity": "uncommon",
+            "category": "medical",
+            "count": 1
+          },
+          {
+            "item_id": "supply_medical_trauma_dressing",
+            "stock": 36,
+            "rarity": "common",
+            "category": "medical",
+            "count": 1
+          },
+          {
+            "item_id": "supply_medical_hemostatic_gauze",
+            "stock": 30,
+            "rarity": "common",
+            "category": "medical",
+            "count": 1
+          },
+          {
+            "item_id": "supply_medical_tourniquet",
+            "stock": 18,
+            "rarity": "uncommon",
+            "category": "medical",
+            "count": 1
+          },
+          {
+            "item_id": "supply_medical_fracture_band",
+            "stock": 12,
+            "rarity": "uncommon",
+            "category": "medical",
+            "count": 1
+          },
+          {
+            "item_id": "supply_medical_alcohol",
+            "stock": 24,
+            "rarity": "common",
+            "category": "medical",
+            "count": 1
+          },
+          {
+            "item_id": "supply_skin_stapler",
+            "stock": 12,
+            "rarity": "uncommon",
+            "category": "medical",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "id": "medical-production-workshop-v1",
+        "items": [
+          {
+            "item_id": "wood_plank_soft",
+            "stock": 40,
+            "rarity": "common",
+            "category": "materials"
+          },
+          {
+            "item_id": "ore_scrap_metal",
+            "stock": 40,
+            "rarity": "common",
+            "category": "materials"
+          },
+          {
+            "item_id": "ore_steel_ingot",
+            "stock": 24,
+            "rarity": "uncommon",
+            "category": "materials"
+          },
+          {
+            "item_id": "ore_cast_iron",
+            "stock": 12,
+            "rarity": "uncommon",
+            "category": "materials"
+          },
+          {
+            "item_id": "mechanical_parts",
+            "stock": 32,
+            "rarity": "uncommon",
+            "category": "materials"
+          },
+          {
+            "item_id": "electronic_wire",
+            "stock": 20,
+            "rarity": "uncommon",
+            "category": "materials"
+          },
+          {
+            "item_id": "item_glass",
+            "stock": 20,
+            "rarity": "uncommon",
+            "category": "materials"
+          },
+          {
+            "item_id": "metal_pipe",
+            "stock": 12,
+            "rarity": "uncommon",
+            "category": "materials"
+          },
+          {
+            "item_id": "wood_hickory",
+            "stock": 16,
+            "rarity": "common",
+            "category": "materials"
+          }
+        ]
       }
     ]
   },

@@ -17,7 +17,9 @@
         if (!st.skills[skillId] || typeof st.skills[skillId] !== 'object') st.skills[skillId] = { level: 0, move_usage: {} };
         var before = Math.max(0, parseInt(st.skills[skillId].level, 10) || 0);
         var delta = Math.max(1, parseInt(plus, 10) || 1);
-        st.skills[skillId].level = before + delta;
+        var survival = window.SurvivalSkills && window.SurvivalSkills.getById(skillId);
+        st.skills[skillId].level = survival && survival.max_level ? Math.min(IE.getProgressionSkillCap(skillId), before + delta) : before + delta;
+        if (survival && survival.max_level) IE.addStudyExp(skillId, 0);
         if (!st.skills[skillId].move_usage || typeof st.skills[skillId].move_usage !== 'object') st.skills[skillId].move_usage = {};
         if (opts && opts.gameLog && window.GameLog) {
             window.GameLog.log(window.SceneFeedback.ui('log.debug.proficiency.skill_level', {

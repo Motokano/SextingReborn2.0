@@ -8,7 +8,7 @@ assert.deepEqual(map.npcs.filter(n=>n.npc_id===id),[{x:4,y:11,npc_id:id}]);
 assert.deepEqual(def.location,{sceneId:map.map_id,x:4,y:11});
 assert.equal(map.annotations['4,11'],'制作台');
 assert.equal(def.mainMenu.showWorkWhen,'never');
-assert.ok(pools.pools[def.fallbackDialoguePoolId].lines[0].includes('没法使用'));
+assert.ok(pools.pools[def.fallbackDialoguePoolId].lines[0].includes('缝制基础急救包'));
 assert.deepEqual(json(registry.triggers).entries,[]);
 const blocked=new Set([...map.disabled,...map.blocks,...map.npcs].map(p=>`${p.x},${p.y}`));
 const queue=[[8,15]],seen=new Set(['8,15']);

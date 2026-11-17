@@ -206,6 +206,7 @@
                 if (window.GameLog) window.GameLog.log(window.SceneFeedback.ui('log.system.starter.equip'), 'system');
             }
             window.StationActions.resetCookingStateForNewCharacter();
+            window.MedicalActions.restoreProgress(null);
             var heightCm = clampCreationHeightCm(draft.height);
             var initWeightKg = computeCreationDefaultWeightKg(heightCm);
             var gender = (draft.gender === 'female') ? 'female' : 'male';

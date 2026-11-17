@@ -80,6 +80,8 @@
             if (g.Survival.getState().tickCount !== before + 1) throw new Error('Sleep tick blocked');
             state.completed++;
             if (state.completed === state.total) {
+                g.CharacterAttributes.recoverSurgicalMaxAfterSleep();
+                if (g.MedicalActions) g.MedicalActions.completeSleep(state.total);
                 var rolls = state.rolls, next = 0;
                 var settled = hooks.settle(function () { return rolls[next++]; });
                 upgraded = !!(settled && settled.ok && settled.any_success);

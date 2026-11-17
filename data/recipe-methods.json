@@ -607,6 +607,35 @@
         "count": 1
       },
       "requires_accessory_item_id": "tool_mortar_pestle_cooking"
+    },
+    "life_pharmacy.medical_alcohol": {
+      "method_id": "life_pharmacy.medical_alcohol",
+      "recipe_system": "life_pharmacy",
+      "name": "医疗酒精",
+      "cost": {
+        "fuel": 0,
+        "water": 0,
+        "ticks": 48,
+        "stamina": 6
+      },
+      "base_success_rate": 0.82,
+      "recommended_skill_level": 25,
+      "required_skill_id": "life_pharmacy",
+      "recipe_processor_id": "processor.life_pharmacy.default",
+      "proficiency_usage_key": "life_pharmacy.medical_alcohol",
+      "allowed_station_tags": [
+        "station_pharmacy"
+      ],
+      "unlock": [],
+      "failure_output": {
+        "item_id": "item.scrap.herb_dregs",
+        "count": 1
+      },
+      "requires_accessory_item_id": "tool_distiller_pharmacy",
+      "additional_accessory_item_ids": [
+        "tool_fermentation_jar_cooking"
+      ],
+      "required_manufacturing_recipe": "manufacturing.medical_alcohol"
     }
   }
 }

@@ -1,4 +1,4 @@
-id,sn,placeholder_name,fn_before,fn,category,sub_category,weight,stack_limit,tags,source,production_lines,spoilage_ticks,base_value,edible,usable
+id,sn,placeholder_name,fn_before,fn,category,sub_category,weight,stack_limit,tags,source,production_lines,spoilage_ticks,base_value,edible,usable,pharmacy_ingredient
 potion_innate_jingu_t1,通常版剥剥星,未识别药品,一种药品。,剥剥星全版本累计前10颗，每颗有70%概率永久增加先天筋骨1点（先天上限40点）；第11颗起只保留药品自身效果。,potion,innate_medicine,,100,medicine;innate_growth,,,,,0,0
 potion_innate_jingu_t2,初回版剥剥星,未识别药品,一种药品。,剥剥星全版本累计前10颗，每颗有80%概率永久增加先天筋骨1点（先天上限40点）；第11颗起只保留药品自身效果。,potion,innate_medicine,,100,medicine;innate_growth,,,,,0,0
 potion_innate_jingu_t3,完全生产限定版剥剥星,未识别药品,一种药品。,剥剥星全版本累计前10颗，每颗有90%概率永久增加先天筋骨1点（先天上限40点）；第11颗起只保留药品自身效果。,potion,innate_medicine,,100,medicine;innate_growth,,,,,0,0

@@ -59,7 +59,7 @@
         part_destroy: { head: 0, chest: 0, abdomen: 0, lhand: 0, rhand: 0, lfoot: 0, rfoot: 0 },
         /** 部位损毁恢复进度（每部位小数累加器，满 1 落地为损毁值 −1；09「损毁恢复」） */
         part_destroy_recover_acc: { head: 0, chest: 0, abdomen: 0, lhand: 0, rhand: 0, lfoot: 0, rfoot: 0 },
-        /** 距上次吃损毁的阻塞剩余 tick：>0 期间自然自愈停摆（09「恢复宽限」） */
+        /** 兼容旧存档的宽限计时；新休息恢复只检查目标部位，不再以此阻塞所有部位。 */
         destroy_recover_block_ticks: 0
     };
 
@@ -116,7 +116,7 @@
         return Math.max(1, limbFb);
     }
 
-    function getBodyPartDestroyMax(canonicalOrHudKey) {
+    function getNormalBodyPartDestroyMax(canonicalOrHudKey) {
         var key = normalizeDestroyKeyForCombat(canonicalOrHudKey);
         var base = getBaseBodyPartDestroyMax(key);
         var pct = global.Muscles && typeof global.Muscles.getDestroyMaxPercentForLimb === 'function'
@@ -124,6 +124,30 @@
         var flat = global.Muscles && typeof global.Muscles.getDestroyMaxFlatForLimb === 'function'
             ? global.Muscles.getDestroyMaxFlatForLimb(key) : 0;
         return Math.max(1, Math.floor(base * (100 + pct) / 100 + flat));
+    }
+
+    function getBodyPartDestroyMax(rawKey) {
+        var key = normalizeDestroyKeyForCombat(rawKey);
+        return Math.max(1,getNormalBodyPartDestroyMax(key) - ((state.surgical_max_loss || {})[key] || 0));
+    }
+    function completeMedicalSurgery(rawKey, expectedMax, newMax) {
+        var key = normalizeDestroyKeyForCombat(rawKey);
+        if (LIMB_DESTROY_IDS.indexOf(key) < 0 || getBodyPartDestroyMax(key) !== expectedMax ||
+            !Number.isInteger(newMax) || newMax < 1 || newMax > expectedMax || getPartDestroy(key) < expectedMax) return false;
+        if (!state.surgical_max_loss) state.surgical_max_loss = {};
+        state.surgical_max_loss[key] = getNormalBodyPartDestroyMax(key)-newMax;
+        state.part_destroy[key] = newMax-1;
+        ensurePartRecoverState(); state.part_destroy_recover_acc[key] = 0;
+        return true;
+    }
+    function recoverSurgicalMaxAfterSleep() { state.surgical_max_loss = {}; }
+    function applyMedicalRecovery(rawKey, points) {
+        var key = normalizePartDestroyKey(rawKey), cur = getPartDestroy(key), max = getBodyPartDestroyMax(key);
+        if (PART_DESTROY_IDS.indexOf(key) < 0 || cur >= max || !Number.isInteger(points) || points <= 0 ||
+            (global.BuffSystem && global.BuffSystem.getPartInjuries('player',key).length)) return 0;
+        var healed = Math.min(points,Math.max(0,cur-Math.ceil(max*.3)));
+        state.part_destroy[key] = cur-healed;
+        return healed;
     }
 
     function mergePartDestroyScalar(rawKey, val) {
@@ -874,6 +898,13 @@
         if (s.part_destroy && typeof s.part_destroy === 'object') {
             mergePartDestroyFromObject(s.part_destroy);
         }
+        if (Object.prototype.hasOwnProperty.call(s,'surgical_max_loss')) {
+            state.surgical_max_loss = {};
+            LIMB_DESTROY_IDS.forEach(function (k) {
+                var n = s.surgical_max_loss && s.surgical_max_loss[k];
+                if (Number.isInteger(n) && n >= 0) state.surgical_max_loss[k] = n;
+            });
+        }
         if (s.part_destroy_recover_acc && typeof s.part_destroy_recover_acc === 'object') {
             ensurePartRecoverState();
             for (var rsi = 0; rsi < PART_DESTROY_IDS.length; rsi++) {
@@ -958,10 +989,11 @@
      * 疼痛增量 = round(实际损毁增量 × 汇率)，汇率按「被击中部位受伤前损毁进度」线性（0.1 → 0.55 → 1.0）。
      * @param {string} hitPartId 规范或运行时部位键（left_arm / lhand 等均可）
      * @param {number} q 损毁增加值（最终伤害）
+     * @returns {number} 封顶及重分配后实际增加的整数损毁；经验来源由调用方判定。
      */
     function applyCombatDestroy(hitPartId, q) {
         q = Math.max(0, Math.floor(Number(q) || 0));
-        if (q <= 0) return;
+        if (q <= 0) return 0;
         var k = normalizeDestroyKeyForCombat(hitPartId);
         if (PART_DESTROY_IDS.indexOf(k) < 0) k = 'chest';
         var mx = getBodyPartDestroyMax(k);
@@ -978,7 +1010,7 @@
                 var pk = PART_DESTROY_IDS[i];
                 if (getPartDestroy(pk) < getBodyPartDestroyMax(pk)) open.push(pk);
             }
-            if (!open.length) return;
+            if (!open.length) return 0;
             var base = Math.floor(q / open.length);
             var rem = q % open.length;
             for (var j = 0; j < open.length; j++) {
@@ -1009,10 +1041,11 @@
                 });
             }
         }
+        return appliedTotal;
     }
 
     // ---------------------------
-    // 09「损毁恢复」：自然自愈（基础通道） + 外敷药加速（pharmacy_part_recovery 逐 tick 调用）
+    // 09「损毁恢复」：符合门槛的休息恢复 + 外敷药；满损毁统一交给手术。
     // ---------------------------
     function ensurePartRecoverState() {
         if (!state.part_destroy_recover_acc || typeof state.part_destroy_recover_acc !== 'object') {
@@ -1069,6 +1102,7 @@
         var acc = state.part_destroy_recover_acc[k] + p;
         var whole = Math.floor(acc + 1e-9);
         var cur = getPartDestroy(k);
+        if (cur >= getBodyPartDestroyMax(k)) return 0;
         if (cur <= 0) {
             state.part_destroy_recover_acc[k] = 0;
             return 0;
@@ -1091,17 +1125,15 @@
     }
 
     /**
-     * 每世界 tick：自然自愈（09「损毁恢复」）。
-     * 规则：宽限期内（刚吃过损毁）不自愈；宽限结束后每部位按
-     *   速率 = 1 / interval × 部位系数 ×（休息时 × 休息倍率）
-     * 累进恢复；部位损毁归零即停。
+     * 每世界 tick：仅休息且目标部位无伤势、损毁严格低于35%时恢复。
+     * 速率沿用 1 / interval × 部位系数 × 休息倍率；归零即停。
      * @returns {number} 本次自然自愈的整点总量
      */
-    function onWorldTickDestroyRecover() {
+    function onWorldTickDestroyRecover(options) {
+        if (global.Survival && global.Survival.isDead()) return 0;
         ensurePartRecoverState();
         if (state.destroy_recover_block_ticks > 0) {
             state.destroy_recover_block_ticks -= 1;
-            return 0;
         }
         var cfgR = getPartRecoverCfg();
         var resting = false;
@@ -1111,10 +1143,13 @@
             }
         } catch (eRest) { resting = false; }
         var restMul = resting ? cfgR.rest_multiplier : 1;
+        if (!resting) return 0;
         if (!(restMul > 0)) return 0;
         var total = 0;
         for (var i = 0; i < PART_DESTROY_IDS.length; i++) {
             var k = PART_DESTROY_IDS[i];
+            if (getPartDestroy(k) >= getBodyPartDestroyMax(k)*.35 ||
+                (global.BuffSystem && global.BuffSystem.getPartInjuries('player',k).length)) continue;
             if (getPartDestroy(k) <= 0) {
                 state.part_destroy_recover_acc[k] = 0;
                 continue;
@@ -1122,6 +1157,9 @@
             var partMul = Number(cfgR.part_multiplier[k]);
             if (!isFinite(partMul) || partMul <= 0) partMul = 1;
             total += recoverPartDestroy(k, (1 / cfgR.interval) * partMul * restMul);
+        }
+        if ((!options || options.source !== 'sleep') && !(global.BedSleep && global.BedSleep.isActive()) && global.SurvivalSkills) {
+            global.SurvivalSkills.gainBodyExperience('survival_health', total);
         }
         return total;
     }
@@ -1402,6 +1440,7 @@
             post_effects_obtained: state.post_effects_obtained.slice(),
             attribute_experience: buildAttributeExperienceSnapshot(),
             part_destroy: {
+                // Surgery loss is saved separately; damage never rescales when the maximum changes.
                 head: state.part_destroy.head,
                 chest: state.part_destroy.chest,
                 abdomen: state.part_destroy.abdomen,
@@ -1425,6 +1464,7 @@
                 }
                 return accOut;
             })(),
+            surgical_max_loss: Object.assign({},state.surgical_max_loss || {}),
             destroy_recover_block_ticks: (function () {
                 ensurePartRecoverState();
                 return state.destroy_recover_block_ticks;
@@ -1455,6 +1495,7 @@
             limb_destroy: { lhand: 0, rhand: 0, lfoot: 0, rfoot: 0 },
             part_destroy_recover_acc: { head: 0, chest: 0, abdomen: 0, lhand: 0, rhand: 0, lfoot: 0, rfoot: 0 },
             destroy_recover_block_ticks: 0,
+            surgical_max_loss: {},
             hidden_epithets: []
         };
     }
@@ -1540,6 +1581,10 @@
         getBreathActual: getBreathActual,
         getCfg: getCfg,
         getBodyPartDestroyMax: getBodyPartDestroyMax,
+        getNormalBodyPartDestroyMax: getNormalBodyPartDestroyMax,
+        completeMedicalSurgery: completeMedicalSurgery,
+        recoverSurgicalMaxAfterSleep: recoverSurgicalMaxAfterSleep,
+        applyMedicalRecovery: applyMedicalRecovery,
         getPartDestroy: getPartDestroy,
         getLimbDestroy: getLimbDestroy,
         applyCombatDestroy: applyCombatDestroy,

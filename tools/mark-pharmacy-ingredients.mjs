@@ -30,6 +30,7 @@ const EXPLICIT_IDS = new Set([
   'ore_salt_sea', 'ore_salt_sea_coarse', 'ore_salt_rock', 'ore_salt_black',
   // 糖（葡萄糖液原料）
   'herb_sugarcane', 'herb_sugar_white',
+  'herb_rice',
   // 化工（§9.6：军用爆发针）
   'ore_sulfur',
   // 兽心（复苏/强心原料）

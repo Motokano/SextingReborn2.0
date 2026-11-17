@@ -12,6 +12,8 @@ const sourcePaths = {
   ranges: 'data/dungeon-recipe-ranges.json',
   rangeModule: 'js/dungeon/recipe-ranges.js',
   recipes: 'docs/design/examples/manufacturing-system-v1.json',
+  medical: 'data/medical-crafting.json',
+  medicalKits: 'data/medical-kits.json',
   classification: 'docs/design/manufacturing-classification-v1.json',
   items: 'data/items.json',
   forgingItems: 'data/forging/item-catalog-v2.json',
@@ -21,7 +23,7 @@ const sourcePaths = {
 };
 const categoryNames = {
   fishing: '钓具与鱼饵', gathering: '采集与维修', hunting: '狩猎用品', daily: '日用与布作',
-  cooking: '烹饪器具', pharmacy: '制药器具', agriculture: '客土材料', processing: '中间料加工',
+  cooking: '烹饪器具', pharmacy: '制药器具', medical: '医疗用品', agriculture: '客土材料', processing: '中间料加工',
 };
 const skillNames = { life_fishing: '钓鱼', life_mining: '采矿', life_logging: '伐木', life_manufacturing: '制造', life_weaving: '纺织', life_pharmacy: '制药', life_cooking: '烹饪', life_hunting: '狩猎', life_planting: '种植' };
 const hash = text => createHash('sha256').update(text).digest('hex');
@@ -30,10 +32,12 @@ const fail = (message, status = 400) => Object.assign(new Error(message), { stat
 function readSource(root) {
   const raw = Object.fromEntries(Object.entries(sourcePaths).map(([key, file]) => [key, fs.readFileSync(path.join(root, file), 'utf8')]));
   const config = JSON.parse(raw.config), design = JSON.parse(raw.recipes), ranges = JSON.parse(raw.ranges);
+  design.recipes.push(JSON.parse(raw.medicalKits).basic_recipe,...JSON.parse(raw.medical).recipes);
   const context = vm.createContext({});
   for (const key of ['catalog', 'knowledge', 'study', 'rangeModule']) vm.runInContext(raw[key], context, { filename: sourcePaths[key], timeout: 1000 });
   const runtime = context.ManufacturingKnowledgeCatalog.recipes;
-  if (runtime.length !== design.recipes.length || design.recipes.some(r => !runtime.some(k => k.id === r.recipe_id && k.unlock === r.unlock.kind && k.name === r.name))) {
+  const all=[...design.recipes,...design.processing_recipes];
+  if (runtime.length !== all.length || all.some(r => !runtime.some(k => k.id === r.recipe_id && k.unlock === r.unlock.kind && k.name === r.name))) {
     throw fail('制作目录与正式知识目录不同步，请先运行 npm run build:manufacturing-knowledge。', 409);
   }
   if (config.content?.version !== 16 || config.recipeStudyRangesSource !== sourcePaths.ranges || config.content.recipeStudy !== undefined) throw fail('当前地牢尚未正确绑定配方范围目录。', 409);
@@ -49,9 +53,9 @@ export function readSnapshot(root = projectRoot) {
   const items = { ...JSON.parse(raw.items), ...JSON.parse(raw.forgingItems).items };
   const productNames = new Map([...design.recipes, ...(design.processing_recipes || [])].map(r => [r.item_id, r.name]));
   const itemName = id => items[id]?.attribute_modules?.base?.identity?.sn || items[id]?.sn || items[id]?.name || productNames.get(id) || id;
-  const ingredient = i => ({ id: i.item_id, name: itemName(i.item_id), count: i.count });
+  const ingredient = i => {const row=typeof i==='string'?{item_id:i,count:1}:Array.isArray(i)?{item_id:i[0],count:i[1]}:i;return {id:row.item_id,name:itemName(row.item_id),count:row.count||1};};
   const rows = (list, processing = false) => list.map(r => {
-    const c = classes.get(r.item_id)?.category || 'daily';
+    const c = r.recipe_id.startsWith('manufacturing.medical_')||r.item_id==='tool_medical_kit_basic'?'medical':classes.get(r.item_id)?.category || 'daily';
     const category = processing ? 'processing' : c.startsWith('fishing_') ? 'fishing' : c;
     const selectable = !processing && r.unlock.kind === 'exploration';
     return {

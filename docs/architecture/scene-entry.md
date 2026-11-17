@@ -22,7 +22,7 @@ flowchart TD
 
 ## 逻辑应放在哪里
 
-完整、机器可检查的目录在 [scene-modules.json](scene-modules.json)：每个模块必须登记职责、公开接口、可写接口、场景依赖、验证文件。当前 29 个模块都是可直接维护的源码。
+完整、机器可检查的目录在 [scene-modules.json](scene-modules.json)：每个模块必须登记职责、公开接口、可写接口、场景依赖、验证文件。当前 33 个模块都是可直接维护的源码。
 
 | 改动内容 | 所属位置 |
 |---|---|
@@ -31,7 +31,12 @@ flowchart TD
 | 朝向、步行、等待、蹑步、交互路由 | `js/scene/movement.js` |
 | 行动资格、失能、界面互斥、给药门禁 | `js/scene/access.js`，交战状态统一读 `CombatEngagement` |
 | 世界刻与已存在的各系统后置顺序 | `js/scene/world.js`，各系统仍自行拥有结算实现 |
+| 健康／活力实际损毁经验 | `SurvivalSkills` 定义发奖策略，`CharacterAttributes` 提供实际变化量，`CombatPipeline` 聚合整招、`CombatWorld` 完成延迟位移后发奖；等级与经验仍唯一归 `InventoryEquipment`。休息每刻与交战动作由原场景拥有者调用保存事务 |
 | 物品使用、装备、快捷栏使用及事务 | `js/scene/items.js`，物品效果仍在 `item-use.js` 等原规则模块 |
+| 急救包补充、治疗、手术进度与部位经验奖励资格、改造与保存事务 | `js/scene/medical.js`；储量与用量规则在 `js/medical-kit.js`，身体上限与恢复仍归 `CharacterAttributes`，技能等级与经验仍归 `InventoryEquipment` |
+| 急救包日常面板 | `js/scene/medical-panel.js`；原生与 Svelte 共用 `js/medical-kit-view.js` 和 `css/medical-kit.css` |
+| 制作台用品与工具生产、工位建设及升级事务 | `js/scene/manufacturing.js`，台级／工作进度归 ManufacturingActions；知识仍归 ManufacturingKnowledge |
+| 制作台标签与急救包改装视图 | `js/scene/manufacturing-panel.js`，改装调用 MedicalActions 并复用 MedicalKitView |
 | 农业、畜牧、仓库、站点动作及会话 | `js/scene/agriculture.js`、`livestock.js`、`warehouse.js`、`station.js` |
 | 采集、休息、调息、睡眠准备和动作菜单 | `js/scene/actions.js` |
 | 配置加载、地图装载、建角、恢复角色 | `config.js`、`map.js`、`character.js`、`session.js` |

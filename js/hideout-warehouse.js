@@ -862,7 +862,26 @@
         }
     }
 
-    function consumeFromWarehouseSlots(itemId, needCount) {
+    function consumableSlot(cell) {
+        return !!cell && !cell.warehouse_locked &&
+            !(global.ForgingSystem && global.ForgingSystem.isInstanceLocked(cell.instance_id)) &&
+            !(global.ManufacturingActions && global.ManufacturingActions.isInstanceLocked(cell.instance_id)) &&
+            !(global.FishingSession && global.FishingSession.isInstanceLocked(cell.instance_id));
+    }
+
+    function countAvailableItem(itemId) {
+        return ensureState().slots.reduce(function (sum, cell) {
+            return sum + (cell && cell.item_id === itemId && consumableSlot(cell) ? coerceInt(cell.count, 1) : 0);
+        }, 0);
+    }
+
+    // Direct facility consumption; the caller owns location authorization and the save transaction.
+    function consumeAvailableItem(itemId, count) {
+        if (!Number.isInteger(count) || count <= 0 || countAvailableItem(itemId) < count) return {ok:false,reason:'insufficient_items'};
+        return consumeFromWarehouseSlots(itemId, count, true);
+    }
+
+    function consumeFromWarehouseSlots(itemId, needCount, unlockedOnly) {
         var want = String(itemId || '').trim();
         var remaining = Math.max(1, coerceInt(needCount, 1));
         if (!want || remaining < 1) return { ok: false, reason: 'invalid_request' };
@@ -873,6 +892,7 @@
         for (i = 0; i < st.slots.length && remaining > 0; i++) {
             var cell = st.slots[i];
             if (!cell || String(cell.item_id) !== want) continue;
+            if (unlockedOnly && !consumableSlot(cell)) continue;
             var have = cell.count != null ? coerceInt(cell.count, 1) : 1;
             var take = Math.min(have, remaining);
             consumed.push({
@@ -1625,6 +1645,8 @@
         hasQoL: hasQoL,
         unlockUpgrade: unlockUpgrade,
         countItem: countItem,
+        countAvailableItem: countAvailableItem,
+        consumeAvailableItem: consumeAvailableItem,
         countItemEverywhere: countItemEverywhere,
         listUpgradeIds: listUpgradeIds,
         listVisibleUpgradeIds: listVisibleUpgradeIds,

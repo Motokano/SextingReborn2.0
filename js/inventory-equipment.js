@@ -8,7 +8,7 @@
 
     /** 装备槽位 ID（呼吸法、步法、招架为技能而非装备，不占装备槽；招架在肢体技能栏配置）。分三组：出招装备（武器/手套/鞋）、防具（头/衣服）、载物（背心/背包/水壶） */
     var EQUIP_SLOT_IDS = [
-        'head', 'clothing', 'vest', 'backpack', 'water_flask',
+        'head', 'clothing', 'vest', 'backpack', 'water_flask', 'medical_kit',
         'weapon_left', 'weapon_right',
         'glove_left', 'glove_right',
         'shoe_left', 'shoe_right'
@@ -660,6 +660,7 @@
             if (!isFinite(lv) || lv < 0) lv = 0;
             var cap = getProgressionSkillCap(sid);
             ent.level = Math.min(lv, cap);
+            clearCappedSurvivalExperience(sid, ent);
         }
     }
 
@@ -1391,6 +1392,7 @@
         var book = getBookInfo(itemInstance);
         if (book) ownWeight *= book.fragments / book.profile.fragments_per_item;
         var total = ownWeight * quantity;
+        if (global.MedicalKit) total += global.MedicalKit.contentsWeight(itemInstance);
         var storedWater = getItemInstanceValue(itemInstance, 'flask_water');
         var waterWeight = getItemTemplateValue(tpl, 'flask_water_weight_kg');
         if (Number.isFinite(storedWater) && storedWater >= 0 && Number.isFinite(waterWeight) && waterWeight >= 0) {
@@ -1968,6 +1970,7 @@
         var raw = arr[index];
         if (!raw || !raw.item_id) return { item: null, success: false };
         if (global.ForgingSystem && global.ForgingSystem.isInstanceLocked(raw.instance_id)) return {item:null,success:false,reason:'item_locked'};
+        if (global.ManufacturingActions && global.ManufacturingActions.isInstanceLocked(raw.instance_id)) return {item:null,success:false,reason:'item_locked'};
         if (global.FishingSession && typeof global.FishingSession.isInstanceLocked === 'function' && global.FishingSession.isInstanceLocked(raw.instance_id)) {
             return { item: null, success: false, reason: 'item_locked' };
         }
@@ -1993,6 +1996,7 @@
         var current = state.equipment[slotId];
         if (!current) return null;
         if (current && global.ForgingSystem && global.ForgingSystem.isInstanceLocked(current.instance_id)) return null;
+        if (current && global.ManufacturingActions && global.ManufacturingActions.isInstanceLocked(current.instance_id)) return null;
         if (global.ModularWeaponCombat) global.ModularWeaponCombat.clearTransient(current);
         state.equipment[slotId] = null;
         if ((slotId === 'clothing' || slotId === 'head') && global.Survival && global.Survival.setDiqiShieldRemaining) global.Survival.setDiqiShieldRemaining(0);
@@ -2561,12 +2565,21 @@
             state.skills[skillId] = { level: 0, move_usage: {}, study_exp: 0 };
         }
         var ent = state.skills[skillId];
+        if (clearCappedSurvivalExperience(skillId, ent)) return 0;
         if (!ent.move_usage || typeof ent.move_usage !== 'object') ent.move_usage = {};
         var cur = parseInt(ent.study_exp, 10);
         if (!isFinite(cur) || cur < 0) cur = 0;
         var d = Math.floor(Number(amount) || 0);
         ent.study_exp = d > 0 ? cur + d : cur;
         return ent.study_exp;
+    }
+
+    function clearCappedSurvivalExperience(skillId, entry) {
+        var meta = global.SurvivalSkills && global.SurvivalSkills.getById(skillId);
+        if (!meta || !meta.max_level || entry.level < meta.max_level) return false;
+        entry.level = meta.max_level;
+        entry.study_exp = 0;
+        return true;
     }
 
     /**
@@ -2592,6 +2605,7 @@
             leveled++;
             guard++;
         }
+        clearCappedSurvivalExperience(skillId, ent);
         return {
             leveled: leveled,
             level: parseInt(ent.level, 10) || 0,

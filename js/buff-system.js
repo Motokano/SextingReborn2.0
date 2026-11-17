@@ -192,6 +192,8 @@
             pharmacy_conflict_outcome: String(t.pharmacy_conflict_outcome || '').trim().toLowerCase(),
             pharmacy_addiction_stage: Math.max(0, parseInt(t.pharmacy_addiction_stage, 10) || 0),
             judgment_tags: normalizeJudgmentTags(t.judgment_tags),
+            injury_type: String(t.injury_type || ''),
+            injury_group: String(t.injury_group || t.injury_type || ''),
             /** 见 design/18：beneficial 可被「破相」等驱散；缺省不可选 */
             dispel_pool: t.dispel_pool === 'beneficial' ? 'beneficial' : '',
             dispel_priority: (function () {
@@ -317,13 +319,16 @@
         var arr = instancesByOwner[oid];
         if (!arr || !arr.length) return 0;
         var removed = 0;
+        var removedInjuries = [];
         for (var j = arr.length - 1; j >= 0; j--) {
             if (arr[j] && arr[j].buff_id === bid) {
+                if(arr[j].template && arr[j].template.injury_type) removedInjuries.push({part:arr[j].body_part,type:arr[j].template.injury_type});
                 arr.splice(j, 1);
                 removed += 1;
             }
         }
         if (removed) {
+            if(global.InjurySystem) removedInjuries.forEach(function(i){global.InjurySystem.cleared(oid,i.part,i.type);});
             recalcDerived();
             notifyBuffHudRefresh();
             emitBuffStateChanged(oid, 'remove_by_id', { buff_id: bid, removed: removed });
@@ -810,10 +815,44 @@
         }
         if (!tpl) return false;
         var arr = ensureOwner(oid);
+        var injuryPart = eventContext && eventContext.body_part;
+        if (injuryPart === 'abdomen') injuryPart = 'belly';
+        var partCoagulant=tpl.pharmacy_scope==='part' && tpl.effects.some(function(e){return e.type==='pharmacy_bleeding_slow';});
+        var dosePart=eventContext && (eventContext.part_id || eventContext.body_part);
+        if(dosePart==='abdomen')dosePart='belly';
+        if(partCoagulant){
+            if(['head','chest','belly','lhand','rhand','lfoot','rfoot'].indexOf(dosePart)<0)return false;
+            // Freeze the legacy buff-ID target before ItemUse updates its compatibility map.
+            arr.forEach(function(inst){
+                if(inst.buff_id===buffId && !inst.body_part && global.PharmacyEffects){
+                    var old=global.PharmacyEffects.getTopicalTarget(buffId);
+                    inst.body_part=old==='abdomen'?'belly':old || null;
+                }
+            });
+        }
+        var injuryProgress = null;
+        if (tpl.injury_type) {
+            if (['head','chest','belly','lhand','rhand','lfoot','rfoot'].indexOf(injuryPart) < 0) return false;
+            if (/^(heavy_bleeding|fracture)$/.test(tpl.injury_type) && ['lhand','rhand','lfoot','rfoot'].indexOf(injuryPart) < 0) return false;
+            var injuryGroup = /^(heavy_bleeding|bleeding)$/.test(tpl.injury_type) ? 'bleeding' : tpl.injury_group;
+            if (arr.some(function(p){return p.body_part===injuryPart && p.stacks>0 && p.template &&
+                (p.template.injury_type===tpl.injury_type || tpl.injury_type==='bleeding' && p.template.injury_type==='heavy_bleeding');})) return false;
+            for (var ip = arr.length-1; ip >= 0; ip--) {
+                var prior = arr[ip], priorType = prior.template && prior.template.injury_type;
+                var priorGroup = /^(heavy_bleeding|bleeding)$/.test(priorType) ? 'bleeding' : prior.template && prior.template.injury_group;
+                if (prior.body_part === injuryPart && priorGroup === injuryGroup && prior.buff_id !== buffId) {
+                    injuryProgress = prior.injury_progress || {last_tick:prior.started_tick,elapsed:0,checks:0,seed:prior.uid};
+                    injuryProgress.seed = injuryProgress.seed || prior.uid;
+                    arr.splice(ip,1);
+                }
+            }
+        }
         var existing = null;
         var sourceKey = sourceId != null ? String(sourceId) : null;
         for (var j = 0; j < arr.length; j++) {
-            if (arr[j].buff_id === buffId && (!tpl.pharmacy_generated || String(arr[j].source_id || '') === String(sourceKey || ''))) {
+            if (arr[j].buff_id === buffId && (!tpl.injury_type || arr[j].body_part === injuryPart) &&
+                (!partCoagulant || arr[j].body_part===dosePart) &&
+                (!tpl.pharmacy_generated || String(arr[j].source_id || '') === String(sourceKey || ''))) {
                 existing = arr[j];
                 break;
             }
@@ -831,6 +870,7 @@
             dur += global.Muscles.getFoodBuffDurationBonus();
         }
         if (existing) {
+            if(partCoagulant && existing.expires_at_tick<nowTick)existing.started_tick=nowTick;
             existing.metaskill_source = (global.CombatMetaSkills && global.CombatMetaSkills.currentSource()) || existing.metaskill_source || null;
             var currentStacks = Math.max(0, parseInt(existing.stacks, 10) || 0);
             // 兼容旧存档/异常流程里的 0 层实例：重上时至少恢复到 1 层，避免 HUD 永久不显示。
@@ -843,10 +883,13 @@
             }
             debugLog('reapply ' + buffId + ' stacks=' + existing.stacks);
         } else {
+            var instanceUid = buffId + '_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
             arr.push({
-                uid: buffId + '_' + Date.now() + '_' + Math.floor(Math.random() * 100000),
+                uid: instanceUid,
                 buff_id: tpl.buff_id,
                 owner_id: oid,
+                body_part: tpl.injury_type ? injuryPart : (partCoagulant ? dosePart : null),
+                injury_progress: tpl.injury_type ? (injuryProgress || {last_tick:nowTick,elapsed:0,checks:0,seed:instanceUid,bleed_damage_units:0}) : null,
                 source_id: sourceId || null,
                 metaskill_source: (global.CombatMetaSkills && global.CombatMetaSkills.currentSource()) || null,
                 started_tick: nowTick,
@@ -862,6 +905,7 @@
         recalcDerived();
         notifyBuffHudRefresh();
         emitBuffStateChanged(oid, existing ? 'reapply' : 'apply', { buff_id: buffId });
+        if (tpl.injury_type && global.InjurySystem) global.InjurySystem.changed(oid);
         return true;
     }
 
@@ -895,7 +939,10 @@
                 // 过期语义采用右开区间：[started_tick, expires_at_tick)
                 // 当 tick 恰好等于 expires_at_tick 时，仍允许该 tick 的事件链读取到实例；
                 // 仅当 tick 超过 expires_at_tick 才真正移除，避免 1tick 状态 Buff 被“同轮提前清空”。
-                if (!(inst.template && inst.template.manualLifetime) && inst.expires_at_tick < tick) {
+                var expiryTemplate = inst.template || templateById[inst.buff_id];
+                // Saved permanent injuries may be restored before their templates finish loading.
+                if (!expiryTemplate && !loaded) continue;
+                if (!(expiryTemplate && expiryTemplate.manualLifetime) && inst.expires_at_tick < tick) {
                     applyExpireEffects(inst, tick);
                     arr.splice(j, 1);
                     expiredMetaSource = expiredMetaSource || inst.metaskill_source;
@@ -984,6 +1031,14 @@
                         uid: inst.uid != null ? String(inst.uid) : '',
                         buff_id: String(inst.buff_id),
                         owner_id: inst.owner_id != null ? String(inst.owner_id) : String(oid),
+                        body_part: inst.body_part === 'abdomen' ? 'belly' : inst.body_part || null,
+                        injury_progress: isPlainObject(inst.injury_progress) ? {
+                            last_tick: Math.max(0,toInt(inst.injury_progress.last_tick,toInt(inst.started_tick,nowTick))),
+                            elapsed: Math.max(0,toInt(inst.injury_progress.elapsed,0)),
+                            checks: Math.max(0,toInt(inst.injury_progress.checks,0)),
+                            bleed_damage_units: Math.max(0,Math.min(999999,toInt(inst.injury_progress.bleed_damage_units,0))),
+                            seed: String(inst.injury_progress.seed || inst.uid || '')
+                        } : null,
                         source_id: inst.source_id != null ? String(inst.source_id) : null,
                         metaskill_source: typeof inst.metaskill_source === 'string' ? inst.metaskill_source : null,
                         started_tick: inst.started_tick != null ? toInt(inst.started_tick, 0) : toInt(nowTick, 0),
@@ -1650,6 +1705,23 @@
         return triggerBuffPipeline(eventContext || {});
     }
 
+    function getPartInjuries(owner, part) {
+        var key = part === 'abdomen' ? 'belly' : part;
+        return (instancesByOwner[owner || PLAYER_OWNER_ID] || []).filter(function (inst) {
+            return inst.body_part === key && inst.stacks > 0 && inst.template && inst.template.injury_type;
+        }).map(function (inst) { return {uid:inst.uid,type:inst.template.injury_type,buff_id:inst.buff_id}; });
+    }
+    function clearPartInjury(owner, part, type) {
+        var key = part === 'abdomen' ? 'belly' : part, arr = instancesByOwner[owner || PLAYER_OWNER_ID] || [], count = 0;
+        for (var i = arr.length-1; i >= 0; i--) {
+            if (arr[i].body_part === key && arr[i].template && arr[i].template.injury_type === type) { arr.splice(i,1); count++; }
+        }
+        if (count) {
+            if (global.InjurySystem) global.InjurySystem.cleared(owner || PLAYER_OWNER_ID,key,type);
+            recalcDerived(); notifyBuffHudRefresh(); emitBuffStateChanged(owner || PLAYER_OWNER_ID,'medical_treatment',{body_part:key,injury_type:type});
+        }
+        return count;
+    }
     function getState() {
         return {
             loaded: loaded,
@@ -1722,6 +1794,8 @@
     global.BuffSystem = {
         init: init,
         getState: getState,
+        getPartInjuries: getPartInjuries,
+        clearPartInjury: clearPartInjury,
         setState: setState,
         applyBuff: applyBuff,
         setBuffStacks: setBuffStacks,

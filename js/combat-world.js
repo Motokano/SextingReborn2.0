@@ -371,6 +371,11 @@
 
     /** 敌人主动攻击玩家：走与还击相同的「玩家受击」管线（命中/招架/减伤）。 */
     function runEnemyAttackOnPlayer(enemyId, ex, ey) {
+        if (global.SaveSystem && !global.SaveSystem.isAtomic()) {
+            var transaction=global.SaveSystem.runAtomicFor('combat',function(){return runEnemyAttackOnPlayer(enemyId,ex,ey);});
+            if(!transaction.saved && global.SceneFeedback) global.SceneFeedback.showMsg('保存失败，本次受击结算已还原。','warn');
+            return transaction.value;
+        }
         var CMR = window.CombatMeleeResolve;
         var CP = window.CombatPipeline;
         if (!CMR || typeof CMR.resolveEnemyVsPlayerAttack !== 'function' || !CP || typeof CP.runPipeline !== 'function') return;
@@ -488,12 +493,16 @@
             multiplier: 1.3,
             strength: strength, speed: speed, actorPos: Object.assign({}, a.pos),
             eventId: String(ctx.eventIdSuffix || ctx.moveId || '') + '_' + (++displacementSequence) });
+        return true;
     }
     function flushDisplacements(options) {
         var pending = displacementQueue;
         displacementQueue = [];
         var map = E && E.getMap(), state = E && E.getState();
-        if (!map || !state) return;
+        function finishExperience() {
+            if (global.SurvivalSkills) pending.forEach(function (q) { global.SurvivalSkills.completeAttackExperience(Object.assign({}, q.ctx, {simultaneousDryRun:false})); });
+        }
+        if (!map || !state) { finishExperience(); return; }
         var groups = new Map();
         pending.forEach(function (q) {
             if (q.map !== map || q.mapId !== state.mapId || !q.cells) return;
@@ -545,6 +554,7 @@
             if (global.CombatMetaSkills) global.CombatMetaSkills.withSource(q.ctx.metaSource || (q.ctx.resourceResult && q.ctx.resourceResult.metaSource), applyDisplacement);
             else applyDisplacement();
         });
+        finishExperience();
         if (!(options && options.deferKills)) settleEnemyKills();
     }
 

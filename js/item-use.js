@@ -30,6 +30,7 @@
 
     function itemTemplateIsConsumable(tpl) {
         if (!tpl) return false;
+        if (tpl.medical_supply_profile?.implementation === 'runtime') return true;
         if (getUseActionRoute(tpl) === 'inject' && !isInjectionUnlocked()) return false;
         if (tpl.food_profile && toBoolFlag(tpl.edible)) return true;
         var edible = toBoolFlag(tpl.edible);
@@ -66,6 +67,7 @@
 
     /** 读物品模板的给药途径（无/非法返回 ''）。 */
     function getUseActionRoute(tpl) {
+        if (tpl?.medical_supply_profile?.implementation === 'runtime') return 'topical';
         var raw = tpl && tpl.use_action != null ? String(tpl.use_action).trim().toLowerCase() : '';
         if (!raw) return '';
         return USE_ACTION_IDS.indexOf(raw) >= 0 ? raw : '';

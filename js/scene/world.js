@@ -74,6 +74,18 @@
             if (window.Survival.isDead() || (window.DeathSystem && window.DeathSystem.blocked())) return { isDead: true };
             if (window.BedSleep && !window.BedSleep.allowsTick(arguments[0])) return { sleeping: true };
             if (window.GymSystem && !window.GymSystem.allowsTick(arguments[0])) return { training: true };
+            if (window.MedicalActions && !window.MedicalActions.allowsTick(arguments[0])) return { medical: true };
+            if (window.ManufacturingActions && !window.ManufacturingActions.allowsTick(arguments[0])) return { manufacturing: true };
+            if (window.Survival.getState().isResting && arguments[0]?.source !== 'sleep' && !window.SaveSystem.isAtomic()) {
+                var restOptions=arguments[0],restResult=window.SaveSystem.runAtomicFor('rest',function(){return window.Survival.advanceTick(restOptions);});
+                if(!restResult.saved){window.PlayerActions.setRestingActionActive(false,{showMsg:false});window.SceneFeedback.showMsg('保存失败，已暂停休息，本刻消耗、恢复和经验已还原。','warn');}
+                return restResult.value;
+            }
+            if (PharmacyStation.getActiveCraft()?.method_id==='life_pharmacy.medical_alcohol'&&!window.SaveSystem.isAtomic()) {
+                var tickOptions=arguments[0],saved=window.SaveSystem.runAtomicFor('craft.pharmacy',function(){return window.Survival.advanceTick(tickOptions);});
+                if(!saved.saved){window.StationActions.stopPharmacyCraftIdle();window.SceneFeedback.showMsg('保存失败，酒精制作进度已恢复，请重新打开制药台继续。','warn');}
+                return saved.value;
+            }
             if (window.BookReading) window.BookReading.beforeWorldTick();
             var worldTickBefore = getWorldTotalTicks();
             var ret = oldAdvance.apply(this, arguments);
@@ -108,7 +120,7 @@
             // 09「损毁恢复」：部位损毁自然自愈（宽限后按部位速率回落，休息加速）
             try {
                 if (window.CharacterAttributes && typeof window.CharacterAttributes.onWorldTickDestroyRecover === 'function') {
-                    window.CharacterAttributes.onWorldTickDestroyRecover();
+                    window.CharacterAttributes.onWorldTickDestroyRecover(arguments[0]);
                 }
             } catch (ePartRecover) { /* ignore */ }
             return ret;

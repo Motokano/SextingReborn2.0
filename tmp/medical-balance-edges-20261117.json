@@ -1,0 +1,714 @@
+{
+  "method": {
+    "engine": "formal native entry in isolated DOM; no live save",
+    "scope": "fixed injury recovery drills plus existing-enemy combat fragments",
+    "tick_minutes": 10,
+    "rest_seconds_per_tick": 5,
+    "build": "new character combat skills1, default loadout and diqi1; medical skills0",
+    "automatic_treatment_policy": "heavy bleed, ordinary bleed, fracture, infection, surgery, dressings; then rest",
+    "combat_policy": "repeat default attacks up to 8 turns; no drugs, no tactical healing; extraction is a fixture, not tested escape"
+  },
+  "drills": [],
+  "combat": [],
+  "endurance": [],
+  "edges": [
+    {
+      "name": "refill_after_one_arm_treatment",
+      "treatment": {
+        "ticks": 2,
+        "cost": {
+          "trauma_dressing": 40,
+          "hemostatic_gauze": 100,
+          "tourniquet": 0,
+          "fracture_band": 0,
+          "medical_alcohol": 0,
+          "surgical_staples": 0
+        },
+        "before": {
+          "head": {
+            "max": 50,
+            "damage": 0,
+            "injuries": []
+          },
+          "chest": {
+            "max": 100,
+            "damage": 0,
+            "injuries": []
+          },
+          "belly": {
+            "max": 80,
+            "damage": 0,
+            "injuries": []
+          },
+          "lhand": {
+            "max": 100,
+            "damage": 70,
+            "injuries": [
+              "bleeding"
+            ]
+          },
+          "rhand": {
+            "max": 100,
+            "damage": 0,
+            "injuries": []
+          },
+          "lfoot": {
+            "max": 100,
+            "damage": 0,
+            "injuries": []
+          },
+          "rfoot": {
+            "max": 100,
+            "damage": 0,
+            "injuries": []
+          }
+        },
+        "after": {
+          "head": {
+            "max": 50,
+            "damage": 0,
+            "injuries": []
+          },
+          "chest": {
+            "max": 100,
+            "damage": 0,
+            "injuries": []
+          },
+          "belly": {
+            "max": 80,
+            "damage": 0,
+            "injuries": []
+          },
+          "lhand": {
+            "max": 100,
+            "damage": 30,
+            "injuries": []
+          },
+          "rhand": {
+            "max": 100,
+            "damage": 0,
+            "injuries": []
+          },
+          "lfoot": {
+            "max": 100,
+            "damage": 0,
+            "injuries": []
+          },
+          "rfoot": {
+            "max": 100,
+            "damage": 0,
+            "injuries": []
+          }
+        },
+        "actions": [
+          {
+            "part": "lhand",
+            "key": "hemostatic_gauze",
+            "mode": "normal",
+            "ticks": 1,
+            "cost": {
+              "trauma_dressing": 0,
+              "hemostatic_gauze": 100,
+              "tourniquet": 0,
+              "fracture_band": 0,
+              "medical_alcohol": 0,
+              "surgical_staples": 0
+            }
+          },
+          {
+            "part": "lhand",
+            "key": "trauma_dressing",
+            "mode": "normal",
+            "ticks": 1,
+            "cost": {
+              "trauma_dressing": 40,
+              "hemostatic_gauze": 0,
+              "tourniquet": 0,
+              "fracture_band": 0,
+              "medical_alcohol": 0,
+              "surgical_staples": 0
+            }
+          }
+        ],
+        "remaining": {
+          "trauma_dressing": 260,
+          "hemostatic_gauze": 650,
+          "tourniquet": 300,
+          "fracture_band": 450,
+          "medical_alcohol": 300,
+          "surgical_staples": 70
+        },
+        "xp": {
+          "survival_health": 0,
+          "survival_vitality": 0,
+          "survival_surgery": 0
+        },
+        "resources": {
+          "stamina": 59.2,
+          "satiety": 98,
+          "thirst": 99,
+          "fatigue": 0,
+          "pain": 7,
+          "qi_li_current": 100,
+          "diqi_current": 1,
+          "diqi_max": 1,
+          "diqi_cap_limit": 1.1751
+        }
+      },
+      "refill": {
+        "result": {
+          "ok": true,
+          "message": "已补充2份 · 2刻",
+          "filled": 2
+        },
+        "ticks": 2,
+        "gain": {
+          "trauma_dressing": 40,
+          "hemostatic_gauze": 100,
+          "tourniquet": 0,
+          "fracture_band": 0,
+          "medical_alcohol": 0,
+          "surgical_staples": 0
+        },
+        "inventory": [
+          null,
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    {
+      "name": "sleep_admission_and_maximum_recovery",
+      "treatment": {
+        "ticks": 8,
+        "cost": {
+          "trauma_dressing": 34,
+          "hemostatic_gauze": 0,
+          "tourniquet": 50,
+          "fracture_band": 0,
+          "medical_alcohol": 0,
+          "surgical_staples": 10
+        },
+        "before": {
+          "head": {
+            "max": 50,
+            "damage": 0,
+            "injuries": []
+          },
+          "chest": {
+            "max": 100,
+            "damage": 0,
+            "injuries": []
+          },
+          "belly": {
+            "max": 80,
+            "damage": 0,
+            "injuries": []
+          },
+          "lhand": {
+            "max": 100,
+            "damage": 100,
+            "injuries": [
+              "heavy_bleeding"
+            ]
+          },
+          "rhand": {
+            "max": 100,
+            "damage": 0,
+            "injuries": []
+          },
+          "lfoot": {
+            "max": 100,
+            "damage": 0,
+            "injuries": []
+          },
+          "rfoot": {
+            "max": 100,
+            "damage": 0,
+            "injuries": []
+          }
+        },
+        "after": {
+          "head": {
+            "max": 50,
+            "damage": 0,
+            "injuries": []
+          },
+          "chest": {
+            "max": 100,
+            "damage": 0,
+            "injuries": []
+          },
+          "belly": {
+            "max": 80,
+            "damage": 0,
+            "injuries": []
+          },
+          "lhand": {
+            "max": 50,
+            "damage": 15,
+            "injuries": []
+          },
+          "rhand": {
+            "max": 100,
+            "damage": 0,
+            "injuries": []
+          },
+          "lfoot": {
+            "max": 100,
+            "damage": 0,
+            "injuries": []
+          },
+          "rfoot": {
+            "max": 100,
+            "damage": 0,
+            "injuries": []
+          }
+        },
+        "actions": [
+          {
+            "part": "lhand",
+            "key": "tourniquet",
+            "mode": "normal",
+            "ticks": 1,
+            "cost": {
+              "trauma_dressing": 0,
+              "hemostatic_gauze": 0,
+              "tourniquet": 50,
+              "fracture_band": 0,
+              "medical_alcohol": 0,
+              "surgical_staples": 0
+            }
+          },
+          {
+            "part": "lhand",
+            "key": "surgical_staples",
+            "mode": "normal",
+            "ticks": 6,
+            "cost": {
+              "trauma_dressing": 0,
+              "hemostatic_gauze": 0,
+              "tourniquet": 0,
+              "fracture_band": 0,
+              "medical_alcohol": 0,
+              "surgical_staples": 10
+            }
+          },
+          {
+            "part": "lhand",
+            "key": "trauma_dressing",
+            "mode": "normal",
+            "ticks": 1,
+            "cost": {
+              "trauma_dressing": 34,
+              "hemostatic_gauze": 0,
+              "tourniquet": 0,
+              "fracture_band": 0,
+              "medical_alcohol": 0,
+              "surgical_staples": 0
+            }
+          }
+        ],
+        "remaining": {
+          "trauma_dressing": 266,
+          "hemostatic_gauze": 750,
+          "tourniquet": 250,
+          "fracture_band": 450,
+          "medical_alcohol": 300,
+          "surgical_staples": 60
+        },
+        "xp": {
+          "survival_health": 0,
+          "survival_vitality": 0,
+          "survival_surgery": 1
+        },
+        "resources": {
+          "stamina": 46.8,
+          "satiety": 90,
+          "thirst": 96,
+          "fatigue": 1,
+          "pain": 10,
+          "qi_li_current": 100,
+          "diqi_current": 1,
+          "diqi_max": 1,
+          "diqi_cap_limit": 1.1751
+        }
+      },
+      "recovery": {
+        "ticks": 30,
+        "real_seconds": 150,
+        "healed": 15,
+        "remaining_damage": 0,
+        "after": {
+          "head": {
+            "max": 50,
+            "damage": 0,
+            "injuries": []
+          },
+          "chest": {
+            "max": 100,
+            "damage": 0,
+            "injuries": []
+          },
+          "belly": {
+            "max": 80,
+            "damage": 0,
+            "injuries": []
+          },
+          "lhand": {
+            "max": 50,
+            "damage": 0,
+            "injuries": []
+          },
+          "rhand": {
+            "max": 100,
+            "damage": 0,
+            "injuries": []
+          },
+          "lfoot": {
+            "max": 100,
+            "damage": 0,
+            "injuries": []
+          },
+          "rfoot": {
+            "max": 100,
+            "damage": 0,
+            "injuries": []
+          }
+        },
+        "resource_cost": {
+          "stamina": -53.2,
+          "satiety": 56.6,
+          "thirst": 41.6,
+          "fatigue": 0,
+          "pain": 7,
+          "qi_li_current": 0,
+          "diqi_current": 0,
+          "diqi_max": 0,
+          "diqi_cap_limit": 0
+        },
+        "resources": {
+          "stamina": 100,
+          "satiety": 33.4,
+          "thirst": 54.4,
+          "fatigue": 1,
+          "pain": 3,
+          "qi_li_current": 100,
+          "diqi_current": 1,
+          "diqi_max": 1,
+          "diqi_cap_limit": 1.1751
+        },
+        "xp_gain": {
+          "survival_health": 15,
+          "survival_vitality": 0,
+          "survival_surgery": 0
+        },
+        "damage_cleared": true,
+        "normal_maxima_restored": false
+      },
+      "post_surgery_fatigue": 1,
+      "denied_while_not_tired": true,
+      "qualified_sleep": {
+        "fixture": "set fatigue60 and food/water100 only to test admission/completion; not included in natural recovery timing",
+        "ticks": 48,
+        "cost": {
+          "stamina": 0,
+          "satiety": 48,
+          "thirst": 48,
+          "fatigue": 60,
+          "pain": 3,
+          "qi_li_current": 0,
+          "diqi_current": 0,
+          "diqi_max": 0,
+          "diqi_cap_limit": 0
+        },
+        "after": {
+          "head": {
+            "max": 50,
+            "damage": 0,
+            "injuries": []
+          },
+          "chest": {
+            "max": 100,
+            "damage": 0,
+            "injuries": []
+          },
+          "belly": {
+            "max": 80,
+            "damage": 0,
+            "injuries": []
+          },
+          "lhand": {
+            "max": 100,
+            "damage": 0,
+            "injuries": []
+          },
+          "rhand": {
+            "max": 100,
+            "damage": 0,
+            "injuries": []
+          },
+          "lfoot": {
+            "max": 100,
+            "damage": 0,
+            "injuries": []
+          },
+          "rfoot": {
+            "max": 100,
+            "damage": 0,
+            "injuries": []
+          }
+        },
+        "xp": {
+          "survival_health": 15,
+          "survival_vitality": 0,
+          "survival_surgery": 1
+        }
+      }
+    }
+  ],
+  "initial": {
+    "attributes": {
+      "characterName": "医疗平衡隔离测试",
+      "characterGender": "male",
+      "character_creation_completed": true,
+      "innate": {
+        "jingu": 22,
+        "flexibility": 20,
+        "breath": 17,
+        "dexterity": 21,
+        "focus": 20
+      },
+      "acquired": {
+        "jingu": 1.69,
+        "flexibility": 1.63,
+        "breath": 0.51,
+        "dexterity": 1.66,
+        "focus": 1.63
+      },
+      "dominant_hand": "right",
+      "dominant_leg": "right",
+      "post_effects_obtained": [],
+      "attribute_experience": {
+        "jingu": {
+          "exp": 0,
+          "attribute_level": 0,
+          "total_gained": 0
+        },
+        "flexibility": {
+          "exp": 0,
+          "attribute_level": 0,
+          "total_gained": 0
+        },
+        "breath": {
+          "exp": 0,
+          "attribute_level": 0,
+          "total_gained": 0
+        },
+        "dexterity": {
+          "exp": 0,
+          "attribute_level": 0,
+          "total_gained": 0
+        },
+        "focus": {
+          "exp": 0,
+          "attribute_level": 0,
+          "total_gained": 0
+        }
+      },
+      "part_destroy": {
+        "head": 0,
+        "chest": 0,
+        "abdomen": 0,
+        "lhand": 0,
+        "rhand": 0,
+        "lfoot": 0,
+        "rfoot": 0
+      },
+      "limb_destroy": {
+        "lhand": 0,
+        "rhand": 0,
+        "lfoot": 0,
+        "rfoot": 0
+      },
+      "part_destroy_recover_acc": {
+        "head": 0,
+        "chest": 0,
+        "abdomen": 0,
+        "lhand": 0,
+        "rhand": 0,
+        "lfoot": 0,
+        "rfoot": 0
+      },
+      "surgical_max_loss": {},
+      "destroy_recover_block_ticks": 0,
+      "hidden_epithets": []
+    },
+    "resources": {
+      "stamina": 100,
+      "satiety": 100,
+      "thirst": 100,
+      "fatigue": 0,
+      "pain": 0,
+      "qi_li_current": 100,
+      "diqi_current": 1,
+      "diqi_max": 1,
+      "diqi_cap_limit": 1.1751
+    },
+    "skills": {
+      "combat_basic_unarmed": {
+        "level": 1,
+        "move_usage": {},
+        "study_exp": 0
+      },
+      "combat_basic_breath": {
+        "level": 1,
+        "move_usage": {},
+        "study_exp": 0
+      },
+      "combat_basic_footwork": {
+        "level": 1,
+        "move_usage": {},
+        "study_exp": 0
+      },
+      "special_meridian_studies": {
+        "level": 0,
+        "move_usage": {},
+        "study_exp": 0
+      },
+      "survival_health": {
+        "level": 0,
+        "study_exp": 0,
+        "move_usage": {}
+      },
+      "survival_vitality": {
+        "level": 0,
+        "study_exp": 0,
+        "move_usage": {}
+      },
+      "survival_surgery": {
+        "level": 0,
+        "study_exp": 0,
+        "move_usage": {}
+      }
+    },
+    "combat": {
+      "limbs": {
+        "lhand": {
+          "active": "combat_basic_unarmed"
+        },
+        "rhand": {
+          "active": "combat_basic_unarmed"
+        },
+        "lfoot": {
+          "active": "combat_basic_unarmed"
+        },
+        "rfoot": {
+          "active": "combat_basic_unarmed"
+        }
+      },
+      "hubs": {
+        "breath": "combat_basic_breath",
+        "footwork": "combat_basic_footwork"
+      },
+      "move_sequences": {
+        "lhand": [
+          "jab",
+          ""
+        ],
+        "rhand": [
+          "jab",
+          ""
+        ],
+        "lfoot": [
+          "front_kick",
+          ""
+        ],
+        "rfoot": [
+          "front_kick",
+          ""
+        ]
+      },
+      "skill_move_sequences": {},
+      "move_sequence_cursors": {
+        "lhand": 0,
+        "rhand": 0,
+        "lfoot": 0,
+        "rfoot": 0
+      },
+      "post_effect_sequences": {
+        "lhand": null,
+        "rhand": null,
+        "lfoot": null,
+        "rfoot": null
+      },
+      "variant_sequences": {
+        "lhand": [],
+        "rhand": [],
+        "lfoot": [],
+        "rfoot": []
+      },
+      "move_slot_power_levels": {
+        "lhand": [],
+        "rhand": [],
+        "lfoot": [],
+        "rfoot": []
+      },
+      "limb_strike_order": [
+        "lhand",
+        "rhand",
+        "lfoot",
+        "rfoot"
+      ],
+      "limb_strike_order_cursor": 0,
+      "variant_effect_param_overrides": {}
+    },
+    "body": {
+      "head": {
+        "max": 50,
+        "damage": 0,
+        "injuries": []
+      },
+      "chest": {
+        "max": 100,
+        "damage": 0,
+        "injuries": []
+      },
+      "belly": {
+        "max": 80,
+        "damage": 0,
+        "injuries": []
+      },
+      "lhand": {
+        "max": 100,
+        "damage": 0,
+        "injuries": []
+      },
+      "rhand": {
+        "max": 100,
+        "damage": 0,
+        "injuries": []
+      },
+      "lfoot": {
+        "max": 100,
+        "damage": 0,
+        "injuries": []
+      },
+      "rfoot": {
+        "max": 100,
+        "damage": 0,
+        "injuries": []
+      }
+    },
+    "full_kit": {
+      "trauma_dressing": 300,
+      "hemostatic_gauze": 750,
+      "tourniquet": 300,
+      "fracture_band": 450,
+      "medical_alcohol": 300,
+      "surgical_staples": 70
+    }
+  },
+  "runtime_errors": []
+}

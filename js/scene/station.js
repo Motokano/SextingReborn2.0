@@ -112,6 +112,11 @@
     }
 
     function tryPharmacyAtStation(methodId, inputItems) {
+        if(methodId==='life_pharmacy.medical_alcohol'&&!window.SaveSystem.isAtomic()){
+            var transaction=window.SaveSystem.runAtomicFor('craft.pharmacy',function(){return tryPharmacyAtStation(methodId,inputItems);});
+            if(!transaction.saved){stopPharmacyCraftIdle();return {ok:false,reason:'save_failed'};}
+            return transaction.value;
+        }
         if (window.SceneAccess.guardPlayerActionBlocked(window.SceneAccess.ACTION_TYPES.CRAFT)) {
             return { ok: false, reason: 'action_disabled', action_type: window.SceneAccess.ACTION_TYPES.CRAFT };
         }
@@ -179,6 +184,7 @@
             inputs: selected,
             consumed_items: consumedRes.consumed || [],
             equipment_wear: PharmacyStation.prepareEquipmentWear(mid),
+            medical_success: mid==='life_pharmacy.medical_alcohol'?Math.random()<PharmacyStation.getCraftPreview(mid,selected).success_rate:null,
             recommended_skill_level: previewData ? Math.max(0, parseInt(previewData.recommended_skill_level, 10) || 0) : 0,
             station_ref: {
                 station_type: stationCtx.station_type || 'main',
@@ -282,6 +288,7 @@
     }
 
     function resetCookingStateForNewCharacter() {
+        if (window.ManufacturingActions) window.ManufacturingActions.restore(null);
         if (window.CombatMetaSkills) window.CombatMetaSkills.reset();
         if (window.Hunting) window.Hunting.setState(null);
         if (window.FishingSession) window.FishingSession.setState(null);
@@ -607,12 +614,13 @@
 
     function getKnownPharmacyRecipeIds() {
         var o = window.SceneCtx && window.SceneCtx.known_pharmacy_recipes;
-        if (!o || typeof o !== 'object') return [];
+        if (!o || typeof o !== 'object') o = {};
         var a = [];
         var k;
         for (k in o) {
             if (Object.prototype.hasOwnProperty.call(o, k) && o[k]) a.push(String(k));
         }
+        if(window.ManufacturingKnowledge.knows('manufacturing.medical_alcohol')&&!a.includes('life_pharmacy.medical_alcohol'))a.push('life_pharmacy.medical_alcohol');
         a.sort();
         return a;
     }

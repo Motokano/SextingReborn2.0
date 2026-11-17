@@ -235,6 +235,11 @@
             var usage = Object.assign({}, global.NPCSystem.getFlagValue('sewing_gathering_uses') || {});
             usage[limitedKey(point)] = limitedUses(point) + 1;
             global.NPCSystem.setDemoFlag('sewing_gathering_uses', usage);
+            if(point.regrowth_ticks && usage[limitedKey(point)]>=point.max_successes){
+                var exhausted=Object.assign({},global.NPCSystem.getFlagValue('sewing_gathering_exhausted')||{});
+                exhausted[limitedKey(point)]=global.GameTime.getState().totalTicks;
+                global.NPCSystem.setDemoFlag('sewing_gathering_exhausted',exhausted);
+            }
         }
 
         var itemDef = config.items[row.item_id];
@@ -303,7 +308,17 @@
     }
     function limitedUses(point) {
         if(!point.max_successes)return 0;
-        return Number((global.NPCSystem.getFlagValue('sewing_gathering_uses')||{})[limitedKey(point)])||0;
+        var key=limitedKey(point),uses=Number((global.NPCSystem.getFlagValue('sewing_gathering_uses')||{})[key])||0;
+        if(point.regrowth_ticks&&uses>=point.max_successes){
+            var exhausted=Object.assign({},global.NPCSystem.getFlagValue('sewing_gathering_exhausted')||{}),now=global.GameTime.getState().totalTicks;
+            // Old depleted nodes start their regrowth clock once; reading a menu cannot refill them immediately.
+            if(!Object.prototype.hasOwnProperty.call(exhausted,key)){exhausted[key]=now;global.NPCSystem.setDemoFlag('sewing_gathering_exhausted',exhausted);}
+            if(now-exhausted[key]>=point.regrowth_ticks){
+                var usage=Object.assign({},global.NPCSystem.getFlagValue('sewing_gathering_uses')||{});usage[key]=0;
+                delete exhausted[key];global.NPCSystem.setDemoFlag('sewing_gathering_uses',usage);global.NPCSystem.setDemoFlag('sewing_gathering_exhausted',exhausted);return 0;
+            }
+        }
+        return uses;
     }
 
     global.Gathering = {

@@ -69,7 +69,8 @@ test(`${prefix} completion increases only the same limb destroy cap, replaces st
  assert.equal(pain[0].actualIncrement,9);assert.equal(pain[0].partMax,110);assert.equal(pain[0].partPreValue,100);
  CA.applyCombatDestroy(aliases[0],2);assert.equal(CA.getPartDestroy(limbs[0]),110);assert.equal(CA.getPartDestroy('head'),0);assert.equal(CA.isBodyPartDestroyedForParry(aliases[0]),true);
  CA.applyCombatDestroy(aliases[0],7);assert.equal(CA.getPartDestroy(limbs[0]),110);assert.equal(CA.getPartDestroy('head'),2);assert.equal(CA.getPartDestroy(limbs[1]),1);
- CA.recoverPartDestroy(limbs[0],1);assert.equal(CA.getPartDestroy(limbs[0]),109);assert.equal(CA.isBodyPartDestroyedForParry(aliases[0]),false);
+ assert.equal(CA.recoverPartDestroy(limbs[0],1),0,'ordinary recovery cannot repair full destruction');assert.equal(CA.getPartDestroy(limbs[0]),110);
+ assert.equal(CA.completeMedicalSurgery(limbs[0],110,110),true);assert.equal(CA.getPartDestroy(limbs[0]),109);assert.equal(CA.isBodyPartDestroyedForParry(aliases[0]),false);
  CA.applyCombatDestroy(aliases[1],100);assert.equal(CA.getPartDestroy(limbs[1]),100);assert.equal(CA.isBodyPartDestroyedForParry(aliases[1]),true);
  M.setState({});assert.equal(CA.getBodyPartDestroyMax(limbs[0]),100);assert.equal(CA.getPartDestroy(limbs[0]),109);assert.equal(CA.isBodyPartDestroyedForParry(aliases[0]),true);
  g.Muscles=null;assert.equal(CA.getBodyPartDestroyMax(limbs[0]),100);

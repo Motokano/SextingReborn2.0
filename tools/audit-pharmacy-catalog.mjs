@@ -37,9 +37,9 @@ const buffIds = new Set(buffs.map(b => b && b.buff_id).filter(Boolean));
 
 if (Object.keys(byId).length !== rows.length) fail('Duplicate pharmacy item IDs');
 if (new Set(recipes.map(r => r.recipe_id)).size !== recipes.length) fail('Duplicate pharmacy recipe IDs');
-if (recipes.length !== 76) fail('Expected 76 recipe records, got ' + recipes.length);
+if (recipes.length !== 77) fail('Expected 77 recipe records, got ' + recipes.length);
 const enabled = recipes.filter(r => r.enabled !== false);
-if (enabled.length !== 69) fail('Expected 69 enabled recipes, got ' + enabled.length);
+if (enabled.length !== 76) fail('Expected 76 enabled recipes, got ' + enabled.length);
 
 for (const r of recipes) {
   for (const [id, count] of [...r.inputs, r.main_output]) {
@@ -67,15 +67,7 @@ if (!byId.potion_compound_injection || byId.potion_compound_injection.pharmacy_c
 const powders = rows.filter(r => r.sub_category === 'pharm_powder');
 if (powders.length !== 41) fail('Expected 41 powders, got ' + powders.length);
 
-const heldRecipeIds = new Set([
-  'life_pharmacy.macerate_cardiac_powder',
-  'life_pharmacy.crush_baiji_powder',
-  'life_pharmacy.crush_notoginseng_powder',
-  'life_pharmacy.refine_notoginseng',
-  'life_pharmacy.purify_notoginseng',
-  'life_pharmacy.blend_coagulant_powder',
-  'life_pharmacy.blend_coagulant_salve'
-]);
+const heldRecipeIds = new Set(['life_pharmacy.macerate_cardiac_powder']);
 for (const id of heldRecipeIds) {
   const r = recipes.find(x => x.recipe_id === id);
   if (!r || r.enabled !== false) fail('Held consumer-gap recipe is not disabled: ' + id);

@@ -3,7 +3,7 @@
  * 用法：node tools/build-items-json.mjs
  * 合并顺序（先出现的 id 优先，后表重复 id 会跳过并打印警告）：
  *   consumables_base → materials_all → manufacturing_materials_base → seeds_farming → product_base → fishing_components_base → currency_base
- *   → compost_matrix_base → fertilizer_anaerobic_base → agriculture_injectables_base → soil_amendments_base → pharmacy_base → books_base → innate_medicines_base
+ *   → compost_matrix_base → fertilizer_anaerobic_base → agriculture_injectables_base → soil_amendments_base → pharmacy_base → books_base → innate_medicines_base → medical_supplies_base
  */
 import fs from 'fs';
 import path from 'path';
@@ -15,6 +15,8 @@ import { applyWaterFlaskStorage, applyWaterFlaskUse } from './water-flask-storag
 import { syncBackpackCatalog } from './build-backpack-catalog.mjs';
 import { applyBookLearning } from './book-item-fields.mjs';
 import { applyInnateMedicines } from './innate-medicine-item-fields.mjs';
+import { applyMedicalSupplies } from './medical-supply-item-fields.mjs';
+import { applyMedicalKits } from './medical-kit-item-fields.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -55,7 +57,8 @@ const MERGE_FILES = [
   'soil_amendments_base.csv',
   'pharmacy_base.csv',
   'books_base.csv',
-  'innate_medicines_base.csv'
+  'innate_medicines_base.csv',
+  'medical_supplies_base.csv'
 ];
 
 function parseCsv(text) {
@@ -386,6 +389,10 @@ function main() {
   applyWaterFlaskUse(merged, JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'water-flask-use.json'), 'utf8')));
   applyBookLearning(merged, JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'book-learning.json'), 'utf8')));
   applyInnateMedicines(merged, JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'innate-medicines.json'), 'utf8')));
+  applyMedicalSupplies(merged, JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'medical-supplies.json'), 'utf8')));
+  const medicalKits = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'medical-kits.json'), 'utf8'));
+  applyMedicalKits(merged, medicalKits);
+  fs.writeFileSync(path.join(ROOT, 'js', 'medical-kit-data.js'), '/* Generated from data/medical-kits.json by build-items-json.mjs. */\nwindow.MedicalKitData = ' + JSON.stringify(medicalKits) + ';\n');
   const ordered = {};
   Object.keys(merged)
     .sort()

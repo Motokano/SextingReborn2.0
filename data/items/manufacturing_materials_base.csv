@@ -1,4 +1,4 @@
-id,sn,placeholder_name,fn_before,fn,category,sub_category,weight,stack_limit,tags,source,production_lines,spoilage_ticks,price_class,volatility,region_restrict,base_value,edible,usable
+id,sn,placeholder_name,fn_before,fn,category,sub_category,weight,stack_limit,tags,source,production_lines,spoilage_ticks,price_class,volatility,region_restrict,base_value,edible,usable,pharmacy_ingredient
 material_iron_blank_common,普通铁坯,暗灰小坯块,暗灰小块表面留着压痕，像能再加工,从废铁中回收整理的小铁坯，可锻打成日用工具的铁件。,material,metal_blank,0.2,100,material;metal;craft,craft,craft,0,material,low,0,12,0,0
 material_lead_portion,小份铅料,灰白小粒,灰白小块带着浅凹痕，像能压成形,分成小份的铅料，质软而沉，可制成钓鱼用的小配重。,material,metal_blank,0.01,100,material;metal;craft,craft,craft,0,material,low,0,3,0,0
 material_steel_wire,钢丝料,银灰细丝束,一小束细丝泛着冷光，像能弯成形,拉制后收拢的一束钢丝，可加工成鱼钩和其他细小金属件。,material,metal_wire,0.1,100,material;metal;craft,craft,craft,0,material,mid,0,20,0,0

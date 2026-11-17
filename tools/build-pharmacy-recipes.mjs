@@ -17,6 +17,9 @@ const OUT_PATH = path.join(root, 'data', 'recipes.json');
 const CHECK_ONLY = process.argv.includes('--check');
 
 const src = JSON.parse(fs.readFileSync(SRC_PATH, 'utf8'));
+const medical=JSON.parse(fs.readFileSync(path.join(root,'data','medical-crafting.json'),'utf8'));
+const profiles=JSON.parse(fs.readFileSync(path.join(root,'docs/design/examples/manufacturing-system-v1.json'),'utf8')).work_profiles;
+for(const r of medical.recipes.filter(r=>r.pharmacy_method_id))src.recipes.push({recipe_id:r.pharmacy_recipe_id,method_id:r.pharmacy_method_id,inputs:r.inputs,main_output:[r.item_id,r.output_count],recommended_skill_level:profiles[r.work_profile].recommended_level,enabled:true});
 const items = JSON.parse(fs.readFileSync(path.join(root, 'data', 'items.json'), 'utf8'));
 for (const recipe of src.recipes || []) {
   if (recipe.enabled !== false && items[recipe.main_output?.[0]]?.use_action === 'inject') {

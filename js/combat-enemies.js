@@ -400,16 +400,20 @@
     }
 
     /** 疼痛条当前上限（封顶制，够不着高档即不触发）。 */
-    function getEnemyPainCap(st) {
+    function getEnemyInjuryPainCap(st) {
         var base = cfgPainNum('pain_cap_base', 25);
         var per = cfgPainNum('pain_cap_per_avg_destroy', 0.75);
         var mxP = cfgPainNum('pain_max', 100);
         return Math.max(0, Math.min(mxP || 100, Math.floor(base + per * getEnemyAvgDestroyPct(st))));
     }
+    function persistentInjuryPain(st) { return global.InjurySystem ? global.InjurySystem.pain(st.ownerId) : 0; }
+    function getEnemyPainCap(st) { return Math.min(100,getEnemyInjuryPainCap(st)+persistentInjuryPain(st)); }
 
     /** 生效疼痛值 = min(累积 pain, 封顶值)（整数）。 */
     function getEnemyPainEffective(st) {
-        return Math.min(Math.max(0, Math.floor(Number(st && st.pain_value) || 0)), getEnemyPainCap(st));
+        var pain=Math.min(100,Math.min(Math.max(0,Math.floor(Number(st && st.pain_value)||0)),getEnemyInjuryPainCap(st))+persistentInjuryPain(st));
+        var ignored=global.BuffSystem && global.BuffSystem.getPainIgnoreRatio ? global.BuffSystem.getPainIgnoreRatio(st.ownerId) : 0;
+        return pain*(1-ignored);
     }
 
     /** 档位：none/mild/moderate/severe/agony。 */
@@ -785,6 +789,7 @@
         var fresh=st.last_turn_tick !== tick;
         if(fresh) {
             st.last_turn_tick=tick;
+            if (!st.dead && global.InjurySystem) global.InjurySystem.tick(st.ownerId,tick,{kind:'enemy',mapId:mapId,index:index,enemyId:enemyId});
             st.turn_stunned=!!st.stunned;
             st.stunned=false;
             if(!st.dead) {
@@ -1062,6 +1067,7 @@
         if((getById(id)||{}).boss && global.CombatEnemyBoss)global.CombatEnemyBoss.prepareOpportunity(getEnemyInstanceState(mapId,index,id),global.CombatEnemyBoss.context(id,mapId,index),combat,home,canAttack);
     }
     global.CombatEnemies = {
+        refreshInjuryPain:function(owner){var st=Object.values(enemyInstanceStates).find(function(s){return s.ownerId===owner;});if(st&&!st.dead)syncEnemyPainBuff(st);},
         actionTick:actionTick,
         prepareBossOpportunity:prepareBossOpportunity,
         bossInfo:function(id,mapId,index){return (getById(id)||{}).boss?copy(global.CombatEnemyBoss.state(getEnemyInstanceState(mapId,index,id))):null;},

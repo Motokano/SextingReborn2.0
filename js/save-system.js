@@ -469,6 +469,7 @@
                             remaining_ticks: coerceNumber(pac.remaining_ticks, 0),
                             started_total_ticks: coerceNumber(pac.started_total_ticks, 0),
                             method_id: pac.method_id != null ? String(pac.method_id) : '',
+                            medical_success: typeof pac.medical_success==='boolean'?pac.medical_success:null,
                             inputs: Array.isArray(pac.inputs) ? pac.inputs.slice() : [],
                             consumed_items: Array.isArray(pac.consumed_items) ? pac.consumed_items.slice() : []
                         };
@@ -478,6 +479,7 @@
                                 chance: Math.max(0, Math.min(1, coerceNumber(pac.equipment_wear.chance, 0))),
                                 broken: pac.equipment_wear.broken === true
                             } : null;
+                            if(pac.equipment_wear?.additional)su.pharmacy_station.active_craft.equipment_wear.additional=pac.equipment_wear.additional.slice(0,4).map(function(w){return {item_id:String(w.item_id||''),chance:Math.max(0,Math.min(1,coerceNumber(w.chance,0))),broken:w.broken===true};});
                         }
                         if (pac.station_ref && typeof pac.station_ref === 'object') {
                             su.pharmacy_station.active_craft.station_ref = {
@@ -536,6 +538,8 @@
                                 uid: String(inst.uid || ''),
                                 buff_id: String(inst.buff_id || ''),
                                 owner_id: String(inst.owner_id || oid || 'player'),
+                                body_part: inst.body_part || null,
+                                injury_progress: inst.injury_progress ? JSON.parse(JSON.stringify(inst.injury_progress)) : null,
                                 source_id: inst.source_id != null ? String(inst.source_id) : null,
                                 metaskill_source: typeof inst.metaskill_source === 'string' ? inst.metaskill_source : null,
                                 started_tick: coerceNumber(inst.started_tick, 0),
@@ -584,9 +588,12 @@
             dungeon: global.DungeonRuntime ? global.DungeonRuntime.getState() : null,
             death: global.DeathSystem ? global.DeathSystem.getState() : null,
             bed_sleep: global.BedSleep ? global.BedSleep.getState() : null,
+            medical_operation: global.MedicalActions ? global.MedicalActions.getState() : null,
+            medical_progress: global.MedicalActions ? global.MedicalActions.getProgress() : null,
             gym: global.GymSystem ? global.GymSystem.getState() : null,
             book_reading: global.BookReading ? global.BookReading.getState() : null,
             manufacturing_knowledge: global.ManufacturingKnowledge ? global.ManufacturingKnowledge.getState() : null,
+            manufacturing_workshop: global.ManufacturingActions ? global.ManufacturingActions.getState() : null,
             combat_enemies: global.CombatEnemies && global.CombatEnemies.getState ? global.CombatEnemies.getState() : null,
             player: {
                 engine: { mapId: engineSt.mapId, x: engineSt.x, y: engineSt.y },
@@ -618,6 +625,9 @@
         if (global.GymSystem && !global.GymSystem.validate(snapshot && snapshot.gym)) return false;
         if (global.DeathSystem && !global.DeathSystem.validate(snapshot && snapshot.death)) return false;
         if (global.BedSleep && !global.BedSleep.validate(snapshot && snapshot.bed_sleep)) return false;
+        if (global.MedicalActions && !global.MedicalActions.validate(snapshot && snapshot.medical_operation)) return false;
+        if (global.MedicalActions && !global.MedicalActions.validateProgress(snapshot && snapshot.medical_progress)) return false;
+        if (global.ManufacturingActions && !global.ManufacturingActions.validate(snapshot && snapshot.manufacturing_workshop)) return false;
         if (M && !M.validate(snapshot && snapshot.metaskills)) return false;
         if (M) M.beginRestore();
         snapshotRestoreDepth++;
@@ -628,6 +638,9 @@
             if (applied && global.DeathSystem) global.DeathSystem.restore(snapshot.death || null);
             if (applied && global.GymSystem) global.GymSystem.restore(snapshot.gym || null, !!(options && options.rollback));
             if (applied && global.BedSleep) global.BedSleep.restore(snapshot.bed_sleep || null, !!(options && options.rollback));
+            if (applied && global.MedicalActions) global.MedicalActions.restore(snapshot.medical_operation || null, !!(options && options.rollback));
+            if (applied && global.MedicalActions) global.MedicalActions.restoreProgress(snapshot.medical_progress || null);
+            if (applied && global.ManufacturingActions) global.ManufacturingActions.restore(snapshot.manufacturing_workshop || null, !!(options && options.rollback));
             return applied;
         } finally { snapshotRestoreDepth--; if (M) M.endRestore(); }
     }
@@ -681,7 +694,7 @@
 
         // Character attributes.
         if (typeof mods.CharacterAttributes.setState === 'function') {
-            mods.CharacterAttributes.setState(snapshot.player.characterAttributes);
+            mods.CharacterAttributes.setState(Object.assign({surgical_max_loss:{}},snapshot.player.characterAttributes));
         }
 
         // Survival stats.
@@ -837,6 +850,7 @@
                             remaining_ticks: Math.max(0, Math.floor(coerceNumber(pac2.remaining_ticks, 0))),
                             started_total_ticks: Math.max(0, Math.floor(coerceNumber(pac2.started_total_ticks, 0))),
                             method_id: pac2.method_id != null ? String(pac2.method_id) : '',
+                            medical_success: typeof pac2.medical_success==='boolean'?pac2.medical_success:null,
                             inputs: Array.isArray(pac2.inputs) ? pac2.inputs.slice() : [],
                             consumed_items: Array.isArray(pac2.consumed_items) ? pac2.consumed_items.slice() : []
                         };
@@ -846,6 +860,7 @@
                                 chance: Math.max(0, Math.min(1, coerceNumber(pac2.equipment_wear.chance, 0))),
                                 broken: pac2.equipment_wear.broken === true
                             } : null;
+                            if(pac2.equipment_wear?.additional)global.SceneCtx.pharmacy_station_runtime.active_craft.equipment_wear.additional=pac2.equipment_wear.additional.slice(0,4).map(function(w){return {item_id:String(w.item_id||''),chance:Math.max(0,Math.min(1,coerceNumber(w.chance,0))),broken:w.broken===true};});
                         }
                         if (pac2.station_ref && typeof pac2.station_ref === 'object') {
                             global.SceneCtx.pharmacy_station_runtime.active_craft.station_ref = {

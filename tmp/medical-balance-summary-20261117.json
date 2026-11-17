@@ -1,0 +1,574 @@
+{
+  "scope": {
+    "automated_combat_fragments": 96,
+    "controlled_recovery_drills": 13,
+    "endurance_profiles": 4,
+    "extra_boundary_drills": 2,
+    "live_save_used": false,
+    "runtime_values_changed": false
+  },
+  "groups": [
+    {
+      "run": "medical-balance-20261117",
+      "enemy": "enemy.street_thug",
+      "n": 12,
+      "deaths": 0,
+      "injured_at_stop": 0,
+      "medical_users": 0,
+      "vitality": {
+        "n": 12,
+        "min": 0,
+        "mean": 1.5833333333333333,
+        "median": 2,
+        "max": 4
+      },
+      "health": {
+        "n": 12,
+        "min": 0,
+        "mean": 1.5833333333333333,
+        "median": 2,
+        "max": 4
+      },
+      "rest": {
+        "n": 12,
+        "min": 0,
+        "mean": 2.75,
+        "median": 3,
+        "max": 6
+      },
+      "estimated_fragments_per_level": {
+        "health": 3158,
+        "vitality": 3158
+      }
+    },
+    {
+      "run": "medical-balance-20261117",
+      "enemy": "enemy.street_thug_tier1",
+      "n": 12,
+      "deaths": 0,
+      "injured_at_stop": 0,
+      "medical_users": 0,
+      "vitality": {
+        "n": 12,
+        "min": 4,
+        "mean": 9.5,
+        "median": 10,
+        "max": 16
+      },
+      "health": {
+        "n": 12,
+        "min": 4,
+        "mean": 9.5,
+        "median": 10,
+        "max": 16
+      },
+      "rest": {
+        "n": 12,
+        "min": 8,
+        "mean": 16,
+        "median": 12,
+        "max": 36
+      },
+      "estimated_fragments_per_level": {
+        "health": 527,
+        "vitality": 527
+      }
+    },
+    {
+      "run": "medical-balance-20261117",
+      "enemy": "enemy.street_thug_tier2",
+      "n": 12,
+      "deaths": 0,
+      "injured_at_stop": 0,
+      "medical_users": 1,
+      "vitality": {
+        "n": 12,
+        "min": 4,
+        "mean": 13.666666666666666,
+        "median": 15,
+        "max": 20
+      },
+      "health": {
+        "n": 12,
+        "min": 4,
+        "mean": 13.333333333333334,
+        "median": 15,
+        "max": 19
+      },
+      "rest": {
+        "n": 12,
+        "min": 4,
+        "mean": 23,
+        "median": 24,
+        "max": 60
+      },
+      "estimated_fragments_per_level": {
+        "health": 375,
+        "vitality": 366
+      }
+    },
+    {
+      "run": "medical-balance-20261117",
+      "enemy": "enemy.street_thug_tier3",
+      "n": 12,
+      "deaths": 0,
+      "injured_at_stop": 0,
+      "medical_users": 3,
+      "vitality": {
+        "n": 12,
+        "min": 13,
+        "mean": 24.083333333333332,
+        "median": 24,
+        "max": 33
+      },
+      "health": {
+        "n": 12,
+        "min": 13,
+        "mean": 22.25,
+        "median": 20,
+        "max": 33
+      },
+      "rest": {
+        "n": 12,
+        "min": 16,
+        "mean": 36,
+        "median": 40,
+        "max": 60
+      },
+      "estimated_fragments_per_level": {
+        "health": 225,
+        "vitality": 208
+      }
+    },
+    {
+      "run": "medical-balance-prepared-20261117",
+      "enemy": "enemy.street_thug_tier1",
+      "n": 12,
+      "deaths": 0,
+      "injured_at_stop": 0,
+      "medical_users": 0,
+      "vitality": {
+        "n": 12,
+        "min": 4,
+        "mean": 12.583333333333334,
+        "median": 13,
+        "max": 19
+      },
+      "health": {
+        "n": 12,
+        "min": 4,
+        "mean": 12.583333333333334,
+        "median": 13,
+        "max": 19
+      },
+      "rest": {
+        "n": 12,
+        "min": 12,
+        "mean": 25,
+        "median": 28,
+        "max": 56
+      },
+      "estimated_fragments_per_level": {
+        "health": 398,
+        "vitality": 398
+      }
+    },
+    {
+      "run": "medical-balance-prepared-20261117",
+      "enemy": "enemy.street_thug_tier2",
+      "n": 12,
+      "deaths": 0,
+      "injured_at_stop": 0,
+      "medical_users": 3,
+      "vitality": {
+        "n": 12,
+        "min": 12,
+        "mean": 25.166666666666668,
+        "median": 25,
+        "max": 36
+      },
+      "health": {
+        "n": 12,
+        "min": 12,
+        "mean": 24.75,
+        "median": 25,
+        "max": 33
+      },
+      "rest": {
+        "n": 12,
+        "min": 12,
+        "mean": 41.833333333333336,
+        "median": 48,
+        "max": 60
+      },
+      "estimated_fragments_per_level": {
+        "health": 203,
+        "vitality": 199
+      }
+    },
+    {
+      "run": "medical-balance-prepared-20261117",
+      "enemy": "enemy.street_thug_tier3",
+      "n": 12,
+      "deaths": 0,
+      "injured_at_stop": 0,
+      "medical_users": 6,
+      "vitality": {
+        "n": 12,
+        "min": 11,
+        "mean": 34,
+        "median": 34,
+        "max": 48
+      },
+      "health": {
+        "n": 12,
+        "min": 11,
+        "mean": 31,
+        "median": 34,
+        "max": 42
+      },
+      "rest": {
+        "n": 12,
+        "min": 24,
+        "mean": 47.166666666666664,
+        "median": 60,
+        "max": 60
+      },
+      "estimated_fragments_per_level": {
+        "health": 162,
+        "vitality": 148
+      }
+    },
+    {
+      "run": "medical-balance-boss-20261117",
+      "enemy": "enemy.street_thug_boss",
+      "n": 12,
+      "deaths": 8,
+      "injured_at_stop": 4,
+      "medical_users": 4,
+      "vitality": {
+        "n": 4,
+        "min": 116,
+        "mean": 140.5,
+        "median": 150,
+        "max": 162
+      },
+      "health": {
+        "n": 4,
+        "min": 98,
+        "mean": 109.5,
+        "median": 113,
+        "max": 117
+      },
+      "rest": {
+        "n": 4,
+        "min": 69,
+        "mean": 92.25,
+        "median": 100,
+        "max": 100
+      },
+      "estimated_fragments_per_level": {
+        "health": 46,
+        "vitality": 36
+      }
+    }
+  ],
+  "capacity_episodes": [
+    {
+      "kind": "none",
+      "successful": 7,
+      "first_unsuccessful": 8
+    },
+    {
+      "kind": "quick",
+      "successful": 3,
+      "first_unsuccessful": 4
+    },
+    {
+      "kind": "meter",
+      "successful": 7,
+      "first_unsuccessful": 8
+    },
+    {
+      "kind": "expand",
+      "successful": 11,
+      "first_unsuccessful": 12
+    }
+  ],
+  "drills": [
+    {
+      "name": "轻伤：单臂20",
+      "kind": "none",
+      "level": 0,
+      "medical_ticks": 0,
+      "cost": {
+        "trauma_dressing": 0,
+        "hemostatic_gauze": 0,
+        "tourniquet": 0,
+        "fracture_band": 0,
+        "medical_alcohol": 0,
+        "surgical_staples": 0
+      },
+      "rest_ticks": 40,
+      "rest_seconds": 200,
+      "health_exp": 20,
+      "surgery_exp": 0,
+      "food_after": 40,
+      "water_after": 60,
+      "maxima_restored": true
+    },
+    {
+      "name": "轻伤：四肢各20",
+      "kind": "none",
+      "level": 0,
+      "medical_ticks": 0,
+      "cost": {
+        "trauma_dressing": 0,
+        "hemostatic_gauze": 0,
+        "tourniquet": 0,
+        "fracture_band": 0,
+        "medical_alcohol": 0,
+        "surgical_staples": 0
+      },
+      "rest_ticks": 40,
+      "rest_seconds": 200,
+      "health_exp": 80,
+      "surgery_exp": 0,
+      "food_after": 40,
+      "water_after": 60,
+      "maxima_restored": true
+    },
+    {
+      "name": "中伤：单臂70＋普通出血",
+      "kind": "none",
+      "level": 0,
+      "medical_ticks": 2,
+      "cost": {
+        "trauma_dressing": 40,
+        "hemostatic_gauze": 100,
+        "tourniquet": 0,
+        "fracture_band": 0,
+        "medical_alcohol": 0,
+        "surgical_staples": 0
+      },
+      "rest_ticks": 60,
+      "rest_seconds": 300,
+      "health_exp": 30,
+      "surgery_exp": 0,
+      "food_after": 17.6,
+      "water_after": 48.6,
+      "maxima_restored": true
+    },
+    {
+      "name": "中伤：胸55、腹50、臂70、腿80",
+      "kind": "none",
+      "level": 0,
+      "medical_ticks": 6,
+      "cost": {
+        "trauma_dressing": 141,
+        "hemostatic_gauze": 100,
+        "tourniquet": 0,
+        "fracture_band": 225,
+        "medical_alcohol": 0,
+        "surgical_staples": 0
+      },
+      "rest_ticks": 100,
+      "rest_seconds": 500,
+      "health_exp": 114,
+      "surgery_exp": 0,
+      "food_after": 0,
+      "water_after": 25.8,
+      "maxima_restored": true
+    },
+    {
+      "name": "重伤：单臂满损毁＋大出血",
+      "kind": "none",
+      "level": 0,
+      "medical_ticks": 8,
+      "cost": {
+        "trauma_dressing": 34,
+        "hemostatic_gauze": 0,
+        "tourniquet": 50,
+        "fracture_band": 0,
+        "medical_alcohol": 0,
+        "surgical_staples": 10
+      },
+      "rest_ticks": 30,
+      "rest_seconds": 150,
+      "health_exp": 15,
+      "surgery_exp": 1,
+      "food_after": 33.4,
+      "water_after": 54.4,
+      "maxima_restored": false
+    },
+    {
+      "name": "重伤：单腿满损毁＋大出血＋骨折＋感染",
+      "kind": "none",
+      "level": 0,
+      "medical_ticks": 10,
+      "cost": {
+        "trauma_dressing": 34,
+        "hemostatic_gauze": 0,
+        "tourniquet": 75,
+        "fracture_band": 225,
+        "medical_alcohol": 30,
+        "surgical_staples": 15
+      },
+      "rest_ticks": 30,
+      "rest_seconds": 150,
+      "health_exp": 15,
+      "surgery_exp": 1,
+      "food_after": 31,
+      "water_after": 53,
+      "maxima_restored": false
+    },
+    {
+      "name": "多处普通出血：头20、胸55、腹50、腿60",
+      "kind": "none",
+      "level": 0,
+      "medical_ticks": 8,
+      "cost": {
+        "trauma_dressing": 92,
+        "hemostatic_gauze": 750,
+        "tourniquet": 0,
+        "fracture_band": 0,
+        "medical_alcohol": 0,
+        "surgical_staples": 0
+      },
+      "rest_ticks": 100,
+      "rest_seconds": 500,
+      "health_exp": 99,
+      "surgery_exp": 0,
+      "food_after": 0,
+      "water_after": 24.4,
+      "maxima_restored": true
+    },
+    {
+      "name": "中伤：胸55、腹50、臂70、腿80",
+      "kind": "expand",
+      "level": 0,
+      "medical_ticks": 6,
+      "cost": {
+        "trauma_dressing": 141,
+        "hemostatic_gauze": 100,
+        "tourniquet": 0,
+        "fracture_band": 225,
+        "medical_alcohol": 0,
+        "surgical_staples": 0
+      },
+      "rest_ticks": 100,
+      "rest_seconds": 500,
+      "health_exp": 114,
+      "surgery_exp": 0,
+      "food_after": 0,
+      "water_after": 25.8,
+      "maxima_restored": true
+    },
+    {
+      "name": "中伤：胸55、腹50、臂70、腿80",
+      "kind": "meter",
+      "level": 0,
+      "medical_ticks": 6,
+      "cost": {
+        "trauma_dressing": 141,
+        "hemostatic_gauze": 80,
+        "tourniquet": 0,
+        "fracture_band": 180,
+        "medical_alcohol": 0,
+        "surgical_staples": 0
+      },
+      "rest_ticks": 100,
+      "rest_seconds": 500,
+      "health_exp": 114,
+      "surgery_exp": 0,
+      "food_after": 0,
+      "water_after": 25.8,
+      "maxima_restored": true
+    },
+    {
+      "name": "中伤：胸55、腹50、臂70、腿80",
+      "kind": "quick",
+      "level": 0,
+      "medical_ticks": 6,
+      "cost": {
+        "trauma_dressing": 141,
+        "hemostatic_gauze": 100,
+        "tourniquet": 0,
+        "fracture_band": 225,
+        "medical_alcohol": 0,
+        "surgical_staples": 0
+      },
+      "rest_ticks": 100,
+      "rest_seconds": 500,
+      "health_exp": 114,
+      "surgery_exp": 0,
+      "food_after": 0,
+      "water_after": 25.8,
+      "maxima_restored": true
+    },
+    {
+      "name": "中伤：胸55、腹50、臂70、腿80",
+      "kind": "linked",
+      "level": 0,
+      "medical_ticks": 4,
+      "cost": {
+        "trauma_dressing": 141,
+        "hemostatic_gauze": 100,
+        "tourniquet": 0,
+        "fracture_band": 225,
+        "medical_alcohol": 0,
+        "surgical_staples": 0
+      },
+      "rest_ticks": 100,
+      "rest_seconds": 500,
+      "health_exp": 114,
+      "surgery_exp": 0,
+      "food_after": 0,
+      "water_after": 27.2,
+      "maxima_restored": true
+    },
+    {
+      "name": "重伤：单臂满损毁＋大出血",
+      "kind": "none",
+      "level": 50,
+      "medical_ticks": 8,
+      "cost": {
+        "trauma_dressing": 51,
+        "hemostatic_gauze": 0,
+        "tourniquet": 50,
+        "fracture_band": 0,
+        "medical_alcohol": 0,
+        "surgical_staples": 10
+      },
+      "rest_ticks": 46,
+      "rest_seconds": 230,
+      "health_exp": 23,
+      "surgery_exp": 1,
+      "food_after": 17.4,
+      "water_after": 46.4,
+      "maxima_restored": false
+    },
+    {
+      "name": "重伤：单臂满损毁＋大出血",
+      "kind": "none",
+      "level": 100,
+      "medical_ticks": 8,
+      "cost": {
+        "trauma_dressing": 69,
+        "hemostatic_gauze": 0,
+        "tourniquet": 50,
+        "fracture_band": 0,
+        "medical_alcohol": 0,
+        "surgical_staples": 10
+      },
+      "rest_ticks": 60,
+      "rest_seconds": 300,
+      "health_exp": 0,
+      "surgery_exp": 0,
+      "food_after": 3.3999999999999986,
+      "water_after": 39.4,
+      "maxima_restored": true
+    }
+  ],
+  "errors": []
+}

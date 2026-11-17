@@ -67,12 +67,7 @@ for(const add of plan.additions){
   const rid=add.recipe_id.replace('proposal.pharmacy.','life_pharmacy.');
   recipes.set(rid,{recipe_id:rid,method_id:add.method_id,inputs:add.inputs,main_output:add.main_output,recommended_skill_level:add.required_level??0,...(add.proposed_cost?{cost_override:add.proposed_cost}:{})});
 }
-const heldConsumerGapRecipes=new Set([
-  'life_pharmacy.macerate_cardiac_powder',
-  'life_pharmacy.crush_baiji_powder','life_pharmacy.crush_notoginseng_powder',
-  'life_pharmacy.refine_notoginseng','life_pharmacy.purify_notoginseng',
-  'life_pharmacy.blend_coagulant_powder','life_pharmacy.blend_coagulant_salve'
-]);
+const heldConsumerGapRecipes = new Set(['life_pharmacy.macerate_cardiac_powder']);
 for(const [id,recipe] of recipes)recipe.enabled=!heldConsumerGapRecipes.has(id);
 doc.recipes=[...recipes.values()];
 // 制药已取消燃料成本；历史方案重建不得恢复该需求。

@@ -66,6 +66,7 @@ export function inventoryPanel(g, publish, t) {
             const add = (label, command, part) => detail.actions.push({ label, command, part });
             if (r.source === 'groundBag') { /* Content transfers are handled by the shared grid. */ }
             else if (r.source === 'equipment') {
+                if (r.index === 'medical_kit') add('打开急救包', 'open-medical');
                 if (r.index === 'water_flask') add(t('flask.action.drink'), 'drink-flask');
                 add(t(r.index === 'water_flask' ? 'flask.action.unequip' : 'inv.unequip'), 'unequip');
                 if (r.index === 'backpack') add('整包放下', 'drop');
@@ -121,6 +122,11 @@ export function inventoryPanel(g, publish, t) {
             changed();return;
         }
         let result;
+        if (tpl?.equip_slot === 'medical_kit' && ['equip','unequip'].includes(command)) {
+            const medical=g.MedicalActions.transfer({action:command,source:r.source,index:r.index,id:r.id});
+            api.message(medical.message,medical.ok?'success':'warn');changed();return;
+        }
+        if (command === 'open-medical') { g.MedicalKitPanel.openDaily(); return; }
         if (command === 'drink-flask' && r.source === 'equipment' && r.index === 'water_flask') {
             g.SceneApp.tryDrinkWaterFlask(r.id);
             refresh();

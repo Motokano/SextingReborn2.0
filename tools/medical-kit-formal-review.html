@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>急救包 · 正式界面验收</title></head>
+<body style="background:#111b17;color:#d6d0bc;font:14px system-ui;padding:40px">正在打开急救包…
+<script>
+// Formal production panel with isolated sample saves, never the player’s real save.
+(async () => {
+  const root = new URL('../', location.href);
+  function isolate() {
+    const storage = () => { const m = new Map(); return { getItem: k => m.get(String(k)) ?? null, setItem: (k,v) => m.set(String(k),String(v)), removeItem: k => m.delete(String(k)), clear: () => m.clear(), key: i => [...m.keys()][i] ?? null, get length() { return m.size; } }; };
+    Object.defineProperty(window, 'localStorage', { value: storage() });
+    Object.defineProperty(window, 'sessionStorage', { value: storage() });
+    Object.defineProperty(navigator, 'locks', { value: undefined, configurable: true });
+    Object.defineProperty(window, 'BroadcastChannel', { value: undefined, configurable: true });
+    window.__MEDICAL_UI_MEMORY__ = true;
+    window.__MEDICAL_UI_READY__ = new Promise(resolve => { window.AppBoot = { afterReady: [resolve] }; });
+  }
+  let html = await (await fetch(new URL('index.html?no_reload', root))).text();
+  html = html.replace(/<link\b[^>]*href="https:\/\/fonts\.[^>]*>/gi, '');
+  html = html.replace('<head>', '<head><base href="' + root.href + '"><script>(' + isolate.toString() + ')();<\/script>');
+  html = html.replace('</body>', '<script type="module" src="tools/medical-kit-formal-review.mjs"><\/script></body>');
+  document.open(); document.write(html); document.close();
+})().catch(error => { document.body.textContent = '急救包暂未加载，请刷新重试。'; console.error(error); });
+</script></body></html>

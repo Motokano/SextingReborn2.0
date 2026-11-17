@@ -872,7 +872,7 @@
     }
 
     /** 疼痛条当前上限（封顶制）：pain_cap_base + pain_cap_per_avg_destroy × 平均损毁%，夹 0..100。 */
-    function getPainCap() {
+    function getInjuryPainCap() {
         var base = Number(get('pain_cap_base', 25));
         if (!isFinite(base)) base = 25;
         var per = Number(get('pain_cap_per_avg_destroy', 0.75));
@@ -880,9 +880,13 @@
         return clamp(Math.floor(base + per * getPainAvgDestroyPct()), 0, Number(get('pain_max', 100)) || 100);
     }
 
+    function persistentInjuryPain() { return global.InjurySystem ? global.InjurySystem.pain('player') : 0; }
+    function getPainCap() { return Math.min(100,getInjuryPainCap()+persistentInjuryPain()); }
+    function getPainUnmedicated() { return Math.min(100,Math.min(Math.max(0,Math.floor(Number(state.pain)||0)),getInjuryPainCap())+persistentInjuryPain()); }
+
     /** 生效疼痛值 = min(累积 pain, 封顶值)（整数）。 */
     function getPainEffective() {
-        var pain = Math.min(Math.max(0, Math.floor(Number(state.pain) || 0)), getPainCap());
+        var pain = getPainUnmedicated();
         var BS = global && global.BuffSystem;
         var ignored = BS && typeof BS.getPainIgnoreRatio === 'function' ? BS.getPainIgnoreRatio('player') : 0;
         return pain * (1 - ignored);
@@ -1007,7 +1011,8 @@
     function getPainInfo() {
         return {
             stored: Math.max(0, Math.floor(Number(state.pain) || 0)),
-            unmedicated: Math.min(Math.max(0, Math.floor(Number(state.pain) || 0)), getPainCap()),
+            unmedicated: getPainUnmedicated(),
+            persistent: persistentInjuryPain(),
             ignored_ratio: global.BuffSystem && global.BuffSystem.getPainIgnoreRatio ? global.BuffSystem.getPainIgnoreRatio('player') : 0,
             cap: getPainCap(),
             effective: getPainEffective(),
@@ -2156,6 +2161,7 @@
                 global.GameLog.log(studyUiText('log.system.study.stopped_' + String(state.study_stop_reason), {}), 'warn');
             }
         }
+        if (global.InjurySystem) global.InjurySystem.tick('player',global.InjurySystem.now());
         emitSurvivalStateChangedIfNeeded('tick', beforeSnapshot, { coma: !!result.coma });
 
         return result;

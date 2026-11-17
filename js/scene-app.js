@@ -28,6 +28,10 @@
     window.SceneSession.initialize();
     window.SceneStartup.initialize();
     window.ItemUseActions.initialize();
+    window.MedicalActions.initialize();
+    window.MedicalKitPanel.initialize();
+    window.ManufacturingActions.initialize();
+    window.ManufacturingPanel.initialize();
     window.SceneNavigation.initialize();
     window.ScenePublicApi.initialize();
 
@@ -58,6 +62,10 @@
     window.SceneSession.bind();
     window.SceneStartup.bind();
     window.ItemUseActions.bind();
+    window.MedicalActions.bind();
+    window.MedicalKitPanel.bind();
+    window.ManufacturingActions.bind();
+    window.ManufacturingPanel.bind();
     window.SceneNavigation.bind();
     window.ScenePublicApi.bind();
 })(window);

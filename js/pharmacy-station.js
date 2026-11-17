@@ -220,30 +220,41 @@
         return method && method.requires_accessory_item_id ? String(method.requires_accessory_item_id).trim() : '';
     }
 
+    function getMethodAccessoryIds(methodId) {
+        var method=getMethods()[String(methodId||'')]||{};
+        return [getMethodAccessoryId(methodId)].concat(method.additional_accessory_item_ids||[]).filter(Boolean);
+    }
+
     // Roll once when work starts; saving an unfinished batch preserves this decision.
     function prepareEquipmentWear(methodId) {
         var id = getMethodAccessoryId(methodId);
         if (!id || getState().installed_accessory_item_ids.indexOf(id) < 0) return null;
         var chance = getEquipmentBreakChance();
-        return { item_id: id, chance: chance, broken: Math.random() < chance };
+        var wear={ item_id: id, chance: chance, broken: Math.random() < chance };
+        var additional=getMethodAccessoryIds(methodId).slice(1);
+        if(additional.length)wear.additional=additional.map(function(itemId){return {item_id:itemId,chance:chance,broken:Math.random()<chance};});
+        return wear;
     }
 
     function isAccessoryInUse(itemId) {
         var craft = getState().active_craft;
-        return !!craft && getMethodAccessoryId(craft.method_id) === String(itemId);
+        return !!craft && getMethodAccessoryIds(craft.method_id).indexOf(String(itemId))>=0;
     }
 
     function settleEquipmentWear(craft) {
         // Older unfinished batches have no saved roll; decide once before settling them.
         if (craft.equipment_wear === undefined) craft.equipment_wear = prepareEquipmentWear(craft.method_id);
         var wear = craft.equipment_wear;
-        if (!wear || !wear.broken || wear.item_id !== getMethodAccessoryId(craft.method_id)) return '';
+        if (!wear) return '';
         var installed = getState().installed_accessory_item_ids;
-        var index = installed.indexOf(wear.item_id);
-        if (index < 0) return '';
-        installed.splice(index, 1);
-        showMsg(ui('pharmacy.result.equipment_broken', { item: StationCraftCore.getItemDisplayNameSafe(wear.item_id) }), 'warn');
-        return wear.item_id;
+        var first='',allowed=getMethodAccessoryIds(craft.method_id);
+        [wear].concat(wear.additional||[]).forEach(function(w){
+            var index=installed.indexOf(w.item_id);
+            if(!w.broken||allowed.indexOf(w.item_id)<0||index<0)return;
+            installed.splice(index,1);first=first||w.item_id;
+            showMsg(ui('pharmacy.result.equipment_broken',{item:StationCraftCore.getItemDisplayNameSafe(w.item_id)}),'warn');
+        });
+        return first;
     }
 
     function getPharmacySuccessRate(baseSuccessRate, recommendedLevel) {
@@ -533,7 +544,7 @@
         var pharmacySuccessFinal = getPharmacySuccessRate(baseSuccessRate, recommendedLevel);
         var isMaxPharmacyLv = pharmacyLv >= skillCurve.max_level;
         evalRes.success_rate = pharmacySuccessFinal;
-        evalRes.success = isMaxPharmacyLv ? true : (Math.random() < pharmacySuccessFinal);
+        evalRes.success = typeof craft.medical_success==='boolean'?craft.medical_success:(isMaxPharmacyLv ? true : (Math.random() < pharmacySuccessFinal));
         var outputItemId = failId;
         if (evalRes.success) {
             if (pickMainOutput && pickMainOutput.item_id) outputItemId = String(pickMainOutput.item_id);
@@ -546,7 +557,8 @@
         if (evalRes.success && pickRecipeId) markRecipeKnown(pickRecipeId);
         addPharmacySuccessProficiency(evalRes.success ? 1 : 0.25);
 
-        grantItemOrDrop(outputItemId);
+        var outputCount=mid==='life_pharmacy.medical_alcohol'&&evalRes.success&&pickMainOutput?Math.max(1,Math.floor(pickMainOutput.count||1)):1;
+        for(var oi=0;oi<outputCount;oi++)grantItemOrDrop(outputItemId);
         if (evalRes.success && Array.isArray(pickBonusOutputs) && pickBonusOutputs.length) {
             var bi;
             for (bi = 0; bi < pickBonusOutputs.length; bi++) {
@@ -606,10 +618,7 @@
         var i;
         for (i = 0; i < ids.length; i++) {
             var m = getMethods()[ids[i]] || {};
-            var aid = (m.requires_accessory_item_id != null) ? String(m.requires_accessory_item_id).trim() : '';
-            if (!aid || seen[aid]) continue;
-            seen[aid] = true;
-            out.push(aid);
+            getMethodAccessoryIds(ids[i]).forEach(function(aid){if(!seen[aid]){seen[aid]=true;out.push(aid);}});
         }
         out.sort();
         return out;
@@ -706,8 +715,9 @@
                 if (!allowHit) return false;
             }
         }
-        var req = m.requires_accessory_item_id;
-        if (req == null || String(req).trim() === '') return true;
+        if(m.required_manufacturing_recipe&&!global.ManufacturingKnowledge.knows(m.required_manufacturing_recipe))return false;
+        var required = getMethodAccessoryIds(methodId);
+        if (!required.length) return true;
         var arr;
         if (ctx && ctx.station_type === 'temp') {
             arr = ctx.temp_station && Array.isArray(ctx.temp_station.installed_accessory_item_ids)
@@ -717,12 +727,7 @@
             var st = getState();
             arr = st.installed_accessory_item_ids || [];
         }
-        var need = String(req).trim();
-        var i;
-        for (i = 0; i < arr.length; i++) {
-            if (String(arr[i]).trim() === need) return true;
-        }
-        return false;
+        return required.every(function(id){return arr.indexOf(id)>=0;});
     }
 
     global.PharmacyStation = {
@@ -735,6 +740,7 @@
         getSkillCurve: getSkillCurve,
         getPharmacySkillLevel: getPharmacySkillLevel,
         getEquipmentBreakChance: getEquipmentBreakChance,
+        getMethodAccessoryIds: getMethodAccessoryIds,
         prepareEquipmentWear: prepareEquipmentWear,
         isAccessoryInUse: isAccessoryInUse,
         getPharmacySuccessRate: getPharmacySuccessRate,

@@ -169,6 +169,11 @@
         return out;
     }
     function attackEnemy(enemyId, ctxMeta) {
+                if (window.SaveSystem && !window.SaveSystem.isAtomic()) {
+                    var transaction=window.SaveSystem.runAtomicFor('combat',function(){return attackEnemy(enemyId,ctxMeta);});
+                    if(!transaction.saved){window.SceneFeedback.showMsg('保存失败，本次战斗结算已还原。','warn');window.SceneHud.refresh('status');window.SceneMapView.render();}
+                    return transaction.value;
+                }
                 if (window.SceneAccess.guardPlayerComaBlocked()) return;
                 // 眩晕中（k13，37 §9.2）：本回合无法行动
                 if (IE && typeof IE.consumePlayerStunRoundIfBlocking === 'function' && IE.consumePlayerStunRoundIfBlocking()) {

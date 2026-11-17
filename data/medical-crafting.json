@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "implementation": "runtime",
+  "recipes": [
+    {"recipe_id":"manufacturing.medical_gauze","item_id":"supply_medical_hemostatic_gauze","name":"止血纱布","station":"bench","workbench_level_min":2,"required_tools":["tool_sewing_kit_cloth"],"inputs":[["textile_cotton_cloth",8],["solvent_water_pure",1]],"output_count":4,"ticks":6,"stamina":2,"work_profile":"standard","unlock":{"kind":"exploration"}},
+    {"recipe_id":"manufacturing.medical_dressing","item_id":"supply_medical_trauma_dressing","name":"创伤敷料","station":"bench","workbench_level_min":2,"required_tools":["tool_sewing_kit_cloth"],"inputs":[["textile_cotton_cloth",6],["filling_cotton",3],["solvent_water_pure",1]],"output_count":3,"ticks":8,"stamina":4,"work_profile":"standard","unlock":{"kind":"exploration"}},
+    {"recipe_id":"manufacturing.medical_tourniquet","item_id":"supply_medical_tourniquet","name":"止血带","station":"bench","workbench_level_min":2,"required_tools":["tool_sewing_kit_cloth"],"inputs":[["textile_hemp_cloth",6],["leather_cow_soft",2],["textile_cotton_cloth",2]],"output_count":2,"ticks":8,"stamina":4,"work_profile":"standard","unlock":{"kind":"exploration"}},
+    {"recipe_id":"manufacturing.medical_splint","item_id":"supply_medical_fracture_band","name":"骨折带","station":"metal","workbench_level_min":2,"required_tools":["tool_repair_hammer","tool_repair_pliers","tool_sewing_kit_cloth"],"inputs":[["material_forging_iron",1],["textile_cotton_cloth",8],["filling_cotton",2]],"output_count":2,"ticks":10,"stamina":6,"work_profile":"complex","unlock":{"kind":"exploration"}},
+    {"recipe_id":"manufacturing.medical_stapler","item_id":"supply_skin_stapler","name":"皮肤缝合器","station":"precision","workbench_level_min":3,"required_tools":["tool_repair_pliers"],"inputs":[["material_forging_iron",2],["leather_cow_soft",2],["textile_cotton_cloth",2]],"output_count":2,"ticks":16,"stamina":8,"work_profile":"specialist","unlock":{"kind":"exploration"}},
+    {"recipe_id":"manufacturing.medical_alcohol","item_id":"supply_medical_alcohol","name":"酒精","station":"pharmacy","required_tools":["tool_fermentation_jar_cooking","tool_distiller_pharmacy"],"inputs":[["herb_rice",2],["solvent_water_pure",2]],"output_count":6,"ticks":48,"stamina":6,"work_profile":"complex","unlock":{"kind":"exploration"},"pharmacy_method_id":"life_pharmacy.medical_alcohol","pharmacy_recipe_id":"life_pharmacy.medical_alcohol"}
+  ],
+  "support_item_ids": ["tool_repair_hammer","tool_repair_pliers","tool_sewing_kit_cloth","tool_fermentation_jar_cooking","tool_distiller_pharmacy","tool_layer_filter_sheet_pharmacy"],
+  "raw_supply": {"fiber_regrowth_ticks":144,"soft_water_output":1,"soft_water_ticks":1},
+  "industrial_batch": {
+    "id":"medical-production-workshop-v1",
+    "items":[
+      {"item_id":"wood_plank_soft","stock":40,"rarity":"common","category":"materials"},
+      {"item_id":"ore_scrap_metal","stock":40,"rarity":"common","category":"materials"},
+      {"item_id":"ore_steel_ingot","stock":24,"rarity":"uncommon","category":"materials"},
+      {"item_id":"ore_cast_iron","stock":12,"rarity":"uncommon","category":"materials"},
+      {"item_id":"mechanical_parts","stock":32,"rarity":"uncommon","category":"materials"},
+      {"item_id":"electronic_wire","stock":20,"rarity":"uncommon","category":"materials"},
+      {"item_id":"item_glass","stock":20,"rarity":"uncommon","category":"materials"},
+      {"item_id":"metal_pipe","stock":12,"rarity":"uncommon","category":"materials"},
+      {"item_id":"wood_hickory","stock":16,"rarity":"common","category":"materials"}
+    ]
+  }
+}

@@ -617,8 +617,8 @@ pharmacyRecipes.forEach((r) => {
 });
 assert.strictEqual(badItemRefs.join(','), '', '配方引用的物品应全部存在：' + badItemRefs.slice(0, 4).join(','));
 assert.strictEqual(badMethods.join(','), '', '配方引用的方法应全部存在：' + badMethods.join(','));
-assert.strictEqual(pharmacyRecipes.length, 77, '新版目录保留77条固定工艺配方记录');
-assert.strictEqual(pharmacyRecipes.filter(r => r.enabled !== false).length, 70, '止血/复苏消费者缺口分支暂缓，另含海藻精浸提，当前启用70条');
+assert.strictEqual(pharmacyRecipes.length, 78, '新版目录含医疗酒精，共78条固定工艺配方记录');
+assert.strictEqual(pharmacyRecipes.filter(r => r.enabled !== false).length, 77, '凝血六条恢复，复苏仍暂缓，含海藻精浸提及医疗酒精，当前启用77条');
 assert(pharmacyRecipes.some(r => r.recipe_id === 'life_pharmacy.macerate_seaweed_extract' && r.main_output.item_id === 'liquid_seaweed_extract'), '海藻精应有稳定浸提配方');
 assert(pharmacyRecipes.every(r => items[r.main_output.item_id].use_action !== 'inject'), '所有注射液必须走动态配置');
 assert(pharmacyRecipes.some(r => r.main_output.item_id === 'med_morphine_powder_purified'), '精炼药粉链继续可制作');
@@ -659,6 +659,14 @@ const broth = items.potion_tonic_broth;
 assert.strictEqual(broth.use_action, 'drink');
 assert.strictEqual(broth.use_buff_id, 'buff_pharm_stimulant_drink_weak');
 ok('多级链贯通：生药材 → 中间品药粉 → 剂型成品（含 use_action/use_buff_id 契约）');
+
+for (const suffix of ['crush_baiji_powder','crush_notoginseng_powder','refine_notoginseng','purify_notoginseng','blend_coagulant_powder','blend_coagulant_salve']) {
+  const recipe = pharmacyRecipes.find(r => r.recipe_id === 'life_pharmacy.' + suffix);
+  const resolved = PS.tryResolvePharmacyByUnifiedRoute(recipe.method_id, recipe.inputs);
+  assert(resolved.ok, '凝血配方应走正式制作路由：' + suffix);
+  assert.equal(resolved.data.main_output.item_id, recipe.main_output.item_id);
+}
+ok('六条凝血药粉及外敷成品配方均命中正式制作路由');
 
 // 端到端结算：满级必成 → 产出提神汤液（而非药渣）
 grantedItems.length = 0;
@@ -1216,7 +1224,7 @@ console.log('\n㉑ 药品 roster 契约（成品剂型 × 途径 × 药效族）
 const buffIdSet = new Set(loadJson('data/buffs.json').buffs.map((b) => b.buff_id));
 const legacyPotions = Object.keys(items).filter(id => String(items[id].pharmacy_legacy) === '1');
 assert.strictEqual(legacyPotions.length, 0, '旧固定注射成品已从活跃数据移除');
-const potions = Object.keys(items).filter((id) => items[id].category === 'potion' && items[id].pharmacy_compound !== true && !legacyPotions.includes(id));
+const potions = Object.keys(items).filter((id) => items[id].category === 'potion' && items[id].pharmacy_compound !== true && items[id].innate_medicine_profile?.implementation !== 'data_only' && !legacyPotions.includes(id));
 assert.strictEqual(potions.length, 28, '当前固定非旧注射成品共 28 件');
 const badPotions = potions.filter((id) => {
   const t = items[id];
@@ -1490,37 +1498,22 @@ assert.strictEqual(rcCfg.part_multiplier.head, 0.5, '头部系数 0.5（最慢�
 assert.strictEqual(rcCfg.part_multiplier.lhand, 1, '四肢系数 1.0');
 ok('自然自愈参数：宽限 40 / 间隔 6 / 休息 ×3 / 逐部位系数');
 
-// 吃损毁 → 重置宽限；宽限内不回落
-S3.setResting(false);
-CA3.setState(CA3.getDefaultState());
-CA3.applyCombatDestroy('lhand', 30);
-assert.strictEqual(CA3.getPartDestroy('lhand'), 30, '受击写入 30 损毁');
-assert.strictEqual(CA3.getDestroyRecoverBlockTicks(), 40, '受击即重置宽限计时');
-for (let i = 0; i < 40; i++) CA3.onWorldTickDestroyRecover();
-assert.strictEqual(CA3.getPartDestroy('lhand'), 30, '宽限 40 tick 内损毁不回落');
-for (let i = 0; i < 6; i++) CA3.onWorldTickDestroyRecover();
-assert.strictEqual(CA3.getPartDestroy('lhand'), 29, '宽限结束 + 6 tick → 四肢恢复 1 点');
-ok('自然自愈：宽限 40 tick 后每 6 tick −1（四肢）');
-
-// 部位系数差异：头 0.5（60 tick 5 点）/ 腹 0.7（60 tick 7 点）
-CA3.setState(CA3.getDefaultState());
-CA3.applyCombatDestroy('head', 20);
-CA3.applyCombatDestroy('abdomen', 20);
-for (let i = 0; i < 40; i++) CA3.onWorldTickDestroyRecover();
-for (let i = 0; i < 60; i++) CA3.onWorldTickDestroyRecover();
-assert.strictEqual(CA3.getPartDestroy('head'), 15, '头 0.5 系数：60 tick 恢复 5 点');
-assert.strictEqual(CA3.getPartDestroy('abdomen'), 13, '腹 0.7 系数：60 tick 恢复 7 点');
-ok('部位系数：头 5 点 / 腹 7 点（同一 60 tick 窗口）');
-
-// 休息加速：×3
-CA3.setState(CA3.getDefaultState());
+// 新医疗规则：仅休息、单部位低于35%且无伤势；沿用原休息速度。
+S3.setResting(false);CA3.setState(CA3.getDefaultState());CA3.applyCombatDestroy('lhand',30);
+for(let i=0;i<46;i++)CA3.onWorldTickDestroyRecover();
+assert.strictEqual(CA3.getPartDestroy('lhand'),30,'普通行动不再自愈');
 S3.setResting(true);
-CA3.applyCombatDestroy('lhand', 30);
-for (let i = 0; i < 40; i++) CA3.onWorldTickDestroyRecover();
-for (let i = 0; i < 6; i++) CA3.onWorldTickDestroyRecover();
-assert.strictEqual(CA3.getPartDestroy('lhand'), 27, '休息 ×3 → 6 tick 恢复 3 点');
-S3.setResting(false);
-ok('休息加速：静止休息时自愈 ×3');
+for(let i=0;i<6;i++)CA3.onWorldTickDestroyRecover();
+assert.strictEqual(CA3.getPartDestroy('lhand'),27,'休息6刻恢复3点');
+CA3.setState(CA3.getDefaultState());CA3.applyCombatDestroy('head',15);CA3.applyCombatDestroy('abdomen',20);
+for(let i=0;i<20;i++)CA3.onWorldTickDestroyRecover();
+assert.strictEqual(CA3.getPartDestroy('head'),10,'头部休息20刻恢复5点');
+assert.strictEqual(CA3.getPartDestroy('abdomen'),13,'腹部休息20刻恢复7点');
+CA3.setState({part_destroy:{lhand:35,rhand:100}});
+for(let i=0;i<20;i++)CA3.onWorldTickDestroyRecover();
+assert.strictEqual(CA3.getPartDestroy('lhand'),35,'35%边界不自愈');
+assert.strictEqual(CA3.recoverPartDestroy('rhand',50),0,'外敷药不能恢复满损毁');
+S3.setResting(false);ok('休息恢复仅检查目标部位；满损毁须手术');
 
 // 外敷活络药：逐 tick 降损毁，不受宽限限制
 assert.strictEqual(PE.getPartRecoveryPerTick({ recovery_per_tick: 0.32 }), 0.32, 'recovery_per_tick 直读');

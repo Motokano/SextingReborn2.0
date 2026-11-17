@@ -14,7 +14,16 @@
           "manufacturing.tool_steamer_bamboo_cooking",
           "manufacturing.tool_fermentation_jar_cooking",
           "manufacturing.soil_amend_yellow_cotton",
-          "existing_hunting.consumable_hunting_snare"
+          "existing_hunting.consumable_hunting_snare",
+          "manufacturing.medical_gauze",
+          "manufacturing.medical_dressing",
+          "manufacturing.medical_tourniquet",
+          "manufacturing.medical_splint",
+          "manufacturing.medical_stapler",
+          "manufacturing.medical_alcohol",
+          "manufacturing.tool_repair_pliers",
+          "manufacturing.tool_distiller_pharmacy",
+          "manufacturing.tool_layer_filter_sheet_pharmacy"
         ],
         "chance": 0.03
       }

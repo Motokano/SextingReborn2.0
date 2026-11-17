@@ -47,14 +47,14 @@
     </div>
     <div class="col muted">
       <div>必选文件：<span class="inline-code">recipes.json</span>、<span class="inline-code">recipe-methods.json</span>、<span class="inline-code">life-skill-recipe-interfaces.json</span></div>
-      <div>辅助文件（建议）：<span class="inline-code">items.json</span>（用于材料/产出搜索）；<span class="inline-code">scene-app.js</span>（用于 processor 候选）</div>
+      <div>辅助文件（建议）：<span class="inline-code">items.json</span>（用于材料/产出搜索）；<span class="inline-code">scene/station.js</span>（用于 processor 候选）</div>
     </div>
     <div class="row" style="margin-top:8px">
       <label>recipes.json：<input id="fileRecipes" type="file" accept=".json,application/json" /></label>
       <label>recipe-methods.json：<input id="fileMethods" type="file" accept=".json,application/json" /></label>
       <label>interfaces.json：<input id="fileInterfaces" type="file" accept=".json,application/json" /></label>
       <label>items.json（建议）：<input id="fileItems" type="file" accept=".json,application/json" /></label>
-      <label>scene-app.js（可选）：<input id="fileSceneApp" type="file" accept=".js,text/javascript" /></label>
+      <label>station.js（可选）：<input id="fileSceneApp" type="file" accept=".js,text/javascript" /></label>
       <button id="btnLoadLocal">从本地文件导入</button>
     </div>
     <div class="row">
@@ -469,7 +469,7 @@
             var txt = await readFileAsText(fSceneApp);
             loadRegisteredProcessorsFromText(txt);
           } catch (e) {
-            issues.push({ file: fSceneApp.name || 'scene-app.js', reason: String(e && e.message ? e.message : e) });
+            issues.push({ file: fSceneApp.name || 'station.js', reason: String(e && e.message ? e.message : e) });
           }
         } else {
           await loadRegisteredProcessors();
@@ -505,7 +505,7 @@
 
       async function loadRegisteredProcessors() {
         try {
-          var res = await fetch('../js/scene-app.js', { cache: 'no-store' });
+          var res = await fetch('../js/scene/station.js', { cache: 'no-store' });
           if (!res.ok) return;
           var txt = await res.text();
           loadRegisteredProcessorsFromText(txt);

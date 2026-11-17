@@ -153,6 +153,11 @@
             "innate_medicine_profile"
           ]
         },
+        "medical_supply": {
+          "fields": [
+            "medical_supply_profile"
+          ]
+        },
         "use": {
           "fields": [
             "usable",
@@ -193,6 +198,11 @@
             "flask_drink_cost",
             "flask_drink_ticks",
             "flask_effects"
+          ]
+        },
+        "medical_kit": {
+          "fields": [
+            "medical_kit_body"
           ]
         },
         "combat": {
@@ -255,6 +265,11 @@
             "flask_capacity",
             "flask_initial_water",
             "flask_water_weight_kg"
+          ]
+        },
+        "medical_storage": {
+          "fields": [
+            "medical_capacities"
           ]
         },
         "host": {

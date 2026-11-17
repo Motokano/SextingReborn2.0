@@ -9,6 +9,7 @@ const expected = Object.keys(methods).filter(id => methods[id].recipe_system ===
 assert(expected.length > 0 && expected.length < Object.keys(methods).length);
 function element() {
   return { style: {}, children: [], attributes: {},
+    querySelector() { return null; },
     set innerHTML(value) { this.children = []; },
     appendChild(child) { this.children.push(child); },
     setAttribute(key, value) { this.attributes[key] = value; }
@@ -16,7 +17,7 @@ function element() {
 }
 const list = element();
 const modal = element();
-const ctx = { SceneCtx: {}, document: {
+const ctx = { SceneCtx: {}, ManufacturingKnowledge: { knows: () => true }, document: {
   getElementById: id => id === 'modal-pharmacy-station' ? modal : id === 'pharmacy-method-list' ? list : null,
   createElement: element
 } };
@@ -29,12 +30,13 @@ ctx.PharmacyStation.setConfig({ methods });
 ctx.PharmacyStationPanel.render();
 const visible = () => list.children.map(button => button.attributes['data-method-id']).filter(Boolean);
 assert.deepEqual(visible(), [], 'No method is shown before its equipment is installed');
-const expectedAccessories = [...new Set(expected.map(id => methods[id].requires_accessory_item_id).filter(Boolean))].sort();
+const requiredAccessories = id => [methods[id].requires_accessory_item_id, ...(methods[id].additional_accessory_item_ids || [])].filter(Boolean);
+const expectedAccessories = [...new Set(expected.flatMap(requiredAccessories))].sort();
 assert.deepEqual(Array.from(ctx.PharmacyStation.getPharmacyAccessoryItemIdsFromMethods()), expectedAccessories);
 for (const accessory of expectedAccessories) {
   ctx.PharmacyStation.getState().installed_accessory_item_ids = [accessory];
   ctx.PharmacyStationPanel.render();
-  assert.deepEqual(visible(), expected.filter(id => methods[id].requires_accessory_item_id === accessory), accessory);
+  assert.deepEqual(visible(), expected.filter(id => requiredAccessories(id).every(required => required === accessory)), accessory);
 }
 ctx.PharmacyStation.getState().installed_accessory_item_ids = expectedAccessories;
 ctx.PharmacyStationPanel.render();

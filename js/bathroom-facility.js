@@ -11,11 +11,12 @@
         }));
     }
     function ticks(def, action) {
+        if(action==='bottle')return g.ManufacturingData.raw_supply.soft_water_ticks;
         var value = def && def.bathroom && def.bathroom[action + '_ticks'];
         return Math.max(1, Math.min(12, Math.floor(Number(value) || (action === 'shower' ? 3 : 1))));
     }
     function reason(def, action, instanceId) {
-        if (action !== 'drink' && action !== 'shower' && action !== 'refill') return '没有这个操作。';
+        if (action !== 'drink' && action !== 'shower' && action !== 'refill' && action !== 'bottle') return '没有这个操作。';
         if (busy) return '正在使用卫生间。';
         if (!nearby(def)) return '请靠近卫生间后使用。';
         if (!isUnlocked()) return '请先修好卫生间。';
@@ -25,6 +26,7 @@
         if (g.SceneApp && g.SceneApp.isPreCreationGameplayRestricted()) return '请先完成角色创建。';
         if (g.CombatEngagement && g.CombatEngagement.isPlayerInCombat()) return '请先脱离战斗。';
         if (g.Hunting && g.Hunting.isActive()) return '请先结束当前活动。';
+        if (action === 'bottle' && !g.InventoryEquipment.canAcceptItem()) return '请先腾出物品栏空间。';
         if (action === 'drink' && s.thirst >= g.Survival.getThirstMax()) return '已经喝足水了。';
         if (action === 'shower' && s.dirtyness <= 0) return '身上已经很干净了。';
         if (action === 'refill') {
@@ -63,14 +65,21 @@
                     }
                 }
                 if (action === 'refill') return g.WaterFlaskStorage.fillCarried(instanceId);
+                if (action === 'bottle') {
+                    if(!g.InventoryEquipment.putItemIntoDefaultContainer({item_id:'ore_water_pure_soft',count:g.ManufacturingData.raw_supply.soft_water_output}).placed)throw Error('没有可存放水的空间。');
+                    return {ok:true,message:'已取纯净软水 ×1。'};
+                }
                 if (action === 'drink') S.addThirst(S.getThirstMax());
                 else S.reduceDirtyness(S.getDirtyness());
                 return { ok: true, message: action === 'drink' ? '喝足了干净的饮用水。' : '洗去了身上的污垢，整个人清爽了许多。' };
             });
             result = transaction.saved ? transaction.value : { ok: false, message: '保存失败，本次使用未生效，请重试。' };
+        } catch (e) {
+            result={ok:false,message:e.message};
         } finally {
             busy = false;
             if (g.SceneHud) g.SceneHud.refresh('status');
+            if (g.InventoryPanel) g.InventoryPanel.updateBackpackPanel();
             if (g.SceneRenderer) g.SceneRenderer.render();
         }
         return result;

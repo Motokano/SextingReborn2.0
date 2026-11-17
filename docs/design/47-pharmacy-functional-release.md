@@ -1,6 +1,12 @@
 # 药品实际功能发布门槛
 
-状态：用户确认先采用此原则；本次为代码核对与部署范围记录，尚未修改运行时配方。
+状态：凝血消费者及其六条制作分支已于2026-11-13接通；复苏专用分支继续暂缓。以下原始核对作为历史依据保留。
+
+## 凝血发布结果（2026-11-13）
+
+PharmacyEffects.getBleedingSlowRatio 按目标部位查询已起效最高比例，InjurySystem 在每刻普通／大出血损毁中应用，并保存每伤口小数余量。不移除出血、不停感染检查。外敷部位与独立时间、动态注射、药效到期、旧档与保存回退已由正式原生／Svelte测试覆盖。
+
+重新启用 crush_baiji_powder、crush_notoginseng_powder、refine_notoginseng、purify_notoginseng、blend_coagulant_powder、blend_coagulant_salve 六配方；原工艺和成本不变。macerate_cardiac_powder 仍禁用，未将复苏宣称为已实装。部署脚本、目录核验与参考表生成源同步删除凝血缺口标记。
 
 ## 已确认处理
 

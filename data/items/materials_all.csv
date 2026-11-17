@@ -96,7 +96,7 @@ herb_garlic,大蒜,白皮或紫皮蒜瓣,蒜皮白或紫、味冲呛人，好像
 herb_ginger,生姜,黄白姜块,筋粗或细都辣得冲，好像能驱寒,生姜炒菜炖汤去腥暖胃，野采筋粗也一样用。,herb,spice,0.15,10,white,material;surface_only,farming,,600,life_good,mid,1,,,,,,,1,,,13,4
 herb_chili_kashmir,克什米尔辣椒,深红弯角椒,干椒带点烟熏甜，说不好做酱,克什米尔椒温和些，调色做印度糊合适。,herb,spice,0.1,10,white,material,farming,,600,material,mid,0,,,,,,,,,,13,4
 herb_shallot,红葱头,紫衣小葱头,一层层紫皮剥不完，好像能酥油葱,红葱头炼葱油，卤肉标配。,herb,veg,0.25,1,white,material;surface_only,farming,,600,life_good,mid,1,,,,,,,,,,10,11
-herb_rice,大米,白净米粒,米身干爽手摸滑，好像能煮饭,大米煮饭熬粥炒饭，当家粮食。,herb,grain,0.5,1,white,material,farming,,3600,life_good,low,0,,,,,,,,,,40,8
+herb_rice,大米,白净米粒,米身干爽手摸滑，好像能煮饭,大米煮饭熬粥炒饭，当家粮食。,herb,grain,0.5,1,white,material,farming,,3600,life_good,low,0,,,,,,,,1,,40,8
 herb_cucumber,黄瓜,青长皮瓜果,摸着凉咬起来脆，好像能凉拌,黄瓜凉拌腌渍，夏天吃着爽口。,herb,veg,1,1,white,material,farming,,600,life_good,mid,0,,,,,,,1,,,40,44
 herb_sprout,豆芽,白嫩豆芽,芽身脆带着水珠，好像得快炒,豆芽掐根炒粉涮锅烫烫就熟。,herb,veg,0.35,1,white,material,farming,,600,life_good,mid,0,,,,,,,,,,25,7
 herb_chili_red,红辣椒,鲜红油亮椒,皮薄肉厚汁多，好像能做剁椒,红辣椒做剁椒油泼辣子，辣味足。,herb,spice,0.15,10,white,material,farming,,600,material,mid,0,,,,,,,1,,,13,4

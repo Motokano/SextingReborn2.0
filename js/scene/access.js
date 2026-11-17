@@ -8,7 +8,11 @@
     var ACTION_TYPES;
 
     function isStoryMovementLocked() {
+        if (window.MedicalKitPanel && window.MedicalKitPanel.isOpen()) return true;
+        if (window.ManufacturingPanel && window.ManufacturingPanel.isOpen()) return true;
         if (window.MusclePanel && window.MusclePanel.isOpen()) return true;
+        if (window.MedicalActions && window.MedicalActions.isActive()) return true;
+        if (window.ManufacturingActions && window.ManufacturingActions.isWorking()) return true;
         if ((window.BedSleep && window.BedSleep.isActive()) || (window.GymSystem && window.GymSystem.isActive())) return true;
         if (window.GymPanel && window.GymPanel.isOpen()) return true;
         if (window.GymEntrancePanel && window.GymEntrancePanel.isOpen()) return true;
@@ -61,6 +65,8 @@
     }
 
     function guardPlayerComaBlocked() {
+        if (window.MedicalActions && window.MedicalActions.isActive()) return true;
+        if (window.ManufacturingActions && window.ManufacturingActions.isWorking()) return true;
         if ((window.BedSleep && window.BedSleep.isActive()) || (window.GymSystem && window.GymSystem.isActive())) return true;
         if (!isPlayerComaActive()) return false;
         window.SceneFeedback.showMsg(window.SceneFeedback.ui('intro.blocked.action'), 'info');
@@ -75,6 +81,8 @@
     }
 
     function isPlayerActionDisabledByBuff(actionType) {
+        if (window.MedicalActions && window.MedicalActions.isActive()) return true;
+        if (window.ManufacturingActions && window.ManufacturingActions.isWorking()) return true;
         if ((window.BedSleep && window.BedSleep.isActive()) || (window.GymSystem && window.GymSystem.isActive())) return true;
         var key = normalizeActionType(actionType);
         if (!key) return false;
@@ -90,6 +98,8 @@
     }
 
     function guardPlayerActionBlocked(actionType, opts) {
+        if (window.MedicalActions && window.MedicalActions.isActive()) return true;
+        if (window.ManufacturingActions && window.ManufacturingActions.isWorking()) return true;
         if ((window.BedSleep && window.BedSleep.isActive()) || (window.GymSystem && window.GymSystem.isActive())) return true;
         if (window.DeathSystem && window.DeathSystem.blocked()) return true;
         if (window.Hunting && window.Hunting.isActive()) {
@@ -139,6 +149,15 @@
             && !isPlayerComaActive() && !(window.CombatEngagement && window.CombatEngagement.isPlayerInCombat())
             && !guardPlayerActionBlocked(ACTION_TYPES.GATHER);
     }
+    function medicalActionReason(ownOperation) {
+        if (isPreCreationGameplayRestricted()) return '请先完成角色创建';
+        if (window.Survival.isDead() || window.Survival.isComa() || window.DeathSystem?.blocked()) return '当前无法治疗';
+        if (window.BedSleep?.isActive() || window.GymSystem?.isActive() || window.Hunting?.isActive()) return '请先结束当前活动';
+        if (window.MedicalActions?.isActive() && !ownOperation) return '手术进行中';
+        if (window.ManufacturingActions?.isWorking()) return '制作进行中';
+        if (window.InventoryEquipment.isPlayerStunned() || isPlayerComaActive() || window.BuffSystem.hasActionDisabled('player','item_use')) return '当前无法使用医疗用品';
+        return '';
+    }
 
     function initialize() {
         ACTION_TYPES = {
@@ -159,6 +178,7 @@
         bind: bind,
         get ACTION_TYPES() { return ACTION_TYPES; },
         canWorkFacilityLabor: canWorkFacilityLabor,
+        medicalActionReason: medicalActionReason,
         checkUseRouteGate: checkUseRouteGate,
         guardPlayerActionBlocked: guardPlayerActionBlocked,
         guardPlayerComaBlocked: guardPlayerComaBlocked,

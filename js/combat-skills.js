@@ -59,6 +59,8 @@
      * 技能模板上的等级上限（未含角色事件修正）。缺省取 constants.default_combat_skill_max_level（通常 1000）。
      */
     function getTemplateMaxLevel(skillId) {
+        var survival = global.SurvivalSkills && global.SurvivalSkills.getById(skillId);
+        if (survival && survival.max_level) return survival.max_level;
         var def = config.constants.default_combat_skill_max_level != null
             ? parseInt(config.constants.default_combat_skill_max_level, 10)
             : 1000;
@@ -88,6 +90,8 @@
      */
     function getEffectiveSkillMaxLevel(character, skillId) {
         var base = getTemplateMaxLevel(skillId);
+        var survival = global.SurvivalSkills && global.SurvivalSkills.getById(skillId);
+        if (survival && survival.max_level) return base;
         var bonus = getSkillMaxLevelBonus(character, skillId);
         return Math.max(1, base + bonus);
     }
@@ -146,6 +150,8 @@
      * @param {object} [character] 含 skills、skill_max_level_bonus，用于夹紧可练区间
      */
     function getPotentialCostForLevel(skillId, level, character) {
+        var survival = global.SurvivalSkills && global.SurvivalSkills.getById(skillId);
+        if (survival && survival.exp_per_level) return survival.exp_per_level;
         var progCap = character ? getProgressionSkillMaxLevel(character, skillId) : getTemplateMaxLevel(skillId);
         var raw = Math.max(1, parseInt(level, 10) || 1);
         raw = Math.min(raw, progCap);

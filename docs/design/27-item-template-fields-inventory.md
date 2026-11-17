@@ -1,5 +1,9 @@
 # 物品模板字段：分层计数与口径
 
+2026-11-12已正式接入：五种用品的 medical_supply_profile.implementation 为 runtime，由 ItemUseActions 转交 MedicalActions 执行单部位完整治疗；急救包五个包体及皮肤缝合器已登记。模板 medical_kit_body 与 medical_capacities 只存规则，实例 medical_storage 保存六仓、敷料质量与词条。内部字段隐藏，展示走急救包专用面板；堆叠1、永久不过期。当前获取仅探索掉落，商店与配方按用户最后决定延后。下方旧日期的数据登记说明为历史，现行详见[83号正式接入](83-medical-system.md#正式接入2026-11-12)。
+
+2026-11-09新增 `medical_supply_profile`，归 `medicine.medical_supply`。五种医疗用品基础信息写 `data/items/medical_supplies_base.csv`，独立使用及规格写 `data/medical-supplies.json`，经 `medical-supply-item-fields.mjs` 校验构建。后续版本2已按现实参考与用户确认补全重量、单份堆叠、基价、1刻／额外体力0／无技能门槛和可用部位；五项已统一为游戏内永久不过期，`expiry_rule.mode=never`、`shelf_life.policy=never`、运行 `spoilage_ticks=0`，移除原参考期限。购买／探索／制作来源仅登记，配方与投放待设计。同部位同类伤势唯一已登记，普通与大出血共用出血组，骨折与感染各自一组，原清除数量待定项移除。治疗仍仅数据登记：每份消除对应部位伤势，敷料固定30点／无伤势／30%下限（向上取整）。见[83号](83-medical-system.md)。
+
 2026-11-05新增对象字段`innate_medicine_profile`，正式归`medicine.innate`。来源为`data/innate-medicines.json`，物品名称／描述／堆叠来自`data/items/innate_medicines_base.csv`；构建时校验后写入两套目录，展示规则为隐藏。对象内含先天成长规则、家族共用计数键和逐级升级关联，不放玩家食用次数。未定自身药效与物理经济值显式保留`null`；模板重量／保存期的现有0回退不是正式定稿。接入边界见[47号§11.6](47-pharmacy-system.md#116-正式物品数据登记2026-11-05仅数据接入)。
 
 > **快照说明**：正文快照截至 2026-09 前的某次运行，可能滞后于当前数据；最新计数以 `npm run audit:item-keys` / `npm run audit:item-field-rules` 复跑输出为准（历史输出见 [`_archive/27-item-field-rules-audit-last-run.md`](_archive/27-item-field-rules-audit-last-run.md)）。

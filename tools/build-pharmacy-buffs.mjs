@@ -78,10 +78,11 @@ function buildTemplate(spec) {
   const effects = (spec.effects || []).map((e) => scaleEffect(e, scale, survivalBudgetDivisor));
   const carry = effects.find((e) => e.type === 'pharmacy_carry_capacity');
   const pain = effects.find((e) => e.type === 'pain_ignore_ratio');
+  const bleed = effects.find((e) => e.type === 'pharmacy_bleeding_slow');
   return {
     buff_id: buffId,
     name: spec.familyName + '·' + route.name + '·' + potency.name,
-    desc: spec.desc + (carry ? '；负重上限 +' + carry.params.kilograms + ' kg' : '') + (pain ? '；忽略疼痛 ' + Math.round(pain.params.ratio * 100) + '%' : '') + '（' + route.name + '起效 ' + route.onset_ticks + ' tick，持续 ' + durationTicks + ' tick，峰值 ' + scale + '）',
+    desc: spec.desc + (carry ? '；负重上限 +' + carry.params.kilograms + ' kg' : '') + (pain ? '；忽略疼痛 ' + Math.round(pain.params.ratio * 100) + '%' : '') + (bleed ? '；出血损毁 −' + Math.round(bleed.params.bleed_slow_pct * 100) + '%' : '') + '（' + route.name + '起效 ' + route.onset_ticks + ' tick，持续 ' + durationTicks + ' tick，峰值 ' + scale + '）',
     onsetTicks: route.onset_ticks,
     durationTicks: durationTicks,
     maxStacks: 1,

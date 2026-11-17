@@ -351,7 +351,7 @@
     function accessoryMethodsLabel(itemId) {
         var methods = PharmacyStation.getMethods();
         return Object.keys(methods).filter(function (id) {
-            return methods[id].requires_accessory_item_id === itemId;
+            return PharmacyStation.getMethodAccessoryIds(id).indexOf(itemId)>=0;
         }).map(function (id) {
             return PharmacyStation.getPharmacyMethodDisplayName(id, methods[id]);
         }).join('、');

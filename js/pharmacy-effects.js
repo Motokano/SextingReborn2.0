@@ -465,6 +465,28 @@
         return '';
     }
 
+    /** Coagulants reduce ongoing bleed damage, never remove the injury or its infection clock. */
+    function getBleedingSlowRatio(ownerId, partId, tick) {
+        var owner=ownerId || 'player', part=normalizePartKey(partId), best=0;
+        var now=tick != null ? Number(tick) : getNowTickSafe();
+        if(!part || now == null || !isFinite(now)) return 0;
+        getActiveInstances(owner).forEach(function(inst){
+            var tpl=inst && inst.template;
+            if(!tpl || !(inst.stacks>0)) return;
+            // Injury settlement precedes BuffSystem's expired-instance cleanup for this tick.
+            if(!tpl.manualLifetime && now>Number(inst.expires_at_tick)) return;
+            if(now<Number(inst.started_tick)+(Number(tpl.onsetTicks)||0)) return;
+            if(tpl.pharmacy_scope==='part' || tpl.pharmacy_route==='topical') {
+                var target=normalizePartKey(inst.body_part) || (owner==='player' && getTopicalTarget(inst.buff_id));
+                if(target!==part) return;
+            }
+            (tpl.effects || []).forEach(function(effect){
+                if(effect.type==='pharmacy_bleeding_slow') best=Math.max(best,num((effect.params || {}).bleed_slow_pct,0));
+            });
+        });
+        return Math.max(0,Math.min(1,best));
+    }
+
     function getNowTickSafe() {
         try {
             var GT = global.GameTime;
@@ -763,6 +785,7 @@
         getSideEffectFlavor: getSideEffectFlavor,
         setTopicalTarget: setTopicalTarget,
         getTopicalTarget: getTopicalTarget,
+        getBleedingSlowRatio: getBleedingSlowRatio,
         tickPartRecovery: tickPartRecovery,
         getPartRecoveryPerTick: getPartRecoveryPerTick,
         getActiveSideEffectBuffId: getActiveSideEffectBuffId,

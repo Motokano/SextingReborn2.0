@@ -1,0 +1,308 @@
+{
+  "schema_version": 2,
+  "implementation": "runtime",
+  "injury_category": "injury",
+  "injury_types": {
+    "heavy_bleeding": {
+      "name": "大出血",
+      "group": "bleeding",
+      "buff_ids": [
+        "injury_heavy_bleeding"
+      ]
+    },
+    "bleeding": {
+      "name": "普通出血",
+      "group": "bleeding",
+      "buff_ids": [
+        "injury_bleeding"
+      ]
+    },
+    "fracture": {
+      "name": "骨折",
+      "group": "fracture",
+      "buff_ids": [
+        "injury_fracture"
+      ]
+    },
+    "wound_infection": {
+      "name": "伤口感染",
+      "group": "wound_infection",
+      "buff_ids": [
+        "injury_wound_infection"
+      ]
+    }
+  },
+  "injury_uniqueness_rule": {
+    "scope": "body_part_and_injury_group",
+    "max_active": 1
+  },
+  "target_rule": {
+    "actor": "player",
+    "selection": "single_body_part",
+    "injury_check_scope": "selected_body_part"
+  },
+  "standalone_rule": {
+    "consume_portions": 1,
+    "consume_whole_portion": true,
+    "use_ticks": 1,
+    "use_stamina": 0,
+    "skill_requirement": "none",
+    "packaging_after_use": "discard_no_return"
+  },
+  "kit_use_rule": {
+    "implementation": "runtime",
+    "storage": "separate_item_types",
+    "more_uses_per_portion": true,
+    "consumption_multiplier": null
+  },
+  "acquisition_rule": {
+    "sources": [
+      "buy",
+      "dungeon",
+      "craft"
+    ],
+    "crafting": "medical_production",
+    "placement": "dungeon_medical_pool"
+  },
+  "expiry_rule": {
+    "mode": "never"
+  },
+  "items": {
+    "supply_medical_alcohol": {
+      "name": "酒精",
+      "supply_type": "medical_alcohol",
+      "standalone_effect": {
+        "kind": "remove_injury",
+        "injury_type": "wound_infection",
+        "destroy_recovery_points": 0
+      },
+      "inventory": {
+        "weight_kg": 0.04,
+        "stack_limit": 1
+      },
+      "trade": {
+        "base_value": 80,
+        "price_class": "life_good",
+        "volatility": "low",
+        "region_restrict": 0
+      },
+      "portion": {
+        "description": "一瓶30毫升75%（体积分数）乙醇消毒液，带旋盖的HDPE小瓶。",
+        "materials": [
+          "75%乙醇水溶液",
+          "HDPE瓶",
+          "瓶盖及标签"
+        ],
+        "size": {
+          "volume_ml": 30,
+          "ethanol_percent_vv": 75
+        },
+        "weight_basis": "estimated_with_packaging",
+        "weight_note": "参考75%乙醇溶液密度约0.88克/毫升，液体约26.4克，计入瓶盖及包装后游戏重量估为40克。"
+      },
+      "shelf_life": {
+        "policy": "never",
+        "basis": "user_design"
+      },
+      "allowed_body_parts": [
+        "head",
+        "chest",
+        "belly",
+        "lhand",
+        "rhand",
+        "lfoot",
+        "rfoot"
+      ]
+    },
+    "supply_medical_fracture_band": {
+      "name": "骨折带",
+      "supply_type": "fracture_band",
+      "standalone_effect": {
+        "kind": "remove_injury",
+        "injury_type": "fracture",
+        "destroy_recovery_points": 0
+      },
+      "inventory": {
+        "weight_kg": 0.16,
+        "stack_limit": 1
+      },
+      "trade": {
+        "base_value": 1000,
+        "price_class": "life_good",
+        "volatility": "low",
+        "region_restrict": 0
+      },
+      "portion": {
+        "description": "一套可塑夹板与固定绑带：夹板约91.4×10.8厘米，配一卷约5厘米宽、伸展长4.5米的绑带。",
+        "materials": [
+          "可塑铁片",
+          "棉填充护垫",
+          "棉布固定绑带",
+          "外包装"
+        ],
+        "size": {
+          "splint_length_cm": 91.4,
+          "splint_width_cm": 10.8,
+          "wrap_count": 1,
+          "wrap_width_cm": 5,
+          "wrap_length_cm": 450
+        },
+        "weight_basis": "estimated_with_packaging",
+        "weight_note": "按游戏既定整套160克保留，制作使用铁料、棉填充和棉布；不是现实医疗器械规格。"
+      },
+      "shelf_life": {
+        "policy": "never",
+        "basis": "user_design"
+      },
+      "allowed_body_parts": [
+        "lhand",
+        "rhand",
+        "lfoot",
+        "rfoot"
+      ]
+    },
+    "supply_medical_hemostatic_gauze": {
+      "name": "止血纱布",
+      "supply_type": "hemostatic_gauze",
+      "standalone_effect": {
+        "kind": "remove_injury",
+        "injury_type": "bleeding",
+        "destroy_recovery_points": 0
+      },
+      "inventory": {
+        "weight_kg": 0.035,
+        "stack_limit": 1
+      },
+      "trade": {
+        "base_value": 160,
+        "price_class": "life_good",
+        "volatility": "low",
+        "region_restrict": 0
+      },
+      "portion": {
+        "description": "一包无菌压缩棉纱布，6层，展开约11.4厘米宽、3.75米长，不含专用止血成分。",
+        "materials": [
+          "脱脂棉纱布",
+          "无菌阻隔包装"
+        ],
+        "size": {
+          "length_cm": 375,
+          "width_cm": 11.4,
+          "plies": 6
+        },
+        "weight_basis": "manufacturer_rounded",
+        "weight_note": "参考NAR压缩纱布的1.2盎司约34克，游戏整份重量取35克。"
+      },
+      "shelf_life": {
+        "policy": "never",
+        "basis": "user_design"
+      },
+      "allowed_body_parts": [
+        "head",
+        "chest",
+        "belly",
+        "lhand",
+        "rhand",
+        "lfoot",
+        "rfoot"
+      ]
+    },
+    "supply_medical_tourniquet": {
+      "name": "止血带",
+      "supply_type": "tourniquet",
+      "standalone_effect": {
+        "kind": "remove_injury",
+        "injury_type": "heavy_bleeding",
+        "destroy_recovery_points": 0
+      },
+      "inventory": {
+        "weight_kg": 0.08,
+        "stack_limit": 1
+      },
+      "trade": {
+        "base_value": 1400,
+        "price_class": "life_good",
+        "volatility": "low",
+        "region_restrict": 0
+      },
+      "portion": {
+        "description": "一份可分段使用的卷状止血带，长1.5米。",
+        "materials": [
+          "麻布织带",
+          "软牛皮固定件",
+          "棉布衬层",
+          "外包装"
+        ],
+        "size": {
+          "length_cm": 150,
+          "width_cm": 3.8
+        },
+        "weight_basis": "estimated_with_packaging",
+        "weight_note": "沿用已定每份80克。"
+      },
+      "shelf_life": {
+        "policy": "never",
+        "basis": "user_design"
+      },
+      "allowed_body_parts": [
+        "lhand",
+        "rhand",
+        "lfoot",
+        "rfoot"
+      ]
+    },
+    "supply_medical_trauma_dressing": {
+      "name": "创伤敷料",
+      "supply_type": "trauma_dressing",
+      "standalone_effect": {
+        "kind": "recover_destroy",
+        "amount": 30,
+        "unit": "destroy_points",
+        "requires_no_injury_buffs": true,
+        "minimum_destroy_ratio": 0.3,
+        "limit_basis": "current_body_part_destroy_max",
+        "partial_recovery_consumes_whole_portion": true,
+        "rounding": "ceil"
+      },
+      "inventory": {
+        "weight_kg": 0.075,
+        "stack_limit": 1
+      },
+      "trade": {
+        "base_value": 360,
+        "price_class": "life_good",
+        "volatility": "low",
+        "region_restrict": 0
+      },
+      "portion": {
+        "description": "一包带无菌吸收垫及固定件的弹性创伤敷料，绑带约10.2厘米宽、1.42米长。",
+        "materials": [
+          "吸收敷垫",
+          "弹性织带",
+          "聚合物固定件",
+          "无菌阻隔包装"
+        ],
+        "size": {
+          "length_cm": 142,
+          "width_cm": 10.2
+        },
+        "weight_basis": "manufacturer_rounded",
+        "weight_note": "参考NAR四英寸ETD的2.6盎司约73.7克，游戏整份重量取75克。"
+      },
+      "shelf_life": {
+        "policy": "never",
+        "basis": "user_design"
+      },
+      "allowed_body_parts": [
+        "head",
+        "chest",
+        "belly",
+        "lhand",
+        "rhand",
+        "lfoot",
+        "rfoot"
+      ]
+    }
+  },
+  "pending_values": {}
+}

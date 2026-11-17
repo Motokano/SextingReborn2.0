@@ -253,6 +253,10 @@
         var footworkId = 'combat_basic_footwork';
         var hubs = IE.getCombatState && IE.getCombatState().hubs ? IE.getCombatState().hubs : {};
         if (window.WaterFlaskUse) {
+            var medicalButton={kind:'button',children:[],attrs:{role:'menuitem'},type:'button',className:'player-action-item',textContent:'急救包'};
+            medicalButton.disabled=!window.MedicalKit.equipped();
+            medicalButton.onclick=function(ev){ev.stopPropagation();closePlayerActionsSubmenu();window.MedicalKitPanel.openDaily();};
+            sub.children.push(medicalButton);
             var flask = window.WaterFlaskUse.equipped();
             var flaskProfile = flask && window.WaterFlaskUse.profile(flask);
             var flaskBlocked = window.WaterFlaskUse.reason(flask && flask.instance_id);

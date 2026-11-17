@@ -1091,6 +1091,10 @@
             function addButton(button) { menuState.buttons.push(button); publishMenu(); }
             function mkBtn(text, onClick, icon) { return { text: text, run: onClick, disabled: false, icon: isFacility ? (icon || 'point') : '' }; }
             function hint(text) { if (epoch !== menuEpoch) return; menuState.hint = text; publishMenu(); }
+            if (def.id === 'npc.station.manufacturing_base') {
+                if (global.ManufacturingPanel.open()) closeMenu();
+                return;
+            }
 
             if (def.gymStation) {
                 var gym = global.GymFacility;
@@ -1233,6 +1237,11 @@
                     refillButton.title = refillReason;
                     refillButton.disabled = !!refillReason;
                     menuState.buttons.push(refillButton);
+                    var bottleButton=mkBtn('取纯净软水 · 1刻',function(){
+                        if(epoch!==menuEpoch||!sameLocation())return;
+                        refreshBathroom(bathroom.use(def,'bottle').message);
+                    },'water');
+                    bottleButton.title=bathroom.reason(def,'bottle');bottleButton.disabled=!!bottleButton.title;menuState.buttons.push(bottleButton);
                     if (!isFacility) menuState.buttons.push(mkBtn(tUi('npc.menu.leave', '离开'), closeMenu));
                     publishMenu();
                 }

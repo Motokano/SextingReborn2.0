@@ -27,6 +27,11 @@
         var arr = inv && (containerType === 'pocket' ? inv.getPocketArray() :
             containerType === 'vest' ? inv.getVestArray() : containerType === 'backpack' ? inv.getBackpackArray() : []);
         var cell = arr && arr[index], tpl = cell && inv.getItemTemplate(cell.item_id);
+        if (tpl?.medical_supply_profile?.implementation === 'runtime') {
+            var medicalResult = window.MedicalActions.useStandalone(containerType,index,cell.instance_id,options.part_id);
+            if (!options.silent) window.SceneFeedback.showMsg(medicalResult.message,medicalResult.ok?'success':'warn');
+            return medicalResult.ok;
+        }
         if (!ItemUse.isFoodTemplate(tpl)) return performItemUseFromContainer(containerType, index, options);
         if (window.SceneAccess.isPreCreationGameplayRestricted() || window.SceneAccess.guardPlayerComaBlocked() ||
             (window.Survival && (window.Survival.isDead() || window.Survival.isComa())) || window.SceneAccess.guardPlayerActionBlocked(window.SceneAccess.ACTION_TYPES.ITEM_USE, { level: 'warn' })) return false;
@@ -151,6 +156,11 @@
         if (!cell || !cell.item_id) return false;
         var tpl = inv.getItemTemplate(cell.item_id);
         if (!tpl || !tpl.equip_slot) return false;
+        if (tpl.equip_slot === 'medical_kit') {
+            var medicalEquip = window.MedicalActions.transfer({action:'equip',source:containerType,index:index,id:cell.instance_id});
+            if (!options.silent) window.SceneFeedback.showMsg(medicalEquip.message,medicalEquip.ok?'success':'warn');
+            return medicalEquip.ok;
+        }
         if (tpl.equip_slot === 'backpack' && window.BackpackSystem) {
             var moved = window.BackpackSystem.transfer({action:'equip',source:containerType,index:index,id:cell.instance_id});
             if (!options.silent) window.SceneFeedback.showMsg(moved.message,moved.ok?'success':'warn');

@@ -3013,7 +3013,7 @@
     {
       "buff_id": "survival_pain_moderate",
       "name": "中度疼痛",
-      "desc": "疼痛 50~74：出手 ×0.80，心情 -4/tick，体力/精力恢复减半。可被镇痛压制（盖住不消除）。",
+      "desc": "疼痛 50~74：出手 ×0.80，心情 -4/tick。镇痛降低生效疼痛，按剩余疼痛判定惩罚。",
       "durationTicks": 1,
       "maxStacks": 1,
       "stacksAddOnApply": 1,
@@ -5903,7 +5903,7 @@
     {
       "buff_id": "buff_pharm_coagulant_topical_weak",
       "name": "凝血·外敷·弱效",
-      "desc": "让血止得快一些（异常状态流血实装后生效）（外敷起效 3 tick，持续 90 tick，峰值 0.35）",
+      "desc": "降低普通出血与大出血每刻造成的损毁；外敷仅作用于选定部位，注射作用于全身，同效取最高；不解除出血或停止感染检查；出血损毁 −18%（外敷起效 3 tick，持续 90 tick，峰值 0.35）",
       "onsetTicks": 3,
       "durationTicks": 90,
       "maxStacks": 1,
@@ -5943,7 +5943,7 @@
     {
       "buff_id": "buff_pharm_coagulant_topical_regular",
       "name": "凝血·外敷·常效",
-      "desc": "让血止得快一些（异常状态流血实装后生效）（外敷起效 3 tick，持续 90 tick，峰值 0.7）",
+      "desc": "降低普通出血与大出血每刻造成的损毁；外敷仅作用于选定部位，注射作用于全身，同效取最高；不解除出血或停止感染检查；出血损毁 −35%（外敷起效 3 tick，持续 90 tick，峰值 0.7）",
       "onsetTicks": 3,
       "durationTicks": 90,
       "maxStacks": 1,
@@ -5983,7 +5983,7 @@
     {
       "buff_id": "buff_pharm_coagulant_topical_potent",
       "name": "凝血·外敷·强效",
-      "desc": "让血止得快一些（异常状态流血实装后生效）（外敷起效 3 tick，持续 90 tick，峰值 1.05）",
+      "desc": "降低普通出血与大出血每刻造成的损毁；外敷仅作用于选定部位，注射作用于全身，同效取最高；不解除出血或停止感染检查；出血损毁 −53%（外敷起效 3 tick，持续 90 tick，峰值 1.05）",
       "onsetTicks": 3,
       "durationTicks": 90,
       "maxStacks": 1,
@@ -6023,7 +6023,7 @@
     {
       "buff_id": "buff_pharm_coagulant_inject_weak",
       "name": "凝血·注射·弱效",
-      "desc": "让血止得快一些（异常状态流血实装后生效）（注射起效 0 tick，持续 10 tick，峰值 0.5）",
+      "desc": "降低普通出血与大出血每刻造成的损毁；外敷仅作用于选定部位，注射作用于全身，同效取最高；不解除出血或停止感染检查；出血损毁 −25%（注射起效 0 tick，持续 10 tick，峰值 0.5）",
       "onsetTicks": 0,
       "durationTicks": 10,
       "maxStacks": 1,
@@ -6063,7 +6063,7 @@
     {
       "buff_id": "buff_pharm_coagulant_inject_regular",
       "name": "凝血·注射·常效",
-      "desc": "让血止得快一些（异常状态流血实装后生效）（注射起效 0 tick，持续 10 tick，峰值 1）",
+      "desc": "降低普通出血与大出血每刻造成的损毁；外敷仅作用于选定部位，注射作用于全身，同效取最高；不解除出血或停止感染检查；出血损毁 −50%（注射起效 0 tick，持续 10 tick，峰值 1）",
       "onsetTicks": 0,
       "durationTicks": 10,
       "maxStacks": 1,
@@ -6103,7 +6103,7 @@
     {
       "buff_id": "buff_pharm_coagulant_inject_potent",
       "name": "凝血·注射·强效",
-      "desc": "让血止得快一些（异常状态流血实装后生效）（注射起效 0 tick，持续 10 tick，峰值 1.5）",
+      "desc": "降低普通出血与大出血每刻造成的损毁；外敷仅作用于选定部位，注射作用于全身，同效取最高；不解除出血或停止感染检查；出血损毁 −75%（注射起效 0 tick，持续 10 tick，峰值 1.5）",
       "onsetTicks": 0,
       "durationTicks": 10,
       "maxStacks": 1,
@@ -8024,7 +8024,7 @@
     {
       "buff_id": "buff_pharm_coagulant_topical_pure",
       "name": "凝血·外敷·纯品",
-      "desc": "让血止得快一些（异常状态流血实装后生效）（外敷起效 3 tick，持续 90 tick，峰值 1.33）",
+      "desc": "降低普通出血与大出血每刻造成的损毁；外敷仅作用于选定部位，注射作用于全身，同效取最高；不解除出血或停止感染检查；出血损毁 −67%（外敷起效 3 tick，持续 90 tick，峰值 1.33）",
       "onsetTicks": 3,
       "durationTicks": 90,
       "maxStacks": 1,
@@ -8064,7 +8064,7 @@
     {
       "buff_id": "buff_pharm_coagulant_inject_pure",
       "name": "凝血·注射·纯品",
-      "desc": "让血止得快一些（异常状态流血实装后生效）（注射起效 0 tick，持续 10 tick，峰值 1.9）",
+      "desc": "降低普通出血与大出血每刻造成的损毁；外敷仅作用于选定部位，注射作用于全身，同效取最高；不解除出血或停止感染检查；出血损毁 −95%（注射起效 0 tick，持续 10 tick，峰值 1.9）",
       "onsetTicks": 0,
       "durationTicks": 10,
       "maxStacks": 1,
@@ -8587,6 +8587,118 @@
           }
         }
       ]
+    },
+    {
+      "buff_id": "injury_bleeding",
+      "name": "普通出血",
+      "desc": "每刻增加本部位1点损毁，直至止血。",
+      "injury_generated": true,
+      "injury_type": "bleeding",
+      "injury_group": "bleeding",
+      "manualLifetime": true,
+      "durationTicks": 0,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "consumeLayersFixed": 0,
+      "consumeMode": "always",
+      "applyMode": "always_apply",
+      "dispel_pool": "",
+      "judgment_tags": {
+        "injury": "true"
+      },
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [],
+      "effects": [],
+      "expire_effects": []
+    },
+    {
+      "buff_id": "injury_heavy_bleeding",
+      "name": "大出血",
+      "desc": "每刻增加本部位3点损毁，直至止血。",
+      "injury_generated": true,
+      "injury_type": "heavy_bleeding",
+      "injury_group": "bleeding",
+      "manualLifetime": true,
+      "durationTicks": 0,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "consumeLayersFixed": 0,
+      "consumeMode": "always",
+      "applyMode": "always_apply",
+      "dispel_pool": "",
+      "judgment_tags": {
+        "injury": "true"
+      },
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [],
+      "effects": [],
+      "expire_effects": []
+    },
+    {
+      "buff_id": "injury_fracture",
+      "name": "骨折",
+      "desc": "持续增加25疼痛；患肢攻击、招架与卸力减半，腿部骨折增加移动体力消耗。",
+      "injury_generated": true,
+      "injury_type": "fracture",
+      "injury_group": "fracture",
+      "manualLifetime": true,
+      "durationTicks": 0,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "consumeLayersFixed": 0,
+      "consumeMode": "always",
+      "applyMode": "always_apply",
+      "dispel_pool": "",
+      "judgment_tags": {
+        "injury": "true"
+      },
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [],
+      "effects": [],
+      "expire_effects": []
+    },
+    {
+      "buff_id": "injury_wound_infection",
+      "name": "伤口感染",
+      "desc": "持续增加10疼痛，每刻增加0.1疲劳；阻止本部位敷料与休息恢复。",
+      "injury_generated": true,
+      "injury_type": "wound_infection",
+      "injury_group": "wound_infection",
+      "manualLifetime": true,
+      "durationTicks": 0,
+      "maxStacks": 1,
+      "stacksAddOnApply": 1,
+      "consumeLayersFixed": 0,
+      "consumeMode": "always",
+      "applyMode": "always_apply",
+      "dispel_pool": "",
+      "judgment_tags": {
+        "injury": "true"
+      },
+      "triggerEventKind": [
+        "world"
+      ],
+      "triggerEventName": [
+        "tick_advanced"
+      ],
+      "triggerTags": [],
+      "effects": [],
+      "expire_effects": []
     }
   ]
 }

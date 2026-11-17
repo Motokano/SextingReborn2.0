@@ -38,6 +38,7 @@
             bonus += Math.min(stacks, Number(params.max_stacks) || Infinity) * (Number(params.per_stack_multiplier) || 0);
         });
         ctx.outgoingMultiplier = Math.max(0, 1 + bonus);
+        if (global.InjurySystem) ctx.outgoingMultiplier *= global.InjurySystem.actionMultiplier(ctx,moveFor(ctx));
         ctx.actionDefense = {};
     }
     function prepareSegment(ctx) {
@@ -98,14 +99,19 @@
         var ordinary = segments.some(function (s) { return s.hitRollSuccess && !s.parrySucceeded && !s.blockTargetEffects; });
         var burstHit = burst && segments.some(function (s) { return s.hitRollSuccess && !s.blockTargetEffects; });
         var cells = Math.max(ordinary && effect ? Number(effect.cells) || 0 : 0, burstHit ? burst.knockback_cells : 0);
-        if (cells && global.CombatWorld) global.CombatWorld.queueDisplacement(Object.assign({}, ctx, {hitRollSuccess:true, parrySucceeded:false}), {cells:cells});
+        if (cells && global.CombatWorld) return global.CombatWorld.queueDisplacement(Object.assign({}, ctx, {hitRollSuccess:true, parrySucceeded:false}), {cells:cells});
     }
     function finishAction(ctx) {
+        if (global.InjurySystem && !ctx._segmentOfAction) {
+            global.InjurySystem.finishAttack(ctx);
+            if (!ctx.simultaneousDryRun) global.InjurySystem.commitAttack(ctx);
+        }
         if (global.ModularWeaponCombat) global.ModularWeaponCombat.finish(ctx);
         if (global.CombatFxEvents) global.CombatFxEvents.publish(ctx);
         if (!ctx.simultaneousDryRun && !ctx._segmentOfAction) {
-            queueDisplacement(ctx);
+            var queued = queueDisplacement(ctx);
             if (!ctx.deferDisplacement && global.CombatWorld) global.CombatWorld.flushDisplacements({deferKills:true});
+            if ((!queued || !ctx.deferDisplacement) && global.SurvivalSkills) global.SurvivalSkills.completeAttackExperience(ctx);
         }
         var r = ctx.resourceResult;
         if (!ctx.simultaneousDryRun && r && global.CombatMeleeResolve) global.CombatMeleeResolve.finishActionResources(r);
@@ -362,6 +368,11 @@
             rate = clamp(rate + wm.chance, 0, caps.chance);
             red = clamp(red + wm.unload + global.ModularWeaponCombat.unloadBonus(ownerOf(d)), 0, caps.shunt);
         }
+        if (global.InjurySystem) {
+            var fractureGuard = global.InjurySystem.parryMultiplier(ownerOf(d),ctx.guardLimb);
+            rate *= fractureGuard; red *= fractureGuard;
+        }
+        ctx.parryChance=rate;ctx.unloadRatio=red;
         if (rate <= 0) {
             ctx.parrySucceeded = false;
             ctx.damageAfterParry = ctx.rawDamage * (1 - red);
@@ -512,6 +523,10 @@
         }
         // Knee consumes one imbalance stack before this roll, including a deferred simultaneous strike.
         if(ctx.targetUnloadMultiplier!=null)pReduce*=ctx.targetUnloadMultiplier;
+        if (global.InjurySystem) {
+            var fractureGuard = global.InjurySystem.parryMultiplier('player',ctx.weaponGuard ? ctx.weaponGuard.limbId : ctx.guardLimb);
+            pChance *= fractureGuard; pReduce *= fractureGuard;
+        }
         ctx.parryChance = pChance;
         ctx.unloadRatio = pReduce;
         if (rnd() < pChance) {
@@ -656,7 +671,8 @@
         if (dmg <= 0) return;
         if (def.kind === 'player') {
             if (global.CharacterAttributes && typeof global.CharacterAttributes.applyCombatDestroy === 'function') {
-                global.CharacterAttributes.applyCombatDestroy(ctx.hitPart, dmg);
+                var applied = global.CharacterAttributes.applyCombatDestroy(ctx.hitPart, dmg) || 0;
+                if (ctx.attacker && ctx.attacker.kind === 'enemy' && ctx.vitalityReward) ctx.vitalityReward.damage += applied;
             }
         } else if (def.kind === 'enemy') {
             if (global.CombatEnemies && typeof global.CombatEnemies.onEnemyDamageResolved === 'function') {
@@ -1057,6 +1073,7 @@
         var pipe = config.pipelines && config.pipelines[pipelineName];
         if (!pipe || !pipe.phases) return ctx;
         ctx.pipelineName = pipelineName;
+        ctx.vitalityReward = { damage: 0, settled: false };
         if (ctx.simultaneousDryRun) ctx.deferDisplacement = true;
         if (global.CombatWorld) global.CombatWorld.checkAttackDistance(ctx);
         if (global.CombatFxEvents) global.CombatFxEvents.capture(ctx);

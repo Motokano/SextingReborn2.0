@@ -199,7 +199,7 @@
   const chosen=sorted.find(k=>preferred.includes(k))||sorted[0],p=position(a,chosen),next=(guards.indexOf(chosen)+1)%guards.length;
   if(transaction)transaction.guardCursor[a.item.instance_id]=next;
   else s.guardCursor=next;
-  return {root:a.item,position:p,nextCursor:next,loss:contactLoss(p,true,true),committed:false};
+  return {root:a.item,position:p,limbId:a.limbId,nextCursor:next,loss:contactLoss(p,true,true),committed:false};
  }
  function guardBonus(guard){const p=guard.position;return {
   chance:traitValue(p,['block_chance_bonus_when_selected_as_defender'])-traitValue(p,['block_chance_penalty_when_component_is_selected']),

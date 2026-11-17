@@ -4,11 +4,16 @@ const full=process.argv.includes('--svelte'),h=await boot(full),plain=v=>JSON.pa
 try{
  const g=h.g,D=g.DungeonRuntime,K=g.ManufacturingKnowledge,Q=g.RuinsRecipeStudy,C=g.RuinsContentConfig,E=g.GameEngine;
  await D.ready;
+ // This fixture jumps past the intro into a dungeon. Release its dialogue
+ // through the real controller before testing clicks on another modal.
+ g.DialogueUI.close();await h.drain();
+ assert.equal(g.DialogueUI.isDialogueOpen(),false);
+ assert.equal(g.SvelteInteractions?.overlays.active()??false,false);
  g.CharacterAttributes.setState({character_creation_completed:true});E.setState('M0_Field_02',7,7);
- const all=K.catalog.filter(r=>r.unlock==='exploration');assert.equal(all.length,41);
+ const all=K.catalog.filter(r=>r.unlock==='exploration');assert.equal(all.length,47);
  assert.ok(all.every(r=>!K.knows(r.id)),'fresh character has no free research recipes');
  const level=g.InventoryEquipment.getSkillLevel;g.InventoryEquipment.getSkillLevel=()=>100;
- assert.equal(K.getState().learned.length,22,'only the 22 level-one basics are granted even at level 100');
+ assert.equal(K.getState().learned.length,25,'24 level-one basics and linked wire processing, with no free research recipes');
  assert.ok(all.every(r=>!K.knows(r.id)));g.InventoryEquipment.getSkillLevel=level;
  const clean=plain(K.getState()),oldKnows=g.Hunting.knows;g.Hunting.knows=id=>['snare_tightening','snare_anchor'].includes(id);
  assert.ok(K.knows('existing_hunting.consumable_hunting_snare'));K.getState();g.Hunting.knows=()=>false;
@@ -16,7 +21,7 @@ try{
  // A fixed study scenario; the designer's saved range may legitimately differ.
  D.config().content={...plain(C.legacyV15),recipeStudy:{enabled:true,count:1,recipeIds:all.map(r=>r.id)}}; // Legacy V15 study/save compatibility; rare V16 placement has its own suite.
  const [a,b,c]=all;const originalConfig=plain(D.config().content);
- assert.equal(originalConfig.recipeStudy.recipeIds.length,41);
+ assert.equal(originalConfig.recipeStudy.recipeIds.length,47);
  const rules=patch=>C.resolve({overrides:{...originalConfig,recipeStudy:{...originalConfig.recipeStudy,...patch}}});
  for(const patch of [{recipeIds:[]},{recipeIds:['bad.id']},{recipeIds:[a.id,a.id]},{recipeIds:[K.catalog.find(r=>r.unlock==='skill_level').id]},{count:-1},{count:1.5},{count:4},{enabled:'yes'}])assert.throws(()=>rules(patch));
  assert.deepEqual(plain(C.resolve({overrides:originalConfig,ticketOverrides:{recipeStudy:{recipeIds:[b.id]}}}).recipeStudy.recipeIds),[b.id],'ticket replaces allowlist instead of merging it');
@@ -34,8 +39,18 @@ try{
  assert.ok(D.blocked(p.cell%s.map.width,Math.floor(p.cell/s.map.width)));
  assert.deepEqual(plain(Q.eligible(p)),[b.id]);assert.equal(Q.choice(s,p),b.id);assert.equal(D.begin('insight',p.uid),false,'cannot use potential-reward branch');
  g.DungeonPanel.openPoint('recipe',p.uid);const modal=g.document.querySelector('.du-modal');
+ function clickStudy(label){
+  const button=[...modal.querySelectorAll('button')].find(b=>b.textContent===label);
+  assert.ok(button?.isConnected,`${label}: current study button is attached`);
+  assert.equal(button.disabled,false);button.click();
+  assert.equal(D.getPending()?.kind,'recipe',`${label}: click starts studying`);
+  assert.equal(D.getPending().id,p.uid);
+ }
  assert.ok(modal.textContent.includes('研读资料'));assert.ok(!modal.textContent.includes(b.name),'future recipe name stays hidden');
  assert.ok(modal.querySelector('img').src.endsWith('/available.png'));
+ const firstClickTick=ticks();clickStudy('研读资料');
+ [...modal.querySelectorAll('button')].find(b=>b.textContent==='停止').click();
+ assert.equal(D.getPending(),null);assert.equal(ticks(),firstClickTick,'starting and stopping through the UI costs no tick');
  const untouched=g.SaveSystem.buildSnapshotForDebug();assert.ok(g.SaveSystem.applySnapshotForDebug(untouched));safe();p=approach();assert.equal(Q.choice(s,p),b.id,'reload cannot reroll');
  let t=ticks();assert.ok(D.begin('recipe',p.uid));D.cancel();assert.equal(ticks(),t);assert.equal(p.used,false);
  assert.ok(D.begin('recipe',p.uid));at(s.map.entry);assert.equal(D.completeTick(),false);assert.equal(ticks(),t);p=approach();
@@ -46,7 +61,7 @@ try{
  g.Storage.prototype.setItem=function(key,value){if(key===g.SaveSystem.getStatus().realtimeKey)throw Error('fixture storage full');return stored.call(this,key,value);};
  assert.equal(D.completeTick(),false);g.Storage.prototype.setItem=stored;
  safe();p=approach();assert.equal(p.used,false);assert.equal(p.learnedRecipeId,null);assert.equal(K.knows(b.id),false);assert.equal(ticks(),t);assert.deepEqual(plain(g.InventoryEquipment.getState()),inventory);
- g.DungeonPanel.openPoint('recipe',p.uid);[...modal.querySelectorAll('button')].find(b=>b.textContent==='研读资料').click();assert.equal(D.getPending().kind,'recipe');
+ g.DungeonPanel.openPoint('recipe',p.uid);clickStudy('研读资料');
  assert.equal(D.completeTick(),true);g.DungeonPanel.close({silent:true});assert.equal(ticks(),t+1);assert.equal(K.knows(b.id),true);assert.equal(K.knows(c.id),false);assert.equal(p.learnedRecipeId,b.id);assert.equal(p.used,true);
  assert.equal(g.InventoryEquipment.getPotential(),potential);assert.deepEqual(plain(s.reward.point),reward,'recipe desk adds no exploration point reward');
  assert.equal(D.begin('recipe',p.uid),false);assert.equal(D.completeTick(),false);assert.equal(ticks(),t+1);
@@ -72,8 +87,8 @@ try{
  g.Storage.prototype.setItem=function(key,value){if(key===g.SaveSystem.getStatus().realtimeKey)throw Error('fixture storage full');return stored.call(this,key,value);};
  assert.equal(D.completeTick(),false);g.Storage.prototype.setItem=stored;
  safe();p=approach();assert.equal(ticks(),t);assert.equal(p.used,false);assert.equal(p.potentialReward,undefined);assert.equal(g.InventoryEquipment.getPotential(),beforePotential);
- g.DungeonPanel.openPoint('recipe',p.uid);[...modal.querySelectorAll('button')].find(b=>b.textContent==='研读并获得潜能').click();
- assert.equal(D.getPending().kind,'recipe');assert.ok(D.completeTick());g.DungeonPanel.close({silent:true});
+ g.DungeonPanel.openPoint('recipe',p.uid);clickStudy('研读并获得潜能');
+ assert.ok(D.completeTick());g.DungeonPanel.close({silent:true});
  assert.equal(ticks(),t+1);assert.equal(g.InventoryEquipment.getPotential(),beforePotential+base);assert.equal(p.used,true);assert.equal(p.learnedRecipeId,null);assert.deepEqual(plain(p.potentialReward),{base,amount:base});
  assert.deepEqual(plain(K.getState()),known,'potential reward grants no additional recipe');assert.deepEqual(plain(s.reward.point),points,'no extra exploration settlement reward');
  g.DungeonPanel.openPoint('recipe',p.uid);assert.ok(modal.textContent.includes('已获得潜能：1500'));assert.ok(modal.querySelector('img').src.endsWith('/used.png'));assert.ok([...modal.querySelectorAll('button')].find(b=>b.textContent==='已领取').disabled);g.DungeonPanel.close({silent:true});

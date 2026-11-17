@@ -12,7 +12,7 @@
         base: { identity: ['name','name_0','name_1','name_2','sn','placeholder_name','fn_before','fn','desc','desc_0','desc_1','desc_2','display_skill_id'], stacking: ['stack_limit','stack_max','pocketable'], trade: ['base_value','price_class','volatility','region_restrict'], currency: ['accept_code','convert_to_high','usable_regions'], spoilage: ['spoilage_ticks'], presentation: ['info_module_set_id'], provenance: ['source','production_lines'] },
         food: { edible: ['edible','edible_buff_id','food_profile','meal_tier','satiety_total','digestion_ticks','food_buff_duration_ticks','meal_composition','workhorse','food_thirst_instant','food_special_ticks','food_composition_text','food_experience_text','food_special_text'], packing: ['slots_taken'] },
         production: { cooking: ['cooking_ingredient'], fuel: ['fuel_points'], water: ['water_points'], pharmacy: ['pharmacy_ingredient','chem_class','pharm_family','pharm_effect','pharm_toxicity','concentration_cost','adjuvant_strength','pharmacy_active_components'], compost: ['fert_c','fert_n','compost_inoculant_aerobic','compost_inoculant_anaerobic'], fertilizer: ['inject_facility','agriculture_venturi_injectable','agriculture_buried_jar_injectable','agriculture_nutrient_per_bottle','is_anaerobic_fertilizer'], soil: ['grants_soil_id'], seed: ['harvest_item_id','seed_tier'] },
-        medicine: { innate: ['innate_medicine_profile'], use: ['usable','use_action','use_buff_id','use_charges','use_effect'], compound: ['pharmacy_compound','concentration_capacity'], effects: ['pharmacy_addiction_gain','pharmacy_relief_stages','pharmacy_oral_toxicity','pharmacy_extra_toxicity_decay','pharmacy_legacy'] },
+        medicine: { innate: ['innate_medicine_profile'], medical_supply: ['medical_supply_profile'], use: ['usable','use_action','use_buff_id','use_charges','use_effect'], compound: ['pharmacy_compound','concentration_capacity'], effects: ['pharmacy_addiction_gain','pharmacy_relief_stages','pharmacy_oral_toxicity','pharmacy_extra_toxicity_decay','pharmacy_legacy'] },
         equipment: { wearable: ['equip_slot','req_innate_jingu'], combat: ['weapon_attack_power','attack_power','skill_coef','form_coefs','limb_tags','parry_coef','speed_coef','move_cost_mod','damage_type_effects'], fishing_tackle: ['fishing_load_rating','fishing_length_dm','fishing_cast_range_dm'], armor: ['damage_reduce_blunt_pct','damage_reduce_pierce_pct','damage_reduce_slash_pct','base_shield'], effects: ['activation_cost_pct','effects','segments','special','special_effect'], enchantment: ['enchant_slot','enchant_slots'] },
         structure: { storage: ['pocket_slots','vest_slots','backpack_slots','backpack_weight_factor'], host: ['module_slots'], attachment: ['install_slots','occupies','max_per_armor'], assembly_host: ['assembly_slots'], assembly_part: ['assembly_types'] },
         energy: { storage: ['battery_capacity','battery_charge'] }, organism: {},
@@ -20,6 +20,8 @@
     };
     definitions.equipment.water_flask = ['flask_source_multiplier','flask_drink_cost','flask_drink_ticks','flask_effects'];
     definitions.structure.liquid_storage = ['flask_capacity','flask_initial_water','flask_water_weight_kg'];
+    definitions.equipment.medical_kit = ['medical_kit_body'];
+    definitions.structure.medical_storage = ['medical_capacities'];
     Object.keys(definitions).forEach(function (category) {
         Object.keys(definitions[category]).forEach(function (group) {
             definitions[category][group].forEach(function (field) {
@@ -117,6 +119,15 @@
     function normalizeInstance(instance, template) {
         if (!instance || typeof instance !== 'object') return instance;
         var out = deepClone(instance);
+        if (template && hasGroup(template, 'structure', 'medical_storage') &&
+            getNested(out, ['attribute_state','structure','medical_storage']) === undefined) {
+            var medical = ensureStatePath(out, 'structure', 'medical_storage');
+            medical.version = 1;
+            medical.remaining = {};
+            Object.keys(getTemplateValue(template, 'medical_capacities')).forEach(function (key) { medical.remaining[key] = 0; });
+            medical.dressing_weight_g = 0;
+            medical.affixes = [];
+        }
         if (template && hasGroup(template, 'structure', 'liquid_storage')
             && getNested(out, ['attribute_state','structure','liquid_storage']) === undefined) {
             var liquid = ensureStatePath(out, 'structure', 'liquid_storage');

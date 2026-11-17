@@ -36,6 +36,30 @@
     }
   },
   "fields": {
+    "medical_kit_body": {
+      "primary_block": "regular",
+      "reference_blocks": [],
+      "renderer": "hidden",
+      "value_type": "string",
+      "visible_by_default": false,
+      "locked_hint": ""
+    },
+    "medical_capacities": {
+      "primary_block": "regular",
+      "reference_blocks": [],
+      "renderer": "hidden",
+      "value_type": "object",
+      "visible_by_default": false,
+      "locked_hint": ""
+    },
+    "medical_supply_profile": {
+      "primary_block": "regular",
+      "reference_blocks": [],
+      "renderer": "hidden",
+      "value_type": "object",
+      "visible_by_default": false,
+      "locked_hint": ""
+    },
     "innate_medicine_profile": {
       "primary_block": "regular",
       "reference_blocks": [],

@@ -1,0 +1,6 @@
+id,sn,placeholder_name,fn_before,fn,category,sub_category,weight,stack_limit,tags,source,production_lines,spoilage_ticks,base_value,price_class,volatility,region_restrict,edible,usable
+supply_medical_tourniquet,止血带,带扣束带,卷起的束带配着收紧用的扣件。,一份1.5米卷状止血带。独立使用消耗一份，解除选定手臂或腿部的大出血，不恢复损毁值。,supply,tourniquet,0.08,1,consumable;medical_supply,buy;dungeon;craft,,0,1400,life_good,low,0,0,0
+supply_medical_hemostatic_gauze,止血纱布,纱布包,折叠的纱布封在一只小袋中。,一包普通无菌压缩纱布。独立使用消耗一份，解除选定身体部位的普通出血，不恢复损毁值。,supply,hemostatic_gauze,0.035,1,consumable;medical_supply,buy;dungeon;craft,,0,160,life_good,low,0,0,0
+supply_medical_trauma_dressing,创伤敷料,敷料包,一块带有吸收垫的敷料收在包装里。,一包带吸收垫的创伤敷料。目标部位没有伤势类Buff时，独立使用消耗一份，恢复30点损毁值，最低降到该部位当前损毁上限的30%（向上取整）。不足30点仍消耗完整一份。,supply,trauma_dressing,0.075,1,consumable;medical_supply,buy;dungeon;craft,,0,360,life_good,low,0,0,0
+supply_medical_fracture_band,骨折带,软板绑带套装,软垫包着一块能弯曲的薄板，旁边收着绑带。,一套可塑夹板与固定绑带。独立使用消耗一份，解除选定手臂或腿部的骨折，不恢复损毁值。,supply,fracture_band,0.16,1,consumable;medical_supply,buy;dungeon;craft,,0,1000,life_good,low,0,0,0
+supply_medical_alcohol,酒精,透明液体小瓶,带盖的小瓶里装着透明液体。,一瓶30毫升的75%乙醇消毒液。独立使用消耗整瓶，解除选定身体部位的伤口感染，不恢复损毁值。,supply,medical_alcohol,0.04,1,consumable;medical_supply,buy;dungeon;craft,,0,80,life_good,low,0,0,0

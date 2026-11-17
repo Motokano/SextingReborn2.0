@@ -22,6 +22,7 @@
   "flask.action.equip": "装备水壶",
   "flask.action.unequip": "卸下水壶",
   "equip.slot.water_flask": "水壶",
+  "equip.slot.medical_kit": "急救包",
   "flask.info.capacity": "储水容量：{v}",
   "livestock.retired.notice": "旧联动、废热回收和气候装置已退役，原位已释放。建材与成品可领取；未完成进度已封存，不再运行。",
   "livestock.retired.empty": "暂无待领取物品。",

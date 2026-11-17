@@ -7,7 +7,7 @@ const names = [
   'modular-weapon-scene','modular-weapon-combat','combat-metaskills','combat-damage-runtime','combat-resource-costs',
   'combat-map-transition','combat-engagement','player-death-combat','death-system','enemy-body-runtime',
   'footwork-parry','parry-variant-retirement','jab-power-range','enemy-attack-power-ranges','combat-loadout',
-  'breath-burst','direction-indicator','movement-reserves','story-opening',
+  'breath-burst','direction-indicator','movement-reserves','story-opening','injuries','bleeding-medicine','medical-skills','health-vitality-growth',
   'svelte-interactions','svelte-panels','svelte-hud-game','svelte-facilities','svelte-hud','svelte-carry','ui-window-recovery',
   'gym-runtime','gym-growth-pool','sleep-runtime','facility-world-time','bathroom-facility','book-reading','outdoor-facilities',
   'pharmacy-panel-state','pharmacy-unlock','pharmacy-results','pharmacy-equipment','sewing-station',

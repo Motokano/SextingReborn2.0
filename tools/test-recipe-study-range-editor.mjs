@@ -8,7 +8,7 @@ import { JSDOM } from 'jsdom';
 import { createEditorServer, projectRoot, readSnapshot, saveRange, createRange } from './recipe-study-range-server.mjs';
 import { mountEditor } from './recipe-study-range-editor.mjs';
 
-const files = ['data/dungeon-config.json', 'docs/design/examples/manufacturing-system-v1.json', 'docs/design/manufacturing-classification-v1.json', 'data/items.json', 'js/manufacturing-knowledge-catalog.js', 'js/manufacturing-knowledge.js', 'js/dungeon/recipe-study.js', 'data/forging/item-catalog-v2.json', 'data/dungeon-recipe-ranges.json', 'js/dungeon/recipe-ranges.js'];
+const files = ['data/dungeon-config.json', 'docs/design/examples/manufacturing-system-v1.json', 'docs/design/manufacturing-classification-v1.json', 'data/items.json', 'js/manufacturing-knowledge-catalog.js', 'js/manufacturing-knowledge.js', 'js/dungeon/recipe-study.js', 'data/forging/item-catalog-v2.json', 'data/dungeon-recipe-ranges.json', 'js/dungeon/recipe-ranges.js', 'data/medical-crafting.json', 'data/medical-kits.json'];
 function fixture(t) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'recipe-study-editor-'));
   for (const file of files) {
@@ -18,6 +18,7 @@ function fixture(t) {
   // Keep test scenarios independent of scopes the designer has already edited.
   const game = JSON.parse(fs.readFileSync(path.join(root, files[0]), 'utf8'));
   const design = JSON.parse(fs.readFileSync(path.join(root, files[1]), 'utf8'));
+  design.recipes.push(...JSON.parse(fs.readFileSync(path.join(root,'data/medical-crafting.json'),'utf8')).recipes);
   fs.writeFileSync(path.join(root, 'data/dungeon-recipe-ranges.json'), JSON.stringify({ version: 2, dungeons: [{ id: game.id, name: game.name, recipeStudy: { enabled: true, chance: .03, recipeIds: design.recipes.filter(r => r.unlock.kind === 'exploration').map(r => r.recipe_id) } }] }, null, 2) + '\n');
   t.after(() => {
     const relative = path.relative(os.tmpdir(), root);
@@ -43,11 +44,11 @@ async function serve(t, root) {
   return { fetchAt, origin };
 }
 
-test('reads the actual 63 products and two processes with current material names', t => {
+test('reads the actual 70 products and two processes with current material names', t => {
   const s = readSnapshot(fixture(t));
-  assert.equal(s.recipes.length, 65);
-  assert.equal(s.recipes.filter(r => r.selectable).length, 41);
-  assert.equal(s.recipes.filter(r => r.kind === 'basic').length, 22);
+  assert.equal(s.recipes.length, 72);
+  assert.equal(s.recipes.filter(r => r.selectable).length, 47);
+  assert.equal(s.recipes.filter(r => r.kind === 'basic').length, 23);
   assert.equal(s.recipes.filter(r => r.kind === 'processing').length, 2);
   const soil = s.recipes.filter(r => r.category === 'agriculture');
   assert.equal(soil.length, 7);
@@ -70,7 +71,7 @@ test('saves only the selected dungeon, preserving other scopes, map config and t
   const config = { enabled: true, chance: .2, recipeIds: [scope(s).recipeIds[0]] };
   const after = saveRange(root, payload(s, config));
   assert.deepEqual(scope(after), config); assert.equal(after.dungeons.find(d => d.connected).ticketOverrides, 1);
-  assert.equal(scope(after, other.createdId).recipeIds.length, 41);
+  assert.equal(scope(after, other.createdId).recipeIds.length, 47);
   const expected = structuredClone(before); expected.dungeons.find(d => d.id === s.defaultDungeonId).recipeStudy = config;
   assert.deepEqual(JSON.parse(current(root)), expected);
   assert.equal(fs.readFileSync(actualConfig, 'utf8'), untouchedConfig);
@@ -155,7 +156,7 @@ test('creates blank and copied scopes without creating a map; rejects duplicate 
   const copied = createRange(root, { revision: blank.revision, name: '修理工坊', copyFromId: original.defaultDungeonId });
   assert.deepEqual(scope(copied, copied.createdId), scope(original));
   const edited = saveRange(root, payload(copied, { enabled: true, chance: .03, recipeIds: [scope(original).recipeIds[0]] }, copied.createdId));
-  assert.equal(scope(edited).recipeIds.length, 41);
+  assert.equal(scope(edited).recipeIds.length, 47);
   const before = current(root);
   for (const name of ['', '   ', '农场遗址', '很长'.repeat(21)]) assert.throws(() => createRange(root, { revision: edited.revision, name }));
   assert.throws(() => createRange(root, { revision: edited.revision, name: '新地牢', copyFromId: 'not-a-dungeon' }));
@@ -172,12 +173,12 @@ test('UI preserves drafts across switches; saving or undoing one dungeon does no
   assert.equal(doc.getElementById('enabled').checked, false);
   assert.match(doc.getElementById('override-note').textContent, /不会新增/);
   click('[data-category="agriculture"]'); click('#select-visible'); click('#enabled');
-  click('[data-dungeon="village_ruins"]'); assert.equal(doc.getElementById('selected-count').textContent, '34');
+  click('[data-dungeon="village_ruins"]'); assert.equal(doc.getElementById('selected-count').textContent, '40');
   click(`[data-dungeon="${farmId}"]`); assert.equal(doc.getElementById('selected-count').textContent, '7');
   await app.save(); assert.equal(scope(readSnapshot(root), farmId).recipeIds.length, 7);
-  assert.equal(scope(readSnapshot(root)).recipeIds.length, 41, 'other dirty dungeon is not saved');
-  click('[data-dungeon="village_ruins"]'); assert.equal(doc.getElementById('selected-count').textContent, '34');
-  click('#undo'); assert.equal(doc.getElementById('selected-count').textContent, '41');
+  assert.equal(scope(readSnapshot(root)).recipeIds.length, 47, 'other dirty dungeon is not saved');
+  click('[data-dungeon="village_ruins"]'); assert.equal(doc.getElementById('selected-count').textContent, '40');
+  click('#undo'); assert.equal(doc.getElementById('selected-count').textContent, '47');
   click(`[data-dungeon="${farmId}"]`); assert.equal(doc.getElementById('selected-count').textContent, '7');
   search('红壤'); click('[data-recipe]');
   click('[data-dungeon="village_ruins"]');
@@ -196,36 +197,36 @@ test('allocation overview counts overlaps and unassigned recipes, includes draft
   const farmId = readSnapshot(root).dungeons.find(d => d.name === '农场遗址').id;
   click('[data-category="agriculture"]'); click('#select-visible');
   click('#allocation-button'); assert.equal(doc.getElementById('shared-count').textContent, '7');
-  assert.equal(doc.getElementById('assigned-count').textContent, '41'); assert.equal(doc.getElementById('unassigned-count').textContent, '0');
+  assert.equal(doc.getElementById('assigned-count').textContent, '47'); assert.equal(doc.getElementById('unassigned-count').textContent, '0');
   assert.equal(doc.getElementById('save').hidden, true);
   click('[data-assignment="shared"]'); assert.equal(doc.querySelectorAll('.assignment-row').length, 7);
   assert.match(doc.querySelector('.assignment-row').textContent, /未接地图.*不投放.*未保存/);
   click(`.assignment-row [data-jump-dungeon="${farmId}"]`); assert.equal(doc.getElementById('dungeon-title').textContent, '农场遗址');
   click('#undo'); click('[data-dungeon="village_ruins"]'); click('[data-category="agriculture"]'); click('#clear-visible');
   click('#allocation-button'); click('[data-assignment="unassigned"]');
-  assert.equal(doc.getElementById('unassigned-count').textContent, '7'); assert.equal(doc.getElementById('assigned-count').textContent, '34');
+  assert.equal(doc.getElementById('unassigned-count').textContent, '7'); assert.equal(doc.getElementById('assigned-count').textContent, '40');
   assert.equal(doc.querySelectorAll('.assignment-row').length, 7);
   assert([...doc.querySelectorAll('.assignment-row')].every(r => r.textContent.includes('尚未分配')));
-  assert.equal(scope(readSnapshot(root)).recipeIds.length, 41, 'overview does not save drafts');
+  assert.equal(scope(readSnapshot(root)).recipeIds.length, 47, 'overview does not save drafts');
 });
 
 test('UI filters and bulk edits affect only visible research recipes, preserve other categories, and undo', async t => {
   const { doc, click, search } = await editor(t);
-  assert.equal(doc.querySelectorAll('[data-recipe]').length, 65);
-  assert.equal(doc.querySelectorAll('[data-recipe]:disabled').length, 24);
-  assert.equal(doc.getElementById('selected-count').textContent, '41');
+  assert.equal(doc.querySelectorAll('[data-recipe]').length, 72);
+  assert.equal(doc.querySelectorAll('[data-recipe]:disabled').length, 25);
+  assert.equal(doc.getElementById('selected-count').textContent, '47');
   assert.equal(doc.getElementById('save').disabled, true);
   click('[data-category="agriculture"]');
   assert.equal(doc.querySelectorAll('[data-recipe]').length, 7);
-  click('#clear-visible'); assert.equal(doc.getElementById('selected-count').textContent, '34');
+  click('#clear-visible'); assert.equal(doc.getElementById('selected-count').textContent, '40');
   click('[data-category="fishing"]'); assert([...doc.querySelectorAll('[data-recipe]:not(:disabled)')].every(i => i.checked));
   click('[data-category="all"]'); search('腐熟基质·细');
   assert.equal(doc.querySelectorAll('[data-recipe]').length, 2);
-  click('#select-visible'); assert.equal(doc.getElementById('selected-count').textContent, '36');
+  click('#select-visible'); assert.equal(doc.getElementById('selected-count').textContent, '42');
   search('黄绵土'); click('[data-detail]');
   assert.match(doc.getElementById('detail').textContent, /腐熟基质·散/);
-  click('#detail-toggle'); assert.equal(doc.getElementById('selected-count').textContent, '37');
-  click('#undo'); assert.equal(doc.getElementById('selected-count').textContent, '41');
+  click('#detail-toggle'); assert.equal(doc.getElementById('selected-count').textContent, '43');
+  click('#undo'); assert.equal(doc.getElementById('selected-count').textContent, '47');
   search('不存在的配方'); assert.equal(doc.getElementById('empty').hidden, false); assert.equal(doc.getElementById('select-visible').disabled, true);
   search('manufacturing.tool_repair_pliers'); assert.equal(doc.querySelectorAll('[data-recipe]').length, 1);
 });
@@ -242,10 +243,10 @@ test('UI empty-range guard, exact one-recipe save, reload and server conflict re
   assert.equal(doc.getElementById('save').disabled, true);
   assert.match(doc.getElementById('status').textContent, /已保存/);
   search(''); click('[data-filter="unselected"]'); click('#select-visible');
-  assert.equal(doc.getElementById('selected-count').textContent, '41');
+  assert.equal(doc.getElementById('selected-count').textContent, '47');
   changeFile(root, c => { c.dungeons[0].name = '外部修改'; }); const before = current(root);
   await app.save();
-  assert.equal(current(root), before); assert.equal(doc.getElementById('selected-count').textContent, '41');
+  assert.equal(current(root), before); assert.equal(doc.getElementById('selected-count').textContent, '47');
   assert.match(doc.getElementById('status').textContent, /其他窗口/);
   await app.load(); assert.equal(doc.getElementById('selected-count').textContent, '1');
 });

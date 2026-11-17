@@ -1,0 +1,2073 @@
+{
+  "draft_version": 53,
+  "target_schema_version": 2,
+  "date": "2026-11-09",
+  "status": "confirmed_core_integrated_remaining_designs_explicit",
+  "runtime_registered": true,
+  "injury_skill_probability_modifiers": {
+    "status": "integrated",
+    "confirmed_on": "2026-11-17",
+    "level_owner": "injured_character",
+    "effective_level_range": [0, 100],
+    "health_fracture_reduction_per_level": 0.005,
+    "vitality_bleeding_reduction_per_level": 0.005,
+    "vitality_heavy_bleeding_reduction_per_level": 0.003,
+    "formula": "base_probability * (1 - per_level_reduction * level)",
+    "application_order": "after_existing_attack_threshold_and_mixed_type_maxima_once",
+    "rounding": "retain_fractional_probability",
+    "fixed_probability_floor": null,
+    "reduced_bleeding_probability_destination": "no_bleeding",
+    "affects_existing_injuries": false,
+    "runtime_registered": true
+  },
+  "surgery_experience": {
+    "status": "integrated",
+    "confirmed_on": "2026-11-17",
+    "proposed_on": "2026-11-17",
+    "skill_id": "survival_surgery",
+    "success_exp": 1,
+    "success_exp_confirmed_on": "2026-11-17",
+    "exp_per_level": 5000,
+    "level_cap": 100,
+    "same_skill_exp_pool": true,
+    "additional_potential_cost": 0,
+    "award_scope": "once_per_body_part_between_completed_48_tick_sleeps",
+    "interrupt_cancel_or_precheck_failure_exp": 0,
+    "repeat_success_before_sleep_exp": 0,
+    "interruption_consumes_reward_eligibility": false,
+    "limb_body_mode_or_injury_bonus": false,
+    "reset": "complete_existing_48_tick_sleep_with_normal_entry_requirements",
+    "settlement": "successful_completion_with_body_state_and_reward_flag_saved_atomically",
+    "level_effect": "operation_uses_start_level_new_level_applies_to_later_operations",
+    "runtime_registered": true,
+    "save_field": "medical_progress",
+    "legacy_missing_flags": "all_limbs_eligible_without_retroactive_exp",
+    "legacy_over_cap_skill": "clamp_to_100_and_clear_overflow"
+  },
+  "health_vitality_experience": {
+    "status": "integrated",
+    "confirmed_on": "2026-11-17",
+    "runtime_registered": true,
+    "health": {
+      "skill_id": "survival_health",
+      "source": "actual_natural_destroy_recovery_during_rest",
+      "exp_per_destroy_point": 1,
+      "exclude": ["dressings", "medicine", "surgery", "sleep"],
+      "part_condition": "no_injury_and_destroy_strictly_below_35_percent"
+    },
+    "vitality": {
+      "skill_id": "survival_vitality",
+      "source": "actual_destroy_added_by_enemy_direct_attack",
+      "exp_per_destroy_point": 1,
+      "settlement": "once_after_all_action_segments_and_pending_displacements_if_alive",
+      "exclude": ["damage_over_cap", "blocked_damage", "damage_over_time", "environment", "collision", "self_inflicted", "fatal_attack"],
+      "simultaneous": "commit_only_once",
+      "injury_probability_order": "before_experience_and_level_up"
+    },
+    "exp_per_level": 5000,
+    "level_cap": 100,
+    "experience_pool": "study_exp",
+    "additional_potential_cost": 0,
+    "sleep_reset_or_reward_quota": false,
+    "legacy_exp_retroactive": false,
+    "legacy_over_cap_skill": "clamp_to_100_and_clear_overflow",
+    "failed_save": "rollback_body_resources_time_and_experience_together_pause_rest",
+    "source_of_truth": "data/survival-skills.json"
+  },
+  "fracture_injury_rules": {
+    "status": "integrated",
+    "runtime_registered": true,
+    "allowed_body_parts": [
+      "lhand",
+      "rhand",
+      "lfoot",
+      "rfoot"
+    ],
+    "pain": {
+      "status": "integrated",
+      "confirmed_on": "2026-11-13",
+      "per_unique_fractured_part": 25,
+      "count_range": [
+        0,
+        4
+      ],
+      "same_part_stacks": false,
+      "source_mode": "persistent_component_while_fracture_present_not_per_tick_gain",
+      "natural_decay": false,
+      "stored_injury_pain": "kept_separate_and_uses_existing_accumulation_and_decay",
+      "original_cap_basis": "existing_pain_cap_with_current_effective_part_maxima",
+      "new_cap_formula": "min(100, original_cap + 25 * fracture_count)",
+      "unmedicated_formula": "min(100, min(stored_injury_pain, original_cap) + 25 * fracture_count)",
+      "effective_formula": "unmedicated_pain * (1 - highest_active_pain_ignore_ratio)",
+      "fix_one_part": "remove_its_25_pain_component_and_cap_bonus_then_recompute_without_deducting_stored_injury_pain",
+      "surgery_removes_source": false,
+      "sleep_removes_source": false
+    },
+    "functional_integration": {
+      "status": "integrated",
+      "confirmed_on": "2026-11-13",
+      "global_battle_speed": "only_existing_effective_pain_tier_once_no_independent_fracture_multiplier",
+      "retired_fracture_speed_multipliers": {
+        "one_leg": 0.8,
+        "two_legs": 0.6
+      },
+      "required_fractured_limb_attack_damage_multiplier": 0.5,
+      "attack_penalty_stacking": "once_per_action_even_with_multiple_fractured_required_limbs",
+      "weapon_limb_scope": "single_handed_uses_holding_hand_two_handed_checks_both_participating_hands",
+      "defending_fractured_limb_parry_chance_multiplier": 0.5,
+      "defending_fractured_limb_unload_ratio_multiplier": 0.5,
+      "move_action_stamina_multiplier_by_fractured_leg_count": [
+        1,
+        1.5,
+        2
+      ],
+      "movement_multiplier_scope": "actual_active_movement_cost_after_existing_shoe_and_encumbrance_modifiers_not_wait_or_base_tick_metabolism",
+      "normal_move_ticks_per_cell": 1,
+      "global_mood_stamina_and_agony_move_block": "existing_pain_tier_only_once_per_world_tick",
+      "painkillers_remove_functional_penalties": false,
+      "full_destroy_restrictions": "take_precedence_and_are_not_bypassed_by_analgesia",
+      "fix_one_part": "remove_that_parts_functional_penalties_and_confirmed_pain_source",
+      "damage_over_time": 0,
+      "legacy_pain_recovery_halving": "do_not_reenable_in_current_recovery_flow"
+    },
+    "pending": [],
+    "attack_trigger_source": "data/injuries.json.attack_bands"
+  },
+  "bleeding_injury_rules": {
+    "status": "integrated",
+    "confirmed_on": "2026-11-13",
+    "runtime_registered": true,
+    "category": "injury",
+    "group": "bleeding",
+    "clock": "world_tick",
+    "duration": "until_treated_no_auto_expiry",
+    "types": {
+      "bleeding": {
+        "name": "普通出血",
+        "allowed_body_parts": [
+          "head",
+          "chest",
+          "belly",
+          "lhand",
+          "rhand",
+          "lfoot",
+          "rfoot"
+        ],
+        "part_destroy_per_tick": 1,
+        "basic_treatment": "hemostatic_gauze"
+      },
+      "heavy_bleeding": {
+        "name": "大出血",
+        "allowed_body_parts": [
+          "lhand",
+          "rhand",
+          "lfoot",
+          "rfoot"
+        ],
+        "part_destroy_per_tick": 3,
+        "basic_treatment": "tourniquet"
+      }
+    },
+    "same_part": {
+      "max_active": 1,
+      "same_type_stacks": false,
+      "heavy_replaces_ordinary": true,
+      "ordinary_downgrades_heavy": false
+    },
+    "multiple_parts": "settle_independently",
+    "already_destroyed_target": "existing_destroy_damage_redistribution_to_not_destroyed_parts",
+    "not_yet_destroyed_target": "existing_target_cap_and_discard_overflow",
+    "basic_treatment_restores_damage": false,
+    "confirmed_affixes_and_linked_kit": "unchanged",
+    "surgery_clears_or_pauses_bleeding": false,
+    "surgery_grace_ticks": 0,
+    "attack_trigger": {
+      "status": "integrated",
+      "confirmed_on": "2026-11-13",
+      "runtime_registered": true,
+      "requires_positive_body_damage_after_defense": true,
+      "damage_types": [
+        "blunt",
+        "slash",
+        "pierce"
+      ],
+      "damage_type_basis": "final_type_after_conversion_and_defense",
+      "wound_strength_pct": "same_action_same_part_damage_of_type / normal_part_destroy_max * 100",
+      "normal_max_includes_normal_attribute_and_muscle_bonuses": true,
+      "normal_max_excludes_surgical_loss": true,
+      "multi_hit": "sum_effective_damage_by_type_per_action_per_target_part_then_roll_once",
+      "speed_extra_attacks": "new_action_new_roll",
+      "table_cell_order": [
+        "ordinary_pct",
+        "heavy_pct"
+      ],
+      "bands": [
+        {
+          "min_pct_inclusive": 0,
+          "max_pct_exclusive": 5,
+          "blunt": [
+            0,
+            0
+          ],
+          "slash": [
+            0,
+            0
+          ],
+          "pierce": [
+            0,
+            0
+          ]
+        },
+        {
+          "min_pct_inclusive": 5,
+          "max_pct_exclusive": 10,
+          "blunt": [
+            0,
+            0
+          ],
+          "slash": [
+            15,
+            0
+          ],
+          "pierce": [
+            10,
+            0
+          ]
+        },
+        {
+          "min_pct_inclusive": 10,
+          "max_pct_exclusive": 20,
+          "blunt": [
+            5,
+            0
+          ],
+          "slash": [
+            30,
+            0
+          ],
+          "pierce": [
+            20,
+            5
+          ]
+        },
+        {
+          "min_pct_inclusive": 20,
+          "max_pct_exclusive": 30,
+          "blunt": [
+            10,
+            0
+          ],
+          "slash": [
+            40,
+            10
+          ],
+          "pierce": [
+            25,
+            20
+          ]
+        },
+        {
+          "min_pct_inclusive": 30,
+          "max_pct_exclusive": 50,
+          "blunt": [
+            20,
+            5
+          ],
+          "slash": [
+            45,
+            20
+          ],
+          "pierce": [
+            30,
+            35
+          ]
+        },
+        {
+          "min_pct_inclusive": 50,
+          "max_pct_exclusive": null,
+          "blunt": [
+            30,
+            10
+          ],
+          "slash": [
+            45,
+            35
+          ],
+          "pierce": [
+            30,
+            50
+          ]
+        }
+      ],
+      "mixed_damage": "lookup_each_type_separately_then_max_ordinary_and_max_heavy",
+      "roll": "one_mutually_exclusive_result_none_ordinary_or_heavy",
+      "non_limb_heavy_chance": "zero_and_return_probability_to_none_not_ordinary",
+      "existing_ordinary": "only_heavy_outcome_changes_state",
+      "existing_heavy": "no_downgrade_or_stack",
+      "excluded_sources": [
+        "bleeding_damage_over_time",
+        "destroy_damage_redistribution"
+      ]
+    },
+    "bleeding_slow_pharmacy": {
+      "status": "integrated",
+      "effect_type": "pharmacy_bleeding_slow",
+      "stacking": "highest_active_per_part",
+      "topical_scope": "selected_body_part",
+      "injection_scope": "owner_all_parts",
+      "fractional_damage_units": 1000000,
+      "remainder_owner": "bleeding_injury_instance",
+      "clears_bleeding": false,
+      "pauses_infection": false,
+      "preserve_remainder_on": ["upgrade", "surgery", "dose_refresh", "medicine_expiry", "save_load"],
+      "discard_remainder_on": "clear_bleeding"
+    },
+    "pending": [
+      "non_attack_trigger_sources"
+    ]
+  },
+  "design_source": "docs/design/83-medical-system.md#48-基础急救包完整物品数据2026-11-09",
+  "scope": "基础与四改造包、六类用品生产、六仓治疗手术、三已定词条、探索掉落及四类伤势已接入；其余词条与商店另行设计",
+  "quick_capacity_balance": {
+    "status": "user_confirmed_all_six_reserves_half_base",
+    "date": "2026-11-11",
+    "confirmed_on": "2026-11-11",
+    "reason": "exchange_lower_reserves_for_combat_use_permission",
+    "capacity_multiplier": 0.5,
+    "capacity_display": {
+      "trauma_dressing_points": 150,
+      "hemostatic_gauze_m": 3.75,
+      "tourniquet_m": 1.5,
+      "fracture_band_m": 2.25,
+      "medical_alcohol_ml": 15,
+      "surgical_staples": 35
+    },
+    "dressing_refill_points": 50,
+    "other_refills": "unchanged_fixed_per_supply_overflow_discarded",
+    "per_action_costs_and_ticks": "unchanged",
+    "conversion_contents_exceed_target_capacity": "reject_without_spending_discarding_or_scaling",
+    "prototype_applied": true
+  },
+  "confirmed": {
+    "four_modified_bodies_reviewed_as_set": true,
+    "affix_direction": "prefer_bolder_treatment_rule_changes_while_avoiding_duplicate_body_effects",
+    "equipment_role": "like_water_flask",
+    "kit_use_requires_non_combat_by_default": true,
+    "quick_combat_use_exception": true,
+    "non_combat_usage_rule_reference": "usage_access_design",
+    "capacity_display": {
+      "trauma_dressing_points": 300,
+      "hemostatic_gauze_m": 7.5,
+      "tourniquet_m": 3,
+      "fracture_band_m": 4.5,
+      "medical_alcohol_ml": 30
+    },
+    "refill_one_whole_supply": true,
+    "overflow": "fill_and_discard_excess_no_return",
+    "full_reserve_refill": "reject_without_consumption",
+    "use_ticks": 1,
+    "refill_ticks": 1,
+    "use_stamina": 0,
+    "refill_stamina": 0,
+    "skill_requirement": "none",
+    "dressing_per_action": "to_treatment_floor_or_reserve_exhausted",
+    "dressing_refill_fraction": {
+      "numerator": 1,
+      "denominator": 3
+    },
+    "other_refills": "fixed_per_supply",
+    "body_part_costs": "83 sections 4.3 through 4.6",
+    "loaded_materials_withdrawal": "never",
+    "loaded_materials_reverse_conversion": false,
+    "interkit_transfer": false,
+    "interfaces": {
+      "daily": [
+        "refill",
+        "treat"
+      ],
+      "home_manufacturing_workbench": [
+        "modify"
+      ]
+    },
+    "modification_location": "home_manufacturing_workbench",
+    "modification_requires_facility_context": true,
+    "modification_conversion": {
+      "source": "tool_medical_kit_basic",
+      "result": "corresponding_new_kit_body_type",
+      "irreversible": true,
+      "restore_basic_body": false,
+      "inheritance": {
+        "affixes": "preserve_existing",
+        "reserve_amounts": "preserve_actual_all_five",
+        "material_weight": "preserve_actual",
+        "clear_contents": false,
+        "auto_fill": false,
+        "target_capacity_insufficient": "reject_until_contents_consumed_to_fit",
+        "overflow_discard_on_conversion": false
+      }
+    },
+    "daily_target": "equipped_medical_kit_instance",
+    "workbench_selection_scope": [
+      "equipped_medical_kit",
+      "backpack_medical_kits"
+    ],
+    "workbench_selection_equips": false,
+    "workbench_modify_target": "selected_carried_instance",
+    "expanded_body": {
+      "name": "扩容急救包",
+      "decision_basis": "explicit_user_confirmation",
+      "source_body": "tool_medical_kit_basic",
+      "capacity_basis": "without_affixes",
+      "capacity_display": {
+        "trauma_dressing_points": 450,
+        "hemostatic_gauze_m": 11.25,
+        "tourniquet_m": 4.5,
+        "fracture_band_m": 6.75,
+        "medical_alcohol_ml": 45
+      },
+      "empty_weight_kg": 0.35,
+      "dressing_refill_points": 150,
+      "other_refills": "unchanged_fixed_per_supply"
+    },
+    "metered_body": {
+      "name": "定量急救包",
+      "decision_basis": "finalized_under_user_delegation",
+      "source_body": "tool_medical_kit_basic",
+      "capacity_basis": "without_affixes",
+      "capacity_display": {
+        "trauma_dressing_points": 300,
+        "hemostatic_gauze_m": 7.5,
+        "tourniquet_m": 3,
+        "fracture_band_m": 4.5,
+        "medical_alcohol_ml": 30
+      },
+      "empty_weight_kg": 0.3,
+      "dressing_refill_points": 100,
+      "other_refills": "unchanged_fixed_per_supply",
+      "normal_treatment_ticks": 1,
+      "injury_supply_cost_multiplier": 0.8,
+      "affected_supplies": [
+        "hemostatic_gauze",
+        "tourniquet",
+        "fracture_band",
+        "medical_alcohol"
+      ],
+      "dressing_cost_multiplier": 1,
+      "alcohol_cost_precision_ml": 0.1,
+      "affix_stacking": "pending_design"
+    },
+    "quick_body": {
+      "name": "快取急救包",
+      "capacity_revision_reference": "quick_capacity_balance",
+      "decision_basis": "body_finalized_under_delegation_six_reserve_halving_explicitly_confirmed",
+      "source_body": "tool_medical_kit_basic",
+      "capacity_basis": "without_affixes",
+      "capacity_display": {
+        "trauma_dressing_points": 150,
+        "hemostatic_gauze_m": 3.75,
+        "tourniquet_m": 1.5,
+        "fracture_band_m": 2.25,
+        "medical_alcohol_ml": 15,
+        "surgical_staples": 35
+      },
+      "empty_weight_kg": 0.3,
+      "dressing_refill_points": 50,
+      "other_refills": "unchanged_fixed_per_supply",
+      "treatment_ticks": 1,
+      "use_mode": "single",
+      "allowed_in_combat": true,
+      "time_discount": false,
+      "all_supply_cost_multiplier": 1,
+      "cooldown_ticks": 0,
+      "injury_supplies": "require_full_normal_cost",
+      "dressing_recovery": "min(required_recovery,remaining_points)",
+      "minimum_dressing_recovery_points": 1,
+      "combat_redesign": {
+        "status": "single_mode_normal_cost_no_cooldown_combat_permission_and_normal_time_user_confirmed",
+        "confirmed_on": "2026-11-11",
+        "user_request": "快取就不用分普通和应急模式了，耗材正常消耗，也取消冷却，只保留战斗中可以使用这个特点，时间照常扣。",
+        "refill_requires_non_combat": true,
+        "access_rule_reference": "usage_access_design"
+      }
+    },
+    "linked_body": {
+      "name": "联动急救包",
+      "decision_basis": "finalized_under_user_delegation",
+      "source_body": "tool_medical_kit_basic",
+      "capacity_basis": "without_affixes",
+      "capacity_display": {
+        "trauma_dressing_points": 300,
+        "hemostatic_gauze_m": 7.5,
+        "tourniquet_m": 3,
+        "fracture_band_m": 4.5,
+        "medical_alcohol_ml": 30
+      },
+      "empty_weight_kg": 0.3,
+      "dressing_refill_points": 100,
+      "other_refills": "unchanged_fixed_per_supply",
+      "normal_treatment_ticks": 1,
+      "linked_mode": {
+        "selection": "explicit_by_player",
+        "treatment_ticks": 1,
+        "scope": "one_selected_body_part",
+        "clears_injury_count": 1,
+        "injury_supplies": "require_full_normal_cost",
+        "require_no_injuries_after_clear": true,
+        "require_dressing_and_recovery_space": true,
+        "dressing_recovery": "to_treatment_floor_or_reserve_exhausted",
+        "cost": "matching_injury_supply_plus_actual_dressing_recovery",
+        "precondition_failure": "reject_without_consumption_or_time"
+      }
+    }
+  },
+  "conversion_designs": {
+    "basic_to_expanded": {
+      "status": "materials_and_duration_confirmed_by_user",
+      "target_design": "confirmed.expanded_body",
+      "source_body": "tool_medical_kit_basic",
+      "source_count": 1,
+      "source_role": "existing_kit_to_convert",
+      "facility": "home_manufacturing_workbench",
+      "materials": {
+        "textile_cotton_cloth": 2,
+        "material_nylon_stock": 1
+      },
+      "ticks": 4,
+      "stamina": 0,
+      "learning_requirement": "none",
+      "runtime_registered": true
+    },
+    "basic_to_metered": {
+      "status": "finalized_under_user_delegation",
+      "target_design": "confirmed.metered_body",
+      "source_body": "tool_medical_kit_basic",
+      "source_count": 1,
+      "source_role": "existing_kit_to_convert",
+      "facility": "home_manufacturing_workbench",
+      "materials": {
+        "textile_cotton_cloth": 1,
+        "material_nylon_stock": 1,
+        "material_steel_wire": 1
+      },
+      "ticks": 4,
+      "stamina": 0,
+      "learning_requirement": "none",
+      "runtime_registered": true
+    },
+    "basic_to_quick": {
+      "status": "finalized_under_user_delegation",
+      "target_design": "confirmed.quick_body",
+      "source_body": "tool_medical_kit_basic",
+      "source_count": 1,
+      "source_role": "existing_kit_to_convert",
+      "facility": "home_manufacturing_workbench",
+      "materials": {
+        "textile_hemp_cloth": 1,
+        "material_nylon_stock": 1
+      },
+      "ticks": 3,
+      "stamina": 0,
+      "learning_requirement": "none",
+      "runtime_registered": true
+    },
+    "basic_to_linked": {
+      "status": "finalized_under_user_delegation",
+      "target_design": "confirmed.linked_body",
+      "source_body": "tool_medical_kit_basic",
+      "source_count": 1,
+      "source_role": "existing_kit_to_convert",
+      "facility": "home_manufacturing_workbench",
+      "materials": {
+        "textile_cotton_cloth": 2,
+        "material_nylon_stock": 1
+      },
+      "ticks": 4,
+      "stamina": 0,
+      "learning_requirement": "none",
+      "runtime_registered": true
+    }
+  },
+  "usage_access_design": {
+    "status": "user_confirmed_design_not_implemented",
+    "confirmed_on": "2026-11-11",
+    "source": "docs/design/83-medical-system.md#414-急救包战斗使用资格与快取例外2026-11-11已确认设计",
+    "require_non_combat_by_default": true,
+    "applies_to": [
+      "refill",
+      "injury_treatment",
+      "damage_recovery",
+      "surgery",
+      "linked_treatment",
+      "affix_provided_kit_treatment"
+    ],
+    "body_scope": "all_medical_kit_bodies",
+    "zero_tick_exemption": false,
+    "combat_exception": {
+      "body_reference": "confirmed.quick_body",
+      "actions": [
+        "injury_treatment",
+        "damage_recovery",
+        "surgery",
+        "affix_provided_kit_treatment"
+      ],
+      "use_mode": "single",
+      "treatment_ticks": 1,
+      "surgery_ticks": 6,
+      "time_discount": false,
+      "all_supply_cost_multiplier": 1,
+      "cooldown_ticks": 0,
+      "refill_exemption": false,
+      "affix_treatment": "inherits_quick_body_combat_access_with_own_normal_costs_no_independent_exemption",
+      "enter_combat": "does_not_by_itself_interrupt_eligible_quick_treatment_or_surgery",
+      "other_action_eligibility_and_interruptions": "still_apply_no_interrupt_immunity",
+      "time_accounting": "advance_normal_action_time_and_existing_combat_world_events_not_free_action",
+      "combat_exchange_time_mapping": "pending_formal_integration_no_extra_attack_or_time_skip"
+    },
+    "other_body_or_affix_exemption": false,
+    "combat_state_source": "CombatEngagement.isPlayerInCombat",
+    "future_action_gate_owner": "SceneAccess.medicalActionReason / MedicalActions",
+    "recheck_at": [
+      "actual_start",
+      "during_action",
+      "before_effect_commit"
+    ],
+    "in_combat_start": "allow_eligible_quick_treatment_or_surgery_otherwise_reject_without_material_action_stamina_or_time_cost",
+    "enter_combat_during_action": "continue_eligible_quick_treatment_or_surgery_otherwise_stop_unfinished_action_without_result",
+    "enter_combat_during_surgery": "eligible_quick_surgery_continues_others_abort_using_confirmed_interruption_design",
+    "combat_before_surgery_completion_commit": "interrupt_non_exempt_surgery_even_on_last_tick",
+    "already_committed_results": "preserve",
+    "ordinary_treatment_and_refill_abort_costs": "pending_do_not_inherit_surgery_upfront_costs",
+    "workbench": "also_require_original_home_facility_and_action_eligibility",
+    "carry_and_view_are_treatment_use": false,
+    "equip_unequip_combat_rule": "separate_pending_design",
+    "standalone_supply_combat_rule": "not_determined_by_this_kit_rule",
+    "runtime_registered": true
+  },
+  "inherited_design": {
+    "equip_slot": "medical_kit",
+    "simultaneously_equipped": 1,
+    "backpack_slots_when_stowed": 1,
+    "backpack_slots_when_equipped": 0,
+    "keep_empty_body": true,
+    "retain_instance_state_on_transfer": true,
+    "death": "existing_carried_equipment_loss_scope"
+  },
+  "templates": {
+    "tool_medical_kit_basic": {
+      "item_id": "tool_medical_kit_basic",
+      "editor_name": "基础急救包",
+      "category": "tool",
+      "sub_category": "container",
+      "tags": [
+        "tool",
+        "container",
+        "medical_kit"
+      ],
+      "weight_kg": 0.25,
+      "attribute_modules": {
+        "base": {
+          "identity": {
+            "name": "基础急救包",
+            "name_0": "基础急救包",
+            "sn": "基础急救包",
+            "placeholder_name": "分隔布包",
+            "fn_before": "一个带翻盖和提带的小布包，里面缝着分隔袋与固定带。",
+            "fn": "供随身佩带的急救包，内有敷料、纱布、止血带、骨折带和消毒液的专用储位，可分别补充和取用。"
+          },
+          "stacking": {
+            "stack_limit": 1
+          },
+          "trade": {
+            "base_value": 600,
+            "price_class": "life_good",
+            "volatility": "low",
+            "region_restrict": 0
+          },
+          "spoilage": {
+            "spoilage_ticks": 0
+          },
+          "provenance": {
+            "source": "buy;dungeon;craft",
+            "production_lines": ""
+          }
+        },
+        "equipment": {
+          "wearable": {
+            "equip_slot": "medical_kit"
+          },
+          "medical_kit": {
+            "kit_use_ticks": 1,
+            "kit_refill_ticks": 1,
+            "kit_use_stamina": 0,
+            "kit_refill_stamina": 0,
+            "kit_skill_requirement": "none",
+            "kit_cooldown_ticks": 0,
+            "kit_use_requires_equipped": true,
+            "kit_use_requires_non_combat": true,
+            "kit_refill_requires_non_combat": true,
+            "kit_target": "single_player_body_part",
+            "kit_treatments": {
+              "trauma_dressing": {
+                "kind": "recover_destroy",
+                "allowed_body_parts": [
+                  "head",
+                  "chest",
+                  "belly",
+                  "lhand",
+                  "rhand",
+                  "lfoot",
+                  "rfoot"
+                ],
+                "requires_no_injury_buffs": true,
+                "injury_check_scope": "selected_body_part",
+                "minimum_destroy_ratio": 0.3,
+                "limit_basis": "current_effective_body_part_destroy_max",
+                "minimum_rounding": "ceil",
+                "per_action_limit": "to_treatment_floor_or_reserve_exhausted",
+                "cost_per_recovered_point": 1,
+                "zero_effect": "reject_without_cost_or_time",
+                "extra_material_costs": []
+              },
+              "hemostatic_gauze": {
+                "kind": "remove_injury",
+                "injury_type": "bleeding",
+                "allowed_body_parts": [
+                  "head",
+                  "chest",
+                  "belly",
+                  "lhand",
+                  "rhand",
+                  "lfoot",
+                  "rfoot"
+                ],
+                "cost_by_body_part": {
+                  "head": 150,
+                  "chest": 250,
+                  "belly": 200,
+                  "lhand": 100,
+                  "rhand": 100,
+                  "lfoot": 150,
+                  "rfoot": 150
+                },
+                "clears": "selected_part_unique_matching_injury",
+                "destroy_recovery": 0,
+                "insufficient_reserve": "reject_without_cost_or_time"
+              },
+              "tourniquet": {
+                "kind": "remove_injury",
+                "injury_type": "heavy_bleeding",
+                "allowed_body_parts": [
+                  "lhand",
+                  "rhand",
+                  "lfoot",
+                  "rfoot"
+                ],
+                "cost_by_body_part": {
+                  "lhand": 50,
+                  "rhand": 50,
+                  "lfoot": 75,
+                  "rfoot": 75
+                },
+                "clears": "selected_part_unique_matching_injury",
+                "destroy_recovery": 0,
+                "insufficient_reserve": "reject_without_cost_or_time"
+              },
+              "fracture_band": {
+                "kind": "remove_injury",
+                "injury_type": "fracture",
+                "allowed_body_parts": [
+                  "lhand",
+                  "rhand",
+                  "lfoot",
+                  "rfoot"
+                ],
+                "cost_by_body_part": {
+                  "lhand": 150,
+                  "rhand": 150,
+                  "lfoot": 225,
+                  "rfoot": 225
+                },
+                "clears": "selected_part_unique_matching_injury",
+                "destroy_recovery": 0,
+                "insufficient_reserve": "reject_without_cost_or_time",
+                "paired_splint_cost": "included_proportionally_in_reserve"
+              },
+              "medical_alcohol": {
+                "kind": "remove_injury",
+                "injury_type": "wound_infection",
+                "allowed_body_parts": [
+                  "head",
+                  "chest",
+                  "belly",
+                  "lhand",
+                  "rhand",
+                  "lfoot",
+                  "rfoot"
+                ],
+                "cost_by_body_part": {
+                  "head": 3,
+                  "chest": 5,
+                  "belly": 4,
+                  "lhand": 2,
+                  "rhand": 2,
+                  "lfoot": 3,
+                  "rfoot": 3
+                },
+                "clears": "selected_part_unique_matching_injury",
+                "destroy_recovery": 0,
+                "insufficient_reserve": "reject_without_cost_or_time"
+              }
+            }
+          }
+        },
+        "structure": {
+          "medical_storage": {
+            "reserves": {
+              "trauma_dressing": {
+                "name": "创伤敷料",
+                "unit": "destroy_point",
+                "display_unit": "点",
+                "display_divisor": 1,
+                "capacity": 300,
+                "initial": 0,
+                "accepted_item_id": "supply_medical_trauma_dressing",
+                "refill": {
+                  "kind": "capacity_fraction",
+                  "numerator": 1,
+                  "denominator": 3
+                },
+                "basic_refill_amount": 100,
+                "portion_weight_g": 75,
+                "full_portions": 3
+              },
+              "hemostatic_gauze": {
+                "name": "止血纱布",
+                "unit": "cm",
+                "display_unit": "米",
+                "display_divisor": 100,
+                "capacity": 750,
+                "initial": 0,
+                "accepted_item_id": "supply_medical_hemostatic_gauze",
+                "refill": {
+                  "kind": "fixed",
+                  "amount": 375
+                },
+                "basic_refill_amount": 375,
+                "portion_weight_g": 35,
+                "full_portions": 2
+              },
+              "tourniquet": {
+                "name": "止血带",
+                "unit": "cm",
+                "display_unit": "米",
+                "display_divisor": 100,
+                "capacity": 300,
+                "initial": 0,
+                "accepted_item_id": "supply_medical_tourniquet",
+                "refill": {
+                  "kind": "fixed",
+                  "amount": 150
+                },
+                "basic_refill_amount": 150,
+                "portion_weight_g": 80,
+                "full_portions": 2
+              },
+              "fracture_band": {
+                "name": "骨折带",
+                "unit": "cm",
+                "display_unit": "米",
+                "display_divisor": 100,
+                "capacity": 450,
+                "initial": 0,
+                "accepted_item_id": "supply_medical_fracture_band",
+                "refill": {
+                  "kind": "fixed",
+                  "amount": 450
+                },
+                "basic_refill_amount": 450,
+                "portion_weight_g": 160,
+                "full_portions": 1
+              },
+              "medical_alcohol": {
+                "name": "酒精",
+                "unit": "ml",
+                "display_unit": "毫升",
+                "display_divisor": 1,
+                "capacity": 30,
+                "initial": 0,
+                "accepted_item_id": "supply_medical_alcohol",
+                "refill": {
+                  "kind": "fixed",
+                  "amount": 30
+                },
+                "basic_refill_amount": 30,
+                "portion_weight_g": 40,
+                "full_portions": 1
+              }
+            },
+            "refill_consumes_portions": 1,
+            "refill_target": "selected_reserve",
+            "overflow": "fill_and_discard_excess_no_return",
+            "full_refill": "reject_without_cost_or_time",
+            "wrong_supply": "reject_without_cost_or_time",
+            "withdrawal_enabled": false,
+            "interkit_transfer_enabled": false
+          }
+        }
+      }
+    }
+  },
+  "physical_specification": {
+    "status": "confirmed",
+    "materials": [
+      "麻纤维编织包壳",
+      "麻编分隔袋",
+      "麻编固定绑带与挂带"
+    ],
+    "reference_dimensions_cm": [
+      24,
+      16,
+      5.5
+    ],
+    "empty_weight_kg": 0.25,
+    "weight_includes": "包壳、隔袋、固定带与挂带；不含六类医疗材料",
+    "capacity_basis": "游戏六类固定储量，不以外形体积执行装箱判定",
+    "no_implicit_effects": [
+      "防弹或减伤",
+      "防水与抗污染",
+      "额外背包格",
+      "负重折减",
+      "耐久及维修系统"
+    ],
+    "recipe_material_binding": "基础配方麻纤维3份，编织包体、分隔及绑带合并为制作工序；空包保持250克；配方正本data/medical-kits.json.basic_recipe"
+  },
+  "runtime_integration": {
+    "status": "integrated",
+    "runtime_source": "data/medical-kits.json",
+    "actions": "js/scene/medical.js",
+    "panel": "js/scene/medical-panel.js",
+    "rules": "js/medical-kit.js",
+    "verification": "npm run test:medical-kit",
+    "save_fields": [
+      "medical_operation",
+      "character_attributes.surgical_max_loss",
+      "buff_instances.body_part",
+      "attribute_state.structure.medical_storage"
+    ],
+    "production": {
+      "source": "data/medical-crafting.json",
+      "actions": "js/scene/manufacturing.js",
+      "panel": "js/scene/manufacturing-panel.js",
+      "status": "integrated",
+      "verification": "npm run test:medical-production"
+    }
+  },
+  "out_of_scope": [
+    "实际伤势Buff ID、作用及重复受伤行为",
+    "商店；基础包、六用品制作及探索掉落已接入",
+    "词条、改造效果与槽数及容量变化时的余量/重量规则已有83号4.9候选，尚待确认",
+    "装卸耗时和战斗换装限制，沿正式装备入口统一设计",
+    "基础款之外的容量精度",
+    "带储量急救包的交易估价"
+  ],
+  "references": [
+    {
+      "title": "TT IFAK POUCH — Tasmanian Tiger USA",
+      "url": "https://tasmaniantigerusa.com/medic-equipment/ifak-pouches/tt-ifak-pouch",
+      "accessed": "2026-11-09",
+      "supports": "空包250克、24×16×5.5厘米、700D织物、翻开及抽拉式收纳设计",
+      "limits": "仅参考外形和空包重量；不据此声称九份用品实物装箱已验证，不用于游戏基价或治疗效果"
+    }
+  ],
+  "updated_on": "2026-11-13",
+  "confirmed_on": "2026-11-10",
+  "confirmed_body_fields": [
+    "empty_weight_kg",
+    "physical_specification",
+    "base_value",
+    "empty_initial_contents",
+    "acquisition",
+    "icon",
+    "no_durability",
+    "no_extra_cooldown",
+    "equip_required_for_kit_treatment",
+    "no_withdrawal_or_interkit_transfer",
+    "weight_accounting"
+  ],
+  "initial_state": {
+    "identity": "使用64号通用物品实例身份分配器",
+    "count": 1,
+    "enchants": [],
+    "attribute_state": {
+      "structure": {
+        "medical_storage": {
+          "version": 1,
+          "remaining": {
+            "trauma_dressing": 0,
+            "hemostatic_gauze": 0,
+            "tourniquet": 0,
+            "fracture_band": 0,
+            "medical_alcohol": 0
+          }
+        }
+      },
+      "equipment": {
+        "medical_kit": {
+          "version": 1,
+          "modification": null
+        }
+      }
+    },
+    "creation": "新制及默认新生成均为空包；明确配置的特殊投放另行设计",
+    "old_save": "不赠送新包；将来如需迁移已有实例，必须定义迁移，不能以读取动作补满"
+  },
+  "weight_accounting": {
+    "scope": "无词条、无改造的基础款",
+    "formula": "empty_weight + recorded_dressing_weight + proportional_four_supply_weights + staple_count * 0.1g",
+    "full_contents_weight_g": 662,
+    "full_total_weight_kg": 0.912,
+    "rounding": "内部保留精度，总重沿现有显示规则舍入；不得逐次累计显示舍入误差",
+    "basis": "沿现有完整用品重量同比例折算余量，不单独拆除包装重量；酒精的40克包含瓶及包装，这是游戏质量口径，不是液体密度",
+    "overflow": "仅增加实际入仓份额的重量，舍弃部分不留在包内",
+    "inventory": "被消耗的补充用品不再作为包内第二件物品保存或重复计重",
+    "carrying": "装备中照常计入人物负重，无急救包自带减重；存入背包时沿所在容器既有携带规则",
+    "future_capacity_modification": "preserve_actual_contents_mass_reject_overflow"
+  },
+  "lifecycle": {
+    "shelf_life": "never",
+    "durability": "not_enabled",
+    "body_consumed_on_treatment": false,
+    "trade": "允许交易；600为仅空包后台基价，成交沿通用交易规则；有内容物时的估价随收纳交易接入再定",
+    "drop_and_storage": "沿通用装备和实例转移规则",
+    "death": "随身及装备中的包体、余量、词条和改造共同丢失；家中仓库和已学方法保留，不补发",
+    "invalid_actions": "无效治疗、材料不足、满仓或错误用品不扣材料，不耗动作时间",
+    "atomicity": "一次装填或治疗中的用品、储量、伤势、时间、体力和派生状态共同保存；失败共同回退"
+  },
+  "acquisition": {
+    "sources": [
+      "exploration",
+      "crafting_basic_kit",
+      "crafting_medical_supplies"
+    ],
+    "crafting": "basic_kit_and_six_supplies_integrated",
+    "recipe_inputs": [
+      {
+        "item_id": "textile_hemp_fiber",
+        "count": 3
+      }
+    ],
+    "station_and_tools": {
+      "station_id": "npc.station.manufacturing_base",
+      "extra_tool": null
+    },
+    "shop": "deferred_by_user",
+    "placement": "dungeon-config.pool.batches:medical-kit-supplies-v1",
+    "output": "one_empty_basic_kit_or_one_whole_supply",
+    "updated_on": "2026-11-13",
+    "basic_recipe_source": "data/medical-kits.json.basic_recipe",
+    "basic_material_policy": "easy_to_gather_raw_materials_in_larger_quantities_advanced_materials_for_modifications"
+  },
+  "presentation": {
+    "icon_key": "medical_kit",
+    "icon_source": "js/dungeon/icons.js",
+    "icon_status": "复用已存在图形；新物品映射尚未注册",
+    "identity": "沿27号现有语言2/5/10级认识规则",
+    "weight": "显示空包自重及当前总重，容量不冒充当前储量",
+    "reserves": "检查包内内容后显示五项当前量/上限；长度以米显示，内部以厘米整数保存",
+    "medical_costs": "按目标部位和选用材料显示本次实际消耗及耗时；敷料显示实际可恢复点数",
+    "unknown_effects": "沿现有认识规则隐藏未认识的词条和改造，不输出隐藏条数或空标题",
+    "base_value": "后台字段，不直接公开为商店报价"
+  },
+  "field_contract": {
+    "categories": [
+      "base",
+      "equipment",
+      "structure"
+    ],
+    "new_groups": [
+      "equipment.medical_kit",
+      "structure.medical_storage"
+    ],
+    "slot_registration": "medical_kit是拟新增装备槽值，尚未正式注册",
+    "reserve_amount_type": "基础款所有剩余量为非负整数；米在显示时由厘米除以100",
+    "storage_fields": {
+      "version": "正整数状态版本",
+      "remaining": "五个储位键齐全，0有效，值不超过对应有效容量"
+    },
+    "references": "accepted_item_id引用已登记五种用品；injury_type仅为设计类型，运行Buff ID待具体伤势设计",
+    "template_and_instance": "上限与规则在包体型号模板；当前余量与词条在各自实例；改造转换为对应的新包体，保留原词条、五仓实际余量及材料重量，超出目标有效容量则拒绝；具体转换字段待定，不得共享可写状态",
+    "validation": [
+      "未知储位、错误用品或额外字段拒绝",
+      "缺失或不合法数字拒绝，0不按缺省回填",
+      "五储位独立封顶，不能跨类别转入",
+      "同一物品实例最多一个归属",
+      "敷料治疗读取当前有效部位上限并向上取整30%下限",
+      "未来如容量/3非整数，须先定义精度规则再开放该型号或改造"
+    ]
+  },
+  "affix_design_proposal": {
+    "status": "three_functional_affixes_confirmed_three_new_and_two_carrying_candidates_pending",
+    "confirmed_effect_ids": [
+      "universal_hemostasis",
+      "fracture_wrap",
+      "gauze_dressing"
+    ],
+    "confirmed_interactions": [
+      "fracture_wrap_can_clear_fracture_and_bleeding_before_linked_dressing_recovery"
+    ],
+    "slot_count_status": "pending_confirmation",
+    "scope": "base_and_all_four_modified_bodies",
+    "max_distinct_affixes": 2,
+    "min_affixes": 0,
+    "duplicate_affixes": false,
+    "retired_candidates": [
+      "capacity",
+      "dressing",
+      "bleeding",
+      "economy",
+      "refill"
+    ],
+    "effects": {
+      "light": {
+        "name": "轻量",
+        "status": "proposal_not_confirmed",
+        "current_body_empty_weight_multiplier": 0.7,
+        "affects_content_weight": false,
+        "requires_equipped": false,
+        "replaces_old_basic_body_20_percent_formula": true
+      },
+      "bodyfit": {
+        "name": "贴身",
+        "status": "proposal_not_confirmed",
+        "equipped_kit_encumbrance_multiplier": 0.85,
+        "applies_to": "this_kit_body_plus_actual_contents",
+        "requires_equipped": true,
+        "changes_physical_weight": false,
+        "affects_other_items_or_carry_limit": false,
+        "unequipped": "no_bodyfit_discount_follow_existing_container_rules"
+      },
+      "universal_hemostasis": {
+        "name": "通用止血",
+        "status": "confirmed_by_user",
+        "supply": "tourniquet",
+        "allowed_body_parts": [
+          "lhand",
+          "rhand",
+          "lfoot",
+          "rfoot"
+        ],
+        "treatable_injuries": [
+          "heavy_bleeding",
+          "bleeding"
+        ],
+        "injury_uniqueness": "preserve_one_bleeding_type_per_body_part",
+        "cost": "one_existing_tourniquet_treatment_cost_for_target_part",
+        "extra_gauze_cost": 0
+      },
+      "fracture_wrap": {
+        "name": "固定包扎",
+        "status": "confirmed_by_user",
+        "supply": "fracture_band",
+        "allowed_body_parts": [
+          "lhand",
+          "rhand",
+          "lfoot",
+          "rfoot"
+        ],
+        "required_primary_injury": "fracture",
+        "additional_cleared_injury": "bleeding",
+        "scope": "same_selected_body_part",
+        "cost": "one_existing_fracture_band_treatment_cost_for_target_part",
+        "extra_gauze_cost": 0,
+        "can_clear_heavy_bleeding_or_infection": false,
+        "damage_recovery_points": 0
+      },
+      "gauze_dressing": {
+        "name": "临时敷护",
+        "status": "confirmed_by_user",
+        "supply": "hemostatic_gauze",
+        "selection": "explicit_recovery_use_instead_of_normal_hemostasis",
+        "allowed_body_parts": [
+          "head",
+          "chest",
+          "belly",
+          "lhand",
+          "rhand",
+          "lfoot",
+          "rfoot"
+        ],
+        "requires_no_injuries_at_recovery_stage": true,
+        "cm_per_damage_point": 5,
+        "damage_points_per_metre": 20,
+        "recovery": "min(points_above_ceil_30_percent_floor,floor(available_gauze_cm/5))",
+        "minimum_recovery_points": 1,
+        "normal_treatment_ticks": 1,
+        "extra_stamina": 0,
+        "charge_actual_recovery_only": true,
+        "physical_reserve_conversion": false,
+        "adds_independent_items": false,
+        "metered_injury_discount_applies": false
+      },
+      "hemostatic_guard": {
+        "name": "稳固止血",
+        "status": "proposal_not_confirmed",
+        "trigger": "actual_clear_of_bleeding_or_heavy_bleeding_using_this_kit",
+        "effect_class": "non_injury_protection",
+        "scope": "each_successfully_treated_body_part",
+        "duration_ticks": 3,
+        "duration_starts": "after_treatment_action_completion",
+        "prevented_injury": "bleeding",
+        "charges_per_part": 1,
+        "repeat_trigger": "refresh_duration_and_single_charge_without_stacking",
+        "charge_consumed_on": "next_otherwise_valid_ordinary_bleeding_application",
+        "extra_material_cost": 0,
+        "blocks_heavy_bleeding_fracture_infection_or_damage": false,
+        "blocks_dressing_recovery": false,
+        "effect_owner": "character_body_part_not_equipment_instance",
+        "equipment_change": "preserve_effect_without_refresh_or_extra_charges"
+      },
+      "emergency_packing": {
+        "name": "应急填塞",
+        "status": "proposal_not_confirmed",
+        "supply": "hemostatic_gauze",
+        "treatable_injury": "heavy_bleeding",
+        "allowed_body_parts": [
+          "lhand",
+          "rhand",
+          "lfoot",
+          "rfoot"
+        ],
+        "normal_bleeding_gauze_cost_multiplier": 2,
+        "base_cost_cm": {
+          "lhand": 200,
+          "rhand": 200,
+          "lfoot": 300,
+          "rfoot": 300
+        },
+        "normal_treatment_ticks": 1,
+        "extra_stamina": 0,
+        "extra_tourniquet_cost": 0,
+        "damage_recovery_points": 0,
+        "partial_treatment": false,
+        "preserve_bleeding_group_uniqueness": true
+      },
+      "rounds_bandaging": {
+        "name": "巡回包扎",
+        "status": "proposal_not_confirmed",
+        "supply": "hemostatic_gauze",
+        "treatable_injury": "bleeding",
+        "allowed_body_parts": [
+          "head",
+          "chest",
+          "belly",
+          "lhand",
+          "rhand",
+          "lfoot",
+          "rfoot"
+        ],
+        "max_distinct_target_parts": 2,
+        "secondary_target": "optional_explicit_selection",
+        "require_target_injury_on_both_parts": true,
+        "cost": "sum_of_full_normal_gauze_costs_for_selected_parts",
+        "normal_treatment_ticks": 1,
+        "extra_stamina": 0,
+        "damage_recovery_points": 0,
+        "all_or_nothing_precheck": true,
+        "implicit_fallback_to_single_target": false,
+        "extends_to_emergency_packing_or_gauze_damage_recovery": false
+      }
+    },
+    "treatment_scope": "this_kit_only_not_standalone_supplies",
+    "body_interactions": {
+      "status": "detailed_proposal_except_explicit_confirmed_interactions",
+      "metered": "0.8_multiplier_only_on_injury_treatment_costs_not_gauze_damage_recovery",
+      "quick": "normal_costs_no_cooldown_normal_duration_with_combat_permission",
+      "linked": {
+        "precheck_clear_set": "include_approved_affix_secondary_injury_clear",
+        "require_no_injuries_after_clear": true,
+        "gauze_may_replace_dressing": "explicit_choice_with_gauze_dressing_affix",
+        "shared_gauze_pool": "reserve_full_injury_cost_before_calculating_recovery",
+        "require_at_least_one_recovery_point": true,
+        "failure": "reject_entire_action_without_consumption_or_time"
+      }
+    },
+    "new_candidate_interactions": {
+      "status": "proposal_not_confirmed",
+      "metered_packing": "apply_0.8_after_two_times_gauze_injury_cost",
+      "quick_packing_and_rounds": "keep_each_affix_normal_cost_and_duration_no_quick_surcharge_or_cooldown",
+      "rounds_guard": "one_guard_on_each_part_where_bleeding_was_actually_cleared",
+      "rounds_linked": "recover_primary_part_only_secondary_part_only_stops_bleeding",
+      "shared_gauze_pool": "reserve_all_selected_injury_costs_before_damage_recovery",
+      "primary_linked_recovery": "require_no_remaining_injuries_and_at_least_one_recovery_point"
+    },
+    "combined_weight_order": "current_body_empty_weight_times_light_then_add_actual_contents_then_apply_bodyfit_only_when_equipped",
+    "unchanged": [
+      "capacities",
+      "refill_rules",
+      "body_part_restrictions",
+      "treatment_floor",
+      "loaded_materials_no_withdrawal",
+      "standalone_supply_rules"
+    ],
+    "acquisition": "pending_design",
+    "runtime_registered": "confirmed_effect_ids_only"
+  },
+  "surgery_design_discussion": {
+    "status": "confirmed_and_integrated",
+    "source": "docs/design/83-medical-system.md#411-满损毁部位的手术恢复调研2026-11-10设计讨论",
+    "user_direction": "explore_surgery_for_destroyed_parts_integrated_into_kit_like_tarkov",
+    "interpretation": "restore_full_destroy_disability_not_replace_routine_damage_healing",
+    "surgery_scope": {
+      "status": "user_confirmed_design_not_implemented",
+      "confirmed_on": "2026-11-11",
+      "user_request": "手术仅解决损毁满的问题",
+      "requires_current_full_destroy": true,
+      "requires_target_free_of_injury_buffs": false,
+      "full_destroy_basis": "target_part_current_effective_destroy_max",
+      "non_full_target": "reject_without_material_action_stamina_or_time_cost",
+      "effect": "resolve_full_destroy_by_setting_damage_to_post_surgery_effective_max_minus_one",
+      "additional_damage_healing": false,
+      "injury_buffs_cleared": [],
+      "other_causes_of_disability_cleared": false,
+      "historical_maximum_loss_restored": false,
+      "existing_skill_maximum_penalty_rule": "unchanged",
+      "linked_dressing": "separate_dressing_effect_with_own_cost_and_requirements_not_surgery_healing",
+      "repeated_surgery_formula_confirmation": true
+    },
+    "requires_non_combat_by_default": true,
+    "combat_exception": "quick_surgery_see_usage_access_design",
+    "usage_access_rule_reference": "usage_access_design",
+    "proposed_parts_under_existing_death_rules": [
+      "lhand",
+      "rhand",
+      "lfoot",
+      "rfoot"
+    ],
+    "existing_fatal_parts_unchanged": [
+      "head",
+      "chest",
+      "belly"
+    ],
+    "proposed_regular_healing_gate": "full_destroy_requires_surgery_before_routine_recovery_can_restore_function",
+    "post_surgery_damage": "new_effective_destroy_max_minus_one",
+    "proposed_penalty": "temporary_effective_destroy_max_reduction",
+    "base_retained_max_fraction": 0.5,
+    "retained_max_rounding": "floor_once_after_skill_scaling_then_clamp_to_minimum_one",
+    "minimum_effective_max_rule": "clamp_to_at_least_one_after_floor",
+    "repeated_surgery_rule": "current_effective_part_max_including_unrecovered_surgery_loss",
+    "repeated_surgery_design": {
+      "status": "arithmetic_and_minimum_user_confirmed_other_execution_details_pending",
+      "date": "2026-11-11",
+      "confirmed_on": "2026-11-11",
+      "user_confirmation": "重复手术就按当前剩余的损毁上限继续计算，每次向下取整，最低保留1点",
+      "source": "docs/design/83-medical-system.md#416-同一部位重复手术的上限计算2026-11-11已确认设计",
+      "basis": "current_effective_part_max_including_unrecovered_surgery_loss",
+      "per_surgery_formula": "max(1,floor(M * (100 + L) / 200))",
+      "skill_level": "current_surgery_level_clamped_to_0_through_100",
+      "rounding": "floor_once_per_successful_surgery_then_apply_minimum_one",
+      "minimum_effective_max": 1,
+      "post_surgery_damage": "new_effective_destroy_max_minus_one",
+      "repeat_trigger": "same_limb_reaches_full_destroy_again_requires_new_surgery",
+      "failure_or_abort": "no_new_maximum_penalty",
+      "costs_duration_and_stamina": "normal_per_action_rules_no_surcharge_for_repeat_count",
+      "extra_per_part_surgery_count_limit": null,
+      "extra_per_part_surgery_count_limit_status": "no_extra_limit_proposed_not_separately_confirmed",
+      "sleep": "completed_sleep_removes_all_surgery_max_loss_no_permanent_repeat_penalty",
+      "other_parts": "unchanged",
+      "skill_increase": "reduces_new_loss_does_not_restore_old_loss",
+      "examples_maxima_from_100": [
+        {
+          "level": 0,
+          "maxima": [
+            100,
+            50,
+            25,
+            12,
+            6,
+            3,
+            1,
+            1
+          ]
+        },
+        {
+          "level": 50,
+          "maxima": [
+            100,
+            75,
+            56,
+            42
+          ]
+        },
+        {
+          "level": 100,
+          "maxima": [
+            100,
+            100,
+            100,
+            100
+          ]
+        }
+      ],
+      "skill_change_example": {
+        "current_max": 50,
+        "new_level": 100,
+        "max_after": 50,
+        "damage_after": 49
+      },
+      "minimum_example": {
+        "current_max": 1,
+        "level": 0,
+        "max_after": 1,
+        "damage_after": 0
+      },
+      "maximum_source_changes_and_penalty_storage": "pending_not_defined_by_arithmetic_confirmation",
+      "runtime_registered": true
+    },
+    "rehabilitation": "sleep_only_recovery_rules_confirmed_see_rehabilitation_design",
+    "rehabilitation_design": {
+      "status": "sleep_recovery_and_original_admission_confirmed_execution_details_proposed",
+      "confirmed_on": "2026-11-11",
+      "source": "docs/design/83-medical-system.md#415-睡眠恢复术后损毁上限2026-11-11方向已定",
+      "user_request": "我的想法是睡一觉就恢复，除此以外没有别的回复手段",
+      "only_recovery_source": "sleep",
+      "one_sleep_restores": "all_surgery_induced_destroy_max_loss",
+      "other_recovery_sources": false,
+      "supersedes": "separate_home_rehabilitation_location_fee_and_action_proposal",
+      "completion_design": {
+        "status": "core_completion_rules_user_confirmed_other_details_proposed",
+        "confirmed_on": "2026-11-11",
+        "user_confirmation": "可以，睡眠恢复就按这套来",
+        "confirmed_scope": [
+          "one_complete_existing_sleep_session_currently_48_ticks",
+          "restore_all_parts_surgery_max_loss_at_completion",
+          "no_direct_current_damage_change_or_injury_clear",
+          "existing_sleep_costs_without_extra_medical_supplies",
+          "no_recovery_or_partial_credit_before_sleep_completion"
+        ],
+        "unconfirmed_details": [
+          "current_maximum_modifier_recalculation_and_storage_contract",
+          "nutrition_insufficiency_interaction",
+          "full_destroy_disability_after_maximum_recovery",
+          "completion_transaction_and_reload_contract"
+        ],
+        "trigger": "successful_completion_of_existing_sleep_session",
+        "current_sleep_duration_ticks": 48,
+        "current_sleep_duration_source": "data/survival-config.json.sleep_duration_ticks",
+        "current_game_hours": 8,
+        "scope": "all_parts_with_surgery_induced_max_loss_once_per_completed_sleep",
+        "maximum_after_recovery": "recompute_current_normal_effective_max_without_surgery_penalty",
+        "other_maximum_modifiers": "preserve_do_not_restore_cached_old_maximum_or_hardcode_100",
+        "current_damage_change_from_this_effect": 0,
+        "injury_buffs_removed_by_this_effect": [],
+        "other_sleep_tick_effects": "continue_existing_rules_separately",
+        "additional_medical_materials": 0,
+        "additional_stamina_satiety_thirst_or_time_cost": 0,
+        "nutrition_gate": "completion_only_no_new_fully_supplied_tick_requirement",
+        "cancel_or_interrupt_before_completion": "no_maximum_recovery_no_partial_credit",
+        "background_pause_and_saved_resume": "existing_sleep_session_resume_no_early_or_duplicate_recovery",
+        "death_before_completion": "no_sleep_completion_reward",
+        "full_destroy_requiring_surgery": "sleep_maximum_increase_interaction_pending_surgery_still_requires_current_full_destroy",
+        "full_destroy_persistence_contract": "pending_integration_with_body_state_owner",
+        "completion_save": "atomic_with_sleep_completion_no_duplicate_recovery_on_reload",
+        "example_isolated_from_other_sleep_effects": {
+          "normal_max": 100,
+          "before": {
+            "damage": 15,
+            "max": 50
+          },
+          "after": {
+            "damage": 15,
+            "max": 100
+          }
+        }
+      },
+      "sleep_admission": {
+        "status": "user_confirmed_keep_existing_requirement",
+        "confirmed_on": "2026-11-11",
+        "user_decision": "保留原条件，仍须疲劳值大于50才能睡",
+        "current_requirement": "existing_fatigue_or_exhaustion_buff_normally_fatigue_strictly_above_50",
+        "fatigue_threshold": 50,
+        "threshold_comparison": "strictly_greater_than",
+        "allow_surgery_max_loss_without_fatigue": false,
+        "other_location_and_action_requirements": "unchanged",
+        "runtime_gate_change_required": false
+      },
+      "runtime_registered": true
+    },
+    "superseded_integration_options": [
+      "dedicated_surgical_consumables_reserve_counted_in_uses",
+      "fixed_surgical_tools_with_existing_supply_cost_combination",
+      "suture_thread_reserve"
+    ],
+    "selected_integration": "skin_stapler_refills_dedicated_staple_count_reserve",
+    "reserve_design_status": "basic_capacity_refill_and_usage_confirmed_modified_capacities_proposed_weight_pending",
+    "supply_name": "皮肤缝合器",
+    "reserve_name": "缝合钉",
+    "reserve_unit": "枚",
+    "supply_and_unit_confirmed_on": "2026-11-11",
+    "staple_usage": {
+      "status": "user_confirmed_design_not_implemented",
+      "confirmed_on": "2026-11-11",
+      "refill_per_item": 35,
+      "refill_scales_with_capacity": false,
+      "per_surgery": {
+        "lhand": 10,
+        "rhand": 10,
+        "lfoot": 15,
+        "rfoot": 15
+      },
+      "precision": "integer_staples",
+      "retain_unused_staples": true,
+      "insufficient_reserve": "reject_before_start_without_partial_staple_consumption",
+      "refill_reference": "https://www.medtronic.com/en-gb/healthcare-professionals/products/wound-closure/skin-stapling/appose-skin-stapler.html",
+      "cost_basis": "game_fixed_costs_with_arm_to_leg_ratio_1_to_1.5_not_medical_dosage",
+      "full_refill_examples": [
+        {
+          "arm_surgeries": 3,
+          "leg_surgeries": 0,
+          "remaining_staples": 5
+        },
+        {
+          "arm_surgeries": 0,
+          "leg_surgeries": 2,
+          "remaining_staples": 5
+        },
+        {
+          "arm_surgeries": 2,
+          "leg_surgeries": 1,
+          "remaining_staples": 0
+        }
+      ]
+    },
+    "user_halving_request": "初版损毁直接减半",
+    "halving_target": "effective_destroy_maximum",
+    "halving_confirmed_on": "2026-11-11",
+    "base_surgery_parameters": {
+      "status": "user_confirmed_design_not_implemented",
+      "date": "2026-11-11",
+      "confirmed_on": "2026-11-11",
+      "body_id": "tool_medical_kit_basic",
+      "reserve_capacity_staples": 70,
+      "empty_to_full_refill_items": 2,
+      "ticks_per_surgery": 6,
+      "ticks_status": "user_confirmed_six_ticks_replaces_previous_two",
+      "extra_stamina_per_surgery": 10,
+      "stamina_cost_scope": "total_per_action_not_per_tick",
+      "same_time_and_stamina_for_all_four_limbs": true,
+      "ordinary_world_tick_costs": "unchanged_and_additional",
+      "restore_stamina_as_rest": false,
+      "start_resource_precheck": {
+        "required_staples": "confirmed_cost_for_selected_part",
+        "minimum_stamina": 10,
+        "insufficient_resources": "reject_without_staples_action_stamina_or_action_time_cost"
+      },
+      "automatic_surgery_skill_time_or_stamina_discount": false,
+      "full_reserve_examples": [
+        {
+          "arm_surgeries": 7,
+          "leg_surgeries": 0,
+          "remaining_staples": 0
+        },
+        {
+          "arm_surgeries": 0,
+          "leg_surgeries": 4,
+          "remaining_staples": 10
+        },
+        {
+          "arm_surgeries": 2,
+          "leg_surgeries": 2,
+          "remaining_staples": 20,
+          "total_ticks": 24,
+          "total_extra_stamina": 40
+        }
+      ],
+      "modified_body_capacities_and_surgery_interactions": "see_modified_body_surgery_proposal_not_confirmed",
+      "deduction_timing_interruption_and_persistence": "see_interruption_design_core_confirmed_execution_details_proposed"
+    },
+    "duration_design": {
+      "status": "user_confirmed_design_not_implemented",
+      "date": "2026-11-11",
+      "confirmed_on": "2026-11-11",
+      "user_request": "手术整体需要更长时间，2刻太短了",
+      "superseded_base_ticks": 2,
+      "standard_surgery_ticks": 6,
+      "standard_surgery_game_minutes": 60,
+      "quick_redesign_user_request": "单一模式、正常耗材、无冷却、战斗可用、正常扣时",
+      "quick_surgery_ticks": 6,
+      "quick_surgery_time_multiplier": 1,
+      "linked_surgery_and_dressing_ticks": 6,
+      "full_four_limb_standard_surgery_ticks": 24,
+      "full_four_limb_standard_surgery_game_hours": 4,
+      "extra_stamina_per_surgery": 10,
+      "real_time_wait_seconds": null,
+      "ordinary_world_tick_costs": "unchanged_and_additional"
+    },
+    "new_reserve_capacity": 70,
+    "new_reserve_capacity_status": "user_confirmed_basic_body_design_not_implemented",
+    "refill_amount": 35,
+    "refill_amount_status": "user_confirmed_design_not_implemented",
+    "standalone_use_rule": "refill_only",
+    "stapler_and_staple_weight": {
+      "packed_g": 60,
+      "stored_unit_g": 0.1,
+      "base_value": 600,
+      "stack_limit": 1,
+      "expiry": "never"
+    },
+    "refill_overflow_rule": "one_whole_item_fill_and_discard",
+    "refill_ticks": 1,
+    "additional_existing_supply_costs": null,
+    "ticks": 6,
+    "stamina": 10,
+    "ticks_status": "user_confirmed_six_ticks_replaces_previous_two",
+    "stamina_status": "user_confirmed_base_action_design_not_implemented",
+    "skill_scaling": {
+      "status": "user_confirmed_design_not_implemented",
+      "confirmed_on": "2026-11-11",
+      "skill_id": "survival_surgery",
+      "per_level_relative_increase_of_base": 0.01,
+      "effective_level_range": [
+        0,
+        100
+      ],
+      "retained_fraction_formula": "0.5 * (1 + L * 0.01)",
+      "retained_max_formula": "max(1,floor(M * (100 + L) / 200))",
+      "retained_fraction_cap": 1,
+      "first_surgery_basis": "pre_surgery_effective_destroy_max",
+      "repeat_surgery_basis": "current_effective_part_max_including_unrecovered_surgery_loss",
+      "rounding_order": "apply_base_and_additive_skill_bonus_then_floor_once_per_surgery_and_clamp_to_minimum_one",
+      "minimum_effective_max": 1,
+      "post_surgery_damage": "new_effective_destroy_max_minus_one",
+      "historical_penalty_rehabilitation": "sleep_only_not_restored_by_skill_increase_or_later_surgery",
+      "examples": [
+        {
+          "max_before": 100,
+          "level": 0,
+          "max_after": 50,
+          "damage_after": 49
+        },
+        {
+          "max_before": 100,
+          "level": 1,
+          "max_after": 50,
+          "damage_after": 49
+        },
+        {
+          "max_before": 100,
+          "level": 25,
+          "max_after": 62,
+          "damage_after": 61
+        },
+        {
+          "max_before": 100,
+          "level": 50,
+          "max_after": 75,
+          "damage_after": 74
+        },
+        {
+          "max_before": 100,
+          "level": 75,
+          "max_after": 87,
+          "damage_after": 86
+        },
+        {
+          "max_before": 100,
+          "level": 99,
+          "max_after": 99,
+          "damage_after": 98
+        },
+        {
+          "max_before": 100,
+          "level": 100,
+          "max_after": 100,
+          "damage_after": 99
+        },
+        {
+          "max_before": 101,
+          "level": 100,
+          "max_after": 101,
+          "damage_after": 100
+        }
+      ]
+    },
+    "other_injury_prerequisites": {
+      "status": "user_confirmed_design_not_implemented",
+      "confirmed_on": "2026-11-11",
+      "user_request": "手术是无视这些debuff的，损毁满了就能做",
+      "ignored_target_injuries": [
+        "ordinary_bleeding",
+        "heavy_bleeding",
+        "fracture",
+        "wound_infection"
+      ],
+      "injury_presence_blocks_surgery": false,
+      "must_treat_injuries_before_surgery": false,
+      "coexisting_injury_groups_block_surgery": false,
+      "injury_presence_alone_interrupts_surgery": false,
+      "effect_on_injuries": "preserve_no_clear_or_pause_from_surgery",
+      "injury_specific_extra_material_time_or_stamina_cost": 0,
+      "other_requirements": "existing_full_destroy_limb_equipped_kit_resources_combat_access_and_general_action_rules",
+      "dressing_requires_injury_free_target": "unchanged",
+      "linked_surgery_dressing": "injury_free_requirement_applies_to_dressing_stage_combination_not_surgery_alone",
+      "runtime_registered": false
+    },
+    "injury_buffs_cured_by_surgery": [],
+    "post_surgery_bleeding_rule": {
+      "status": "user_confirmed_design_not_implemented",
+      "confirmed_on": "2026-11-11",
+      "source": "docs/design/83-medical-system.md#411-满损毁部位的手术恢复调研2026-11-10设计讨论",
+      "user_direction": "retain_bleeding_causing_full_destroy_again_on_the_next_tick_after_surgery",
+      "remaining_damage_capacity_after_surgery": 1,
+      "bleeding_after_surgery": "continue_normal_scheduled_effects",
+      "automatic_bleeding_clear": false,
+      "bleeding_timer_reset_or_delay": false,
+      "post_surgery_protection_ticks": 0,
+      "damage_or_full_destroy_immunity": false,
+      "reaches_effective_max_again": "apply_normal_full_destroy_and_loss_of_function",
+      "next_tick_redestruction": "allowed_if_normal_bleeding_damage_reaches_the_remaining_capacity",
+      "successful_surgery_rollback_or_refund_on_redestruction": false,
+      "automatic_repeat_surgery": false,
+      "bleeding_amount_interval_and_other_effects": "pending_injury_buff_design_not_fixed_by_this_rule",
+      "completion_same_tick_event_order": "world_events_before_surgery_commit",
+      "example": {
+        "skill_level": 0,
+        "before": {
+          "damage": 100,
+          "max": 100,
+          "bleeding": true
+        },
+        "after_completed_surgery": {
+          "damage": 49,
+          "max": 50,
+          "bleeding": true
+        },
+        "example_next_tick_bleeding_damage": 1,
+        "after_next_tick": {
+          "damage": 50,
+          "max": 50,
+          "bleeding": true,
+          "full_destroy": true
+        }
+      },
+      "runtime_registered": true
+    },
+    "modification_and_affix_interactions": "four_bodies_and_three_confirmed_affixes_implemented_remaining_candidates_deferred",
+    "modified_body_surgery_proposal": {
+      "status": "user_confirmed_and_integrated",
+      "duration_design_reference": "surgery_design_discussion.duration_design",
+      "source": "docs/design/83-medical-system.md#412-四种改造包的缝合钉与手术交互2026-11-11提案待确认",
+      "refill_per_item_all_bodies": 35,
+      "surgery_skill_formula": "unchanged",
+      "extra_stamina_per_surgery_all_modes": 10,
+      "ordinary_world_tick_costs": "unchanged_and_additional",
+      "expanded": {
+        "name": "扩容急救包",
+        "reserve_capacity_staples": 105,
+        "empty_to_full_refill_items": 3,
+        "per_surgery_staples": {
+          "lhand": 10,
+          "rhand": 10,
+          "lfoot": 15,
+          "rfoot": 15
+        },
+        "ticks": 6
+      },
+      "metered": {
+        "name": "定量急救包",
+        "reserve_capacity_staples": 70,
+        "empty_to_full_refill_items": 2,
+        "staple_cost_multiplier": 0.8,
+        "per_surgery_staples": {
+          "lhand": 8,
+          "rhand": 8,
+          "lfoot": 12,
+          "rfoot": 12
+        },
+        "ticks": 6,
+        "future_fractional_staple_cost_rounding": null
+      },
+      "quick": {
+        "name": "快取急救包",
+        "reserve_capacity_staples": 35,
+        "capacity_status": "user_confirmed_half_base_35_staples",
+        "capacity_revision_reference": "quick_capacity_balance",
+        "empty_to_full_refill_items": 1,
+        "use_mode": "single",
+        "usage_status": "normal_staple_cost_and_no_cooldown_user_confirmed",
+        "per_surgery_staples": {
+          "lhand": 10,
+          "rhand": 10,
+          "lfoot": 15,
+          "rfoot": 15
+        },
+        "staple_cost_multiplier": 1,
+        "ticks": 6,
+        "surgery_time_multiplier": 1,
+        "allowed_in_combat": true,
+        "access_rule_reference": "usage_access_design",
+        "stamina_multiplier": 1,
+        "cooldown_ticks": 0,
+        "require_full_staple_cost_and_stamina": true,
+        "precheck_failure": "reject_without_consumption_or_time",
+        "treatment_ticks": 1
+      },
+      "linked": {
+        "name": "联动急救包",
+        "reserve_capacity_staples": 70,
+        "empty_to_full_refill_items": 2,
+        "per_surgery_staples": {
+          "lhand": 10,
+          "rhand": 10,
+          "lfoot": 15,
+          "rfoot": 15
+        },
+        "normal_surgery_ticks": 6,
+        "linked_mode": {
+          "selection": "explicit_by_player",
+          "sequence": [
+            "surgery",
+            "trauma_dressing_same_part"
+          ],
+          "total_ticks": 6,
+          "require_no_injury_buffs_after_surgery": true,
+          "minimum_dressing_recovery_points": 1,
+          "dressing_floor": "ceil(post_surgery_effective_max * 0.3)",
+          "dressing_recovery": "min(post_surgery_damage_minus_floor,available_dressing_points)",
+          "dressing_cost": "actual_damage_recovered",
+          "dressing_consumption_timing": "on_complete_only_no_consumption_on_abort",
+          "interruption_rule_status": "implemented",
+          "dressing_reservation_strategy": "exclusive_operation_precheck_then_actual_cost_at_completion",
+          "precheck_failure": "reject_entire_action_without_consumption_or_time",
+          "implicit_fallback_to_normal": false,
+          "additional_injury_clear": false,
+          "three_stage_treatment_or_affix_substitution": "pending_not_implicitly_enabled",
+          "example": {
+            "level": 0,
+            "before": {
+              "damage": 100,
+              "max": 100
+            },
+            "after_surgery": {
+              "damage": 49,
+              "max": 50
+            },
+            "after_dressing": {
+              "damage": 15,
+              "max": 50
+            },
+            "dressing_points_spent": 34
+          },
+          "injuries_on_completion": "surgery_only_no_dressing_spent",
+          "injuries_at_start": "allowed"
+        }
+      },
+      "conversion_staple_inheritance": {
+        "preserve_actual_count": true,
+        "auto_fill_or_scale_contents": false,
+        "withdraw_reverse_or_transfer": false,
+        "target_capacity_insufficient": "reject_without_discarding_staples",
+        "routes": "existing_irreversible_basic_to_modified_only"
+      },
+      "affix_interactions": "pending",
+      "new_supply_weight_and_full_six_reserve_weight": "60g_packed_0.1g_per_staple_0.912kg_full_basic",
+      "runtime_registered": true
+    },
+    "interruption_design": {
+      "status": "core_rules_user_confirmed_implementation_details_proposed",
+      "confirmed_on": "2026-11-11",
+      "confirmed_scope": [
+        "upfront_full_staples_and_ten_extra_stamina",
+        "same_no_refund_rules_for_cancel_and_interruption",
+        "keep_elapsed_time_without_spending_remaining_time",
+        "effect_only_on_completion_no_partial_recovery_or_maximum_penalty_on_abort",
+        "discard_incomplete_progress_restart_full_cost_and_duration",
+        "linked_dressing_consumed_at_completion_not_on_abort",
+        "quick_no_cooldown_on_start_success_cancel_or_interrupt",
+        "precheck_failure_no_cost"
+      ],
+      "source": "docs/design/83-medical-system.md#413-手术中断与主动取消2026-11-11核心规则已确认",
+      "same_rules_for": [
+        "voluntary_cancel",
+        "interruption"
+      ],
+      "successful_start": {
+        "precheck": "current_action_eligibility_full_body_action_part_staple_cost_and_ten_stamina",
+        "staple_payment": "full_body_action_and_part_cost_upfront",
+        "extra_stamina_payment": 10,
+        "time_payment": "one_world_tick_at_a_time_not_all_upfront",
+        "only_one_surgery_attempt_at_a_time": true
+      },
+      "precheck_failure": {
+        "staples_spent": 0,
+        "extra_stamina_spent": 0,
+        "ticks_spent": 0
+      },
+      "on_abort": {
+        "staple_refund": 0,
+        "extra_stamina_refund": 0,
+        "additional_abort_charge": 0,
+        "elapsed_world_ticks": "retain_committed_ticks_and_world_events",
+        "remaining_ticks": "do_not_advance_or_charge",
+        "surgery_recovery_or_maximum_penalty": "none_until_successful_completion",
+        "additional_injury_or_maximum_penalty": false,
+        "keep_incomplete_progress": false,
+        "auto_resume": false,
+        "restart": "new_attempt_full_staple_and_stamina_cost_full_duration",
+        "cancel_before_first_tick_after_paid_start": "no_refund_zero_elapsed_ticks"
+      },
+      "linked_mode": {
+        "dressing_completion_and_abort_cost_status": "user_confirmed_design_not_implemented",
+        "reservation_and_completion_transaction_status": "proposal_not_explicitly_confirmed",
+        "dressing_at_start": "precheck_and_reserve_without_consumption",
+        "dressing_at_complete": "consume_actual_recovery_with_surgery_effect_in_same_commit",
+        "dressing_at_abort": "release_reservation_without_consumption",
+        "partial_surgery_result_before_linked_completion": false,
+        "completion_precondition_failure": "abort_without_result_or_dressing_consumption"
+      },
+      "quick_body": {
+        "status": "single_mode_no_cooldown_user_confirmed",
+        "cooldown_ticks": 0,
+        "after_success_cancel_or_interrupt": "no_cooldown",
+        "resource_refund_and_elapsed_time": "same_as_general_surgery_interruption_rules"
+      },
+      "confirmed_interruption_triggers": [
+        "enter_combat_without_quick_body_permission"
+      ],
+      "combat_gate_reference": "usage_access_design",
+      "quick_enter_combat": "not_an_interruption_by_itself_other_valid_interruptions_still_apply",
+      "combat_before_completion_commit": "interrupt_non_exempt_surgery_even_on_last_tick",
+      "completion_boundary_status": "combat_preempts_non_exempt_uncommitted_result_other_event_ordering_proposed",
+      "completion_boundary": "interrupt_before_final_commit_wins_even_on_last_tick_late_cancel_after_commit_has_no_effect",
+      "stale_callbacks": "must_not_repeat_charge_tick_completion_or_abort",
+      "persistence": {
+        "status": "proposal_not_explicitly_confirmed",
+        "storage_error_is_gameplay_cancel": false,
+        "uncommitted_transaction": "rollback_together_without_rolling_back_prior_committed_ticks",
+        "record_paid_elapsed_and_terminal_state": true,
+        "reload_refunds_or_duplicate_charges_or_results": false,
+        "ui_close_visibility_pause_policy": "pending",
+        "concrete_triggers_and_state_contract": "enter_combat_trigger_for_non_exempt_actions_confirmed_other_triggers_and_state_contract_pending"
+      },
+      "example": {
+        "mode": "basic_normal_left_arm",
+        "required_ticks": 6,
+        "aborted_after_ticks": 2,
+        "staples_spent": 10,
+        "extra_stamina_spent": 10,
+        "retained_elapsed_ticks": 2,
+        "unspent_remaining_ticks": 4,
+        "surgery_effect_applied": false,
+        "restart_required_ticks": 6
+      },
+      "runtime_registered": true
+    },
+    "confirmed_rule_example": {
+      "skill_level": 0,
+      "retained_fraction": 0.5,
+      "before": {
+        "damage": 100,
+        "max": 100
+      },
+      "after_surgery": {
+        "damage": 49,
+        "max": 50
+      },
+      "after_dressing_without_injuries": {
+        "damage": 15,
+        "max": 50
+      },
+      "after_eligible_rest": {
+        "damage": 0,
+        "max": 50
+      }
+    },
+    "runtime_registered": true
+  },
+  "customization_design_reference": {
+    "source": "docs/design/83-medical-system.md#49-急救包词条与改造候选2026-11-10",
+    "status": "four_bodies_and_three_functional_affixes_confirmed_three_more_proposed",
+    "pending": [
+      "改造包独立交易基价",
+      "词条随机生成、数量上限及其余候选",
+      "制作配方与商店",
+      "伤势具体触发与负面效果"
+    ],
+    "runtime_registered": true
+  },
+  "prototype": {
+    "entry": "tools/medical-kit-prototype.html",
+    "daily_entry": "tools/medical-kit-prototype.html?no_reload",
+    "workbench_entry": "tools/medical-kit-prototype.html?no_reload&view=workbench",
+    "notes": "tools/medical-kit-prototype-NOTES.md",
+    "start_command": "npm run prototype:medical-kit",
+    "port": 8054,
+    "persistence": "memory_only",
+    "production_integrated": "shared_view_formal_controller_separate_from_memory_model",
+    "layout_variants": 1,
+    "interface_contexts": 2,
+    "compact_layout": true,
+    "display_labels": {
+      "refill": "补充",
+      "full_destroy": "受伤"
+    },
+    "daily_equipment_panel": false,
+    "daily_treatment_result_preview": false,
+    "daily_inline_treatment_feedback": false,
+    "daily_action_alignment": "right_of_supply_picker_same_row_desktop_right_aligned_next_row_mobile",
+    "workbench_equipment_and_storage_panel": false,
+    "workbench_visible_sections": [
+      "carried_kit_selector",
+      "modification"
+    ],
+    "explanatory_copy": false,
+    "candidate_customization_playable": true,
+    "customization_behavior_status": "irreversible_body_conversion_current_quick_and_three_confirmed_affixes_synced",
+    "sample_carried_kits": 9,
+    "updated_on": "2026-11-12",
+    "reserve_count": 6,
+    "surgery_playable": true,
+    "surgery_progress_demo_milliseconds_per_tick": 1000,
+    "provisional_values_marked_in_ui": [],
+    "unconfirmed_execution_fixtures": [
+      "limb_bleeding_one_damage_per_action_tick_is_demo_only"
+    ],
+    "pending_weight_display": "resolved_stored_staples_0.1g_each",
+    "craft_stamina_display": "0",
+    "sleep_rehabilitation_interface": "outside_medical_kit_not_added"
+  },
+  "qol": {
+    "status": "implemented",
+    "date": "2026-11-12",
+    "treatment_selection": "disable_if_current_part_material_action_or_affix_rules_reject",
+    "warehouse_refill": {
+      "maps": [
+        "M0_Base_Inside_lv_1",
+        "M0_Base_Outside_lv_1"
+      ],
+      "priority": "unlocked_warehouse_then_carried",
+      "requires_adjacency": false,
+      "extra_transfer_ticks": 0
+    },
+    "refill_all": {
+      "scope": "equipped_kit_daily_only",
+      "fill": "each_reserve_until_full_or_available_supplies_exhausted",
+      "ticks_per_portion": 1,
+      "save": "atomic_per_portion_stop_on_failure",
+      "recheck": "each_portion_location_access_equipped_instance",
+      "skip_unavailable_categories": true
+    }
+  },
+  "wound_infection_rules": {
+    "status": "integrated",
+    "runtime_registered": true,
+    "source": "data/injuries.json",
+    "first_check_after_continuous_bleeding_ticks": 6,
+    "check_interval_ticks": 6,
+    "per_part_persistent_pain": 10,
+    "fatigue_per_tick": 0.1,
+    "damage_per_tick": 0,
+    "clock_persisted": true,
+    "upgrade_preserves_clock": true,
+    "treat_while_bleeding_restarts_clock": true
+  }
+}

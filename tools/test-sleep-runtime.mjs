@@ -64,6 +64,7 @@ for (const full of [false, true]) test(`48 paid seconds, action lock and atomic 
   try {
     await createPlayer(h);
     const S = g.Survival, B = g.BedSleep, savedKey = g.SaveSystem.getStatus().realtimeKey;
+    g.CharacterAttributes.setState({part_destroy:{lhand:49},surgical_max_loss:{lhand:50}});
     const before = resources(g), startTick = before[0];
     S.setState({ fatigue: 50 }); assert.equal(g.SceneApp.trySleepAtBed(), false);
     S.setState({ fatigue: 100 }); g.confirm = () => false;
@@ -118,14 +119,18 @@ for (const full of [false, true]) test(`48 paid seconds, action lock and atomic 
     const deterministic = B.getState(); deterministic.rolls.fill(0);
     B.restore(deterministic, true); B.resume();
     clock.advance(42000); assert.equal(B.getState().completed, 47); assert.equal(settles, 0);
+    assert.equal(g.CharacterAttributes.getBodyPartDestroyMax('lhand'),50,'partial sleep cannot restore surgical maximum');
     assert.equal(S.getStamina(), 98); assert.equal(S.getFatigue(), 6);
     const lastBefore = resources(g), attrsBefore = plain(g.CharacterAttributes.getState().attribute_experience);
     repair = failWrites(g); clock.advance(1000);
     assert.equal(settles, 1); assert.equal(B.getState().completed, 47);
+    assert.equal(g.CharacterAttributes.getBodyPartDestroyMax('lhand'),50,'failed final sleep save rolls maximum back');
     assert.deepEqual(resources(g), lastBefore); assert.deepEqual(plain(g.CharacterAttributes.getState().attribute_experience), attrsBefore);
     repair(); g.document.querySelector('.bed-sleep-retry').click(); const lastCallback = clock.callback;
     clock.advance(999); assert.equal(B.isActive(), true); clock.advance(1);
     assert.equal(settles, 2); assert.equal(B.isActive(), false);
+    assert.equal(g.CharacterAttributes.getBodyPartDestroyMax('lhand'),100,'only completed sleep restores surgical maximum');
+    assert.equal(g.CharacterAttributes.getPartDestroy('lhand'),49,'restoration does not itself heal current damage');
     assert.equal(g.CharacterAttributes.getState().attribute_experience.jingu.attribute_level, 1);
     assert.deepEqual(resources(g), [startTick + 48, 100, 4, 52, 52, before[5] + 48]);
     assert.equal(S.getState().isResting, false);

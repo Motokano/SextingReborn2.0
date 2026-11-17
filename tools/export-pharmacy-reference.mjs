@@ -48,7 +48,7 @@ function effectText(e){const p=e.params||{};switch(e.type){
  case 'pharmacy_part_recovery':return '目标部位损毁 −'+fmt(p.recovery_per_tick)+'/tick';
  case 'pharmacy_anti_stun':return '眩晕抗性 '+pct(p.anti_stun_pct)+'（受总抗性上限约束）';
  case 'pharmacy_revive':return '复苏参数已配置，关键功能未接线';
- case 'pharmacy_bleeding_slow':return '止血参数已配置，流血消费链未接线';
+ case 'pharmacy_bleeding_slow':return '出血损毁 −'+pct(p.bleed_slow_pct)+'（同部位取最高，不解除出血）';
  case 'pharmacy_toxicity_decay_bonus':return '体内毒性额外代谢 '+plus(p.per_tick)+'/tick（与自然代谢同时结算，同类取最高值）';
  case 'pharmacy_synergy_multiplier':return '增效模板无独立消费者；动态配药另算增效';
  default:return e.type+' '+JSON.stringify(p);
@@ -77,13 +77,13 @@ const overlaps=[];const covers=(a,b)=>b.every(x=>a.some(y=>y.item_id===x.item_id
 for(let i=0;i<enabled.length;i++)for(let j=i+1;j<enabled.length;j++){const a=enabled[i],b=enabled[j];if(a.method_id===b.method_id&&(covers(a.inputs,b.inputs)||covers(b.inputs,a.inputs)))overlaps.push(name(a.main_output.item_id)+' / '+name(b.main_output.item_id));}
 const recipeRows=recipes.map(r=>{const m=byMethod[r.method_id],c=r.cost_override||m.cost;return [name(r.main_output.item_id),methodName(r.method_id),amount(r.inputs),amount([r.main_output]),'燃料 '+c.fuel+' / 体力 '+c.stamina+' / '+c.ticks+' tick',pct(baseRate(r)),unlock(m,r),r.enabled===false?'停用':'启用',r.recipe_id];});
 const medicineRows=fixed.map(t=>{const b=buffs[t.use_buff_id];assert(b,'Missing buff '+t.use_buff_id);const ue=Object.entries(t.use_effect||{}).map(([k,v])=>(resources[k]||k)+' '+plus(v)).join('；');const notes=[];
- if(b.effects.some(e=>['pharmacy_revive','pharmacy_bleeding_slow'].includes(e.type)))notes.push('部分/关键功能未接线，见药效列');
+ if(b.effects.some(e=>['pharmacy_revive'].includes(e.type)))notes.push('部分/关键功能未接线，见药效列');
  if(b.pharmacy_survival_budget_quantized&&b.effects.some(e=>e.type==='survival_delta'))notes.push('恢复为平均速率，实际按状态精度累计分发');
  if(t.use_action==='inject')notes.push('战斗中禁用，需静止与器具');if(t.use_action==='topical')notes.push('战斗中禁用，指定部位');
  return [name(t.item_id),routeNames[t.use_action],familyName(b.pharmacy_family),matrix.potency_profiles[b.pharmacy_potency]?.name||b.pharmacy_potency,b.effects.map(effectText).join('；'),ue?(ue+'（独立消化通道 '+t.food_buff_duration_ticks+' tick）'):'—',b.onsetTicks,b.durationTicks,t.use_charges||1,Number(config['pharmacy_use_ticks_'+t.use_action]),notes.join('；'),t.item_id];});
 const methodRows=methods.map(m=>[methodName(m.method_id),name(m.requires_accessory_item_id),m.cost.fuel,m.cost.water,m.cost.stamina,m.cost.ticks,pct(m.base_success_rate),unlock(m),amount([m.failure_output]),enabled.filter(r=>r.method_id===m.method_id).length]);
 const componentRows=raw.map(r=>{const t=items[r.id];let role='原料';if(t.pharmacy_compound)role='动态成品模板';else if(t.use_action&&t.use_buff_id)role='固定成品';else if(t.sub_category==='pharm_powder')role=Number(t.pharm_toxicity)>0?'含毒活性粉':Number(t.pharm_toxicity)<0?'抵消辅粉（当前兼增效）':'功能粉';else if(t.sub_category==='solvent')role='溶媒';else if(t.sub_category==='pharm_adjuvant')role='助溶剂';else if(t.sub_category==='pharm_kit')role='器具/耗材';return [name(r.id),role,grade(r),familyName(t.pharm_family||'—'),t.pharm_effect??'—',t.pharm_toxicity??'—',t.concentration_cost??'—',t.adjuvant_strength??'—',t.usable?'可使用':'非直接使用成品',produced.has(r.id)?methodName(produced.get(r.id).method_id):'本制药表无生产配方',r.id];});
-const dynamicFamilyRows=Object.entries(matrix.families).filter(([,f])=>f.routes.includes('inject')).map(([id,f])=>[f.name,...['weak','regular','potent','pure'].map(p=>buffs['buff_pharm_'+id+'_inject_'+p].effects.map(effectText).join('；')),['weak','regular','potent','pure'].map(p=>buffs['buff_pharm_'+id+'_inject_'+p].durationTicks).join(' / '),['revive','coagulant','synergist'].includes(id)?'存在未接线/独立消费者缺口':'已接现有效果']);
+const dynamicFamilyRows=Object.entries(matrix.families).filter(([,f])=>f.routes.includes('inject')).map(([id,f])=>[f.name,...['weak','regular','potent','pure'].map(p=>buffs['buff_pharm_'+id+'_inject_'+p].effects.map(effectText).join('；')),['weak','regular','potent','pure'].map(p=>buffs['buff_pharm_'+id+'_inject_'+p].durationTicks).join(' / '),['revive','synergist'].includes(id)?'存在未接线/独立消费者缺口':'已接现有效果']);
 const notes=[
  '注射液统一在配药模式用药粉配置，支持单方与复方。11 件旧固定注射成品已从活跃物品数据移除；口服、外敷、吸入成品及药粉加工链保留。',
  '本表从当前运行时物品、配方、工艺和药效表生成。所有名称与工序均为虚构游戏数据，不是现实制备指南。',
@@ -91,7 +91,7 @@ const notes=[
  '完整路线按从零制作 1 件成品、所有工序均成功、同一路线复用剩余中间品计算。成本不计失败重试、采集/交易成本和配件制作成本；图中“外部取得”仅表示当前制药配方没有生产该物品，不表示它在全游戏没有来源。',
  '路线是目标配方的成功路径，不保证盲配选中该配方。同工艺采用超集匹配并可能加权随机：'+(overlaps.join('；')||'未发现嵌套投料')+'。额外投入的材料会被消耗。',
  '药效数值为未施加角色免疫等修正的模板基准。持续栏直接读取当前 durationTicks；非注射不要把起效延迟再加成额外有效时间。恢复列为药物贡献，不是包含自然代谢与其他状态后的净变化。',
- '多次用量是满件模板次数；具体实例可能已消耗。表中未将“速率 × 持续 × 次数”标成保证恢复量。止血和复苏关键消费者尚未完整接线，配方存在不代表完整药效已实现。'
+ '多次用量是满件模板次数；具体实例可能已消耗。表中未将“速率 × 持续 × 次数”标成保证恢复量。凝血减少普通／大出血每刻损毁，外敷限目标部位，注射覆盖全身，同效取最高，不解除伤势或暂停感染检查。复苏消费者仍未接线。'
 ];
 const dynamicNotes=[
  '注射液全部在制药台“配药”模式制作，单种药粉可配单方，多种药粉可配复方。当前接受 pharm_powder、solvent、pharm_adjuvant；普通成品药片不属于投料白名单。配好后得到可携带的动态注射液实例。',

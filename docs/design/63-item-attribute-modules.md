@@ -1,5 +1,11 @@
 # 63 物品属性模块与信息显示统一分类
 
+2026-11-12正式注册 equipment.medical_kit、structure.medical_storage 和 medical_kit 装备槽，构建与运行归属一致。五款包体仍仅使用 base／equipment／structure；实例 attribute_state.structure.medical_storage 为 version=1、remaining 六个整数储量、dressing_weight_g 和 affixes，模板持有 medical_kit_body／medical_capacities。长度厘米、酒精0.1毫升、钉整数，补充扣整份、满仓拒绝、溢出舍弃；敷料质量单存以保留改造前真实用料。六仓默认全空，旧档不发新包；模板变换保留实例。五种独立用品 medicine.medical_supply 已启用专用治疗入口；无普通药Buff替代。详见[83号正式接入](83-medical-system.md#正式接入2026-11-12)，下方未注册等为此前记录。
+
+2026-11-09基础急救包完整数据仍为设计草案，见[83号§4.8](83-medical-system.md#48-基础急救包完整物品数据2026-11-09)与[data/drafts/medical-kit-items.json](../../data/drafts/medical-kit-items.json)。仅使用base／equipment／structure三类，拟新增equipment.medical_kit、structure.medical_storage及medical_kit装备槽；基础包体完整数据于2026-11-10获确认；词条与改造新候选见83号§4.9，尚未定稿。当前余量归实例，模板只存容量和规则，未注册正式模块或使用入口。
+
+2026-11-09补充：五种基础医疗用品复用 `medicine` 大类，新增 `medical_supply` 分组及 `medical_supply_profile` 对象，由 `data/medical-supplies.json` 经构建校验生成，构建与运行时字段归属同步。版本2记录已定单部位／整份治疗、敷料30点和30%下限（向上取整）、现实规格与材料、1刻使用参数、允许部位、五项永久不过期规则、按部位与伤势组最多1个Debuff的约束及制作／投放待设计状态；重量、单份堆叠和基价仍走既有根字段及 `base` 模块。不存角色伤势或库存，不创建急救包统一储量。新增设计确认敷料专属损毁恢复储量、按实际恢复量扣除，每份补充该池上限的1/3；当前模板尚未接入这条容器规则，容量与其他用品的包内规则待定。当前 `data_only`，无通用 `medicine.use`，字段对象隐藏。见[83号](83-medical-system.md)。
+
 2026-11-05补充：20种先天提升药品新增`medicine.innate`分组，字段`innate_medicine_profile`由`data/innate-medicines.json`经构建校验生成。此对象记录规则和待定字段，不保存角色已食用次数；正式模块与兼容视图一致，字段默认隐藏以免直接输出内部配置。当前为`data_only`，没有食物或可使用药效能力。名称、描述及100件堆叠沿用既有模块，详见[47号§11.6](47-pharmacy-system.md#116-正式物品数据登记2026-11-05仅数据接入)。
 
 2026-09-22。关联看板 k278。**用户进一步要求尽可能发挥大类作用。当前收拢为8个可加载大类，替代第一版28个细模块候选；细分类降为类内字段分组。第一阶段已正式接入运行时：游戏优先读取模块化目录，统一适配层向尚未改造的玩法提供兼容视图；实例状态、堆叠和信息字段读取开始走模块接口。**

@@ -101,6 +101,7 @@
             var posNow = E.getState ? E.getState() : groundPos;
             var slotId = preferredSlot || tpl.equip_slot;
             var row = getContainerRows(containerType).find(function (r) { return r.index === idx; });
+            if (slotId === 'medical_kit') { var medical=window.MedicalActions.transfer({action:'equip',source:containerType,index:idx,id:row && row.item.instance_id});window.SceneFeedback.showMsg(medical.message,medical.ok?'success':'warn');return; }
             if (slotId === 'backpack' && window.BackpackSystem) {
                 var moved = window.BackpackSystem.transfer({action:'equip',source:containerType,index:idx,id:row && row.item.instance_id});
                 window.SceneFeedback.showMsg(moved.message, moved.ok ? 'success' : 'warn');updateBackpackPanel();window.SceneMapView.render();return;
@@ -323,8 +324,10 @@
                 return;
             }
             if (picked.source === 'equipment') {
+                if (picked.index === 'medical_kit') addActionBtn('打开急救包', function () { window.MedicalKitPanel.openDaily(); });
                 if (picked.index === 'water_flask') addActionBtn(window.SceneFeedback.ui('flask.action.drink'), function () { window.ItemUseActions.tryDrinkWaterFlask(picked.item.instance_id); });
                 addActionBtn(window.SceneFeedback.ui(picked.index === 'water_flask' ? 'flask.action.unequip' : 'inv.unequip'), function () {
+                    if (picked.index === 'medical_kit') { var medical = window.MedicalActions.transfer({action:'unequip',id:picked.item.instance_id});window.SceneFeedback.showMsg(medical.message,medical.ok?'success':'warn');return; }
                     var old = IE.unequip(picked.index, groundPos);
                     if (old) {
                         var placed = IE.putItemIntoDefaultContainer(old);
@@ -387,6 +390,7 @@
                         ? [['右手持用', 'weapon_right'], ['左手持用', 'weapon_left']] : [[window.SceneFeedback.ui(disp.tpl.equip_slot === 'water_flask' ? 'flask.action.equip' : 'inv.equip'), disp.tpl.equip_slot]];
                     handChoices.forEach(function (choice) {
                         addActionBtn(choice[0], function () {
+                            if (disp.tpl.equip_slot === 'medical_kit') { var medical = window.MedicalActions.transfer({action:'equip',source:'ground',index:picked.index,id:picked.item.instance_id});window.SceneFeedback.showMsg(medical.message,medical.ok?'success':'warn');return; }
                             var r1 = IE.equipFromGround(st.mapId, st.x, st.y, picked.index, choice[1]);
                             if (r1.success) window.SceneFeedback.showMsg(window.SceneFeedback.ui('log.success.equipped'), 'success');
                             else if (r1.message) window.SceneFeedback.showMsg(r1.message, 'warn');
@@ -448,6 +452,7 @@
                     unequipBtn.onclick = (function (sid) {
                         return function (ev) {
                             if (ev && ev.stopPropagation) ev.stopPropagation();
+                            if (sid === 'medical_kit') { var liveMedical=IE.getState().equipment.medical_kit;var medical=window.MedicalActions.transfer({action:'unequip',id:liveMedical && liveMedical.instance_id});window.SceneFeedback.showMsg(medical.message,medical.ok?'success':'warn');return; }
                             if (backpackUIState.equipDetailSlot === sid) backpackUIState.equipDetailSlot = null;
                             if (sid === 'backpack' && window.BackpackSystem) {
                                 var liveBag = IE.getState().equipment.backpack;
@@ -756,11 +761,11 @@
     function closeGroundBackpackView(){closeBackpackPanel({automatic:true});}
 
     function initialize() {
-        EQUIP_SLOT_LABELS = { head: 'equip.slot.head', clothing: 'equip.slot.clothing', vest: 'equip.slot.vest', backpack: 'equip.slot.backpack', water_flask: 'equip.slot.water_flask', weapon_left: 'equip.slot.weapon_left', weapon_right: 'equip.slot.weapon_right', glove_left: 'equip.slot.glove_left', glove_right: 'equip.slot.glove_right', shoe_left: 'equip.slot.shoe_left', shoe_right: 'equip.slot.shoe_right' };
+        EQUIP_SLOT_LABELS = { head: 'equip.slot.head', clothing: 'equip.slot.clothing', vest: 'equip.slot.vest', backpack: 'equip.slot.backpack', water_flask: 'equip.slot.water_flask', medical_kit:'equip.slot.medical_kit', weapon_left: 'equip.slot.weapon_left', weapon_right: 'equip.slot.weapon_right', glove_left: 'equip.slot.glove_left', glove_right: 'equip.slot.glove_right', shoe_left: 'equip.slot.shoe_left', shoe_right: 'equip.slot.shoe_right' };
         EQUIP_SLOT_GROUPS = [
         { label: 'equip.group.strike', slots: ['weapon_left', 'weapon_right', 'glove_left', 'glove_right', 'shoe_left', 'shoe_right'] },
         { label: 'equip.group.armor', slots: ['head', 'clothing'] },
-        { label: 'equip.group.carry', slots: ['backpack', 'water_flask'] }
+        { label: 'equip.group.carry', slots: ['backpack', 'water_flask', 'medical_kit'] }
     ];
         backpackPanelOpen = false;
         backpackUIState = {
