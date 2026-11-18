@@ -31,6 +31,8 @@
         body_temperature: 37,
         body_temperature_standard: 37,
         fatigue: 0,
+        fatigueFullTicks: 0,
+        fatigueComaTicksRemaining: 0,
         weight_kg: 60,
         /** 疼痛（47 §9.6 / k229）：全局 0-100 整数条，敌我通用。累积 = round(实际损毁增量 × 部位汇率 0.1~1.0)；
          *  上限 = pain_cap_base + pain_cap_per_avg_destroy×平均损毁%（封顶制，够不着高档即不触发）。 */
@@ -41,7 +43,6 @@
         tickCount: 0,
         starvationTicks: 0,
         thirstDeathTicks: 0,
-        staminaZeroTicks: 0,
         overfedTicks: 0,
         severeHungerTicks: 0,
         satietyWeightLossBuffId: '',
@@ -51,7 +52,6 @@
         is_sit_meditation_active: false,
         isDead: false,
         deathReason: null,
-        isComa: false,
 
         /** 战斗：呼吸条（气力，形态由呼吸法 breath_bar 定义，见 07）、底气、底气护体剩余盾量（见 07 / 11 基本呼吸法） */
         qi_li_current: 0,
@@ -277,6 +277,9 @@
             body_temperature: state.body_temperature,
             body_temperature_standard: state.body_temperature_standard,
             fatigue: state.fatigue,
+            fatigueFullTicks: state.fatigueFullTicks,
+            fatigueComaTicksRemaining: state.fatigueComaTicksRemaining,
+            isComa: isComa(),
             weight_kg: state.weight_kg,
             pain: Math.max(0, Math.floor(Number(state.pain) || 0)),
             pain_no_hit_ticks: Math.max(0, Math.floor(Number(state.pain_no_hit_ticks) || 0)),
@@ -284,7 +287,6 @@
             tickCount: state.tickCount,
             starvationTicks: state.starvationTicks,
             thirstDeathTicks: state.thirstDeathTicks,
-            staminaZeroTicks: state.staminaZeroTicks,
             overfedTicks: state.overfedTicks,
             severeHungerTicks: state.severeHungerTicks,
             satietyWeightLossBuffId: state.satietyWeightLossBuffId,
@@ -296,7 +298,6 @@
             study_stop_reason: state.study_stop_reason || null,
             isDead: state.isDead,
             deathReason: state.deathReason || null,
-            isComa: state.isComa,
 
             qi_li_current: state.qi_li_current,
             qi_li_max: getQiLiMax(),
@@ -317,7 +318,6 @@
         if (s.tickCount !== undefined) state.tickCount = Math.max(0, Math.floor(Number(s.tickCount) || 0));
         if (s.starvationTicks !== undefined) state.starvationTicks = Math.max(0, Math.floor(Number(s.starvationTicks) || 0));
         if (s.thirstDeathTicks !== undefined) state.thirstDeathTicks = Math.max(0, Math.floor(Number(s.thirstDeathTicks) || 0));
-        if (s.staminaZeroTicks !== undefined) state.staminaZeroTicks = Math.max(0, Math.floor(Number(s.staminaZeroTicks) || 0));
         if (s.overfedTicks !== undefined) state.overfedTicks = Math.max(0, Math.floor(Number(s.overfedTicks) || 0));
         if (s.severeHungerTicks !== undefined) state.severeHungerTicks = Math.max(0, Math.floor(Number(s.severeHungerTicks) || 0));
         if (s.satietyWeightLossBuffId !== undefined) state.satietyWeightLossBuffId = String(s.satietyWeightLossBuffId || '');
@@ -341,6 +341,8 @@
         if (s.body_temperature !== undefined) state.body_temperature = clamp(Number(s.body_temperature) || 0, get('body_temperature_min', 20), get('body_temperature_max', 55));
         if (s.body_temperature_standard !== undefined) state.body_temperature_standard = round1(clamp(Number(s.body_temperature_standard) || 0, get('body_temperature_min', 30), get('body_temperature_max', 42)));
         if (s.fatigue !== undefined) state.fatigue = roundFatigue(clamp(Number(s.fatigue) || 0, get('fatigue_min', 0), get('fatigue_max', 100)));
+        if (s.fatigueComaTicksRemaining !== undefined) state.fatigueComaTicksRemaining = clamp(Math.floor(Number(s.fatigueComaTicksRemaining) || 0), 0, get('fatigue_coma_duration_ticks', 10));
+        if (s.fatigueFullTicks !== undefined) state.fatigueFullTicks = clamp(Math.floor(Number(s.fatigueFullTicks) || 0), 0, get('fatigue_full_ticks_to_coma', 30) - 1);
         if (s.pain !== undefined) state.pain = Math.max(0, Math.min(Number(get('pain_max', 100)) || 100, Math.floor(Number(s.pain) || 0)));
         if (s.pain_no_hit_ticks !== undefined) state.pain_no_hit_ticks = Math.max(0, Math.floor(Number(s.pain_no_hit_ticks) || 0));
         if (s.weight_kg !== undefined) state.weight_kg = Math.max(0, s.weight_kg);
@@ -361,7 +363,9 @@
             }
         }
         if (s.deathReason !== undefined) state.deathReason = s.deathReason == null ? null : String(s.deathReason || '');
-        if (s.isComa !== undefined) state.isComa = !!s.isComa;
+        if (state.isDead) state.fatigueComaTicksRemaining = 0;
+        if (state.isDead || isComa()) state.fatigueFullTicks = 0;
+        syncFatigueComaBuff();
 
         if (s.diqi_cap_limit !== undefined) {
             state.diqi_cap_limit = Math.max(0, Math.round(Number(s.diqi_cap_limit) || 0));
@@ -612,7 +616,7 @@
     }
 
     function setSitMeditationActive(active) {
-        state.is_sit_meditation_active = !!active;
+        state.is_sit_meditation_active = !!active && !isComa();
     }
 
     function isSitMeditationActive() {
@@ -1048,16 +1052,6 @@
         return 'starvation';
     }
 
-    function hasComaBuffActive() {
-        if (!global || !global.BuffSystem || typeof global.BuffSystem.hasBuffByBuffId !== 'function') return !!state.isComa;
-        return !!global.BuffSystem.hasBuffByBuffId('player', 'survival_coma');
-    }
-
-    function clearStaminaExhaustedBuffIfAny() {
-        if (!global || !global.BuffSystem || typeof global.BuffSystem.removeBuffByBuffId !== 'function') return;
-        global.BuffSystem.removeBuffByBuffId('player', 'survival_stamina_exhausted');
-    }
-
     function getBuffSystem() {
         return (global && global.BuffSystem) ? global.BuffSystem : null;
     }
@@ -1224,8 +1218,8 @@
             body_temperature: Number(state.body_temperature),
             body_temperature_standard: Number(state.body_temperature_standard),
             fatigue: Number(state.fatigue),
-            isDead: !!state.isDead,
-            isComa: !!state.isComa
+            isComa: isComa(),
+            isDead: !!state.isDead
         };
     }
 
@@ -1468,6 +1462,7 @@
     }
 
     function syncFatigueStateBuff() {
+        if (state.fatigue < get('fatigue_max', 100)) state.fatigueFullTicks = 0;
         if (!global || !global.BuffSystem) return '';
         var Buff = global.BuffSystem;
         if (typeof Buff.applyBuff !== 'function' || typeof Buff.removeBuffByBuffId !== 'function') return '';
@@ -1530,7 +1525,7 @@
         if (!global || !global.BuffSystem) return;
         var Buff = global.BuffSystem;
         if (typeof Buff.applyBuff !== 'function' || typeof Buff.removeBuffByBuffId !== 'function') return;
-        if (state.stamina <= 0 && !hasComaBuffActive()) {
+        if (state.stamina <= 0) {
             Buff.applyBuff('player', 'survival_stamina_exhausted', 'survival_stamina_zero', { tick: getBuffApplyTick() });
         } else {
             Buff.removeBuffByBuffId('player', 'survival_stamina_exhausted');
@@ -1539,18 +1534,12 @@
 
     /** 重度饥饿或极限饥饿时禁止消耗体力/精力的动作 */
     function canPerformStaminaOrEnergyAction() {
-        if (state.isDead || hasComaBuffActive()) return false;
+        if (state.isDead || isComa()) return false;
         var blockingBuffIds = get('stamina_energy_action_blocking_buff_ids', [
             'survival_satiety_extreme_hunger',
-            'survival_satiety_starving_zero',
-            'survival_coma'
+            'survival_satiety_starving_zero'
         ]);
-        if (hasAnyActiveBuff(blockingBuffIds)) return false;
-        if (state.stamina <= 0) {
-            var limit = get('stamina_zero_ticks_to_coma', 50);
-            if (state.staminaZeroTicks >= limit) return false;
-        }
-        return true;
+        return !hasAnyActiveBuff(blockingBuffIds);
     }
 
     /** 体力自然恢复倍率（由 Buff 状态驱动；无 Buff 时回退为 1） */
@@ -1723,25 +1712,28 @@
     function isMovementOrWait(options) {
         return !!(options && (options.source === 'movement' || options.source === 'wait'));
     }
+    const defaultIntensityRates = { low: 0.4, medium: 0.6, high: 1 };
+    function getIntensityRate(intensity) {
+        const rates = get('stamina_intensity_rates', defaultIntensityRates);
+        return rates[intensity] ?? defaultIntensityRates[intensity];
+    }
+    function fatigueForUnpaidStamina(cost, available) {
+        var unpaid = roundStamina(Math.max(0, cost - available));
+        return unpaid * get('fatigue_per_unpaid_stamina', 2);
+    }
     function consumeStamina(amount, options) {
         var a = options && options.raw ? Math.max(0, Number(amount) || 0) : getActionStaminaCost(amount);
+        if (!Number.isFinite(a) || a <= 0) return;
         var before = roundStamina(Math.max(0, Number(state.stamina) || 0));
         state.stamina = roundStamina(Math.max(0, before - a));
         var actualCost = roundStamina(Math.max(0, before - state.stamina));
-        if (actualCost > 0) {
-            // Walking and in-place waiting share step costs without a deferred food bill.
-            if (foodConfig() && !isMovementOrWait(options)) foodState.pendingStamina += actualCost;
-            var gainPerStamina = Number(options && Number.isFinite(options.fatiguePerStamina) ? options.fatiguePerStamina : get('fatigue_gain_per_stamina_spent', 0.5));
-            if (!isFinite(gainPerStamina) || gainPerStamina < 0) gainPerStamina = 0.5;
-            state.fatigue = roundFatigue(clamp(
-                state.fatigue + actualCost * gainPerStamina,
-                get('fatigue_min', 0),
-                get('fatigue_max', 100)
-            ));
-        }
-        if (state.stamina > 0) state.staminaZeroTicks = 0;
+        // Food metabolism only tracks stamina actually spent, and excludes steps.
+        if (foodConfig() && !isMovementOrWait(options)) foodState.pendingStamina += actualCost;
+        var gainPerStamina = options && Number.isFinite(options.fatiguePerStamina)
+            ? options.fatiguePerStamina : get('fatigue_gain_per_stamina_spent', 0.1);
+        var unpaidFatigue = options && options.source === 'status_effect' ? 0 : fatigueForUnpaidStamina(a, before);
+        changeFatigue(actualCost * gainPerStamina + unpaidFatigue);
         syncStaminaExhaustedBuff();
-        syncFatigueStateBuff();
     }
 
     /**
@@ -1767,7 +1759,6 @@
         state.satiety = round1(state.satiety - sc);
         state.thirst = round1(state.thirst - tc);
         state.stamina = roundStamina(state.stamina + gain);
-        if (state.stamina > 0) state.staminaZeroTicks = 0;
         syncStaminaExhaustedBuff();
         syncSatietyStateBuff();
         syncThirstStateBuff();
@@ -1833,6 +1824,9 @@
     function setDead(reason) {
         if (state.isDead) return;
         state.isDead = true;
+        state.fatigueFullTicks = 0;
+        state.fatigueComaTicksRemaining = 0;
+        syncFatigueComaBuff();
         state.deathReason = reason ? String(reason) : 'unknown';
         if (global.BedSleep) global.BedSleep.interrupt();
         if (global.GymSystem) global.GymSystem.interrupt();
@@ -1866,16 +1860,60 @@
     }
 
     function setResting(resting) {
-        state.isResting = !!resting;
+        state.isResting = !!resting && !isComa();
     }
 
     function setStaminaRegenActionActive(active) {
-        state.is_stamina_regen_action_active = !!active;
+        state.is_stamina_regen_action_active = !!active && !isComa();
+    }
+
+    function isComa() {
+        return state.fatigueComaTicksRemaining > 0;
+    }
+
+    function syncFatigueComaBuff() {
+        var buffs = global.BuffSystem;
+        if (!buffs || !buffs.hasBuffByBuffId) return;
+        var id = 'survival_fatigue_coma';
+        if (isComa() === !!buffs.hasBuffByBuffId('player', id)) return;
+        if (isComa()) {
+            // Anchor the HUD expiry to the saved wake tick, including mid-coma restores.
+            var templateTicks = buffs.getTemplate?.(id)?.durationTicks || 10;
+            buffs.applyBuff('player', id, 'survival_fatigue', { tick: getBuffApplyTick() + state.fatigueComaTicksRemaining - templateTicks });
+        } else {
+            buffs.removeBuffByBuffId('player', id);
+        }
+    }
+
+    function settleFatigueComaTick(wasInComa, fullAtStart) {
+        if (state.isDead) return;
+        if (wasInComa) {
+            state.fatigueComaTicksRemaining--;
+            if (!isComa()) {
+                changeFatigue(-state.fatigue * get('fatigue_coma_wake_reduction_ratio', 0.1));
+                syncFatigueComaBuff();
+            }
+        } else if (fullAtStart && state.fatigue >= get('fatigue_max', 100)) {
+            state.fatigueFullTicks++;
+            if (state.fatigueFullTicks >= get('fatigue_full_ticks_to_coma', 30)) {
+                state.fatigueFullTicks = 0;
+                state.fatigueComaTicksRemaining = get('fatigue_coma_duration_ticks', 10);
+                state.isResting = false;
+                state.is_stamina_regen_action_active = false;
+                state.is_sit_meditation_active = false;
+                if (state.is_study_active) stopStudy();
+                syncFatigueComaBuff();
+            }
+        }
     }
 
     /** 单 tick 结算；返回 { death: string|null, coma: boolean } */
     function advanceTick(options) {
+        var wasInComa = isComa();
+        var fullAtStart = state.fatigue >= get('fatigue_max', 100);
+        if (wasInComa) options = null;
         var stepTick = isMovementOrWait(options);
+        var exerting = stepTick || !!(options && (options.intensity || options.baseCost != null || options.actionCost != null || options.source === 'combat'));
         var sleeping = !!(options && options.source === 'sleep');
         var sleepSatietyCost = sleeping ? Math.max(0, Number(get('sleep_satiety_cost_per_tick', 1)) || 0) : 0;
         var sleepThirstCost = sleeping ? Math.max(0, Number(get('sleep_thirst_cost_per_tick', 1)) || 0) : 0;
@@ -1893,13 +1931,6 @@
         syncDirtynessStateBuff();
         syncFatigueStateBuff();
         syncPainStateBuff();
-        var comaActive = hasComaBuffActive();
-        state.isComa = comaActive;
-        if (comaActive) {
-            // 昏迷期间不保留筋疲力尽计时，且不显示筋疲力尽状态
-            state.staminaZeroTicks = 0;
-            clearStaminaExhaustedBuffIfAny();
-        }
 
         // 呼吸条（气力）恢复（07「回合自然恢复」）：呼吸条为常驻资源，每个 tick 收束判定（战斗中一轮=一 tick）；
         // 读当前挂载呼吸法 breath_bar.regen；condition=no_negative_delta_this_round 时本 tick 出过招（consumeQiLi/drainQiLi 已标记 spent）则不回；呼吸法未配 regen 则不回。
@@ -2017,38 +2048,22 @@
                 state.fatigue = roundFatigue(clamp(state.fatigue - Math.max(0, Number(get('sleep_fatigue_reduction_per_tick', 2)) || 0), get('fatigue_min', 0), get('fatigue_max', 100)));
                 syncFatigueStateBuff();
             }
-        } else if (!stepTick && (state.isResting || state.is_stamina_regen_action_active ||
+        } else if (!wasInComa && !exerting && (state.isResting || state.is_stamina_regen_action_active ||
             (state.is_sit_meditation_active && !state.sit_meditation_interrupt_this_tick))) {
             applyFoodConversion(get('rest_action_extra_satiety_decay_per_tick', 1),
                 get('rest_action_extra_thirst_decay_per_tick', 1),
                 get('rest_action_stamina_regen_per_tick', 2));
         }
-        // 站立基础代谢：不休息/不调息时每 tick 扣基础体力（时间流逝本身有代价；
-        // 休息/调息正在恢复，豁免）。饱食/饮水走各自被动衰减（见上）。
-        if (!sleeping && !state.isResting && !state.is_sit_meditation_active) {
-            var passiveDrain = Number(get('stamina_passive_drain_per_tick', 0.2));
-            if (isFinite(passiveDrain) && passiveDrain > 0) {
-                state.stamina = roundStamina(Math.max(0, state.stamina - passiveDrain));
-            }
+        // Each occupied world tick has one owner. Recovery and unconscious ticks have no action charge.
+        if (!wasInComa && !sleeping && (exerting || ((options?.source || state.is_study_active) && !state.isResting && !state.is_stamina_regen_action_active && !state.is_sit_meditation_active))) {
+            var source = options?.source;
+            var intensity = options?.intensity || (source === 'combat' ? 'high' : 'low');
+            var quotedCost = options?.actionCost ?? options?.stepStaminaCost;
+            consumeStamina(quotedCost ?? options?.baseCost ?? getIntensityRate(intensity), {
+                raw: quotedCost != null, source: source, fatiguePerStamina: options?.fatiguePerStamina
+            });
         }
         syncStaminaExhaustedBuff();
-        if (state.stamina <= 0 && !comaActive) {
-            state.staminaZeroTicks += 1;
-            if (state.staminaZeroTicks >= get('stamina_zero_ticks_to_coma', 50)) {
-                if (global && global.BuffSystem && typeof global.BuffSystem.applyBuff === 'function') {
-                    global.BuffSystem.applyBuff('player', 'survival_coma', 'survival_stamina_zero', { tick: getBuffApplyTick() });
-                } else {
-                    state.isComa = true;
-                }
-                // 触发昏迷后，筋疲力尽计数归零（下次从 0 重计）
-                state.staminaZeroTicks = 0;
-                state.isComa = hasComaBuffActive() || !!state.isComa;
-                clearStaminaExhaustedBuffIfAny();
-                result.coma = true;
-            }
-        } else {
-            state.staminaZeroTicks = 0;
-        }
 
         // ---------- 心情回归（每 1 tick） ----------
         var moodInterval = get('mood_regression_interval_ticks', 1);
@@ -2162,6 +2177,8 @@
             }
         }
         if (global.InjurySystem) global.InjurySystem.tick('player',global.InjurySystem.now());
+        settleFatigueComaTick(wasInComa, fullAtStart);
+        result.coma = isComa();
         emitSurvivalStateChangedIfNeeded('tick', beforeSnapshot, { coma: !!result.coma });
 
         return result;
@@ -2183,7 +2200,6 @@
     function getBmiTier() { return getBmiTierByValue(getBMI()); }
     function isDead() { return state.isDead; }
     function getDeathReason() { return state.deathReason || null; }
-    function isComa() { return state.isComa; }
 
     // ---------- 自修学习（05 5.8 / 11 §8.3.1 技能升级主干） ----------
 
@@ -2217,6 +2233,7 @@
         if (!skillId) return { ok: false, reason: 'no_skill' };
         if (global.BookReading && global.BookReading.isBookSkill(skillId)) return { ok: false, reason: 'invalid' };
         if (state.isDead) return { ok: false, reason: 'dead' };
+        if (isComa()) return { ok: false, reason: 'coma' };
         var IE = global.InventoryEquipment;
         if (!IE || typeof IE.getSkillLevel !== 'function') return { ok: false, reason: 'no_ie' };
         var lv = IE.getSkillLevel(skillId);
@@ -2319,6 +2336,7 @@
         getTemperatureExposure: getTemperatureExposure,
         getTemperatureSpeedMultiplier: function () { return getTemperatureState().speed; },
         getActionStaminaCost: getActionStaminaCost,
+        getIntensityRate: getIntensityRate,
         getActionStaminaBudget: function () { return state.stamina / getTemperatureState().cost; },
         setTemperatureSource: setTemperatureSource,
         changeBodyTemperature: changeBodyTemperature,
@@ -2365,6 +2383,8 @@
         getDeathReason: getDeathReason,
         setDead: setDead,
         isComa: isComa,
+        syncFatigueComaBuff: syncFatigueComaBuff,
+        syncStaminaExhaustedBuff: syncStaminaExhaustedBuff,
 
         getQiLiMax: getQiLiMax,
         getMountedBreath: getMountedBreath,

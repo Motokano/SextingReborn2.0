@@ -600,7 +600,9 @@
         var event = w.event || {};
         if ([event.best_action, event.secondary_action, event.bad_action].indexOf(act) < 0) return { ok: false, reason: 'invalid_action' };
 
-        if (mode === MODE_AEROBIC && options.advance_world_tick !== false && global.Survival && global.Survival.getActionStaminaCost && global.Survival.getStamina() < global.Survival.getActionStaminaCost(5)) return {ok:false, reason:'insufficient_stamina'};
+        var intensity = ['turn_pile','break_clumps'].includes(act) ? 'high' :
+            ['none','leave_as_is','vent_gas','vent_gently','ventilate'].includes(act) ? 'low' : 'medium';
+        if (mode === MODE_AEROBIC && options.advance_world_tick !== false && global.Survival && global.Survival.getActionStaminaCost && global.Survival.getStamina() < global.Survival.getActionStaminaCost(global.Survival.getIntensityRate(intensity))) return {ok:false, reason:'insufficient_stamina'};
         var delta = 0;
         var success = false;
         if (mode === MODE_AEROBIC) {
@@ -635,10 +637,7 @@
         if (usesAnaerobicProcess(b) && act === 'harvest_early') settleBatch(mode, 'early_harvest');
 
         if (options.advance_world_tick !== false && global.Survival && typeof global.Survival.advanceTick === 'function') {
-            if (mode === MODE_AEROBIC && typeof global.Survival.consumeStamina === 'function') {
-                global.Survival.consumeStamina(5);
-            }
-            global.Survival.advanceTick();
+            global.Survival.advanceTick({source:'compost', intensity:intensity});
         }
         runHook('on_window_interacted', {
             mode: mode,

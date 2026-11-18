@@ -989,6 +989,7 @@
         if (snapshot.open && snapshot.compact && (opening || !menuEl.contains(document.activeElement))) menuEl.focus();
     }
     function chooseMenu(index) {
+        if (global.Survival?.isComa?.()) return;
         var b = menuState.open && menuState.buttons[index];
         if (b && !b.disabled) b.run();
     }
@@ -1044,7 +1045,7 @@
         var position = engine && engine.getState ? Object.assign({}, engine.getState()) : null;
         function sameLocation() { var now = engine && engine.getState && engine.getState(); return !position || !!(now && now.mapId === position.mapId && now.x === position.x && now.y === position.y); }
         return Promise.all([loadNpcDef(npcId)]).then(function (rows) {
-            if (epoch !== menuEpoch || !sameLocation()) return;
+            if (epoch !== menuEpoch || !sameLocation() || global.Survival?.isComa?.()) return;
             var def = rows[0];
             var outdoorFacility = npcId==='npc.station.agriculture_base'?'agriculture':npcId==='npc.station.livestock_base'?'livestock':null;
             if (outdoorFacility && (!global.FacilityLabor || !global.FacilityLabor.nearby(outdoorFacility))) return;

@@ -152,7 +152,7 @@
         } else {
             window.SceneFeedback.showMsg(window.SceneFeedback.ui('warehouse.take.fail'), 'warn');
         }
-        if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
+        if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick({ source: 'inventory_transfer' });
         if (typeof window.InventoryPanel.updateBackpackPanel === 'function') window.InventoryPanel.updateBackpackPanel();
         window.SceneMapView.render();
     }
@@ -167,7 +167,6 @@
             return;
         }
         if (baseWarehousePanelOpen) return;
-        if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
         baseWarehousePanelOpen = true;
         if (window.SveltePanels) window.SveltePanels.refresh('warehouse');
         var modal = document.getElementById('modal-base-warehouse');
@@ -187,7 +186,6 @@
 
     function closeBaseWarehousePanel() {
         if (!baseWarehousePanelOpen) return;
-        if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
         baseWarehousePanelOpen = false;
         if (window.SveltePanels) window.SveltePanels.refresh('warehouse');
         var modal = document.getElementById('modal-base-warehouse');

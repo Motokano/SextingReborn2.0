@@ -58,7 +58,7 @@ test('P4a labor owns one interval, charges once, pauses on hidden/save failure/l
   await setup(h);g.GameEngine.setState('M0_Base_Outside_lv_1',5,10);timer=clock(g);g.FacilityLaborPanel.open('agriculture');await h.drain();
   const before=g.GameTime.getState().totalTicks,stamina=g.Survival.getStamina(),cost=g.FacilityLabor.cost();
   await click(h,'[data-action="start"]');assert.equal(timer.timers.size,1);g.FacilityLaborPanel.act('start');assert.equal(timer.timers.size,1);
-  timer.step();await h.drain();assert.equal(g.FacilityLabor.progress('agriculture'),1);assert.equal(g.GameTime.getState().totalTicks,before+1);assert.ok(g.Survival.getStamina()<=stamina-cost,'labor and ordinary world survival costs both apply');
+  timer.step();await h.drain();assert.equal(g.FacilityLabor.progress('agriculture'),1);assert.equal(g.GameTime.getState().totalTicks,before+1);assert.equal(g.Survival.getStamina(),stamina-cost,'labor charges once per world tick');
   await click(h,'[data-action="pause"]');assert.equal(timer.timers.size,0);timer.step();assert.equal(g.FacilityLabor.progress('agriculture'),1);
   await click(h,'[data-action="start"]');Object.defineProperty(g.document,'hidden',{configurable:true,value:true});g.document.dispatchEvent(new g.Event('visibilitychange'));await h.drain();assert.equal(timer.timers.size,0);
   Object.defineProperty(g.document,'hidden',{configurable:true,value:false});

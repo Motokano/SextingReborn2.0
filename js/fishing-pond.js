@@ -10,7 +10,7 @@
     function FS() { return g.FishingSession; }
     function active() { return FS().getState().active; }
     function now() { return g.GameTime ? g.GameTime.getState().totalTicks : 0; }
-    function h() { return hostOverride || {now:now,allowed:function(){return true;},stamina:function(){return g.Survival.getActionStaminaBudget ? g.Survival.getActionStaminaBudget() : g.Survival.getStamina();},spend:function(n){g.Survival.consumeStamina(n);},tick:function(){g.Survival.advanceTick();}}; }
+    function h() { return hostOverride || {now:now,allowed:function(){return true;},stamina:function(){return g.Survival.getActionStaminaBudget ? g.Survival.getActionStaminaBudget() : g.Survival.getStamina();},spend:function(n){g.Survival.consumeStamina(n);},workTick:function(rate){g.Survival.advanceTick({source:'fishing',baseCost:rate});}}; }
     function clock() { return h().now(); }
     function log(text) { s.logs.unshift({tick:clock(),text:text}); s.logs=s.logs.slice(0,C.rules.max_logs); }
     function roll() { s.seed=(Math.imul(s.seed,1664525)+1013904223)>>>0;return s.seed/4294967296; }
@@ -65,7 +65,18 @@
     function learnPart(type,proof){var p=part(type);if(p)learn('item:'+p.item_id,proof);}
     function knows(key) { return !!(s.knowledge[key]&&s.knowledge[key].known); }
     function recognition(id) { if(!C)return null;var fish=C.fish.some(function(f){return f.id===id;});return /^fishing_/.test(id)?knows((fish?'fish:':'item:')+id):null; }
-    function pay(key) { var cost=C.costs[key];if(!cost||h().stamina()<cost[1])return {ok:false,reason:'stamina'};h().spend(cost[1]);for(var i=0;i<cost[0];i++)h().tick();updateWater();return {ok:true}; }
+    function pay(key, rateOverride) {
+        var cost=C.costs[key], actor=h();
+        if(!cost||actor.stamina()<(rateOverride ?? cost[1]/cost[0])*cost[0])return {ok:false,reason:'stamina'};
+        var rate=rateOverride ?? cost[1]/cost[0];
+        for(var i=0;i<cost[0];i++) {
+            if(actor.workTick) actor.workTick(rate);
+            else {actor.spend(rate);actor.tick();}
+            if(g.Survival?.isComa?.()) return {ok:false,reason:'coma'};
+        }
+        updateWater();
+        return {ok:true};
+    }
     function available(key) { return h().stamina()>=C.costs[key][1]; }
     function present() { var f=part('fishing.float'),w=part('fishing.sinker');return f&&w&&C.presentation[f.item_id]?C.presentation[f.item_id][w.item_id]||'normal':'sunk'; }
     function light() { var gt=g.GameTime&&g.GameTime.getState(),hours=C.fact_rules.visual_hours;return !gt||gt.hour==null||(gt.hour>=hours[0]&&gt.hour<hours[1]); }
@@ -260,7 +271,7 @@
             r=FS().fightStep(value);if(r.ok){feedback();settle();if(active().phase==='fight'){var ct=active().contact,bi=ct.behavior_sequence[Math.min(ct.behavior_index-1,ct.behavior_sequence.length-1)];if(bi.id==='grass')obstacle();}}return r;
         }
         if(key==='snag'){
-            if(!s.snag||['relax','pull'].indexOf(value)<0)return {ok:false,reason:'phase'};r=pay('snag');if(!r.ok)return r;
+            if(!s.snag||['relax','pull'].indexOf(value)<0)return {ok:false,reason:'phase'};r=pay('snag',value==='relax'?.4:1);if(!r.ok)return r;
             if(value==='pull'){var loaded=FS().obstacleLoad(C.rules.snag_load[s.snag-1]);if(!loaded.ok)return loaded;if(loaded.broken){s.snag=0;settle();feedback();return loaded;}if(loaded.slipping){log('绕线处在放线，固定方向的阻力仍未松开。');return r;}}
             var odds=C.rules.snag_escape[value][s.snag-1];
             if(roll()*100<odds){s.snag=0;}else{s.snag=value==='relax'?1:2;}return r;

@@ -29,9 +29,10 @@
                 var S = global.Survival;
                 if (S && S.consumeStamina) S.consumeStamina(amount);
             },
+            workTick: function (rate) { global.Survival.advanceTick({source:'fishing', baseCost:rate}); },
             advanceTick: function () {
                 var S = global.Survival;
-                if (S && S.advanceTick) S.advanceTick();
+                if (S && S.advanceTick) S.advanceTick({ source: 'fishing' });
             }
         };
     }
@@ -77,12 +78,17 @@
         var spec = config && config.action_costs ? config.action_costs[actionId] : null;
         if (!spec) return { ok: false, reason: 'unknown_action' };
         var h = host();
+        if (global.Survival?.isComa?.()) return { ok: false, reason: 'coma' };
         var stamina = Math.max(0, finite(spec.stamina, 0));
-        if (h.stamina && finite(h.stamina(), 0) < stamina) return { ok: false, reason: 'stamina' };
-        if (stamina > 0 && h.spendStamina) h.spendStamina(stamina);
+        if (actionId !== 'wait' && h.stamina && finite(h.stamina(), 0) < stamina) return { ok: false, reason: 'stamina' };
         var ticks = Math.max(0, integer(spec.ticks, 0));
-        for (var i = 0; i < ticks; i++) if (h.advanceTick) h.advanceTick();
-        if (state.active) state.active.elapsed_ticks += ticks;
+        for (var i = 0; i < ticks; i++) {
+            var rate = stamina / ticks;
+            if (h.workTick) h.workTick(rate);
+            else { h.spendStamina?.(rate); h.advanceTick?.(); }
+            if (state.active) state.active.elapsed_ticks++;
+            if (global.Survival?.isComa?.()) return { ok: false, reason: 'coma' };
+        }
         return { ok: true, ticks: ticks, stamina: stamina, spec: spec };
     }
 
@@ -211,6 +217,8 @@
         var level = ['light', 'normal', 'strong'].indexOf(force) >= 0 ? force : 'normal';
         var root = rootRecord();
         if (!root) return { ok: false, reason: 'rig_not_found' };
+        var paid = pay('strike_' + level);
+        if (!paid.ok) return paid;
         var base = integer(config.hook_force[level], 0);
         var penalty = integer(config.hook_fit_penalty[a.contact.hook_fit], 1);
         a.hook_hold = a.contact.in_mouth === false ? 0 : Math.max(0, Math.min(3, base - penalty));

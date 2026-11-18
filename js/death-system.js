@@ -167,14 +167,14 @@
             });
             CA.setState({ part_destroy: parts, part_destroy_recover_acc: acc, destroy_recover_block_ticks: 0 });
             var old = S.getState(), get = S.getConfigValue, ratio = config.resourceRatio;
-            S.setState({ isDead: false, deathReason: null, isComa: false,
+            S.setState({ isDead: false, deathReason: null,
                 stamina: S.getStaminaMax() * ratio, energy: S.getEnergyMax() * ratio,
                 satiety: get('satiety_max', 100) * ratio, thirst: S.getThirstMax() * ratio,
                 qi_li_current: S.getQiLiMax() * ratio, diqi_current: old.diqi_max * ratio,
                 diqi_shield_remaining: 0, fatigue: get('fatigue_max', 100) * ratio,
                 mood: (get('mood_min', 0) + get('mood_max', 1000)) / 2,
                 body_temperature: old.body_temperature_standard, temperature_sources: {},
-                starvationTicks: 0, thirstDeathTicks: 0, staminaZeroTicks: 0,
+                starvationTicks: 0, thirstDeathTicks: 0,
                 severeHungerTicks: 0, overfedTicks: 0, pain: 0, pain_no_hit_ticks: 0,
                 food_metabolism: null });
             state.current.phase = 'revived';

@@ -8,7 +8,7 @@ const read=p=>fs.readFileSync(p,'utf8'),json=p=>JSON.parse(read(p)),copy=x=>JSON
 const c=vm.createContext({console,Math,Date});c.window=c;
 let flags,saveOK=true,stamina,energy,ticks,access=true;
 c.NPCSystem={getFlagValue:k=>flags[k],setDemoFlag:(k,v)=>flags[k]=v,getDemoState:()=>copy(flags),setDemoState:s=>flags=copy(s)};
-c.Survival={getState:()=>({}),getStamina:()=>stamina,getEnergy:()=>energy,consumeStamina:n=>stamina-=n,consumeEnergy:n=>energy-=n,advanceTick:()=>ticks++,setDiqiShieldRemaining:()=>{}};
+c.Survival={getIntensityRate:k=>({low:.4,medium:.6,high:1})[k],getActionStaminaCost:n=>n,getState:()=>({}),getStamina:()=>stamina,getEnergy:()=>energy,consumeStamina:n=>stamina-=n,consumeEnergy:n=>energy-=n,advanceTick:({baseCost=.4}={})=>{stamina-=baseCost;ticks++;},setDiqiShieldRemaining:()=>{}};
 c.SaveSystem={saveNow:()=>saveOK};c.SewingStationPanel={isOpen:()=>true,canAccess:()=>access,snapshot:()=>({})};
 c.GameEngine={getState:()=>({mapId:'M0_Base_Inside_lv_1',x:6,y:12})};
 for(const f of ['item-attribute-modules','sewing-system','inventory-equipment'])vm.runInContext(read('js/'+f+'.js'),c);
@@ -41,7 +41,7 @@ console.log('PASS 11 researched patterns, both sides, exact costs/time, real equ
 
 reset();const first=sample('glove_cloth','left',{enchants:['retained-test-enchant']});run({type:'pattern',id:first});
 assert.equal(S.accessoryLevel('glove_cloth'),1);assert.equal(S.preview({type:'pattern',id:first}).ok,false);
-assert.equal(stamina,10000);assert.equal(energy,9988);assert.deepEqual(copy(S.record(first).item.enchants),['retained-test-enchant']);
+assert.ok(Math.abs(stamina-(10000-6*.4))<1e-8);assert.equal(energy,9988);assert.deepEqual(copy(S.record(first).item.enchants),['retained-test-enchant']);
 const inv=copy(IE.getState()),knowledge=copy(flags);IE.setState(inv);flags=knowledge;
 assert.equal(S.accessoryLevel('glove_cloth'),1);assert.equal(S.preview({type:'pattern',id:first}).ok,false,'reload cannot reuse a sample');
 const rec=S.record(first),moved=IE.takeItemFromContainer(rec.container,rec.index).item;assert(IE.putItemIntoDefaultContainer(moved).placed);

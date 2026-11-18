@@ -704,7 +704,7 @@
         // 状态区
         renderCompoundBar();
         var mSel = (PharmacyStation.getMethods() && mid && PharmacyStation.getMethods()[String(mid)]) ? PharmacyStation.getMethods()[String(mid)] : null;
-        var needStamina = mSel ? StationCraftCore.readMethodCostValue(mSel, 'stamina', 'stamina_cost') : 0;
+        var needStamina = mSel ? StationCraftCore.methodStamina(mid, StationCraftCore.readMethodCostValue(mSel,'ticks','craft_ticks')) : 0;
         var craftPreview = (!compoundMode && mid && typeof PharmacyStation.getCraftPreview === 'function')
             ? PharmacyStation.getCraftPreview(mid, pharmacyStationUiState.inputs || []) : null;
         if (craftPreview && craftPreview.ok) {
@@ -893,8 +893,8 @@
             showMsg(ui('pharmacy.station.locked_until_repaired'), 'info');
             return;
         }
-        if (global.Survival && typeof global.Survival.advanceTick === 'function') global.Survival.advanceTick();
         pharmacyStationPanelOpen = true;
+        window.StationActions.startPharmacyCraftIdleIfNeeded();
         equipmentOpen = false;
         var modal = document.getElementById('modal-pharmacy-station');
         if (modal) {
@@ -907,7 +907,6 @@
 
     function closePharmacyStationPanel() {
         if (!pharmacyStationPanelOpen) return;
-        if (global.Survival && typeof global.Survival.advanceTick === 'function') global.Survival.advanceTick();
         pharmacyStationPanelOpen = false;
         var modal = document.getElementById('modal-pharmacy-station');
         if (modal) {

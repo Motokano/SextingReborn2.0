@@ -83,12 +83,14 @@ test('a full player exchange rolls back world time, resources, body and countera
     g.CombatEnemies.setTable({enemies:{growth_counter:{speed:10,parry_rate:0,can_attack:true,limbs_invulnerable:true,actions:[{id:'hit',limb:'rhand',power_min:10,power_max:10,damage_type:'blunt',qi_cost:0,hit_part_weights:{lhand:1}}]}}});
     // A roll above baseline parry but below hit chance exercises real damage in the complete pipeline.
     g.Math.random=()=>.5;C.getCombatSpeed=()=>10;C.getEffectiveAttr=()=>0;
+    g.Survival.setState({stamina:0,fatigue:0});
     const attack=()=>g.SceneCtx.actions.attackEnemy('growth_counter',{x:pos.x+1,y:pos.y,fromX:pos.x,fromY:pos.y});
     const before=copy(g.SaveSystem.buildSnapshotForDebug()),repair=failWrites(g);attack();repair();
     assert.equal(g.WorldTick.getWorldTotalTicks(),before.time.totalTicks);assert.equal(exp(g,vitality),0);
     assert.deepEqual(copy(C.getState().part_destroy),before.player.characterAttributes.part_destroy);
-    for(const key of ['qi_li_current','diqi_current','stamina'])assert.equal(g.Survival.getState()[key],before.player.survival[key]);
+    for(const key of ['qi_li_current','diqi_current','stamina','fatigue'])assert.equal(g.Survival.getState()[key],before.player.survival[key]);
     attack();assert.ok(exp(g,vitality)>0);assert.equal(g.WorldTick.getWorldTotalTicks(),before.time.totalTicks+1);assert.deepEqual(h.errors,[]);
+    assert.equal(g.Survival.getFatigue(),2,'the committed exchange pays the unpaid world tick only once');
   }finally{await h.close();}
 });
 for(const full of [false,true]){

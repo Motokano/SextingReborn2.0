@@ -50,11 +50,17 @@
     }
 
     function getAgricultureTaskSpecFromMeta(meta) {
-        if (meta && meta.spec) return meta.spec;
+        if (meta && meta.spec) {
+            var config = window.AgricultureConfig;
+            var id = meta.buildId || '';
+            var current = config?.getBuildSpec(id);
+            if (id.startsWith('venturi_upgrade:')) current = config?.getVenturiUpgradeSpec(Number(id.split(':')[1]));
+            return Object.assign({}, meta.spec, {stamina_per_tick:current?.stamina_per_tick ?? 1});
+        }
         if (window.AgricultureConfig && typeof window.AgricultureConfig.getTaskDefaults === 'function') {
             return window.AgricultureConfig.getTaskDefaults();
         }
-        return { task_ticks: 10, stamina_per_tick: 5 };
+        return { task_ticks: 10, stamina_per_tick: 1 };
     }
 
     function getAgricultureConstructionCtx(spec) {
@@ -65,28 +71,12 @@
         return {
             panelOpen: true,
             taskTicks: taskSpec.task_ticks != null ? taskSpec.task_ticks : 10,
-            staminaPerTick: window.Survival && window.Survival.getActionStaminaCost ? window.Survival.getActionStaminaCost(taskSpec.stamina_per_tick != null ? taskSpec.stamina_per_tick : 5) : (taskSpec.stamina_per_tick != null ? taskSpec.stamina_per_tick : 5),
-            getStamina: function () {
-                var Surv = window.Survival;
-                if (!Surv || typeof Surv.getState !== 'function') return 0;
-                return Number((Surv.getState() || {}).stamina) || 0;
-            },
-            setStamina: function (v) {
-                var Surv = window.Survival;
-                if (!Surv) return;
-                var target = Number(v) || 0;
-                var cur = Number((Surv.getState ? Surv.getState() : {}).stamina) || 0;
-                // 走 consumeStamina（累积疲劳 + 同步耗尽 Buff），与其他行动口径一致；增值才直写
-                if (target < cur && typeof Surv.consumeStamina === 'function') {
-                    Surv.consumeStamina(cur - target, { raw: true });
-                } else if (typeof Surv.setState === 'function') {
-                    Surv.setState({ stamina: target });
-                }
-            }
+            staminaPerTick: window.Survival.getActionStaminaCost(taskSpec.stamina_per_tick ?? 1),
+            staminaAlreadyPaid: true
         };
     }
 
-    function tickAgricultureAfterWorldTick() {
+    function tickAgricultureAfterWorldTick(playerWasInComa, source) {
         if (window.FacilityLabor && !window.FacilityLabor.isUnlocked('agriculture')) return;
         if (!isAgricultureUnlocked()) return;
         var AM = window.AgricultureMap;
@@ -96,7 +86,7 @@
         var env = buildAgricultureEnv();
         try { AM.runAgricultureMapTick(st, env); } catch (eRun) { /* ignore */ }
         AgricultureMap.mirrorStateTick(st);
-        if (agriculturePanelOpen && st.task && typeof AM.advanceConstructionTask === 'function') {
+        if (!playerWasInComa && source === 'agriculture_work' && agriculturePanelOpen && st.task && typeof AM.advanceConstructionTask === 'function') {
             var prevHadTask = !!st.task;
             try {
                 AM.advanceConstructionTask(st, getAgricultureConstructionCtx());
@@ -242,7 +232,7 @@
         return { ok: true, facility: facilityKind, item_id: itemId };
     }
 
-    function tryAgricultureAction(actionId, params) {
+    function applyAgricultureAction(actionId, params) {
         params = params || {};
         if (!canUseOutdoorFacility('agriculture')) return { ok: false, reason: 'not_adjacent' };
         if (!isAgricultureUnlocked() || (window.FacilityLabor && !window.FacilityLabor.isUnlocked('agriculture'))) return { ok: false, reason: 'agriculture_locked' };
@@ -344,7 +334,7 @@
             };
             agricultureTaskMeta = {
                 buildId: 'soil_amend:' + amendItemId,
-                spec: window.AgricultureConfig.getTaskDefaults ? window.AgricultureConfig.getTaskDefaults() : { task_ticks: 10, stamina_per_tick: 5 },
+                spec: window.AgricultureConfig.getTaskDefaults ? window.AgricultureConfig.getTaskDefaults() : { task_ticks: 10, stamina_per_tick: 1 },
                 consumed: amendPay.consumed || []
             };
             st.task.paymentMeta = agricultureTaskMeta;
@@ -557,14 +547,33 @@
     }
 
     // The formal panel submits one complete action; inventory, farm and save commit together.
+    var farmActionIntensity = {
+        plant:'medium', harvest:'medium', clear_crop:'medium', inject_facility:'medium', till:'high',
+        feed_power:'low', set_jar_release:'low', set_venturi_concentration:'low',
+        step_venturi_concentration:'low', step_jar_release:'low'
+    };
+    function tryAgricultureAction(actionId, params) {
+        var action = String(actionId || '').trim();
+        if (Object.hasOwn(farmActionIntensity, action)) return commitAgricultureAction(action, params);
+        return applyAgricultureAction(action, params);
+    }
     function performAgricultureAction(actionId, params) {
         if (!agriculturePanelOpen) return { ok: false, reason: 'panel_closed' };
+        return commitAgricultureAction(String(actionId || '').trim(), params);
+    }
+    function commitAgricultureAction(actionId, params) {
         if (!window.SaveSystem || !window.SaveSystem.runAtomicFor) return { ok: false, reason: 'save_failed' };
         var checkpoint;
         try {
             checkpoint = window.SaveSystem.runAtomicFor('facility', function () {
-                var result = tryAgricultureAction(actionId, params);
+                var result = applyAgricultureAction(actionId, params);
                 if (!result || !result.ok) throw { agricultureActionRejected: true, result: result };
+                var intensity = farmActionIntensity[actionId];
+                if (intensity) {
+                    var before = window.WorldTick.getWorldTotalTicks();
+                    window.Survival.advanceTick({source:'agriculture', intensity:intensity});
+                    if (window.WorldTick.getWorldTotalTicks() !== before + 1) throw {agricultureActionRejected:true, result:{ok:false, reason:'action_blocked'}};
+                }
                 return result;
             });
         } catch (error) {
@@ -644,24 +653,17 @@
         agricultureAutoTickTimer = setInterval(onAgricultureAutoTick, 1000);
     }
 
-    function afterAgricultureWorldTicksAdvanced(tickResult) {
+    function afterAgricultureWorldTicksAdvanced() {
         var atomic = window.SaveSystem && window.SaveSystem.isAtomic();
         if (!atomic && typeof window.SceneStatusPanel.updateStatusPanel === 'function') SceneHud.refresh('status');
         var Surv = window.Survival;
         var dead = !!(Surv && typeof Surv.isDead === 'function' && Surv.isDead());
-        var coma = !!(tickResult && tickResult.coma) || window.SceneAccess.isPlayerComaActive();
         if (dead) {
             stopAgricultureAutoTick();
             if (agriculturePanelOpen) {
                 closeAgriculturePanel();
                 window.SceneFeedback.showMsg(window.SceneFeedback.ui('agriculture.msg.tick_stopped_death'), 'warn');
             }
-            if (window.SceneRenderer) window.SceneRenderer.render();
-            return;
-        }
-        if (coma) {
-            stopAgricultureAutoTick();
-            if (agriculturePanelOpen) closeAgriculturePanel();
             if (window.SceneRenderer) window.SceneRenderer.render();
             return;
         }
@@ -674,11 +676,15 @@
         var Surv = window.Survival;
         if (!Surv || typeof Surv.advanceTick !== 'function') return { ok: false, reason: 'survival_missing' };
         if (typeof Surv.isDead === 'function' && Surv.isDead()) return { ok: false, reason: 'dead' };
-        if (window.SceneAccess.isPlayerComaActive()) return { ok: false, reason: 'coma' };
         var beforeTick = window.WorldTick.getWorldTotalTicks();
-        window.SceneMovement.waitInPlace();
+        var task = AgricultureMap.getState().task;
+        if (task && !task.paused) {
+            Surv.advanceTick({source: 'agriculture_work', actionCost: getAgricultureConstructionCtx().staminaPerTick});
+        } else {
+            window.SceneMovement.waitInPlace();
+        }
         var tickResult = { death: Surv.isDead() };
-        afterAgricultureWorldTicksAdvanced(tickResult);
+        afterAgricultureWorldTicksAdvanced();
         return {
             ok: window.WorldTick.getWorldTotalTicks() > beforeTick,
             tick: window.WorldTick.getWorldTotalTicks(),
@@ -702,7 +708,7 @@
 
     function canUseOutdoorFacility(id) {
         if (!window.FacilityLabor || !window.FacilityLabor.nearby(id)) return false;
-        if (window.SceneAccess.isPlayerComaActive() || (window.Survival && window.Survival.isDead && window.Survival.isDead())) return false;
+        if (window.Survival && window.Survival.isDead && window.Survival.isDead()) return false;
         if ((window.BedSleep && window.BedSleep.isActive()) || (window.GymSystem && window.GymSystem.isActive())) return false;
         if (window.CombatEngagement && window.CombatEngagement.isPlayerInCombat()) return false;
         return !window.SceneAccess.isPlayerActionDisabledByBuff(window.SceneAccess.ACTION_TYPES.NPC_INTERACT);
@@ -728,7 +734,6 @@
         unlockAgriculture();
         stopAgricultureAutoTick();
         CompostPanel.ensureLifePlantingSkillEntry();
-        if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
         agriculturePanelOpen = true;
         var modal = document.getElementById('modal-agriculture');
         if (modal) {
@@ -752,7 +757,6 @@
         stopAgricultureAutoTick();
         if (window.AgriculturePanel && window.AgriculturePanel.close) window.AgriculturePanel.close();
         SceneUi.hideItemTooltip();
-        if (!(options && options.automatic) && window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
         var modal = document.getElementById('modal-agriculture');
         if (modal) {
             modal.classList.remove('show');

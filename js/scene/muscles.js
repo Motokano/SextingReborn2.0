@@ -33,7 +33,6 @@
         var modal = document.getElementById('modal-muscles');
         if (!modal || !window.MuscleAtlasView) return false;
         // Same opening/closing time rule as the existing combat muscle page.
-        if (window.Survival) window.Survival.advanceTick();
         if (!isAvailable() || window.SceneAccess.isPlayerComaActive() || (window.Survival && window.Survival.isDead())) return false;
         returnFocus = document.activeElement;
         opened = true;
@@ -51,7 +50,6 @@
         atlas = null;
         document.getElementById('modal-muscles').classList.remove('show');
         if (!options || !options.automatic) {
-            if (window.Survival) window.Survival.advanceTick();
         }
         if (returnFocus && returnFocus.isConnected && !returnFocus.hidden) returnFocus.focus();
         returnFocus = null;

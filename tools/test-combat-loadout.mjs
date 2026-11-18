@@ -59,25 +59,25 @@ test('approved default loadout: ownership, breathing costs, muscle gate/progress
         let ticks = 0;
         g.Survival.advanceTick = (...args) => { ticks++; return advance(...args); };
         await click(h, '#btn-combat');
-        assert.equal(ticks, 1, 'opening still costs exactly one tick');
+        assert.equal(ticks, 0, 'opening the combat panel is free');
         assert.equal(d.querySelector('[data-mode=muscles]'), null, 'meridian study remains required');
         await click(h, '[data-hub=breath]');
         const current = IE.getCombatState().hubs.breath;
         await click(h, `[data-pick=${current}]`);
-        assert.equal(ticks, 1, 'selecting the same breathing skill is free');
+        assert.equal(ticks, 0, 'selecting the same breathing skill is free');
         await click(h, '[data-hub=breath]');
         await click(h, '[data-clear-slot]');
-        assert.equal(ticks, 2, 'unequipping breathing costs one tick');
+        assert.equal(ticks, 1, 'unequipping breathing costs one tick');
         await click(h, '[data-hub=breath]');
         await click(h, `[data-pick=${current}]`);
-        assert.equal(ticks, 3, 'equipping breathing costs one tick');
+        assert.equal(ticks, 2, 'equipping breathing costs one tick');
 
         IE.getState().skills.special_meridian_studies = { level: 1 };
         g.SceneHud.refresh('status'); await h.drain();
         assert.equal(d.querySelector('#modal-combat [data-mode=muscles]'),null,'muscle entry is exclusively in the HUD');
         await click(h, '#combat-modal-close');
         await click(h, '#btn-muscles');
-        assert.equal(ticks,5,'each panel keeps its original opening/closing cost');
+        assert.equal(ticks,2,'switching panels is free');
         await click(h, '#modal-muscles [data-group=shoulder_l]');
         const muscle=AP.getMusclesByGroup('shoulder_l')[0];
         await click(h, '#modal-muscles [data-muscle="'+muscle.id+'"]');
@@ -93,10 +93,10 @@ test('approved default loadout: ownership, breathing costs, muscle gate/progress
         }
         await click(h, '#modal-muscles [data-view=chain]');
         assert.equal(d.querySelector('#modal-muscles [data-passive]').disabled,true,'partial body cannot equip');
-        assert.equal(ticks,5,'reading growth is free');
+        assert.equal(ticks,2,'reading growth is free');
         d.activeElement.dispatchEvent(new g.KeyboardEvent('keydown',{key:'Escape',bubbles:true,cancelable:true}));await h.drain();
         assert.equal(g.MusclePanel.isOpen(),false);assert.equal(g.SceneApp.combatApi.getOpen('combat'),false);
-        assert.equal(ticks,6);
+        assert.equal(ticks,2);
         for(const group of ['shoulder_l','upperarm_l','forearm_l','hand_l','shoulder_r','upperarm_r','forearm_r','hand_r'])for(const entry of AP.getMusclesByGroup(group))AP.unlock(entry.id);
         await click(h,'#btn-muscles');await click(h,'#modal-muscles [data-view=chain]');
         const equip=d.querySelector('#modal-muscles [data-passive]:not(:disabled)'),passiveId=equip.dataset.passive;

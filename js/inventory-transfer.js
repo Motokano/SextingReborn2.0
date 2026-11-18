@@ -85,7 +85,7 @@
    const result=g.SaveSystem.runAtomicFor('inventory.transfer', ()=>{
     const s=copy(I().getState()),value=operation(s);s.item_identity=copy(I().getState().item_identity);I().setState(s);
     if(!I().auditItemOwnership({warehouse:g.HideoutWarehouse?.getState().slots,dungeon:g.DungeonRuntime?.storedItemRoots?.()}).ok)fail('物品归属异常，操作已撤回。');
-    if(vehicle||value.vehicle)g.Survival.advanceTick();
+    if(vehicle||value.vehicle)g.Survival.advanceTick({ source: 'inventory_transfer', intensity:'medium' });
     return value;
    });
    if(!result.saved)fail('保存失败，物品和时间已恢复。');

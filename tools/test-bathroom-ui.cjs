@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const { chromium } = require('playwright');
 const root = path.resolve(__dirname, '..');
 const output = process.env.BATHROOM_SCREENSHOT_DIR || path.join(os.tmpdir(), 'sexting-bathroom-review');
-const types = { '.html': 'text/html', '.js': 'text/javascript', '.json': 'application/json', '.css': 'text/css', '.svg': 'image/svg+xml', '.png': 'image/png', '.woff2': 'font/woff2' };
+const types = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.json': 'application/json', '.css': 'text/css', '.svg': 'image/svg+xml', '.png': 'image/png', '.woff2': 'font/woff2' };
 (async () => {
   fs.mkdirSync(output, { recursive: true });
   const browser = await chromium.launch({ headless: true, channel: process.env.BROWSER_CHANNEL || undefined });
@@ -18,7 +18,7 @@ const types = { '.html': 'text/html', '.js': 'text/javascript', '.json': 'applic
       await route.fulfill({ status: 200, contentType: types[path.extname(file)] || 'application/octet-stream', body: fs.readFileSync(file) });
     });
     await page.goto('http://bathroom.test/?no_reload&ui=svelte-hud');
-    await page.waitForFunction(() => window.AppBoot && window.SceneApp);
+    await page.waitForFunction(() => window.AppBoot?.ready && window.SceneApp);
     await page.evaluate(async () => { await AppBoot.ready; DialogueUI.close(); SceneApp.openCharacterCreationAfterIntro(); });
     await page.locator('#creation-name').fill('卫生间验收');
     await page.locator('#btn-confirm-creation').click();
@@ -49,7 +49,7 @@ const types = { '.html': 'text/html', '.js': 'text/javascript', '.json': 'applic
     await page.getByRole('button', { name: '洗澡 · 30分钟', exact: true }).click();
     assert.equal(await page.evaluate(() => Survival.getDirtyness()), 0);
     await page.screenshot({ path: path.join(output, 'washed.png') });
-    await page.getByRole('button', { name: '离开', exact: true }).click();
+    await page.locator('#npc-menu-close').click();
     await page.waitForFunction(() => !NPCSystem.isMenuOpen());
     await page.screenshot({ path: path.join(output, 'map.png') });
     assert.deepEqual(errors, []);

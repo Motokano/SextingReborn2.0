@@ -19,7 +19,7 @@
         var rec = st && E.getEntityRecordAt(st.x, st.y);
         return rec && rec.entity_id === 'hunting_point' ? { key: st.mapId + ':' + rec.hunting_point_id, pool: rec.hunting_events || ['rabbit'] } : null;
     }
-    function alive() { var s = global.Survival.getState(); return !s.isDead && !s.isComa && !(global.BuffSystem && global.BuffSystem.hasBuff && global.BuffSystem.hasBuff('player', 'survival_coma')); }
+    function alive() { var s = global.Survival.getState(); return !s.isDead && !s.isComa; }
     function inCombat() { return global.CombatEngagement && global.CombatEngagement.isPlayerInCombat(); }
     function grant(item) {
         var dropped = false;
@@ -41,10 +41,10 @@
         if (global.SceneHud) global.SceneHud.refresh('status');
         if (global.SaveSystem) global.SaveSystem.saveNow('hunting');
     }
-    function tick(rest) {
+    function tick(rest, rate) {
         var S = global.Survival, previous = S.getState().isResting;
         S.setResting(rest);
-        try { S.advanceTick(); } finally { S.setResting(previous); }
+        try { S.advanceTick({ source: 'hunting', baseCost:rate }); } finally { S.setResting(previous); }
     }
     function configure(config) {
         H = global.Hunting; C = config;
@@ -58,7 +58,7 @@
             canContinue: function (key) { var p = currentPoint(); return !!(p && p.key === key && alive() && !inCombat()); },
             stamina: function () { return (global.Survival.getActionStaminaBudget ? global.Survival.getActionStaminaBudget() : global.Survival.getStamina()); },
             canSpend: function () { return global.Survival.canPerformStaminaOrEnergyAction() && !global.SceneApp.isPlayerActionDisabledByBuff('gather'); },
-            count: count, consume: consume, grant: grant, tick: tick,
+            count: count, consume: consume, grant: grant, tick: tick, workTick:function(rate){tick(false,rate);},
             spend: function (n) { global.Survival.consumeStamina(n); },
             level: function(){var s=inv().getState();return s.skills && s.skills.life_hunting ? s.skills.life_hunting.level || 1 : 1;},
             addProficiency:function(n){
@@ -230,7 +230,7 @@
                 if (!canOpenCrafting()||!kitKnown(kit)) return;
                 if (kit.inputs.some(function (r) { return count(r.item)<r.count; }) || (global.Survival.getActionStaminaBudget ? global.Survival.getActionStaminaBudget() : global.Survival.getStamina())<kit.stamina || !global.Survival.canPerformStaminaOrEnergyAction()) return;
                 kit.inputs.forEach(function (r) { consume(r.item,r.count); });
-                global.Survival.consumeStamina(kit.stamina); tick(false); grant({item_id:kit.output,count:1}); refreshAll();
+                tick(false,kit.stamina); grant({item_id:kit.output,count:1}); refreshAll();
             }, missing || (global.Survival.getActionStaminaBudget ? global.Survival.getActionStaminaBudget() : global.Survival.getStamina())<kit.stamina, kit.inputs.map(function (r) { return craftName(r.item)+' ×'+r.count; }).join(' + ')+' · '+t('hunting.cost',{n:kit.stamina}));
         });
         if(!shown)node('p','还没有掌握可制作的捕猎用品。',card);

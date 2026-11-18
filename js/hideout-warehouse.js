@@ -379,7 +379,7 @@
             upgrade_id: String(raw.upgrade_id),
             ticks_remaining: remaining,
             task_ticks_total: total,
-            stamina_per_tick: Math.max(0, Number(raw.stamina_per_tick != null ? raw.stamina_per_tick : 5) || 0)
+            stamina_per_tick: getUpgradeTaskSpec(getUpgradeEntry(raw.upgrade_id)).stamina_per_tick
         };
     }
 
@@ -572,7 +572,7 @@
         var def = upgradeTable && upgradeTable.task_defaults ? upgradeTable.task_defaults : {};
         return {
             task_ticks: Math.max(1, coerceInt(def.task_ticks, 10)),
-            stamina_per_tick: Math.max(0, Number(def.stamina_per_tick != null ? def.stamina_per_tick : 5) || 0),
+            stamina_per_tick: Math.max(0, Number(def.stamina_per_tick != null ? def.stamina_per_tick : 1) || 0),
             panel_tick_ms: Math.max(250, coerceInt(def.panel_tick_ms, 2000))
         };
     }
@@ -1042,7 +1042,7 @@
     function canAffordTaskStamina(spec) {
         var taskSpec = spec || getTaskDefaultsFromTable();
         var ticks = taskSpec.task_ticks != null ? Math.max(1, coerceInt(taskSpec.task_ticks, 10)) : 10;
-        var per = taskSpec.stamina_per_tick != null ? Math.max(0, Number(taskSpec.stamina_per_tick) || 0) : 5;
+        var per = taskSpec.stamina_per_tick != null ? Math.max(0, Number(taskSpec.stamina_per_tick) || 0) : 1;
         if (global.Survival && global.Survival.getActionStaminaCost) per = global.Survival.getActionStaminaCost(per);
         return getStaminaNow() >= ticks * per;
     }
@@ -1128,7 +1128,9 @@
         var getStamina = ctx && typeof ctx.getStamina === 'function' ? ctx.getStamina : getStaminaNow;
         var setStamina = ctx && typeof ctx.setStamina === 'function' ? ctx.setStamina : null;
 
-        if (staminaPerTick > 0) {
+        if (ctx && ctx.advanceWorkTick) {
+            if (!ctx.advanceWorkTick(staminaPerTick)) return {ok:false, advanced:false, reason:'interrupted'};
+        } else if (staminaPerTick > 0) {
             var stamina = Number(getStamina()) || 0;
             if (stamina < staminaPerTick) {
                 return { ok: true, advanced: false, reason: 'insufficient_stamina' };

@@ -32,7 +32,10 @@
                 }
                 CookingStation.syncCookingTempStationsIntoMaps();
                 // 读档后：若存在进行中制作，恢复自动 tick 推进
-                if ((!window.DeathSystem || !window.DeathSystem.blocked()) && (!window.BedSleep || !window.BedSleep.isActive()) && (!window.GymSystem || !window.GymSystem.isActive())) window.StationActions.startCookingCraftIdleIfNeeded();
+                if ((!window.DeathSystem || !window.DeathSystem.blocked()) && (!window.BedSleep || !window.BedSleep.isActive()) && (!window.GymSystem || !window.GymSystem.isActive())) {
+                    if (StationContext.getCurrentPharmacyStationContext() && PharmacyStation.getActiveCraft()) window.StationActions.startPharmacyCraftIdleIfNeeded();
+                    else if (StationContext.getCurrentCookingStationContext()) window.StationActions.startCookingCraftIdleIfNeeded();
+                }
                 // 读档后再渲染一次，避免出现“短暂默认状态闪屏”。
                 window.SceneMapView.render();
                 if (window.NPCSystem && window.NPCSystem.resumeOpening) return window.NPCSystem.resumeOpening();

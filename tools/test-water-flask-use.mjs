@@ -142,7 +142,7 @@ test('drink validation, eight uses keep empty flask, save rollback, old save and
     assert.equal(IE.equip('water_flask', taken).success, true);
     const id = taken.instance_id, item = () => g.WaterFlaskUse.equipped();
     IE.setItemInstanceValue(item(), 'flask_water', 200);
-    for (const state of [{ thirst: 100 }, { thirst: 30, isComa: true }, { isComa: false, isDead: true }]) {
+    for (const state of [{ thirst: 100 }, { thirst: 30, isDead: true }]) {
       g.Survival.setState(state); const before = tick(g);
       assert.equal(g.WaterFlaskUse.drink().ok, false); assert.equal(water(g, id), 200); assert.equal(tick(g), before);
     }

@@ -121,9 +121,9 @@ test('refill rejects invalid/stale targets and restrictions, rolls back save fai
     g.CombatEngagement.isPlayerInCombat = () => true;
     assert.equal(B.use(def, 'refill', id).ok, false);
     g.CombatEngagement.isPlayerInCombat = combat;
-    g.BuffSystem.applyBuff('player', 'survival_coma', 'test');
+    g.Survival.setState({ isDead: true });
     assert.equal(B.use(def, 'refill', id).ok, false);
-    g.BuffSystem.removeBuffByBuffId('player', 'survival_coma');
+    g.Survival.setState({ isDead: false });
     item().attribute_state.structure.liquid_storage.version = 9;
     assert.equal(B.use(def, 'refill', id).ok, false);
     assert.equal(item().attribute_state.structure.liquid_storage.version, 9, 'unknown version is preserved');
@@ -251,9 +251,6 @@ test('bathroom rechecks access, preserves other restrictions, rolls back failed 
     assert.equal(F.use(def, 'drink').ok, false, 'cannot use remotely');
     assert.equal(g.GameTime.getState().totalTicks, tick);
     g.GameEngine.setState(def.location.sceneId, 13, 14);
-    g.BuffSystem.applyBuff('player', 'survival_coma', 'test');
-    assert.equal(F.use(def, 'drink').ok, false);
-    g.BuffSystem.removeBuffByBuffId('player', 'survival_coma');
     S.setState({ isDead: true }); assert.equal(F.use(def, 'drink').ok, false); S.setState({ isDead: false });
     const combat = g.CombatEngagement.isPlayerInCombat; g.CombatEngagement.isPlayerInCombat = () => true;
     assert.equal(F.use(def, 'shower').ok, false); g.CombatEngagement.isPlayerInCombat = combat;

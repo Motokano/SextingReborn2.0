@@ -184,11 +184,18 @@ for(const svelte of [false,true])test(`formal ${svelte?'Svelte':'native'} treatm
     // Remove injury pain before comparing only the active movement stamina charge.
     clear(g,'wound_infection','chest');clear(g,'fracture','lfoot');g.Survival.clearPain();damage(g,{});
     g.MedicalKitPanel.close();g.GameEngine.setState('M0_Base_Inside_lv_1',6,12);
-    const charges=[],consume=g.Survival.consumeStamina;
-    g.Survival.consumeStamina=function(amount,opts){if(opts?.source==='movement'||opts?.source==='wait')charges.push({amount,source:opts.source});return consume.apply(this,arguments);};
-    const t=g.WorldTick.getWorldTotalTicks();g.SceneMovement.tryMoveTo(7,12,1,0);assert.equal(g.GameEngine.getState().x,7);assert.equal(g.WorldTick.getWorldTotalTicks(),t+1);
-    const base=charges.at(-1).amount;injury(g,'fracture','lfoot');g.SceneMovement.tryMoveTo(6,12,-1,0);assert.equal(charges.at(-1).amount,Math.round(base*1.5*100)/100);
-    g.SceneMovement.waitInPlace();assert.equal(charges.at(-1).source,'wait');assert.equal(charges.at(-1).amount,base);
+    function stepCost(action) {
+      const before = g.Survival.getStamina(), tick = g.WorldTick.getWorldTotalTicks();
+      action();
+      assert.equal(g.WorldTick.getWorldTotalTicks(), tick + 1);
+      return Number((before - g.Survival.getStamina()).toFixed(2));
+    }
+    const base = stepCost(() => g.SceneMovement.tryMoveTo(7,12,1,0));
+    assert.equal(g.GameEngine.getState().x,7);
+    assert.ok(base > 0);
+    injury(g,'fracture','lfoot');
+    assert.equal(stepCost(() => g.SceneMovement.tryMoveTo(6,12,-1,0)),Math.round(base*1.5*100)/100);
+    assert.equal(stepCost(() => g.SceneMovement.waitInPlace()),g.Survival.getActionStaminaCost(g.Survival.getIntensityRate('low')));
     assert.deepEqual(h.errors,[]);
   }finally{await h.close();}
 });

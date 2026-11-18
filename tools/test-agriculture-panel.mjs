@@ -106,7 +106,12 @@ test('formal farm: bottle choice, release rates, soil inputs and actual battery 
   const charge=A.getState().power_charge;const save=g.SaveSystem.saveNow;g.SaveSystem.saveNow=()=>false;
   try{assert.equal(h.action('feed_power',row).reason,'save_failed');}finally{g.SaveSystem.saveNow=save;}
   assert.equal(A.getState().power_charge,charge);assert.equal(AA.getAgricultureBatteries()[0].charge,17);
-  assert.equal(h.action('feed_power',row).ok,true);assert.equal(A.getState().power_charge,charge+17);assert.equal(h.action('feed_power',row).reason,'stale_item');
+  const feedTick=g.GameTime.getState().totalTicks,feedStamina=g.Survival.getState().stamina;
+  assert.equal(h.action('feed_power',row).ok,true);
+  assert.equal(g.GameTime.getState().totalTicks,feedTick+1);assert.ok(Math.abs(g.Survival.getState().stamina-(feedStamina-0.4))<1e-6);
+  assert.equal(A.getState().power_charge,charge+17-1,'battery adds its charge; the working generator consumes one unit during this action');
+  assert.equal(h.action('feed_power',row).reason,'stale_item');
+  assert.equal(g.GameTime.getState().totalTicks,feedTick+1,'stale battery consumes no extra world tick');
   assert.deepEqual(h.errors,[]);
  }finally{await h.close();}
 });

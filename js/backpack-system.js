@@ -67,7 +67,7 @@
    if(r.container!=='equipment'&&IE().getBackpackContents(r.item).filter(Boolean).length>after.slots)fail('改造后的格数放不下包内物品，请先背上并整理。');
   }else fail('未知背包操作。');
   ensureMaterials(recipe.cost);
-  return {ticks:recipe.ticks,stamina:1,energy:0,cost:copy(recipe.cost),before,after,
+  return {ticks:recipe.ticks,stamina:g.Survival.getIntensityRate(a.model==='eq_backpack_frame_hauler'||a.modification==='frame'?'medium':'low'),energy:0,cost:copy(recipe.cost),before,after,
    warning:a.type==='backpack_modify'?'加工完成时扣料；替换或恢复原样不返还旧料。':'新背包没有词条和改造；装不下的成品放在脚边。',
    commit(){
     // Re-resolve live instances after each world tick and validate again before paying.

@@ -23,7 +23,7 @@ for(const event of Object.keys(config.events))for(const variant of Object.keys(c
   seed(1);doAction('observe');doAction('bait');
   const expected=.45+.1+.2+(variant==='foraging'?.1:0)-(variant==='passage'?.05:0)-(event==='cattle_calf'?.1:0);
   assert(Math.abs(H.chance('net')-expected)<1e-9);
-  const sta=e.stamina;seed(1);doAction('net');assert.equal(sta-e.stamina,variant==='watering'?10:8);
+  const sta=e.stamina;seed(1);doAction('net');assert.equal(sta-e.stamina,1);
   assert.equal(e.rewards.length,1);assert.equal(e.rewards[0].count,target==='juvenile'?1:config.events[event].reward_count);
   const saved=H.getState();assert(H.setState(saved));assert.equal(H.getState().active.variant,variant);assert.equal(e.rewards.length,1);
  }
@@ -34,7 +34,7 @@ for(const event of Object.keys(config.events))for(const variant of Object.keys(c
  seed(1);doAction('observe');doAction('bait');doAction('set_tether');assert.equal(H.reason('set_tether'),'done');
  seed(1800);doAction('net');assert.equal(H.getState().active.phase,'straining');assert.equal(H.reason('rest'),'straining');
  const saved=H.getState();assert(H.setState(saved));const spent=e.items,sta=e.stamina;seed(1);doAction('brace');
- assert.equal(e.items,spent);assert.equal(sta-e.stamina,14);assert.equal(e.rewards[0].count,8);assert.equal(H.getState().active.phase,'processing');
+ assert.equal(e.items,spent);assert.equal(sta-e.stamina,1);assert.equal(e.rewards[0].count,8);assert.equal(H.getState().active.phase,'processing');
 }
 {
  const e=setup('cattle_calf');doAction('meat');seed(1);doAction('observe');doAction('set_tether');seed(1800);doAction('net');seed(1800);doAction('brace');

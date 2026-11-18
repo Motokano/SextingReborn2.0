@@ -28,7 +28,7 @@ try{
  }
  console.log('All 34 item mappings, malformed-save rejection, six recovery types and interruption pass (Svelte HUD)');
  const door=s.doors[0];assert.ok(door);at(door.outside);door.closed=true;
- for(const material of ['wood','iron']){door.material=material;D.sync();const p={...s.player,skills:{...s.player.skills,logging:0,mining:0}},t={...s,player:p};const initial=g.RuinsEncounter.doorCost(t,door);p.skills.logging=p.skills.mining=100;const reduced=g.RuinsEncounter.doorCost(t,door);assert.equal(initial,material==='wood'?8:12);assert.equal(reduced,material==='wood'?6:8);}
+ for(const material of ['wood','iron']){door.material=material;D.sync();const p={...s.player,skills:{...s.player.skills,logging:0,mining:0}},t={...s,player:p};const initial=g.RuinsEncounter.doorCost(t,door);p.skills.logging=p.skills.mining=100;const reduced=g.RuinsEncounter.doorCost(t,door);assert.equal(initial,1,'both doors use the high-intensity base cost');assert.equal(reduced,0.7,'level 100 preserves the 30% skill discount');}
  const stamina=g.Survival.getStamina();assert.equal(D.openDoor(door.cell),true);assert.ok(g.Survival.getStamina()<stamina);assert.equal(D.openDoor(door.cell),false);
  const battery=g.InventoryEquipment.getAllItemIds().find(id=>id.includes('battery'));
  D.config().pool.batches=[{id:'test',items:[{item_id:battery,stock:100,rarity:'rare'}]}];D.config().search.corpse.emptyChance=0;D.config().search.corpse.weights=[1,0,0,0];

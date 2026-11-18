@@ -47,7 +47,6 @@
             return;
         }
         if (combatPanelOpen) return;
-        if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
         combatPanelOpen = true;
         if (window.SvelteCombat) window.SvelteCombat.refresh();
         else if (window.SveltePanels) window.SveltePanels.refresh('combat');
@@ -68,7 +67,6 @@
 
     function closeCombatPanel() {
         if (!combatPanelOpen) return;
-        if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
         combatPanelOpen = false;
         if (window.SvelteCombat) window.SvelteCombat.refresh();
         else if (window.SveltePanels) window.SveltePanels.refresh('combat');
@@ -91,7 +89,7 @@
                 return false;
             }
             if (window.CombatMetaSkills && metaBefore !== window.CombatMetaSkills.configSignature()
-                && window.CombatEngagement.isPlayerInCombat()) window.Survival.advanceTick();
+                && window.CombatEngagement.isPlayerInCombat()) window.Survival.advanceTick({source:'combat_setup', intensity:'low'});
             return true;
         } catch (e) {
             window.SceneFeedback.showMsg((failMsg || window.SceneFeedback.ui('combat.cfg.invalid')) + (e && e.message ? (' ' + e.message) : ''), 'warn');
@@ -674,7 +672,7 @@
             if (!safeSetCombatState({ hubs: { breath: skillId } }, window.SceneFeedback.ui('combat.deploy.breath_mount_fail'))) return;
             if (prevBreath !== skillId && window.Survival) {
                 // 07「切换」：切换呼吸法 = 消耗 1 tick + 读取新呼吸法的初始状态（initial_state，基本呼吸法 qi_li=0）
-                if (typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
+                if (typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick({source:'combat_setup', intensity:'low'});
             }
         } else if (combatUIState.curCat === 'footwork') {
             combat.hubs.footwork = skillId;
@@ -711,7 +709,7 @@
             var changed = kind === 'order' ? w.setAttackOrder(value) : kind === 'power' ? w.setPowerLevel(value.slot, value.power)
                 : kind === 'move' && w.setMoveConfig(value.slot, value.config);
             if (changed && window.CombatEngagement && window.CombatEngagement.isPlayerInCombat()) {
-                window.Survival.advanceTick(); SceneHud.refresh('status'); window.SceneMapView.render();
+                window.Survival.advanceTick({source:'combat_setup', intensity:'low'}); SceneHud.refresh('status'); window.SceneMapView.render();
             }
             return changed;
         }

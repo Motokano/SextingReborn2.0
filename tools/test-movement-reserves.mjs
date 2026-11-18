@@ -8,13 +8,13 @@ for(const legacy of [false,true]){
  const c=world(legacy),S=c.Survival,E=c.GameEngine;
  const start=c.GameTime.getState().totalTicks;
  S.setResting(true); // Moving must not buy recovery before the UI cancels rest.
- for(let i=0;i<4;i++){assert.equal(E.moveTo(i%2?1:2,1),true);S.consumeStamina(.25,{source:'movement'});}
+ for(let i=0;i<4;i++){assert.equal(E.moveTo(i%2?1:2,1,.4),true);}
  assert.equal(S.getState().satiety,80);assert.equal(S.getState().thirst,80);
- assert.equal(c.GameTime.getState().totalTicks-start,4);assert.ok(S.getState().stamina<100);
+ assert.equal(c.GameTime.getState().totalTicks-start,4);assert.equal(S.getStamina(),98.4);
  const tick=S.getState().tickCount;assert.equal(E.moveTo(E.getState().x,1),false);assert.equal(S.getState().tickCount,tick);
- for(let i=0;i<4;i++){S.advanceTick({source:'wait'});S.consumeStamina(.25,{source:'wait',raw:true});}
+ for(let i=0;i<4;i++){S.advanceTick({source:'wait'});}
  assert.equal(S.getState().satiety,80);assert.equal(S.getState().thirst,80);
- assert.equal(c.GameTime.getState().totalTicks-start,8);
+ assert.equal(c.GameTime.getState().totalTicks-start,8);assert.equal(S.getStamina(),96.8);
  S.setResting(false);for(let i=0;i<4;i++)S.advanceTick();
  assert.equal(S.getState().satiety,76);assert.equal(S.getState().thirst,78);
 }

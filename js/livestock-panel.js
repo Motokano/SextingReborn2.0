@@ -682,10 +682,17 @@
     return base;
   }
 
+  function canHandleLivestock() {
+    return window.LivestockActions.livestockPanelOpen && window.AgricultureActions.canUseOutdoorFacility('livestock') &&
+      !window.Survival.isComa() && window.SceneApp.canWorkFacilityLabor();
+  }
+
   function doBuild(armId, slotKey, moduleId) {
+    if (!canHandleLivestock()) return;
     var m = window.LivestockState.getModule(moduleId);
     var r = window.LivestockState.buildModule(armId, slotKey, moduleId);
     if (r.ok) {
+      window.Survival.advanceTick({source:'livestock', intensity:'medium'});
       feedbackMsg = t('livestock.msg.assembled', { name: (m ? m.name : moduleId) });
       logMsg(t('livestock.log.assemble', { name: (m ? m.name : moduleId) }), 'success');
     } else {
@@ -798,6 +805,7 @@
 
   /** 整格塞入一颗电池：取背包电池实例 → 电量并入储能 → 该格清空 */
   function doPowerFeed(batteryId) {
+    if (!canHandleLivestock()) return;
     var IE = window.InventoryEquipment;
     if (!IE) return;
     var containers = [
@@ -839,6 +847,7 @@
       feedbackMsg = t('livestock.power.feed_fail_no_charge');
       logMsg(t('livestock.power.feed_fail_no_charge'), 'warn');
     } else if (found && found.added) {
+      window.Survival.advanceTick({source:'livestock', intensity:'low'});
       feedbackMsg = t('livestock.power.feed_ok', { v: found.added, total: found.charge });
       logMsg(t('livestock.power.feed_ok', { v: found.added, total: found.charge }), 'success');
     } else {
@@ -873,10 +882,12 @@
   }
 
   function doFeedCrop(cropId) {
+    if (!canHandleLivestock()) return;
     if (!feedTargetArm) { closeFeedPicker(); render(); return; }
     if (feedPickerMode === 'process') {
       var rp = window.LivestockState.feedProcessInput(feedTargetArm, cropId, 1);
       if (rp.ok) {
+      window.Survival.advanceTick({source:'livestock', intensity:'medium'});
         feedbackMsg = t('livestock.msg.feed_add', { name: itemDisplayName(cropId) });
         logMsg(t('livestock.log.feed_add', { name: itemDisplayName(cropId) }), 'success');
       } else {
@@ -885,6 +896,7 @@
     } else {
       var r = window.LivestockState.addFeedToTrough(feedTargetArm, cropId, 1, feedTargetSlot);
       if (r.ok) {
+        window.Survival.advanceTick({source:'livestock', intensity:'medium'});
         feedbackMsg = t('livestock.msg.feed', { name: itemDisplayName(cropId), added: r.added.toFixed(1), total: r.total.toFixed(1) });
         logMsg(t('livestock.log.feed', { name: itemDisplayName(cropId) }), 'success');
       } else {
@@ -896,8 +908,10 @@
   }
 
   function doDismount(armId, slotKey) {
+    if (!canHandleLivestock()) return;
     var r = window.LivestockState.dismountModule(armId, slotKey);
     if (r.ok) {
+      window.Survival.advanceTick({source:'livestock', intensity:'medium'});
       feedbackMsg = t('livestock.msg.dismantled');
       logMsg(t('livestock.log.dismantle'), 'info');
     } else {
@@ -907,8 +921,10 @@
   }
 
   function doUpgrade(armId, slotKey) {
+    if (!canHandleLivestock()) return;
     var r = window.LivestockState.startUpgrade(armId, slotKey);
     if (r.ok) {
+      window.Survival.advanceTick({source:'livestock', intensity:'medium'});
       feedbackMsg = t('livestock.msg.upgrade_start', { ticks: r.ticks });
       logMsg(t('livestock.log.upgrade_start', { ticks: r.ticks }), 'success');
     } else {
@@ -918,44 +934,26 @@
     render();
   }
 
-  function trySpendStamina(amount) {
-    var Surv = window.Survival;
-    if (!Surv) return { ok: true };
-    if (typeof Surv.canPerformStaminaOrEnergyAction === 'function' && !Surv.canPerformStaminaOrEnergyAction()) {
-      return { ok: false, reason: 'stamina_blocked' };
-    }
-    if (Surv.getStamina && Surv.getStamina() < (Surv.getActionStaminaCost ? Surv.getActionStaminaCost(amount || 10) : (amount || 10))) return { ok: false, reason: 'insufficient_stamina' };
-    if (typeof Surv.consumeStamina === 'function') {
-      Surv.consumeStamina(amount || 10);
-    }
-    return { ok: true };
-  }
-
-  function doClean(zoneId) {
-    var spend = trySpendStamina(10);
-    if (!spend.ok) { feedbackMsg = t('livestock.msg.no_stamina_clean'); logMsg(t('livestock.log.clean_fail_stamina'), 'warn'); render(); return; }
-    var r = window.LivestockState.cleanZone(zoneId, 10);
+  function maintainZone(zoneId, kind) {
+    var clean = kind === 'clean';
+    var r = window.LivestockActions.maintainZone(zoneId, kind);
     if (r.ok) {
-      feedbackMsg = t('livestock.msg.clean_done', { p: Math.round(r.pollution) });
-      logMsg(t('livestock.log.clean_zone', { zone: zoneName(zoneId) }), 'success');
+      feedbackMsg = clean ? t('livestock.msg.clean_done', {p:Math.round(r.pollution)}) : t('livestock.msg.till_done', {c:Math.round(r.compaction)});
+      logMsg(feedbackMsg, 'success');
+    } else {
+      feedbackMsg = r.reason === 'nothing_to_do' ? '该畜区无需这项维护。' : r.reason === 'save_failed' ? '保存失败，本次维护已撤回。' : '维护中断。';
     }
     render();
   }
 
-  function doTill(zoneId) {
-    var spend = trySpendStamina(10);
-    if (!spend.ok) { feedbackMsg = t('livestock.msg.no_stamina_till'); logMsg(t('livestock.log.till_fail_stamina'), 'warn'); render(); return; }
-    var r = window.LivestockState.tillZone(zoneId, 10);
-    if (r.ok) {
-      feedbackMsg = t('livestock.msg.till_done', { c: Math.round(r.compaction) });
-      logMsg(t('livestock.log.till_zone', { zone: zoneName(zoneId) }), 'success');
-    }
-    render();
-  }
+  function doClean(zoneId) { maintainZone(zoneId, 'clean'); }
+  function doTill(zoneId) { maintainZone(zoneId, 'till'); }
 
   function doFeedChickens(armId) {
+    if (!canHandleLivestock()) return;
     var r = window.LivestockState.feedChickens(armId);
     if (r.ok && r.fed > 0) {
+      window.Survival.advanceTick({source:'livestock', intensity:'medium'});
       feedbackMsg = t('livestock.msg.fed', { n: r.fed });
       logMsg(t('livestock.log.feed_chickens', { n: r.fed }), 'success');
     } else {
@@ -1042,6 +1040,7 @@
   }
 
   function doWarehouseTake() {
+    if (!canHandleLivestock()) return;
     var items = window.LivestockState.warehouseTakeAll();
     if (!items || !items.length) {
       feedbackMsg = t('livestock.msg.cache_empty');
@@ -1049,6 +1048,7 @@
       return;
     }
     var gres = giveItems(items);
+      window.Survival.advanceTick({source:'livestock', intensity:'low'});
     feedbackMsg = t('livestock.msg.cache_extract', { n: gres.placed, extra: gres.dropped > 0 ? t('livestock.msg.dropped_suffix', { n: gres.dropped }) : '' });
     logMsg(feedbackMsg, 'success');
     render();
@@ -1128,6 +1128,7 @@
     return Object.keys(counts).map(function (id) { return productName(id) + ' ×' + counts[id]; }).join(' · ') || '尚无完成的蛋、奶或毛';
   }
   function collectRoutineProducts() {
+    if (!canHandleLivestock()) return;
     var rows = routineProducts(window.LivestockState.ensureState());
     var count = 0, dropped = 0;
     rows.forEach(function (row) {
@@ -1136,6 +1137,7 @@
       var given = giveItems([{ item_id: result.item_id, count: result.count }]);
       count += result.count; dropped += given.dropped; addExp(100);
     });
+      if (count > 0) window.Survival.advanceTick({source:'livestock', intensity:'low'});
     feedbackMsg = '已收取 ' + count + ' 份产物' + (dropped ? '，背包已满，' + dropped + ' 份放在地面' : '');
     logMsg(feedbackMsg, 'success');
     render();
@@ -1200,6 +1202,7 @@
   }
 
   function collectAllProducts(uid) {
+    if (!canHandleLivestock()) return;
     var st = window.LivestockState.getState();
     var a = null;
     for (var i = 0; i < st.animals.length; i++) if (st.animals[i].uid === uid) { a = st.animals[i]; break; }
@@ -1217,6 +1220,7 @@
       }
     });
     if (got.length) {
+      window.Survival.advanceTick({source:'livestock', intensity:'low'});
       addExp(100);
       logMsg(t('livestock.log.collect', { species: speciesName(a.species_id), gender: genderGlyph(a.gender), items: got.map(productName).join(t('livestock.join.sep')) }), 'success');
       if (hpBefore !== a.hp) {
@@ -1232,6 +1236,7 @@
 
   // C2：采集单个产物（挤奶/剪毛/抽血/收蛋分开点选）
   function collectSingleProduct(uid, productId) {
+    if (!canHandleLivestock()) return;
     var st = window.LivestockState.getState();
     var a = null;
     for (var i = 0; i < st.animals.length; i++) if (st.animals[i].uid === uid) { a = st.animals[i]; break; }
@@ -1242,6 +1247,7 @@
     if (r.ok) {
       var gres = giveItems([{ item_id: r.item_id, count: r.count }]);
       addExp(100);
+      window.Survival.advanceTick({source:'livestock', intensity:'low'});
       var msg = t('livestock.log.collect_one', { species: speciesName(a.species_id), gender: genderGlyph(a.gender), item: productName(productId) });
       if (hpBefore !== a.hp) msg += t('livestock.log.blood_suffix', { from: hpBefore, to: a.hp });
       if (gres.dropped > 0) msg += t('livestock.log.dropped_suffix2', { n: gres.dropped });
@@ -1260,6 +1266,7 @@
   }
 
   function doSlaughter(uid) {
+    if (!canHandleLivestock()) return;
     var st = window.LivestockState.getState();
     var a = null;
     for (var i = 0; i < st.animals.length; i++) if (st.animals[i].uid === uid) { a = st.animals[i]; break; }
@@ -1272,6 +1279,7 @@
       var n = gres.placed;
       var exp = slaughterExp(speciesId, weight);
       addExp(exp);
+      window.Survival.advanceTick({source:'livestock', intensity:'high'});
       logMsg(t('livestock.log.slaughter', { species: spName, weight: weight.toFixed(1), n: n, extra: gres.dropped > 0 ? t('livestock.msg.dropped_suffix', { n: gres.dropped }) : '', exp: exp }), 'success');
       feedbackMsg = t('livestock.msg.slaughter_done', { n: n });
     } else {
@@ -1281,9 +1289,11 @@
   }
 
   function doCleanCorpse(uid) {
+    if (!canHandleLivestock()) return;
     var r = window.LivestockState.cleanCorpse(uid);
     if (r.ok) {
       addExp(50);
+      window.Survival.advanceTick({source:'livestock', intensity:'high'});
       logMsg(t('livestock.log.corpse_clean'), 'success');
       feedbackMsg = t('livestock.msg.corpse_cleaned');
     } else {
@@ -1293,6 +1303,7 @@
   }
 
   function cleanCorpsesWhere(matchFn) {
+    if (!canHandleLivestock()) return;
     var st = window.LivestockState.getState();
     var n = 0;
     for (var i = st.animals.length - 1; i >= 0; i--) {
@@ -1304,6 +1315,7 @@
     }
     if (n > 0) {
       addExp(50 * n);
+      window.Survival.advanceTick({source:'livestock', intensity:'high'});
       logMsg(t('livestock.log.corpse_clean_n', { n: n, exp: (50 * n) }), 'success');
       feedbackMsg = t('livestock.msg.corpse_clean_n', { n: n });
     } else {

@@ -93,9 +93,9 @@ test('navigation, action menu and pins preserve business routes and no duplicate
   const h=await boot(true),g=h.g,d=g.document;
   try{
     await created(h);const before=g.GameTime.getState().totalTicks;
-    d.querySelector('#btn-backpack').click();await h.drain();assert.ok(d.querySelector('#modal-backpack').classList.contains('show'));assert.equal(g.GameTime.getState().totalTicks,before+1);
-    key(g,' ');key(g,'1');assert.equal(g.GameTime.getState().totalTicks,before+1);
-    key(g,'Escape');await h.drain();assert.ok(!d.querySelector('#modal-backpack').classList.contains('show'));assert.equal(g.GameTime.getState().totalTicks,before+2);
+    d.querySelector('#btn-backpack').click();await h.drain();assert.ok(d.querySelector('#modal-backpack').classList.contains('show'));assert.equal(g.GameTime.getState().totalTicks,before);
+    key(g,' ');key(g,'1');assert.equal(g.GameTime.getState().totalTicks,before);
+    key(g,'Escape');await h.drain();assert.ok(!d.querySelector('#modal-backpack').classList.contains('show'));assert.equal(g.GameTime.getState().totalTicks,before);
     d.querySelector('#btn-player-actions').click();await h.drain();assert.equal(d.querySelector('#btn-player-actions').getAttribute('aria-expanded'),'true');
     [...d.querySelectorAll('.player-action-item-row')].find(row=>row.querySelector('.player-action-item')?.textContent===g.UIText.t('player.action.rest.start')).querySelector('.player-action-pin').click();await h.drain();assert.equal(g.SceneCtx.getActionBarSlots()[0],'action|rest_toggle');
     key(g,'Escape',d.querySelector('#btn-player-actions'));await h.drain();

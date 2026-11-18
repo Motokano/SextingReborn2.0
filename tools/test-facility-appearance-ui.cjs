@@ -1,6 +1,6 @@
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
 const {chromium}=require('playwright');
-const root=path.resolve(__dirname,'..'),output=path.join(root,'reference/hideout-facilities-v2');
+const root=path.resolve(__dirname,'..'),output=process.env.FACILITY_SCREENSHOT_DIR || path.join(root,'reference/hideout-facilities-v2');
 const origin=process.env.FACILITY_REVIEW_ORIGIN||'http://127.0.0.1:8000';
 (async()=>{
  const browser=await chromium.launch({headless:true});
@@ -18,7 +18,7 @@ const origin=process.env.FACILITY_REVIEW_ORIGIN||'http://127.0.0.1:8000';
   await page.close();page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
   await page.goto(origin+'/?no_reload&ui=svelte-hud',{waitUntil:'domcontentloaded'});
   console.log('Game document loaded.');
-  await page.waitForFunction(()=>window.AppBoot&&window.SceneApp);
+  await page.waitForFunction(()=>window.AppBoot?.ready && window.SceneApp);
   await page.evaluate(async()=>{await AppBoot.ready;DialogueUI.close();SceneApp.openCharacterCreationAfterIntro();});
   await page.locator('#creation-name').fill('设施外观验收');await page.locator('#btn-confirm-creation').click();
   const target=await page.evaluate(()=>FacilityUnlockConfig.projects.bathroom?'bathroom':'cooking'),asset=target==='bathroom'?'bathroom':'stove';
@@ -58,7 +58,7 @@ const origin=process.env.FACILITY_REVIEW_ORIGIN||'http://127.0.0.1:8000';
   await page.screenshot({path:path.join(output,'map-after-detail.png'),clip:{x:480,y:420,width:270,height:205}});
   const imagePath=await page.evaluate(target=>TileRendererV2.getSpeakerPawn('npc.station.'+target+'_base').url,target);
   assert.ok(imagePath.endsWith('/'+asset+'-ready.png'));
-  await page.reload({waitUntil:'domcontentloaded'});await page.waitForFunction(()=>window.AppBoot&&window.SceneApp);await page.evaluate(async()=>{await AppBoot.ready;});
+  await page.reload({waitUntil:'domcontentloaded'});await page.waitForFunction(()=>window.AppBoot?.ready && window.SceneApp);await page.evaluate(async()=>{await AppBoot.ready;});
   await page.waitForFunction(target=>FacilityUnlock.get(target).isComplete(),target);
   await page.evaluate(()=>SceneRenderer.render());
   assert.ok((await page.evaluate(target=>TileRendererV2.getSpeakerPawn('npc.station.'+target+'_base').url,target)).endsWith('/'+asset+'-ready.png'));

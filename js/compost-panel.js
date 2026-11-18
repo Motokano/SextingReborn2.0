@@ -813,7 +813,6 @@
             return;
         }
         ensureLifePlantingSkillEntry();
-        if (global.Survival && typeof global.Survival.advanceTick === 'function') global.Survival.advanceTick();
         compostStationPanelOpen = true;
         var modal = document.getElementById('modal-compost-station');
         if (modal) {
@@ -826,7 +825,6 @@
 
     function closeCompostStationPanel() {
         if (!compostStationPanelOpen) return;
-        if (global.Survival && typeof global.Survival.advanceTick === 'function') global.Survival.advanceTick();
         compostStationPanelOpen = false;
         var modal = document.getElementById('modal-compost-station');
         if (modal) {

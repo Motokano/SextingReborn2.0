@@ -105,7 +105,7 @@
  function quote(a){
   access();const current=g.Survival.getState();if(current.isResting||current.is_study_active||current.is_sit_meditation_active||current.is_stamina_regen_action_active)fail('请先停止休息、学习或调息。');
   if(g.BackpackSystem&&['backpack_craft','backpack_modify'].includes(a.type))return g.BackpackSystem.quote(a);
-  let ticks=1,energy=0,stamina=1,cost={},warning='',r=a.id?requireRecord(a.id):null,p=r&&r.item,s=p&&p.sewing,k=knowledge(),commit;
+  let ticks=1,energy=0,cost={},warning='',r=a.id?requireRecord(a.id):null,p=r&&r.item,s=p&&p.sewing,k=knowledge(),commit;
   if(a.type==='measure'){if(!flag('sewing_scale_unlocked'))fail('先装配体重秤。');commit=()=>set('sewing_measurement',dimensions(body()));}
   else if(a.type==='inspect'){
    if(!s)fail('请选择部件。');commit=()=>s.known=Object.assign({},s.known,{structure:true,cut:true,outer:true});
@@ -124,7 +124,7 @@
   }else if(a.type==='process'){
    const m=materials[a.material];if(!m||(k.materials[a.material]||0)<m[7])fail('尚未掌握这项材料工艺。');ticks=m[11];if(m[8]==='cocoons'){let left=m[9];['textile_cocoon_domestic','textile_cocoon_wild'].forEach(id=>{const n=Math.min(left,IE().countCarriedItemsByTemplateId(id));if(n)cost[id]=n;left-=n;});if(left)fail('蚕茧不足。');}else cost[m[8]]=m[9];commit=()=>{pay(cost);for(let i=0;i<m[10];i++)give({item_id:a.material,count:1});};
   }else if(a.type==='pattern'){
-   const accessory=accessoryOf(p);ticks=6;stamina=0;energy=2;
+   const accessory=accessoryOf(p);ticks=6;energy=2;
    if(accessory){
     if(p.sewing_pattern_researched||accessoryLevel(accessory)>=3)fail('这个样本不再提供款式知识。');
     commit=()=>{k.accessories[accessory]=Math.min(3,(k.accessories[accessory]||0)+1);p.sewing_pattern_researched=true;set('sewing_knowledge',k);};
@@ -132,7 +132,7 @@
     if(!s||s.researched||level(s.style,s.part)>=3)fail('这个样本不再提供版型知识。');commit=()=>{const key=patternKey(s.style,s.part);k.patterns[key]=Math.min(3,(k.patterns[key]||0)+1);s.researched=true;s.known=Object.assign({},s.known,{structure:true,cut:true});set('sewing_knowledge',k);};
    }
   }else if(a.type==='research'){
-   let gains;if(s){safeDetach(r);gains=knowledgeGain(p);ticks=2*Object.keys(s.layers).length;warning='拆开后整个部件及其中材料都会被消耗。';}else if(p&&materials[p.item_id]){gains={[p.item_id]:10};stamina=0;warning='这份面料或填充会被消耗。';}else fail('只能研究完成的部件、面料或填充。');energy=2;
+   let gains;if(s){safeDetach(r);gains=knowledgeGain(p);ticks=2*Object.keys(s.layers).length;warning='拆开后整个部件及其中材料都会被消耗。';}else if(p&&materials[p.item_id]){gains={[p.item_id]:10};warning='这份面料或填充会被消耗。';}else fail('只能研究完成的部件、面料或填充。');energy=2;
    if(!Object.entries(gains).some(([id,n])=>n>0&&(k.materials[id]||0)<materials[id][7]))fail('这些材料工艺已经掌握，无需消耗样本。');commit=()=>{takeRecord(r);Object.entries(gains).forEach(([id,n])=>k.materials[id]=Math.min(materials[id][7],(k.materials[id]||0)+n));set('sewing_knowledge',k);};
   }else if(a.type==='soak'){
    if(!s||s.soak)fail('每个部件只能浸泡一次。');if(!flag('sewing_bucket_unlocked'))fail('先装配浸泡桶。');const leaves=/^arm_/.test(s.part)?1:2;ticks=leaves*2;if((flag('sewing_bucket_stock')||0)<leaves)fail('桶内硅叶不足。');cost={silica_leaf:leaves};commit=()=>{set('sewing_bucket_stock',flag('sewing_bucket_stock')-leaves);s.soak={shield:roll(),defense:roll()};s.known=Object.assign({},s.known,{soak:true});};
@@ -147,7 +147,9 @@
   }else if(a.type==='assemble'){
    if(!s||r.parent)fail('请选择独立部件。');const dest=a.target?requireRecord(a.target):null;if(dest&&(!dest.item.sewing_parts||dest.parent))fail('请选择衣服。');if(dest&&dest.item.sewing_parts[s.part])fail('请先拆下该部位原件。');if(dest)safeDetach(dest,s.part);commit=()=>{const child=takeRecord(r);if(dest){dest.item.sewing_parts[s.part]=child;refreshOutfit(dest.item);}else give(makeOutfit([child]));};
   }else fail('未知操作。');
-  if(a.type!=='soak')enough(cost);return {ticks,energy,stamina,cost,warning,commit};
+  if(a.type!=='soak')enough(cost);const reinforced = ['glove_motor','glove_boxing','shoe_spike','shoe_heavy'].includes(a.recipe);
+  const intensity = a.type==='process'||a.type==='mannequin'||reinforced ? 'medium' : 'low';
+  return {ticks,energy,stamina:g.Survival.getIntensityRate(intensity),cost,warning,commit};
  }
  function preview(a){try{const q=quote(a);delete q.commit;return Object.assign({ok:true},q);}catch(e){return {ok:false,message:e.message};}}
  function estimate(a){
@@ -171,15 +173,15 @@
  function stepBackpack(a,q){
   const S=g.Survival,completed=job.elapsed+1>=q.ticks;
   if(!g.SaveSystem?.runAtomic)fail('保存服务尚未就绪。');
-  const result=g.SaveSystem.runAtomicFor('craft.sewing', ()=>{S.consumeStamina(q.stamina);S.advanceTick({source:'sewing'});if(completed)quote(a).commit();});
+  const result=g.SaveSystem.runAtomicFor('craft.sewing', ()=>{S.advanceTick({source:'sewing', baseCost:q.stamina});if(completed)quote(a).commit();});
   if(!result.saved)fail('保存失败，本刻的材料、物品和时间已撤回。');
   job.elapsed++;
   if(completed){job.index++;job.elapsed=0;if(job.index>=job.actions.length){job=null;return {ok:true,done:true,message:a.type==='backpack_craft'?'背包制作完成；装不下的成品放在脚边。':'背包改造完成，结果已保存。'};}}
   return {ok:true,message:'正在加工背包。'};
  }
- function step(){try{if(!job)fail('当前没有工作。');const a=job.actions[job.index],q=quote(a),S=g.Survival;if(S.getStamina()<(S.getActionStaminaCost?S.getActionStaminaCost(q.stamina):q.stamina)||S.getEnergy()<q.energy)fail('体力或精力不足，已停止。');
+ function step(){try{if(!job)fail('当前没有工作。');const a=job.actions[job.index],q=quote(a),S=g.Survival;if((job.elapsed===0 && !['pattern','research'].includes(a.type) && S.getStamina()<S.getActionStaminaCost(q.stamina)) || S.getEnergy()<q.energy)fail('体力或精力不足，已停止。');
    if(['backpack_craft','backpack_modify'].includes(a.type))return stepBackpack(a,q);
-   if(q.stamina)S.consumeStamina(q.stamina);if(q.energy)S.consumeEnergy(q.energy);S.advanceTick({source:'sewing'});job.elapsed++;
+   if(q.energy)S.consumeEnergy(q.energy);S.advanceTick({source:'sewing', baseCost:q.stamina});job.elapsed++;
    if(job.elapsed>=q.ticks){transaction(()=>quote(a).commit());job.index++;job.elapsed=0;if(job.index>=job.actions.length){job=null;return {ok:true,done:true,message:['craft','craft_accessory','process','assemble','assemble_created','detach'].includes(a.type)?'工作完成，产物已收入物品栏；装不下的放在脚边。':'操作完成，结果已保存。'};}}else save();return {ok:true,message:'正在操作'};
   }catch(e){job=null;return {ok:false,message:e.message};}}
  function cancel(){job=null;return {ok:true,message:'已停止。完成的成果保留，当前未完成的材料没有扣除。'};}

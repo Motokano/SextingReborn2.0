@@ -22,6 +22,8 @@ const read = file => fs.readFileSync(path.join(root, file), 'utf8');
       window.testInventory = Object.entries(items).filter(([, item]) => item.pharmacy_ingredient).map(([item_id]) => ({ item_id, count: 8 }));
       window.testCount = id => (testInventory.find(item => item.item_id === id) || {}).count || 0;
       window.SceneCtx = {};
+      window.ManufacturingKnowledge = { knows: () => false };
+      window.StationActions = { startCookingCraftIdleIfNeeded() {}, startPharmacyCraftIdleIfNeeded() {} };
       window.NPCSystem = { isDemoFlagTrue: key => key === 'pharmacy_injection_unlocked' };
       window.UIText = { t: (key, vars = {}) => (strings[key] || key).replace(/\{(\w+)\}/g, (_, key) => vars[key] ?? ''),
         applyDom: parent => parent.querySelectorAll('[data-ui]').forEach(el => {
@@ -35,7 +37,7 @@ const read = file => fs.readFileSync(path.join(root, file), 'utf8');
       };
       window.InventoryHelpers = { getInventoryCountByItemId: testCount, findAllContainerSlotsByPredicate: () => [] };
       window.StationContext = { isOnPharmacyStationTile: () => true, isPharmacyUiBlockedByRepair: () => false, getCurrentPharmacyStationContext: () => ({ station_type: 'main' }) };
-      window.Survival = { getState: () => ({ stamina: 100 }), advanceTick() {} };
+      window.Survival = { getState: () => ({ stamina: 100 }), getIntensityRate: intensity => ({ low: 0.4, medium: 0.6, high: 1 })[intensity], advanceTick() {} };
     }, { strings: JSON.parse(read('data/ui_text_zhCN.json')), items: JSON.parse(read('data/items.json')) });
     for (const file of ['station-craft-core', 'pharmacy-config', 'pharmacy-station', 'pharmacy-compounding', 'pharmacy-station-panel']) await page.addScriptTag({ content: read('js/' + file + '.js') });
     await page.evaluate(({ methods, csv, rules }) => {

@@ -68,7 +68,9 @@
         if(inputs.some(x=>x.available<x.count))blocked||='随身材料不足';
         const p=D.profiles[r.work_profile||'routine'],L=skill();
         const chance=type!=='recipe'||!p.random_failure?1:Math.max(.25,Math.min(.98,p.base_success_rate+.002*(L-1)-.01*Math.max(0,p.recommended_level-L)));
-        const stamina=type==='recipe'?Math.ceil(g.Survival.getActionStaminaCost(r.stamina*(1-.002*L))*10)/10:r.stamina;
+        const intensity=type==='upgrade' ? 'high' : type==='facility' ? (id==='precision'?'medium':'high') : r.intensity;
+        const rate=g.Survival.getIntensityRate(intensity);
+        const stamina=Math.round(g.Survival.getActionStaminaCost(rate*(type==='recipe'?1-.002*L:1))*r.ticks*10)/10;
         if(g.Survival.getState().stamina<stamina)blocked||='体力不足';
         return {...r,type,id,inputs,tools,stamina,chance,reason:blocked,name:r.name||(type==='upgrade'?'升级至'+r.to_level+'级制作台':id)};
     }
@@ -90,11 +92,10 @@
         const j=state.job;if(!j||j.phase!=='work'||j.paused)return {ok:false,message:'没有进行中的工作'};
         const why=continuationReason(j);if(why){pause();return {ok:false,message:why};}
         const due=Math.round(j.stamina*10*(j.elapsed+1)/j.ticks)/10,charge=Math.round((due-j.paid)*10)/10;
-        if(g.Survival.getState().stamina<charge){pause();return {ok:false,message:'体力不足，工作已暂停'};}
         const result=atomic(()=>{
             const job=state.job,before=g.WorldTick.getWorldTotalTicks();
-            g.Survival.consumeStamina(charge,{raw:true});job.paid=due;job.elapsed++;job.paused=false;
-            advancing=true;try{g.Survival.advanceTick({source:'manufacturing'});}finally{advancing=false;}
+            job.paid=due;job.elapsed++;job.paused=false;
+            advancing=true;try{g.Survival.advanceTick({source:'manufacturing', actionCost:charge});}finally{advancing=false;}
             if(g.WorldTick.getWorldTotalTicks()!==before+1)throw Error('制作时间未能推进');
             if(job.elapsed===job.ticks){job.phase='claim';job.paused=true;}
             if(continuationReason(job)){job.paused=true;return {ok:false,message:'工作已暂停'};}

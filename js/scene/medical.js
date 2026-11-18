@@ -121,7 +121,7 @@
     }
     function tick(){
         const before=g.WorldTick.getWorldTotalTicks();
-        advancing=true;try{g.Survival.advanceTick({source:'medical'});}finally{advancing=false;}
+        advancing=true;try{g.Survival.advanceTick(operation ? {source:'medical', intensity:'medium', actionCost: operation.payPerTick ? undefined : 0} : {source:'medical'});}finally{advancing=false;}
         if(g.WorldTick.getWorldTotalTicks()!==before+1)throw Error('医疗时间未能推进');
     }
     function refill(id,key){
@@ -159,9 +159,8 @@
             const instance=K.find(id);
             if(p.surgery){
                 K.spend(instance,{surgical_staples:p.costs.surgical_staples});
-                g.Survival.consumeStamina(10,{raw:true});
                 const pos=g.GameEngine.getState();
-                operation={version:1,kitId:id,part,mode,elapsed:0,ticks:6,beforeMax:p.beforeMax,afterMax:p.afterMax,mapId:pos.mapId,x:pos.x,y:pos.y};
+                operation={version:1,payPerTick:true,kitId:id,part,mode,elapsed:0,ticks:6,beforeMax:p.beforeMax,afterMax:p.afterMax,mapId:pos.mapId,x:pos.x,y:pos.y};
                 return {ok:true,message:'手术开始'};
             }
             K.spend(instance,p.costs);

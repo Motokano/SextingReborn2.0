@@ -7,7 +7,7 @@ const R=globalThis.RuinsSettlement;
 const dirs=[[0,-1],[1,-1],[1,0],[1,1],[0,1],[-1,1],[-1,0],[-1,-1]];
 // One configuration for players, enemies, their sight overlays and perception.
 const config={dayRadius:8,nightRadius:4,dayDarkness:.04,nightDarkness:.58,frontAngle:45,sideAngle:75,front:1,side:.65,back:.35,identify:.72,detail:.45,adjacentDetail:1,lossTicks:3,healPerTick:8,hitInjury:40};
-const doorConfig={staminaMax:100,reductionPerLevel:.003,maxLevel:100,materials:{wood:{name:'木门',base:8,skill:'logging'},iron:{name:'铁门',base:12,skill:'mining'}}};
+const doorConfig={staminaMax:100,reductionPerLevel:.003,maxLevel:100,materials:{wood:{name:'木门',base:1,skill:'logging'},iron:{name:'铁门',base:1,skill:'mining'}}};
 const skillLevel=value=>Math.min(doorConfig.maxLevel,Math.max(0,Math.trunc(Number(value)||0)));
 function doorCost(s,door){
  const material=doorConfig.materials[typeof door==='string'?door:door.material];
@@ -17,7 +17,7 @@ function doorCost(s,door){
  if(!Number.isFinite(multiplier)||multiplier<0)throw Error('无效行动费用倍率');
  const raw=material.base*(1-level*doorConfig.reductionPerLevel)*multiplier;
  // Correct representational error at half-integers; round only the final cost.
- return Math.floor(raw+.5+Number.EPSILON*Math.max(1,raw)*4);
+ return Math.round(raw*100)/100;
 }
 const dist=(a,b,w)=>Math.max(Math.abs(a%w-b%w),Math.abs(Math.floor(a/w)-Math.floor(b/w)));
 function direction(a,b,w){const dx=Math.sign(b%w-a%w),dy=Math.sign(Math.floor(b/w)-Math.floor(a/w));return Math.max(0,dirs.findIndex(d=>d[0]===dx&&d[1]===dy));}

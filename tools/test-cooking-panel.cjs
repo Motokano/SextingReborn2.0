@@ -23,6 +23,7 @@ const read = file => fs.readFileSync(path.join(__dirname, '..', file), 'utf8');
       window.testStamina = 100;
       window.testCalls = [];
       window.SceneCtx = {};
+      window.StationActions = { startCookingCraftIdleIfNeeded() {}, startPharmacyCraftIdleIfNeeded() {} };
       window.SceneHud = { refresh() {} };
       window.UIText = { t: (key, vars = {}) => (strings[key] || key).replace(/\{(\w+)\}/g, (_, key) => vars[key] ?? ''),
         applyDom: parent => parent.querySelectorAll('[data-ui]').forEach(el => {
@@ -37,7 +38,7 @@ const read = file => fs.readFileSync(path.join(__dirname, '..', file), 'utf8');
       window.InventoryHelpers = { getInventoryCountByItemId: testCount,
         findAllContainerSlotsByPredicate: predicate => testInventory.map((item, index) => ({ item, index, containerType: 'pocket' })).filter(slot => predicate(slot.item)) };
       window.StationContext = { isOnCookingStationTile: () => true, isCookingUiBlockedByRepair: () => false, getCurrentCookingStationContext: () => testContext };
-      window.Survival = { getState: () => ({ stamina: testStamina }), advanceTick() {} };
+      window.Survival = { getState: () => ({ stamina: testStamina }), getIntensityRate: intensity => ({ low: 0.4, medium: 0.6, high: 1 })[intensity], advanceTick() {} };
     }, { strings: JSON.parse(read('data/ui_text_zhCN.json')), items: JSON.parse(read('data/items.json')) });
     for (const file of ['station-craft-core', 'cooking-station', 'cooking-station-panel']) await page.addScriptTag({ content: read('js/' + file + '.js') });
     await page.evaluate(({ methods, recipes }) => {

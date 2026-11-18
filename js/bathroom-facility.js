@@ -22,7 +22,7 @@
         if (!isUnlocked()) return '请先修好卫生间。';
         if (!g.Survival || !g.SaveSystem || !g.SaveSystem.runAtomic) return '卫生间暂时无法使用，请稍后重试。';
         var s = g.Survival.getState();
-        if (s.isDead || s.isComa || (g.BuffSystem && g.BuffSystem.hasBuffByBuffId('player', 'survival_coma'))) return '当前无法使用卫生间。';
+        if (s.isDead || s.isComa) return '当前无法使用卫生间。';
         if (g.SceneApp && g.SceneApp.isPreCreationGameplayRestricted()) return '请先完成角色创建。';
         if (g.CombatEngagement && g.CombatEngagement.isPlayerInCombat()) return '请先脱离战斗。';
         if (g.Hunting && g.Hunting.isActive()) return '请先结束当前活动。';
@@ -59,7 +59,6 @@
                     S.advanceTick({ source: 'bathroom_' + action });
                     var state = S.getState();
                     if (state.isDead || state.isComa || !nearby(def) || !isUnlocked()
-                        || (g.BuffSystem && g.BuffSystem.hasBuffByBuffId('player', 'survival_coma'))
                         || (g.CombatEngagement && g.CombatEngagement.isPlayerInCombat())) {
                         return { ok: false, message: '使用中断，已度过的时间仍然有效。' };
                     }

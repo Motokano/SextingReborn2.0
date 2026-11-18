@@ -136,8 +136,8 @@
         else if (!options.silent) window.SceneFeedback.showMsg(useOkMsg, 'success');
         // 47 §5.2：使用耗时按途径区分（口服/外敷 1 · 吸入 2 · 刺入 3；注射还需静止）
         var useTicks = (typeof ItemUse.getUseTickCost === 'function') ? ItemUse.getUseTickCost(tpl) : 1;
-        if (useTicks > 1) window.WorldTick.advanceWorldTicks(useTicks);
-        else if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
+        if (useTicks > 1) window.WorldTick.advanceWorldTicks(useTicks, { source: 'item_use' });
+        else if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick({ source: 'item_use' });
         if (typeof window.SceneStatusPanel.updateStatusPanel === 'function') SceneHud.refresh('status');
         if (typeof window.InventoryPanel.backpackPanelOpen !== 'undefined' && window.InventoryPanel.backpackPanelOpen && typeof window.InventoryPanel.updateBackpackPanel === 'function') window.InventoryPanel.updateBackpackPanel();
         if (window.SceneRenderer && typeof window.SceneRenderer.render === 'function') window.SceneRenderer.render();

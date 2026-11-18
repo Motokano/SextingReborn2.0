@@ -9,6 +9,19 @@
         if (!ctx || !ctx.E || !ctx.G) return;
         var E = ctx.E;
 
+        // Modal keyboard handlers can own Space during work or combat. A coma
+        // still needs one way to pass a world tick without acting in that modal.
+        window.addEventListener('keydown', function (e) {
+            if ((e.key !== ' ' && e.key !== 'Spacebar') || !window.Survival?.isComa?.()) return;
+            if (e.target?.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/i.test(e.target?.tagName || '')) return;
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            if (!e.repeat && ctx.actions.waitInPlace()) {
+                window.SceneHud.refresh('status');
+                window.SceneRenderer.render();
+            }
+        }, true);
+
         // 键盘移动
         document.addEventListener('keydown', function (e) {
             var tag = (e.target && e.target.tagName) ? String(e.target.tagName).toLowerCase() : '';
@@ -44,11 +57,6 @@
                 return;
             }
             if (window.SceneApp && typeof window.SceneApp.isStoryMovementLocked === 'function' && window.SceneApp.isStoryMovementLocked()) return;
-            if (window.BuffSystem && typeof window.BuffSystem.hasBuffByBuffId === 'function'
-                && window.BuffSystem.hasBuffByBuffId('player', 'survival_coma')) {
-                e.preventDefault();
-                return;
-            }
             var dx = 0, dy = 0;
             switch (e.key) {
                 case 'ArrowUp':    case 'w': case 'W': dy = -1; break;

@@ -86,8 +86,11 @@
     function startCookingCraftIdleIfNeeded() {
         if (cookingCraftIdleTimer) return;
         if (!CookingStation.getActiveCraft()) return;
+        stopPharmacyCraftIdle();
         cookingCraftIdleTimer = setInterval(function () {
-            if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
+            var craft = CookingStation.getActiveCraft();
+            if (!craft || !StationContext.getCurrentCookingStationContext()) {stopCookingCraftIdle();return;}
+            window.Survival.advanceTick({source:'cooking_work', intensity:craft.intensity, actionCost:craft.intensity ? undefined : 0});
         }, window.PlayerActions.getIdleTickMs());
     }
 
@@ -95,8 +98,11 @@
     function startPharmacyCraftIdleIfNeeded() {
         if (pharmacyCraftIdleTimer) return;
         if (!PharmacyStation.getActiveCraft()) return;
+        stopCookingCraftIdle();
         pharmacyCraftIdleTimer = setInterval(function () {
-            if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
+            var craft = PharmacyStation.getActiveCraft();
+            if (!craft || !StationContext.getCurrentPharmacyStationContext()) {stopPharmacyCraftIdle();return;}
+            window.Survival.advanceTick({source:'pharmacy_work', intensity:craft.intensity, actionCost:craft.intensity ? undefined : 0});
         }, 1000);
     }
 
@@ -157,7 +163,7 @@
         var previewData = routePreview && routePreview.ok ? routePreview.data : null;
         var costSource = previewData && previewData.cost_override ? { cost: previewData.cost_override } : m;
         var needTicks = StationCraftCore.readMethodCostValue(costSource, 'ticks', 'craft_ticks');
-        var needStamina = StationCraftCore.readMethodCostValue(costSource, 'stamina', 'stamina_cost');
+        var needStamina = StationCraftCore.methodStamina(mid, needTicks);
         var survState = window.Survival && typeof window.Survival.getState === 'function' ? window.Survival.getState() : null;
         var curStamina = survState ? Number(survState.stamina || 0) : 0;
         if (curStamina < (window.Survival.getActionStaminaCost ? window.Survival.getActionStaminaCost(needStamina) : needStamina)) return { ok: false, reason: 'insufficient_stamina', need: needStamina, current: curStamina };
@@ -171,14 +177,12 @@
             return { ok: false, reason: 'consume_inputs_failed' };
         }
 
-        if (window.Survival && typeof window.Survival.consumeStamina === 'function' && needStamina > 0) {
-            window.Survival.consumeStamina(needStamina);
-        }
 
         var cs2 = PharmacyStation.getState();
         var gt = window.GameTime && typeof window.GameTime.getState === 'function' ? window.GameTime.getState() : null;
         cs2.active_craft = {
             remaining_ticks: Math.max(1, needTicks),
+            intensity: StationCraftCore.methodIntensity(mid),
             started_total_ticks: gt && typeof gt.totalTicks === 'number' ? gt.totalTicks : 0,
             method_id: mid,
             inputs: selected,
@@ -206,7 +210,7 @@
             started: true,
             method_id: mid,
             remaining_ticks: Math.max(1, needTicks),
-            consumed: { fuel: 0, ticks: needTicks, stamina: needStamina }
+            consumed: { fuel: 0, ticks: needTicks, stamina: 0 }
         };
     }
 
@@ -255,6 +259,7 @@
             return { ok: false, reason: 'consume_inputs_failed' };
         }
 
+        window.Survival.advanceTick({source:'pharmacy_compound', intensity:'low'});
         var compoundFailed = resolvedPreview.precipitated === true || (resolvedPreview.conflicts || []).length > 0;
         if (compoundFailed) {
             var residue = { item_id: PharmacyStation.getFailureItemId(), count: 1 };
@@ -383,7 +388,7 @@
             window.SceneFeedback.showMsg(window.SceneFeedback.ui('cooking.take_water.fail_full'), 'warn');
             return;
         }
-        if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
+        if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick({ source: 'station' });
         var st = E.getState();
         window.SceneMapView.markCellDirty(st.mapId, st.x, st.y);
         window.SceneFeedback.showMsg(window.SceneFeedback.ui('cooking.take_water.ok'), 'success');
@@ -433,7 +438,7 @@
         var after = Math.min(COOKING_WATER_MAX_POINTS, afterRaw);
         var overflow = Math.max(0, afterRaw - after);
         cs.water_points = after;
-        if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
+        if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick({ source: 'station' });
         window.SceneFeedback.showMsg(
             overflow > 0
                 ? window.SceneFeedback.ui('cooking.pour_water.ok_overflow', { gain: waterGain, before: before, after: after, max: COOKING_WATER_MAX_POINTS, overflow: overflow })
@@ -481,7 +486,7 @@
         var after = Math.min(COOKING_FUEL_MAX_POINTS, afterRaw);
         var overflow = Math.max(0, afterRaw - after);
         cs.fuel_points = after;
-        if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
+        if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick({ source: 'station' });
         window.SceneFeedback.showMsg(
             overflow > 0
                 ? window.SceneFeedback.ui('cooking.add_fuel.ok_overflow', { gain: fuelGain, before: before, after: after, max: COOKING_FUEL_MAX_POINTS, overflow: overflow })
@@ -539,7 +544,7 @@
         var needFuel = Math.max(0, parseInt(m.fuel_cost, 10) || 0);
         var needWater = Math.max(0, parseInt(m.water_cost, 10) || 0);
         var needTicks = Math.max(0, parseInt(m.craft_ticks, 10) || 0);
-        var needStamina = Math.max(0, parseInt(m.stamina_cost, 10) || 0);
+        var needStamina = StationCraftCore.methodStamina(mid, needTicks);
         var cs = CookingStation.getState();
         var curFuel = parseInt(cs.fuel_points, 10) || 0;
         var curWater = parseInt(cs.water_points, 10) || 0;
@@ -561,15 +566,13 @@
 
         cs.fuel_points = curFuel - needFuel;
         if (!mainWaterFree) cs.water_points = curWater - needWater;
-        if (window.Survival && typeof window.Survival.consumeStamina === 'function' && needStamina > 0) {
-            window.Survival.consumeStamina(needStamina);
-        }
 
         // 固定 tick 耗时：开做即扣资源，但时间按 world tick 递减；制作中不可移动
         var cs2 = CookingStation.getState();
         var gt = window.GameTime && typeof window.GameTime.getState === 'function' ? window.GameTime.getState() : null;
         cs2.active_craft = {
             remaining_ticks: Math.max(1, needTicks),
+            intensity: StationCraftCore.methodIntensity(mid),
             started_total_ticks: gt && typeof gt.totalTicks === 'number' ? gt.totalTicks : 0,
             method_id: mid,
             inputs: selected,
@@ -593,7 +596,7 @@
             started: true,
             method_id: mid,
             remaining_ticks: Math.max(1, needTicks),
-            consumed: { fuel: needFuel, water: needWater, ticks: needTicks, stamina: needStamina }
+            consumed: { fuel: needFuel, water: needWater, ticks: needTicks, stamina: 0 }
         };
     }
     function getKnownCookingRecipeIds() {
@@ -704,6 +707,7 @@
         resetCookingStateForNewCharacter: resetCookingStateForNewCharacter,
         setCookingStationAccessories: setCookingStationAccessories,
         startCookingCraftIdleIfNeeded: startCookingCraftIdleIfNeeded,
+        startPharmacyCraftIdleIfNeeded: startPharmacyCraftIdleIfNeeded,
         stopCookingCraftIdle: stopCookingCraftIdle,
         stopPharmacyCraftIdle: stopPharmacyCraftIdle,
         tickPharmacyTempStationsAfterWorldTick: tickPharmacyTempStationsAfterWorldTick,

@@ -4,7 +4,7 @@
     "display_name": "灌木丛",
     "base_gathering_success_rate": 0.6,
     "loot_table_id": "loot_bush",
-    "stamina_cost": 2,
+    "stamina_cost": 0.6,
     "tool_required": false
   },
   "gathering_grass": {
@@ -12,7 +12,7 @@
     "display_name": "草丛",
     "base_gathering_success_rate": 0.6,
     "loot_table_id": "loot_grass",
-    "stamina_cost": 2,
+    "stamina_cost": 0.6,
     "tool_required": false
   }
 }

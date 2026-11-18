@@ -87,7 +87,7 @@
         if(modifier) {
             if(modifier.chance!=null)action.chance=Math.max(0,Math.min(.95,action.chance+modifier.chance));
             if(modifier.stamina!=null)action.stamina+=modifier.stamina;
-            if(modifier.ticks!=null)action.ticks+=modifier.ticks;
+            if(modifier.ticks!=null){action.ticks+=modifier.ticks;action.stamina=Number((action.ticks*base.stamina/base.ticks).toFixed(2));}
         }
         return action;
     }
@@ -161,10 +161,12 @@
         if (act.item && host.count(act.item) < 1) return 'item';
         return null;
     }
-    function tick(n, rest) {
+    function tick(n, rest, cost) {
         var a = state.active;
         for (var i = 0; i < n; i++) {
-            host.tick(rest); a.elapsed++;
+            if (!rest && host.workTick) host.workTick(cost/n);
+            else { if (!rest && cost) host.spend(cost/n); host.tick(rest); }
+            a.elapsed++;
             if (!host.canContinue(a.key)) { finish('interrupted'); return false; }
         }
         return true;
@@ -214,8 +216,7 @@
             if (id === 'close') { state.active = null; return { ok: true }; }
             if(id==='abandon' && a.phase==='survey'){state.active=null;return {ok:true};}
             if (id === 'retreat' || (id === 'abandon' && a.phase === 'charge')) {
-                host.spend(Math.min(host.stamina(), config.actions.retreat.stamina));
-                if (tick(config.actions.retreat.ticks, false)) finish('retreated');
+                if (tick(config.actions.retreat.ticks, false, config.actions.retreat.stamina)) finish('retreated');
                 return { ok: true };
             }
             if (id === 'abandon' || id === 'leave') { finish(a.phase==='processing'?'caught':'abandoned'); return { ok: true }; }
@@ -236,8 +237,7 @@
             }
             var action = getAction(id), p = chance(id);
             if (action.item && !host.consume(action.item, 1)) return fail('item');
-            host.spend(action.stamina);
-            if (!tick(action.ticks, false)) {xp('failure');return { ok: true };}
+            if (!tick(action.ticks, false, action.stamina)) {xp('failure');return { ok: true };}
             if(['look','inspect_gap','inspect_rope','probe_rope','practice_knot','inspect_trap','inspect_carcass'].indexOf(id)>=0){
                 var success=action.chance==null || random(state.points[a.key])<p;
                 xp(action.chance==null?'practice':success?'success':'failure');

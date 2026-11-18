@@ -202,11 +202,12 @@ test('surgery commits after six real world ticks; cancellation, reload and sleep
     assert.equal(g.MedicalActions.refill(id,'surgical_staples').ok,true);
     const staminaBefore=g.Survival.getState().stamina;
     assert.equal(g.MedicalActions.treat(id,'lhand','surgical_staples','normal').ok,true);
-    assert.equal(left(g,id,'surgical_staples'),60);assert.equal(g.Survival.getState().stamina,staminaBefore-10);
+    assert.equal(left(g,id,'surgical_staples'),60);assert.equal(g.Survival.getState().stamina,staminaBefore);
     assert.equal(g.CharacterAttributes.getBodyPartDestroyMax('lhand'),100);
     g.MedicalActions.advance();g.MedicalActions.advance();
     const snapshot=g.SaveSystem.buildSnapshotForDebug();
     assert.equal(g.SaveSystem.applySnapshotForDebug(snapshot),true);
+    assert.ok(Math.abs(g.Survival.getStamina()-(staminaBefore-1.2))<1e-8);
     assert.equal(g.MedicalActions.getState().elapsed,2);assert.equal(left(g,id,'surgical_staples'),60);
     for(let i=0;i<4;i++)assert.equal(g.MedicalActions.advance().ok,true);
     assert.equal(g.CharacterAttributes.getBodyPartDestroyMax('lhand'),50);assert.equal(g.CharacterAttributes.getPartDestroy('lhand'),49);

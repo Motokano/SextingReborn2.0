@@ -210,7 +210,6 @@
             renderSurvivalModal();
             return;
         }
-        if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
         survivalPanelOpen = true;
         if (window.SveltePanels) window.SveltePanels.refresh('survival');
         var modal = document.getElementById('modal-survival');
@@ -225,7 +224,6 @@
 
     function closeSurvivalPanel() {
         if (!survivalPanelOpen) return;
-        if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
         survivalPanelOpen = false;
         if (window.SveltePanels) window.SveltePanels.refresh('survival');
         var modal = document.getElementById('modal-survival');

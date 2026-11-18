@@ -36,7 +36,6 @@
 
     function openSavePanel() {
         if (savePanelOpen) return;
-        if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
         savePanelOpen = true;
         if (window.SveltePanels) window.SveltePanels.refresh('save');
         var modal = document.getElementById('modal-save');
@@ -50,7 +49,6 @@
 
     function closeSavePanel() {
         if (!savePanelOpen) return;
-        if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
         savePanelOpen = false;
         if (window.SveltePanels) window.SveltePanels.refresh('save');
         var modal = document.getElementById('modal-save');

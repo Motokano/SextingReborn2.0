@@ -6,12 +6,12 @@
 (function (window) {
     var E = window.GameEngine;
 
-    function advanceWorldTicks(n) {
+    function advanceWorldTicks(n, options) {
         var times = parseInt(n, 10);
         if (!isFinite(times) || times <= 0) return;
         var i;
         for (i = 0; i < times; i++) {
-            if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
+            if (window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick(options);
         }
     }
 
@@ -76,7 +76,8 @@
             if (window.GymSystem && !window.GymSystem.allowsTick(arguments[0])) return { training: true };
             if (window.MedicalActions && !window.MedicalActions.allowsTick(arguments[0])) return { medical: true };
             if (window.ManufacturingActions && !window.ManufacturingActions.allowsTick(arguments[0])) return { manufacturing: true };
-            if (window.Survival.getState().isResting && arguments[0]?.source !== 'sleep' && !window.SaveSystem.isAtomic()) {
+            var before = window.Survival.getState();
+            if (before.isResting && arguments[0]?.source !== 'sleep' && !window.SaveSystem.isAtomic()) {
                 var restOptions=arguments[0],restResult=window.SaveSystem.runAtomicFor('rest',function(){return window.Survival.advanceTick(restOptions);});
                 if(!restResult.saved){window.PlayerActions.setRestingActionActive(false,{showMsg:false});window.SceneFeedback.showMsg('保存失败，已暂停休息，本刻消耗、恢复和经验已还原。','warn');}
                 return restResult.value;
@@ -91,11 +92,29 @@
             var ret = oldAdvance.apply(this, arguments);
             // A rejected tick must not advance production, growth or other world consumers.
             if (getWorldTotalTicks() <= worldTickBefore) return ret;
+            if (!window.Survival.isDead()) {
+                var after = window.Survival.getState();
+                if (!before.isComa && after.isComa) {
+                    window.PlayerActions.prepareFacilityAction();
+                    if (window.NPCSystem?.isMenuOpen()) window.NPCSystem.menu.close();
+                    window.SceneFeedback.showMsg(window.SceneFeedback.ui('survival.fatigue.coma', {ticks: after.fatigueComaTicksRemaining}), 'warn');
+                } else if (before.isComa && !after.isComa) {
+                    window.SceneFeedback.showMsg(window.SceneFeedback.ui('survival.fatigue.awake', {fatigue: after.fatigue, stamina: after.stamina}), 'info');
+                } else if (after.fatigueFullTicks === 1 && !before.fatigueFullTicks) {
+                    window.SceneFeedback.showMsg(window.SceneFeedback.ui('survival.fatigue.full_warning', {ticks: window.Survival.getConfigValue('fatigue_full_ticks_to_coma', 30)}), 'warn');
+                }
+            }
             try { resolveNpcHardOccupancyAfterWorldTick(); } catch (e2) { /* ignore */ }
             try { CookingStation.tickCookingTempStationsAfterWorldTick(); } catch (e1) { /* ignore */ }
-            try { CookingStation.tickCraftAfterWorldTick(); } catch (e0) { /* ignore */ }
+            var attendedSource = before.isComa ? null : arguments[0]?.source;
+            var alive = !window.Survival.isDead();
+            try {
+                if (alive && (attendedSource === 'cooking_work' || StationCraftCore.advancesUnattended(CookingStation.getActiveCraft()))) CookingStation.tickCraftAfterWorldTick();
+            } catch (e0) { /* ignore */ }
             try { window.StationActions.tickPharmacyTempStationsAfterWorldTick(); } catch (eP1) { /* ignore */ }
-            try { PharmacyStation.tickCraftAfterWorldTick(); } catch (eP0) { /* ignore */ }
+            try {
+                if (alive && (attendedSource === 'pharmacy_work' || StationCraftCore.advancesUnattended(PharmacyStation.getActiveCraft()))) PharmacyStation.tickCraftAfterWorldTick();
+            } catch (eP0) { /* ignore */ }
             try {
                 if (window.CompostSystem && typeof window.CompostSystem.onWorldTick === 'function') {
                     window.CompostSystem.onWorldTick();
@@ -105,7 +124,7 @@
                 if (window.CompostPanel && typeof window.CompostPanel.refreshIfOpen === 'function') window.CompostPanel.refreshIfOpen();
             } catch (e4) { /* ignore */ }
             try { window.WarehouseActions.tickHideoutWarehouseAfterWorldTick(); } catch (eHwTick) { /* ignore */ }
-            try { window.AgricultureActions.tickAgricultureAfterWorldTick(); } catch (eAg) { /* ignore */ }
+            try { window.AgricultureActions.tickAgricultureAfterWorldTick(before.isComa, arguments[0]?.source); } catch (eAg) { /* ignore */ }
             try { window.LivestockActions.tickLivestockAfterWorldTick(); } catch (eLs) { /* ignore */ }
             try { CombatWorld.tickEnemiesAfterWorldTick(); } catch (eEn) { /* ignore */ }
             if (window.DungeonRuntime) window.DungeonRuntime.afterTick();

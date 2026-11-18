@@ -286,7 +286,7 @@
             cost: {
                 fuel: 0,
                 ticks: StationCraftCore.readMethodCostValue(costSource, 'ticks', 'craft_ticks'),
-                stamina: StationCraftCore.readMethodCostValue(costSource, 'stamina', 'stamina_cost')
+                stamina: StationCraftCore.methodStamina(mid, StationCraftCore.readMethodCostValue(costSource,'ticks','craft_ticks'))
             }
         };
     }

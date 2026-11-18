@@ -63,13 +63,13 @@ for(const mode of [false,true])test(`expanded gym ${mode?'Svelte':'classic'}: ne
    }
    const train=g.document.querySelector('#gym-panel [data-op="train"]');assert.equal(train.disabled,false,id+' available');train.click();
    const rewards=G.getState().job.rewards;near(rewards.reduce((sum,r)=>sum+r.pct,0),total);
-   assert.equal(G.getState().job.actionId,id);near(S.getStamina(),100-cost);near(S.getFatigue(),cost*1.5);
-   clock.step();assert.deepEqual(progress(),before,id+' pays nothing before completion');
+   assert.equal(G.getState().job.actionId,id);near(S.getStamina(),100);near(S.getFatigue(),0);
+   clock.step();near(S.getStamina(),100-cost/2);near(S.getFatigue(),cost*.75);assert.deepEqual(progress(),before,id+' pays nothing before completion');
    if(id==='finger_extension'){
     const saved=copy(SS.buildSnapshotForDebug());assert.equal(SS.applySnapshotForDebug(saved),true);await h.drain();
-    assert.equal(G.getState().job.actionId,id);assert.equal(G.level(a),2);near(S.getFatigue(),cost*1.5);
+    assert.equal(G.getState().job.actionId,id);assert.equal(G.level(a),2);near(S.getFatigue(),cost*.75);
    }
-   clock.step();assert.equal(G.isActive(),false,id+' completed');assert.equal(S.getState().tickCount,tick+2,id+' advances world time');
+   clock.step();near(S.getStamina(),100-cost);near(S.getFatigue(),cost*1.5);assert.equal(G.isActive(),false,id+' completed');assert.equal(S.getState().tickCount,tick+2,id+' advances world time');
    const expected={...before};for(const r of rewards)expected[r.id]=Math.round((expected[r.id]+r.pct)*1e6)/1e6;
    assert.deepEqual(progress(),expected,id+' changes exactly its targets once');
   }
@@ -119,19 +119,19 @@ for(const mode of [false,true])test(`formal gym ${mode?'Svelte':'classic'}: NPC,
   IE.setState(unlearned);g.SceneHud.refresh('status');assert.equal(entrance.isOpen(),false,'losing the prerequisite closes a stale page');
   IE.setState(learned);assert.equal(entrance.show(9,7),true);
   E.setState('M0_Base_Inside_lv_1',12,7);g.SceneHud.refresh('status');assert.equal(entrance.isOpen(),false);assert.equal(entrance.show(9,7),false,'remote access denied');
-  E.setState('M0_Base_Inside_lv_1',10,7);S.setState({isComa:true});assert.equal(entrance.show(9,7),false);S.setState({isComa:false});
+  E.setState('M0_Base_Inside_lv_1',10,7);S.setState({isDead:true});assert.equal(entrance.show(9,7),false);S.setState({isDead:false});
   IE.setState(unlearned);
   g.GameLog.log=log;E.setState('M0_Base_Inside_lv_1',5,5);
   assert.equal(M.getGroups().length,22);assert.equal(G.actions.length,75);assert.equal(G.getState().levels.floor,1);assert.equal(G.getState().levels.barbell,undefined);
   for(const s of G.getLayout().stations){const [w,hh]=G.footprints[s.id];for(let y=0;y<hh;y++)for(let x=0;x<w;x++){assert.equal(E.isWalkable(s.x+x,s.y+y),false);assert.equal(E.getInteractNpcIdAt(s.x+x,s.y+y),g.GymFacility.npcId(s.id));}}
   await g.NPCSystem.openMenu(g.GymFacility.npcId('floor'));await h.drain();assert.equal(g.NPCSystem.isMenuOpen(),true);g.NPCSystem.menu.choose(0);assert.equal(g.GymPanel.isOpen(),true,JSON.stringify({at:G.at('floor'),usable:G.usable('floor'),created:g.CharacterAttributes.isCharacterCreationCompleted(),error:G.getError()}));
   const ids=G.action('pushup').main,first=ids[0],initialFatigue=S.getFatigue();
-  assert.equal(G.startTraining('pushup',1).ok,true);assert.equal(clock.timers.size,1);assert.equal(S.getFatigue()-initialFatigue,15);assert.equal(M.getProgress(first),0);
+  assert.equal(G.startTraining('pushup',1).ok,true);assert.equal(clock.timers.size,1);assert.equal(S.getFatigue()-initialFatigue,0);assert.equal(M.getProgress(first),0);
   const firstReward=G.getState().job.rewards[0].pct;
   const ticks=S.getState().tickCount;S.advanceTick({source:'rest'});assert.equal(S.getState().tickCount,ticks,'other clocks blocked');
   const before=E.getState();g.SceneCtx.actions.tryIntentMove(6,5,1,0,'test');assert.deepEqual(copy(E.getState()),copy(before));
   clock.step();assert.equal(M.getProgress(first),0,'no partial-group reward');const snap=copy(g.SaveSystem.buildSnapshotForDebug());
-  assert.equal(g.SaveSystem.applySnapshotForDebug(snap),true);await h.drain();assert.equal(clock.timers.size,1);assert.equal(S.getFatigue(),initialFatigue+15,'resume does not charge again');
+  assert.equal(g.SaveSystem.applySnapshotForDebug(snap),true);await h.drain();assert.equal(clock.timers.size,1);assert.equal(S.getFatigue(),initialFatigue+1.5,'resume does not charge again');
   const save=g.SaveSystem.saveNow;g.SaveSystem.saveNow=()=>false;clock.step();assert.equal(G.getState().job.ticks,1);assert.equal(M.getProgress(first),0);assert.equal(S.getState().tickCount,snap.player.survival.tickCount);assert.equal(clock.timers.size,0);assert.match(G.getError(),/保存/);
   g.SaveSystem.saveNow=save;G.retry();clock.step();assert.equal(G.isActive(),false);assert.equal(M.getProgress(first),firstReward);G.advance();assert.equal(M.getProgress(first),firstReward,'no repeated reward');
   const progress=copy(M.getState());progress.progress[first]=99.9;M.setState(progress);S.setState({stamina:100,fatigue:0});assert.equal(startTraining(g,'pushup').ok,true);clock.step();clock.step();assert.equal(M.isUnlocked(first),true);assert.equal(M.getProgress(first),100);
@@ -148,16 +148,16 @@ for(const mode of [false,true])test(`formal gym ${mode?'Svelte':'classic'}: NPC,
   assert.equal(G.validate({...G.getState(),job:{actionId:'unknown'}}),false);assert.deepEqual(h.errors,[]);
  }finally{await h.close();}
 });
-test('continuous groups pause on hidden, stop at fatigue threshold, cancel on coma and keep facility modules independent',async()=>{
+test('continuous groups pause on hidden, stop at fatigue threshold, cancel on death and keep facility modules independent',async()=>{
  const h=await boot(false),g=h.g;
  try{
   const clock=await setup(h),G=g.GymSystem,S=g.Survival,M=g.Muscles;
-  S.setState({stamina:100,fatigue:0});assert.equal(G.startTraining('pushup',8).ok,true);
+  S.setState({stamina:100,fatigue:63});assert.equal(G.startTraining('pushup',8).ok,true);
   let hidden=true;Object.defineProperty(g.document,'hidden',{get:()=>hidden,configurable:true});g.document.dispatchEvent(new g.Event('visibilitychange'));assert.equal(clock.timers.size,0);assert.equal(G.getState().job.ticks,0);
   hidden=false;g.document.dispatchEvent(new g.Event('visibilitychange'));assert.equal(clock.timers.size,1);
-  for(let group=0;group<6;group++){near(G.getState().job.totalPct,group<4?.88:.44);clock.step();clock.step();}
-  assert.equal(G.isActive(),false);assert.equal(S.getFatigue(),90);near([...G.action('pushup').main,...G.action('pushup').assist].reduce((n,id)=>n+M.getProgress(id),0),4.4,'four full pools, two half pools');
-  S.setState({stamina:100,fatigue:0});assert.equal(G.startTraining('crunch').ok,true);const before=M.getProgress(G.action('crunch').main[0]);S.setState({isComa:true});clock.step();assert.equal(G.isActive(),false);assert.equal(M.getProgress(G.action('crunch').main[0]),before);S.setState({isComa:false});
+  for(let group=0;group<6;group++){near(G.getState().job.totalPct,.44);clock.step();clock.step();}
+  assert.equal(G.isActive(),false);assert.equal(S.getFatigue(),81);near([...G.action('pushup').main,...G.action('pushup').assist].reduce((n,id)=>n+M.getProgress(id),0),2.64,'six half pools before the fatigue gate');
+  S.setState({stamina:100,fatigue:0});assert.equal(G.startTraining('crunch').ok,true);const before=M.getProgress(G.action('crunch').main[0]);S.setState({isDead:true});clock.step();assert.equal(G.isActive(),false);assert.equal(M.getProgress(G.action('crunch').main[0]),before);S.setState({isDead:false});
   g.GameEngine.setState('M0_Base_Inside_lv_1',4,6);assert.equal(G.build('handsfeet',G.plan(G.station('handsfeet').build).signature).ok,true);
   assert.equal(G.upgrade('grip',1,G.plan(G.upgradeInfo(G.action('grip')).costs).signature).ok,true);assert.equal(G.level(G.action('grip')),2);assert.equal(G.level(G.action('calf_raise')),1);assert.equal(G.level(G.action('toe_curl')),1);
   assert.equal(G.upgrade('grip',1,'').ok,false,'old upgrade cannot repeat');
@@ -238,7 +238,7 @@ for(const mode of [false,true])test(`gym growth ${mode?'Svelte':'classic'}: anat
   try{assert.equal(G.startTraining('pushup',4).ok,true);}finally{g.Math.random=random;}
   const first=copy(G.getState().job);near(first.totalPct,1.3156);near(first.rewards.reduce((n,r)=>n+r.pct,0),1.3156);
   assert.ok(new Set(first.rewards.map(r=>r.pct)).size>1,'each group has a real random allocation');
-  assert.equal(S.getStamina(),90);assert.equal(S.getFatigue(),15,'growth bonuses do not discount costs');
+  assert.equal(S.getStamina(),100);assert.equal(S.getFatigue(),0,'training begins without prepayment');
   const panel=g.document.querySelector('#gym-panel');assert.match(panel.textContent,/解剖学 \+20%/);assert.match(panel.textContent,/营养 \+10%/);
   assert.equal(panel.querySelector('.growth-total').textContent,'+1.3156%');assert.ok([...panel.querySelectorAll('.reward-row>b')].every(el=>el.textContent==='随机'));
   anatomy(20);S.setState({nutrition:20});clock.step();near(M.getProgress(main),0);

@@ -19,7 +19,7 @@ function seed(e,value) {const s=e.H.getState();s.points.p.seed=value;assert(e.H.
 {
  const e=setup(), shelter=JSON.stringify(e.H.getState().active.shelter);
  assert.equal(e.H.chance('observe'),.5);seed(e,1800);
- e.H.act('observe');assert.equal(e.time,2);assert.equal(e.stamina,92);
+ e.H.act('observe');assert.equal(e.time,2);assert.ok(Math.abs(e.stamina-99.2)<1e-8);
  assert.equal(e.H.getState().active.flags.observe,undefined);
  assert.equal(e.H.getState().active.last,'hunting.observe_failed');
  assert.equal(e.H.reason('block'),'observe');assert.equal(e.H.reason('snare'),'observe');
@@ -45,7 +45,7 @@ function seed(e,value) {const s=e.H.getState();s.points.p.seed=value;assert(e.H.
 }
 // A blocked preparation is atomic: no item, stamina, tick or state change.
 {
- const e=setup();e.stamina=2;const before=JSON.stringify(e.H.getState());assert.equal(e.H.act('net').reason,'stamina');assert.equal(e.bag.consumable_hunting_net,3);assert.equal(e.time,0);assert.equal(JSON.stringify(e.H.getState()),before);
+ const e=setup();e.stamina=.2;const before=JSON.stringify(e.H.getState());assert.equal(e.H.act('net').reason,'stamina');assert.equal(e.bag.consumable_hunting_net,3);assert.equal(e.time,0);assert.equal(JSON.stringify(e.H.getState()),before);
  e.stamina=100;delete e.bag.consumable_hunting_net;assert.equal(e.H.act('net').reason,'item');assert.equal(e.time,0);
  assert.equal(e.H.act('snare').reason,'observe');assert.equal(e.H.act('juvenile').reason,'phase');
 }
@@ -88,12 +88,12 @@ for(const [event,quantity] of Object.entries({rabbit:3,pig_calf:5,cattle_calf:8,
  e.bag.consumable_hunting_blood_kit=2;e.bag.consumable_hunting_skin_kit=1;
  seed(e,1800);const rng=e.H.getState().points.p.seed;
  const stamina=e.stamina;assert(e.H.act('process_blood').ok);
- assert.equal(e.time,before+1);assert.equal(e.stamina,stamina-4);
+ assert.equal(e.time,before+1);assert.equal(e.stamina,stamina-.4);
  assert.equal(e.rewards.at(-1).item_id,'hus_pork_blood');assert.equal(e.bag.consumable_hunting_blood_kit,1);
  assert.equal(e.H.getState().points.p.seed,rng,'processing never rolls for success');
  const saved=e.H.getState();e.H.setState(saved);assert.equal(e.H.reason('process_blood'),'done');
  const rewardCount=e.rewards.length;e.H.act('process_blood');assert.equal(e.rewards.length,rewardCount);
- e.stamina=1;assert.equal(e.H.reason('process_skin'),'stamina');assert.equal(e.bag.consumable_hunting_skin_kit,1);
+ e.stamina=.1;assert.equal(e.H.reason('process_skin'),'stamina');assert.equal(e.bag.consumable_hunting_skin_kit,1);
  for(let i=0;i<5;i++)e.H.act('rest');assert.equal(e.H.getState().active.phase,'processing','rest never loses a caught animal');
  e.stamina=100;e.H.act('process_skin');e.H.act('process_bone');e.H.act('process_special');
  assert.equal(e.H.getState().active.phase,'ended');assert.equal(e.H.getState().points.p.readyAt,e.time+cfg.cooldown_ticks);
@@ -110,10 +110,10 @@ for(const [event,quantity] of Object.entries({rabbit:3,pig_calf:5,cattle_calf:8,
  const e=setup('pig_calf');e.H.act('meat');seed(e,1);e.H.act('observe');seed(e,1800);e.H.act('net');
  assert.equal(e.H.getState().active.phase,'charge');assert.equal(e.H.reason('rest'),'charge');assert.equal(e.H.reason('net'),'charge');
  assert.equal(e.H.getState().points.p.readyAt,0);const saved=e.H.getState();assert(e.H.setState(saved));
- const cost=e.stamina,time=e.time;e.H.act('hide');assert.equal(e.stamina,cost-8);assert.equal(e.time,time+1);
+ const cost=e.stamina,time=e.time;e.H.act('hide');assert.equal(e.stamina,cost-.6);assert.equal(e.time,time+1);
  assert.equal(e.H.getState().active.phase,'retry');assert.equal(e.H.reason('hide'),'phase');
  seed(e,1800);e.H.act('retry_net');assert.equal(e.H.getState().active.last,'hunting.result.driven_off');
- assert.equal(e.stamina,cost-8-10-18);assert.equal(e.rewards.length,0);assert.equal(e.H.getState().points.p.readyAt,e.time+cfg.cooldown_ticks);
+ assert.equal(e.stamina,cost-.6-1-18);assert.equal(e.rewards.length,0);assert.equal(e.H.getState().points.p.readyAt,e.time+cfg.cooldown_ticks);
 }
 {
  const e=setup('pig_calf');e.H.act('juvenile');assert.equal(e.H.reason('net'),'mother');assert.equal(e.time,0);
@@ -130,7 +130,7 @@ for(const [event,quantity] of Object.entries({rabbit:3,pig_calf:5,cattle_calf:8,
 }
 {
  const e=setup('pig_calf');e.H.act('meat');seed(e,1800);e.H.act('net');
- const time=e.time,stamina=e.stamina;e.H.act('abandon');assert.equal(e.time,time+1);assert.equal(e.stamina,stamina-6);
+ const time=e.time,stamina=e.stamina;e.H.act('abandon');assert.equal(e.time,time+1);assert.equal(e.stamina,stamina-1);
  assert.equal(e.H.getState().active.last,'hunting.result.retreated','abandon cannot bypass the reaction cost');
  const rabbit=setup();const s=rabbit.H.getState();s.active.phase='charge';s.active.flags.charged=true;assert(!rabbit.H.setState(s));
 }
@@ -140,7 +140,7 @@ for(const [event,quantity] of Object.entries({rabbit:3,pig_calf:5,cattle_calf:8,
  assert.equal(e.H.getState().active.phase,'airborne');assert.equal(e.H.reason('rest'),'airborne');assert.equal(e.H.reason('snare'),'airborne');
  assert.equal(e.H.chance('air_javelin'),.25);assert.equal(e.H.chance('wait_land'),.45);
  seed(e,1);const saved=e.H.getState(),sta=e.stamina,time=e.time;assert(e.H.setState(saved));e.H.act('wait_land');
- assert.equal(e.stamina,sta-4);assert.equal(e.time,time+2);assert.equal(e.H.getState().active.phase,'retry');
+ assert.ok(Math.abs(e.stamina-(sta-.8))<1e-8);assert.equal(e.time,time+2);assert.equal(e.H.getState().active.phase,'retry');
  const result=JSON.stringify(e.H.getState());e.H.setState(saved);e.H.act('wait_land');assert.equal(JSON.stringify(e.H.getState()),result);
  assert.equal(e.H.reason('wait_land'),'phase');seed(e,1800);e.H.act('retry_net');
  assert.equal(e.H.getState().active.last,'hunting.result.escaped');assert.equal(e.rewards.length,0);
@@ -166,7 +166,7 @@ for(const [event,quantity] of Object.entries({rabbit:3,pig_calf:5,cattle_calf:8,
  const e=setup('sheep_calf');e.H.act('meat');assert(Math.abs(e.H.chance('net')-.35)<1e-9);
  assert.equal(e.H.reason('set_intercept'),'passage');assert.equal(e.H.reason('snare'),'phase');
  seed(e,1);e.H.act('observe');e.H.act('bait');assert(Math.abs(e.H.chance('net')-.75)<1e-9);
- const time=e.time,sta=e.stamina;e.H.act('set_intercept');assert.equal(e.time,time+1);assert.equal(e.stamina,sta-6);
+ const time=e.time,sta=e.stamina;e.H.act('set_intercept');assert.equal(e.time,time+1);assert.equal(e.stamina,sta-.6);
  assert.equal(e.bag.consumable_hunting_snare,1);assert.equal(e.H.getState().active.phase,'prepare');assert.equal(e.H.reason('set_intercept'),'done');
  seed(e,1800);e.H.act('net');assert.equal(e.H.getState().active.phase,'herd_alert');
  assert.equal(e.H.reason('rest'),'herd_alert');assert.equal(e.H.reason('net'),'herd_alert');assert.equal(e.H.chance('intercept'),.45);

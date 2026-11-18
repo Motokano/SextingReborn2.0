@@ -305,7 +305,7 @@
       "reset_sleep_ticks": 48
     },
     "ticks": 6,
-    "stamina": 10,
+    "stamina": 3.6,
     "arm": 10,
     "leg": 15
   },

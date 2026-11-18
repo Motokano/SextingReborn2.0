@@ -52,7 +52,7 @@
 
             task_ticks: Math.max(1, Math.floor(Number(src.task_ticks != null ? src.task_ticks : def.task_ticks) || 10)),
 
-            stamina_per_tick: Math.max(0, Number(src.stamina_per_tick != null ? src.stamina_per_tick : def.stamina_per_tick) || 5),
+            stamina_per_tick: Math.max(0, Number(src.stamina_per_tick != null ? src.stamina_per_tick : def.stamina_per_tick) || 1),
 
             refund_inputs_on_cancel: src.refund_inputs_on_cancel === true,
 
@@ -110,7 +110,7 @@
 
             task_ticks: Math.max(1, Math.floor(Number(def.task_ticks) || 10)),
 
-            stamina_per_tick: Math.max(0, Number(def.stamina_per_tick) || 5)
+            stamina_per_tick: Math.max(0, Number(def.stamina_per_tick) || 1)
 
         };
 

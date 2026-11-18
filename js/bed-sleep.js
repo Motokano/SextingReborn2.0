@@ -6,7 +6,7 @@
     function copy(value) { return value == null ? null : JSON.parse(JSON.stringify(value)); }
     function text(key, vars) { return g.UIText.t('bed.sleep.' + key, vars); }
     function active() { return !!state; }
-    function blocked() { return g.Survival.isDead() || (g.DeathSystem && g.DeathSystem.blocked()); }
+    function blocked() { return g.Survival.isDead() || g.Survival.isComa() || (g.DeathSystem && g.DeathSystem.blocked()); }
     function stopTimer() { epoch++; if (timer !== null) g.clearTimeout(timer); timer = null; dueAt = 0; }
     function validate(s) {
         return s == null || (s.version === 1 && Number.isInteger(s.total) && s.total > 0 && s.total <= 10000 &&

@@ -71,6 +71,11 @@ for(const full of [false,true])test(`${full?'Svelte':'native'} facilities share 
     assert.equal(g.FacilityLaborPanel.isOpen(),true);
     g.FacilityLaborPanel.close();await h.drain();continue;
    }
+   if(def.id==='npc.station.manufacturing_base'){
+    assert.equal(g.NPCSystem.isMenuOpen(),false,'workshop opens directly');
+    assert.ok(d.querySelector('#manufacturing-panel'));
+    g.ManufacturingPanel.close();await h.drain();continue;
+   }
    assert.equal(g.NPCSystem.isMenuOpen(),true,def.id);
    assert.equal(root.classList.contains('npc-menu-checkpoint'),true,def.id);
    assert.equal(d.getElementById('npc-menu-title').textContent,def.displayTitle||def.name);

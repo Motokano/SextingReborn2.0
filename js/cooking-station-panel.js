@@ -521,7 +521,7 @@
         var needFuel = mSel ? Math.max(0, parseInt(mSel.fuel_cost, 10) || 0) : 0;
         var needWater = mSel ? Math.max(0, parseInt(mSel.water_cost, 10) || 0) : 0;
         var needTicks = mSel ? Math.max(0, parseInt(mSel.craft_ticks, 10) || 0) : 0;
-        var needStamina = mSel ? Math.max(0, parseInt(mSel.stamina_cost, 10) || 0) : 0;
+        var needStamina = mSel ? StationCraftCore.methodStamina(mid, needTicks) : 0;
         if (global.Survival && global.Survival.getActionStaminaCost) needStamina = global.Survival.getActionStaminaCost(needStamina);
         var survState = global.Survival && typeof global.Survival.getState === 'function' ? global.Survival.getState() : null;
         var curStamina = survState ? Number(survState.stamina || 0) : 0;
@@ -674,8 +674,8 @@
             showMsg(ui('cooking.station.locked_until_repaired'), 'info');
             return;
         }
-        if (global.Survival && typeof global.Survival.advanceTick === 'function') global.Survival.advanceTick();
         cookingStationPanelOpen = true;
+        window.StationActions.startCookingCraftIdleIfNeeded();
         cookingStationUiState.selected_water_slot_key = '';
         cookingStationUiState.selected_fuel_slot_key = '';
         var modal = document.getElementById('modal-cooking-station');
@@ -689,7 +689,6 @@
 
     function closeCookingStationPanel() {
         if (!cookingStationPanelOpen) return;
-        if (global.Survival && typeof global.Survival.advanceTick === 'function') global.Survival.advanceTick();
         cookingStationPanelOpen = false;
         var modal = document.getElementById('modal-cooking-station');
         if (modal) {

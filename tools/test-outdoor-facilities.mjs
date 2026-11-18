@@ -59,6 +59,8 @@ for(const full of [false,true])test(`${full?'Svelte':'native'} outdoor access, s
     await g.NPCSystem.openMenu(f.npc_id);
     assert.equal(g.NPCSystem.isMenuOpen(),false,'unrestored farm skips the NPC menu');
     assert.equal(g.FacilityLaborPanel.isOpen(),true,'unrestored farm still requires restoration');
+    await h.drain();
+    assert.ok(g.document.querySelector('.cr-body').textContent.includes('高强度清障，每刻消耗体力 '+g.FacilityLabor.cost()),'restoration UI shows the current action cost');
     g.FacilityLaborPanel.close();
     g.NPCSystem.setDemoFlag('facility_labor:'+id,g.FacilityLabor.total);
     g.NPCSystem.setDemoFlag('facility_cleaned:'+id,true);

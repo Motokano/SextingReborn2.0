@@ -395,7 +395,7 @@
 
     function canAffordTaskStamina(spec) {
         var ticks = spec && spec.task_ticks != null ? Math.max(1, Math.floor(Number(spec.task_ticks))) : 10;
-        var per = spec && spec.stamina_per_tick != null ? Math.max(0, Number(spec.stamina_per_tick)) : 5;
+        var per = spec && spec.stamina_per_tick != null ? Math.max(0, Number(spec.stamina_per_tick)) : 1;
         return getStaminaNow() >= ticks * per;
     }
 

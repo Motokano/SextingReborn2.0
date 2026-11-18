@@ -29,7 +29,7 @@
         if (busy) return '正在从水壶饮用。';
         if (!g.Survival || !g.SaveSystem || !g.SaveSystem.runAtomic || !g.SceneApp) return '暂时无法从水壶饮用。';
         var S = g.Survival, state = S.getState();
-        if (state.isDead || state.isComa || (g.BuffSystem && g.BuffSystem.hasBuffByBuffId('player', 'survival_coma'))) return '当前无法饮水。';
+        if (state.isDead || state.isComa) return '当前无法饮水。';
         if (g.SceneApp.isPreCreationGameplayRestricted()) return '请先完成角色创建。';
         if (g.SceneApp.isStoryMovementLocked()) return '请先完成当前对话。';
         if (g.Hunting && g.Hunting.isActive()) return '请先结束当前活动。';
@@ -58,7 +58,7 @@
                 for (var i = 0; i < p.ticks; i++) {
                     g.Survival.advanceTick({ source: 'water_flask_drink' });
                     var state = g.Survival.getState();
-                    if (state.isDead || state.isComa || (g.BuffSystem && g.BuffSystem.hasBuffByBuffId('player', 'survival_coma'))) break;
+                    if (state.isDead || state.isComa) break;
                 }
                 return { ok: true, message: '从水壶喝了一口水，消耗' + g.WaterFlaskStorage.format(p.cost) + '点存水。' };
             });

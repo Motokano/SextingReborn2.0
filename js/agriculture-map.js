@@ -106,7 +106,7 @@
         4: "窃流强化+溢流回蓄"
       };
       var TASK_TICKS = 10;
-      var TASK_STAMINA_PER_TICK = 5;
+      var TASK_STAMINA_PER_TICK = 1;
       var RECOVER_STAMINA_PER_TICK = 5;
       var MAX_STAMINA = 100;
       var TICK_MS = 1000;
@@ -2464,17 +2464,19 @@
         var staminaPerTick = ctx.staminaPerTick != null ? Number(ctx.staminaPerTick) : TASK_STAMINA_PER_TICK;
         var getStamina = ctx.getStamina;
         var setStamina = ctx.setStamina;
-        if (typeof getStamina !== 'function' || typeof setStamina !== 'function') {
+        if (!ctx.staminaAlreadyPaid && (typeof getStamina !== 'function' || typeof setStamina !== 'function')) {
           return { ok: false, advanced: false, reason: 'missing_stamina_api' };
         }
         if (state.task.paused) {
           return { ok: true, advanced: false, reason: 'paused' };
         }
-        var stamina = Number(getStamina()) || 0;
-        if (stamina < staminaPerTick) {
-          return { ok: true, advanced: false, reason: 'insufficient_stamina' };
+        if (!ctx.staminaAlreadyPaid) {
+          var stamina = Number(getStamina()) || 0;
+          if (stamina < staminaPerTick) {
+            return { ok: true, advanced: false, reason: 'insufficient_stamina' };
+          }
+          setStamina(round1(Math.max(0, stamina - staminaPerTick)));
         }
-        setStamina(round1(Math.max(0, stamina - staminaPerTick)));
         state.task.progress = (state.task.progress || 0) + 1;
         if (state.task.progress >= taskTicks) {
           applyConstructionTask(state, state.task);

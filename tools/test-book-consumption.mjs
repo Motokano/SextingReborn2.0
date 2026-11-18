@@ -81,8 +81,8 @@ test('consuming checks current ownership, active actions, seals and rollback bef
       assert.equal(B.consumeFullBook(request(g)).reason, 'action_blocked'); owner[method] = fn;
       assert.equal(snapshot(g), unchanged);
     }
-    reset(g); g.Survival.setState({ isComa: true });
-    const coma = snapshot(g); assert.equal(B.consumeFullBook(request(g)).reason, 'action_blocked'); assert.equal(snapshot(g), coma); g.Survival.setState({ isComa: false });
+    reset(g); g.Survival.setState({ isDead: true });
+    const dead = snapshot(g); assert.equal(B.consumeFullBook(request(g)).reason, 'action_blocked'); assert.equal(snapshot(g), dead); g.Survival.setState({ isDead: false });
     reset(g); r = request(g); const oldLock = g.ForgingSystem.isInstanceLocked; g.ForgingSystem.isInstanceLocked = id => id === r.id;
     assert.equal(B.consumeFullBook(r).reason, 'locked'); g.ForgingSystem.isInstanceLocked = oldLock;
     const staleContainer = request(g), s = I.getState(); s.equipment.backpack = g.BackpackSystem.generate('eq_backpack_multi_pocket'); I.setState(s);

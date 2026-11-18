@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { boot } from './ui-game-fixture.mjs';
 
 for (const full of [false, true]) {
-  test(`Space waits use the same time and survival costs as walking (${full ? 'Svelte' : 'native'})`, async () => {
+  test(`Space waits use low intensity while walking retains shoe cost modifiers (${full ? 'Svelte' : 'native'})`, async () => {
     const h = await boot(full), g = h.g, d = g.document;
     const press = (target = d.body, repeat = false) => target.dispatchEvent(new g.KeyboardEvent('keydown', { key: ' ', code: 'Space', repeat, bubbles: true, cancelable: true }));
     try {
@@ -33,13 +33,19 @@ for (const full of [false, true]) {
       await h.drain();
       const walked = g.Survival.getState();
       assert.equal(g.GameTime.getState().totalTicks, initialTicks + 4);
-      for (const field of ['satiety', 'thirst', 'stamina', 'fatigue', 'nutrition', 'weight_kg', 'dirtyness', 'tickCount'])
+      for (const field of ['satiety', 'thirst', 'nutrition', 'weight_kg', 'dirtyness', 'tickCount'])
         assert.equal(waited[field], walked[field], field + ' matches four real walking steps');
+      assert.equal(g.InventoryEquipment.getShoeSharedMods().moveCostMod, -0.1, 'starting shoes reduce movement cost by 10%');
+      assert.equal(waited.stamina, 78.4, 'four low-intensity waits cost 1.6 stamina');
+      assert.equal(walked.stamina, 78.56, 'shoe discount applies to walking only');
+      assert.ok(Math.abs(waited.fatigue-10.16)<1e-6);
+      assert.ok(Math.abs(walked.fatigue-10.144)<1e-6);
       assert.equal(JSON.stringify(waited.food_metabolism), JSON.stringify(walked.food_metabolism), 'no deferred food bill');
       g.Survival.setState({ stamina: 0 });
-      const exhaustedTick = g.GameTime.getState().totalTicks;
+      const exhaustedTick = g.GameTime.getState().totalTicks, exhaustedFatigue = g.Survival.getState().fatigue;
       press();
       assert.equal(g.GameTime.getState().totalTicks, exhaustedTick + 1, 'waiting can still advance status timers while exhausted');
+      assert.ok(Math.abs(g.Survival.getState().fatigue-exhaustedFatigue-0.8)<1e-6, 'zero-stamina wait converts the 0.4 shortfall to 0.8 fatigue');
       assert.equal(g.Survival.getState().satiety, 80);
       assert.equal(g.Survival.getState().thirst, 80);
       assert.deepEqual(h.errors, []);

@@ -5,7 +5,7 @@ function harness(){
  let flags={},stamina=1000,ticks=0,onTick=()=>{},saving=true;
  c.NPCSystem={getFlagValue:k=>copy(flags[k]??null),setDemoFlag:(k,v)=>flags[k]=copy(v),isDemoFlagTrue:k=>flags[k]===true,getDemoState:()=>copy(flags),setDemoState:s=>flags=copy(s)};
  c.UIText={t:k=>k};c.GameEngine={getState:()=>({mapId:'M0_Base_Inside_lv_1',x:5,y:12}),getInteractNpcIdAt:()=> 'npc.station.forging_base'};
- c.SaveSystem={saveNow:()=>saving};c.Survival={getState:()=>({stamina}),isDead:()=>false,canPerformStaminaOrEnergyAction:()=>true,getActionStaminaCost:n=>n*1.25,consumeStamina:(n,o)=>{assert(o.raw);stamina-=n;},advanceTick:()=>{ticks++;onTick();}};
+ c.SaveSystem={saveNow:()=>saving};c.Survival={getState:()=>({stamina}),isDead:()=>false,canPerformStaminaOrEnergyAction:()=>true,getIntensityRate:k=>({low:.4,medium:.6,high:1})[k],getActionStaminaCost:n=>n*1.25,consumeStamina:(n,o)=>{assert(o.raw);stamina-=n;},advanceTick:({actionCost=0}={})=>{stamina-=actionCost;ticks++;onTick();}};
  for(const file of ['item-attribute-modules','inventory-equipment','item-assembly','combat-engagement','forging-config','forging-board-core','forging-rules','forging-system'])vm.runInContext(read('js/'+file+'.js'),c,{filename:file});
  const I=c.InventoryEquipment,S=c.ForgingSystem,R=c.ForgingRules,C=c.ForgingConfig;
  I.setConfig({equipment:{bag:{item_id:'bag',equip_slot:'backpack',backpack_slots:150}},items:c.ItemAttributeModules.hydrateCatalog(C.catalog),modules:{},default_equipment:{}});

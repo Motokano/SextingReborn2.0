@@ -3,77 +3,80 @@
   "action_costs": {
     "cast": {
       "ticks": 1,
-      "stamina": 1
+      "stamina": 0.6
     },
     "wait": {
       "ticks": 1,
-      "stamina": 0
+      "stamina": 0.4
     },
     "retrieve": {
       "ticks": 1,
-      "stamina": 1
+      "stamina": 0.6
     },
+    "strike_light": {"ticks": 1, "stamina": 0.4},
+    "strike_normal": {"ticks": 1, "stamina": 0.6},
+    "strike_strong": {"ticks": 1, "stamina": 1},
     "fight_steady": {
       "ticks": 1,
-      "stamina": 3,
+      "stamina": 0.6,
       "progress": 2,
       "load_delta": 0
     },
     "fight_strong": {
       "ticks": 1,
-      "stamina": 6,
+      "stamina": 1,
       "progress": 3,
       "load_delta": 1
     },
     "lure_cast": {
       "ticks": 1,
-      "stamina": 6
+      "stamina": 0.6
     },
     "lure_steady_slow": {
       "ticks": 1,
-      "stamina": 6
+      "stamina": 0.6
     },
     "lure_steady_medium": {
       "ticks": 1,
-      "stamina": 7
+      "stamina": 0.6
     },
     "lure_steady_fast": {
       "ticks": 1,
-      "stamina": 9
+      "stamina": 1
     },
     "lure_pause_slow": {
       "ticks": 1,
-      "stamina": 7
+      "stamina": 0.6
     },
     "lure_pause_medium": {
       "ticks": 1,
-      "stamina": 8
+      "stamina": 0.6
     },
     "lure_pause_fast": {
       "ticks": 1,
-      "stamina": 10
+      "stamina": 1
     },
     "lure_twitch_slow": {
       "ticks": 1,
-      "stamina": 8
+      "stamina": 0.6
     },
     "lure_twitch_medium": {
       "ticks": 1,
-      "stamina": 9
+      "stamina": 0.6
     },
     "lure_twitch_fast": {
       "ticks": 1,
-      "stamina": 11
+      "stamina": 1
     },
     "fight_give": {
       "ticks": 1,
-      "stamina": 3,
+      "stamina": 0.4,
       "progress": 0,
       "load_delta": -1
     },
     "drag_adjust": {
       "ticks": 1,
-      "stamina": 1
+      "stamina": 0.4
     }
   },
   "hook_force": {

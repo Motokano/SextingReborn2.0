@@ -414,12 +414,12 @@
     "materials": {
       "wood": {
         "name": "木门",
-        "base": 8,
+        "base": 1,
         "skill": "logging"
       },
       "iron": {
         "name": "铁门",
-        "base": 12,
+        "base": 1,
         "skill": "mining"
       }
     }
@@ -431,70 +431,70 @@
     "toolReduction": 0,
     "profiles": {
       "food": {
-        "cost": 4,
+        "cost": 0.6,
         "uses": [
           6,
           10
         ]
       },
       "herb": {
-        "cost": 4,
+        "cost": 0.6,
         "uses": [
           3,
           5
         ]
       },
       "root": {
-        "cost": 6,
+        "cost": 0.6,
         "uses": [
           3,
           5
         ]
       },
       "salt": {
-        "cost": 6,
+        "cost": 0.6,
         "uses": [
           4,
           6
         ]
       },
       "clay": {
-        "cost": 12,
+        "cost": 1,
         "uses": [
           2,
           3
         ]
       },
       "ore": {
-        "cost": 16,
+        "cost": 1,
         "uses": [
           1,
           2
         ]
       },
       "shrub": {
-        "cost": 4,
+        "cost": 0.6,
         "uses": [
           3,
           5
         ]
       },
       "deadwood": {
-        "cost": 6,
+        "cost": 0.6,
         "uses": [
           3,
           5
         ]
       },
       "timber": {
-        "cost": 12,
+        "cost": 1,
         "uses": [
           2,
           3
         ]
       },
       "rare": {
-        "cost": 4,
+        "cost": 0.6,
         "uses": [
           1,
           3

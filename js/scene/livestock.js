@@ -40,7 +40,31 @@
         }
         var Surv = window.Survival;
         if (!Surv || typeof Surv.advanceTick !== 'function') return;
-        try { Surv.advanceTick(); } catch (eTick) { /* ignore */ }
+        try { Surv.advanceTick({source:'livestock_watch'}); } catch (eTick) { /* ignore */ }
+    }
+
+    function maintainZone(zoneId, kind) {
+        var cleaning = kind === 'clean';
+        var ticks = cleaning ? 5 : 10;
+        var S = window.Survival, L = window.LivestockState;
+        function canContinue() {
+            return livestockPanelOpen && !S.isComa() && S.canPerformStaminaOrEnergyAction() &&
+                window.AgricultureActions.canUseOutdoorFacility('livestock') && window.SceneApp.canWorkFacilityLabor();
+        }
+        if (!cleaning && kind !== 'till' || !canContinue()) return {ok:false, reason:'action_blocked'};
+        var zone = L.getState().zones[zoneId];
+        if (!zone || !(zone[cleaning ? 'pollution' : 'compaction'] > 0)) return {ok:false, reason:'nothing_to_do'};
+        window.PlayerActions.prepareFacilityAction();
+        var saved = window.SaveSystem.runAtomicFor('facility', function () {
+            for (var i=0; i<ticks; i++) {
+                if (!canContinue()) return {ok:false, reason:'interrupted'};
+                var before = S.getState().tickCount;
+                S.advanceTick({source:'livestock', intensity:cleaning ? 'medium' : 'high'});
+                if (S.getState().tickCount !== before+1 || !canContinue()) return {ok:false, reason:'interrupted'};
+            }
+            return cleaning ? L.cleanZone(zoneId,10) : L.tillZone(zoneId,10);
+        });
+        return saved.saved ? saved.value : {ok:false, reason:'save_failed'};
     }
 
     function openLivestockPanel() {
@@ -152,6 +176,7 @@
     }
 
     window.LivestockActions = {
+        maintainZone: maintainZone,
         initialize: initialize,
         bind: bind,
         closeLivestockPanel: closeLivestockPanel,

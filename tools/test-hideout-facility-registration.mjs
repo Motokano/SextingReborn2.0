@@ -16,12 +16,25 @@ const map=json('data/maps/M0_Base_Inside_lv_1.json');
 const facilities=[...map.npcs.filter(p=>p.npc_id.startsWith('npc.station.'))];
 for(const key of Object.keys(map).filter(k=>/_station_interact_npc_by_cell$/.test(k)))for(const [point,npc_id]of Object.entries(map[key])){const [x,y]=point.split(',').map(Number);facilities.push({x,y,npc_id});}
 const blocked=new Set([...map.blocks,...map.disabled,...map.npcs,...facilities].map(p=>p.x+','+p.y));
-const seen=new Set(['8,15']),queue=[[8,15]];
-for(let i=0;i<queue.length;i++)for(const [dx,dy]of [[1,0],[-1,0],[0,1],[0,-1]]){const x=queue[i][0]+dx,y=queue[i][1]+dy,k=x+','+y;if(x>=0&&y>=0&&x<map.width&&y<map.height&&!blocked.has(k)&&!seen.has(k)){seen.add(k);queue.push([x,y]);}}
+function reachable(blockers) {
+ const seen=new Set(['8,15']),queue=[[8,15]];
+ for(let i=0;i<queue.length;i++)for(const [dx,dy]of [[1,0],[-1,0],[0,1],[0,-1]]){const x=queue[i][0]+dx,y=queue[i][1]+dy,k=x+','+y;if(x>=0&&y>=0&&x<map.width&&y<map.height&&!blockers.has(k)&&!seen.has(k)){seen.add(k);queue.push([x,y]);}}
+ return {seen,cells:queue};
+}
 assert.ok(blocked.has('11,14'),'second cot cell blocks passage');
-for(const facility of facilities)assert.ok(queue.some(([x,y])=>Math.max(Math.abs(x-facility.x),Math.abs(y-facility.y))===1),facility.npc_id+' remains reachable');
-for(const p of map.portals)assert.ok(seen.has(p.x+','+p.y),'exit and test portal stay reachable');
+const initial=reachable(blocked),walls=Object.entries(map.inspectable_walls||{});
+const accessible=(cells,parts)=>parts.some(f=>cells.some(([x,y])=>Math.max(Math.abs(x-f.x),Math.abs(y-f.y))===1));
+const ids=[...new Set(facilities.map(f=>f.npc_id))];
+for(const id of ids){
+ const parts=facilities.filter(f=>f.npc_id===id);
+ const sealed=parts.every(f=>walls.some(([,w])=>{const [x1,y1,x2,y2]=w.sealed_region;return f.x>=x1&&f.y>=y1&&f.x<=x2&&f.y<=y2;}));
+ assert.equal(accessible(initial.cells,parts),!sealed,id+' respects the initial sealed room');
+}
+const opened=new Set(blocked);for(const [cell]of walls)opened.delete(cell);
+const unlocked=reachable(opened);
+for(const id of ids)assert.ok(accessible(unlocked.cells,facilities.filter(f=>f.npc_id===id)),id+' is reachable after the declared wall opens');
+for(const p of map.portals)assert.ok(initial.seen.has(p.x+','+p.y),'exit and test portal stay reachable');
 const g={window:null,console};g.window=g;vm.createContext(g);vm.runInContext(read('js/core/base-hideout-art.js'),g);
 assert.equal(g.BaseHideoutArt.isStructure(map,11,14),false,'cot extension is not a wall');
 assert.equal(g.BaseHideoutArt.materialAt(map,11,14,{}),4,'wood floor continues below cot');
-console.log('PASS 20 original PNG hashes, transparency, paired scale/feet, 12 accessible facilities, both exits and two-cell cot floor/collision.');
+console.log('PASS 20 original PNG hashes, transparency, paired scale/feet, facility access before/after opening the sealed gym, both exits and two-cell cot floor/collision.');

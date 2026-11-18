@@ -5,7 +5,7 @@
     function node(tag,text,parent,cls){var n=document.createElement(tag);if(text!=null)n.textContent=text;if(cls)n.className=cls;if(parent)parent.appendChild(n);return n;}
     function atPoint(){if(!C||!g.GameEngine)return false;var p=g.GameEngine.getState();return p.mapId===C.entry.map&&p.x===C.entry.x&&p.y===C.entry.y;}
     function allowed(){var S=g.Survival,st=S&&S.getState(),app=g.SceneApp;return atPoint()&&st&&!st.isDead&&!st.isComa&&!st.isResting&&!(g.CombatEngagement&&g.CombatEngagement.isPlayerInCombat())&&!(app&&app.isPreCreationGameplayRestricted())&&!(app&&app.isPlayerActionDisabledByBuff('gather'))&&!(g.SceneCtx&&g.SceneCtx.idleActionType);}
-    function configure(c){if(!g.FishingPond.configure(c))throw new Error("钓鱼配置加载失败");C=c;g.FishingPond.setHost({now:function(){return g.GameTime.getState().totalTicks;},allowed:allowed,stamina:function(){return g.Survival.getActionStaminaBudget ? g.Survival.getActionStaminaBudget() : g.Survival.getStamina();},spend:function(n){g.Survival.consumeStamina(n);},tick:function(){g.Survival.advanceTick();}});}
+    function configure(c){if(!g.FishingPond.configure(c))throw new Error("钓鱼配置加载失败");C=c;g.FishingPond.setHost({now:function(){return g.GameTime.getState().totalTicks;},allowed:allowed,stamina:function(){return g.Survival.getActionStaminaBudget ? g.Survival.getActionStaminaBudget() : g.Survival.getStamina();},spend:function(n){g.Survival.consumeStamina(n);},workTick:function(rate){g.Survival.advanceTick({source:'fishing',baseCost:rate});}});}
     function init(){if(overlay)return;
         overlay=node('div',null,document.body);overlay.id='fishing-overlay';overlay.hidden=true;
         card=node('section',null,overlay,'fishing-window');card.tabIndex=-1;card.setAttribute('role','dialog');card.setAttribute('aria-modal','true');card.setAttribute('aria-label','岸边池塘');
@@ -17,7 +17,7 @@
         },true);
     }
     function save(){if(g.SaveSystem)g.SaveSystem.saveNow('fishing');if(g.SceneHud)g.SceneHud.refresh('status');}
-    function action(key,value){var r=g.FishingPond.act(key,value);if(r.ok){historyPage=0;if(key==='nest')workspace='water';if(key==='select')workspace='parts';}render();if(!r.ok)status(errors[r.reason]||'当前条件下无法执行，请检查工具与当前作业。');save();return r;}
+    function action(key,value){var r=g.FishingPond.act(key,value);if(r.ok){historyPage=0;if(key==='nest')workspace='water';if(key==='select')workspace='parts';}render();if(!r.ok)status(g.Survival?.isComa?.()?g.UIText.t('survival.fatigue.coma_blocked'):errors[r.reason]||'当前条件下无法执行，请检查工具与当前作业。');save();return r;}
     function status(text){var n=card.querySelector('.fishing-notice');if(n)n.textContent=text;}
     function btn(parent,text,key,value,disabled){var b=node('button',text,parent);b.disabled=!!disabled;b.onclick=function(){action(key,value);};return b;}
     function open(){if(!C)return;init();if(!allowed())return;

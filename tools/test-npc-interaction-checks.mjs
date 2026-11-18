@@ -66,7 +66,7 @@ test('independent NPC checks use real survival buffs, default on, and never alte
   assert.equal(view.open, true, 'food water also clears the interaction block immediately');
 });
 
-test('real scene entry opens exempt facilities, blocks ordinary NPCs, and retains coma and stun guards', async () => {
+test('real scene entry opens exempt facilities even at exhaustion, blocks ordinary NPCs, and retains the stun guard', async () => {
   const h = await boot(true), g = h.g;
   try {
     g.DialogueUI.close();
@@ -86,6 +86,10 @@ test('real scene entry opens exempt facilities, blocks ordinary NPCs, and retain
       g.GameEngine.setState(def.location.sceneId, def.location.x, def.location.y + 1);
       // The pharmacy is on the bottom edge; its southern neighbour is outside the map.
       if (def.id === 'npc.station.pharmacy_base') g.GameEngine.setState(def.location.sceneId, 13, 14);
+      if (def.id === 'npc.station.agriculture_base') {
+        g.NPCSystem.setDemoFlag('facility_restored:agriculture', true);
+        g.GameEngine.setState(def.location.sceneId, 5, 10);
+      }
       if(def.gymStation){
         const {x,y}=def.location,[w,h]=def.gymStation.footprint,candidates=[];
         for(let dy=0;dy<h;dy++)for(let dx=0;dx<w;dx++)for(const [ax,ay] of [[1,0],[-1,0],[0,1],[0,-1]])candidates.push({x:x+dx+ax,y:y+dy+ay});
@@ -94,6 +98,16 @@ test('real scene entry opens exempt facilities, blocks ordinary NPCs, and retain
       g.Survival.setState({ thirst: 0, dirtyness: 100 });
       g.SceneCtx.actions.interactNpc(def.id);
       await h.drain();
+      if (def.id === 'npc.station.manufacturing_base') {
+        assert.equal(g.ManufacturingPanel.isOpen(), true, def.id);
+        g.ManufacturingPanel.close();
+        continue;
+      }
+      if (def.id === 'npc.station.agriculture_base') {
+        assert.equal(g.document.querySelector('#modal-agriculture').getAttribute('aria-hidden'), 'false', def.id);
+        g.AgricultureActions.closeAgriculturePanel();
+        continue;
+      }
       assert.equal(g.NPCSystem.isMenuOpen(), true, def.id);
       g.NPCSystem.menu.close();
     }
@@ -105,11 +119,12 @@ test('real scene entry opens exempt facilities, blocks ordinary NPCs, and retain
         assert.equal(g.NPCSystem.isMenuOpen(), false, id + ' ' + JSON.stringify(state));
       }
     }
-    g.Survival.setState({ thirst: 0, dirtyness: 100 });
-    g.BuffSystem.applyBuff('player', 'survival_coma', 'test');
+    const bed = facilities.find(def => def.id === 'npc.station.bed_base').location;
+    g.GameEngine.setState(bed.sceneId, bed.x, bed.y - 1);
+    g.Survival.setState({ thirst: 0, dirtyness: 100, stamina: 0, fatigue: 100 });
     g.SceneCtx.actions.interactNpc('npc.station.bed_base'); await h.drain();
-    assert.equal(g.NPCSystem.isMenuOpen(), false, 'coma still blocks scene interactions');
-    g.BuffSystem.removeBuffByBuffId('player', 'survival_coma');
+    assert.equal(g.NPCSystem.isMenuOpen(), true, 'the exhausted player can still interact with the bed');
+    g.NPCSystem.menu.close();
     const stun = g.InventoryEquipment.consumePlayerStunRoundIfBlocking;
     g.InventoryEquipment.consumePlayerStunRoundIfBlocking = () => true;
     try {

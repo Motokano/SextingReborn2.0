@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
 (()=>{'use strict';
 const config={tickMs:1500,skillMaxLevel:100,skillMaxReduction:.30,toolReduction:0,
- profiles:{food:{cost:4,uses:[6,10]},herb:{cost:4,uses:[3,5]},root:{cost:6,uses:[3,5]},salt:{cost:6,uses:[4,6]},clay:{cost:12,uses:[2,3]},ore:{cost:16,uses:[1,2]},shrub:{cost:4,uses:[3,5]},deadwood:{cost:6,uses:[3,5]},timber:{cost:12,uses:[2,3]},rare:{cost:4,uses:[1,3]}}};
+ profiles:{food:{cost:0.6,uses:[6,10]},herb:{cost:0.6,uses:[3,5]},root:{cost:0.6,uses:[3,5]},salt:{cost:0.6,uses:[4,6]},clay:{cost:1,uses:[2,3]},ore:{cost:1,uses:[1,2]},shrub:{cost:0.6,uses:[3,5]},deadwood:{cost:0.6,uses:[3,5]},timber:{cost:1,uses:[2,3]},rare:{cost:0.6,uses:[1,3]}}};
 // Only the materials already used by the ruins generator. This registry is NOT
 // appended to the container/corpse random loot pool. Byproducts await balancing.
 const entries=[
@@ -33,7 +33,7 @@ function accessible(s,p){return !s.ended&&!!p&&s.harvestPoints.includes(p)&&p.ac
 function threatened(s){const E=RuinsEncounter;return s.enemies.some(e=>E.sees(s,s.player,e.cell))||E.perception(s).known.some(Boolean)||s.enemies.some(e=>e.state==='chase'||e.state==='search');}
 // Intermediate levels use a configurable linear preview curve; rounding and
 // tool stacking are not formal balance decisions. Defaults preview no tool.
-function cost(s,p){const level=Math.max(0,Math.min(config.skillMaxLevel,Number(s.player.skills[skill(p)])||0));const tool=Math.max(0,Math.min(1,Number(s.player.harvestToolReduction?.[skill(p)]??config.toolReduction)||0));return Math.round(p.baseCost*(1-config.skillMaxReduction*level/config.skillMaxLevel)*(1-tool)*(s.actionCostMultiplier??1)*100)/100;}
+function cost(s,p){const level=Math.max(0,Math.min(config.skillMaxLevel,Number(s.player.skills[skill(p)])||0));const tool=Math.max(0,Math.min(1,Number(s.player.harvestToolReduction?.[skill(p)]??config.toolReduction)||0));return Math.round(config.profiles[definitions[p.id].profile].cost*(1-config.skillMaxReduction*level/config.skillMaxLevel)*(1-tool)*(s.actionCostMultiplier??1)*100)/100;}
 function reason(s,p){
  if(!accessible(s,p))return'无法采收';if(!p.remaining)return'已采尽';if(threatened(s))return'遭遇敌人';
  if(s.player.vitals?.satiety<=0)return'饥饿';if(s.bag.length>=RuinsContainerSearch.config.capacity)return'背包已满';

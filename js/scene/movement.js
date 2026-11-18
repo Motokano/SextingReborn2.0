@@ -8,13 +8,7 @@
     var IE = window.InventoryEquipment;
 
     function computeMoveStaminaCost() {
-        var base = 0.25;
-        try {
-            if (window.CharacterAttributes && typeof window.CharacterAttributes.getCfg === 'function') {
-                var b = Number(window.CharacterAttributes.getCfg('move_stamina_base', 0.25));
-                if (isFinite(b) && b > 0) base = b;
-            }
-        } catch (eB) { /* ignore */ }
+        var base = window.Survival.getIntensityRate('low');
         var shoeMod = 0;
         if (window.InventoryEquipment && typeof window.InventoryEquipment.getShoeSharedMods === 'function') {
             try { shoeMod = Number(window.InventoryEquipment.getShoeSharedMods().moveCostMod) || 0; } catch (eS) { shoeMod = 0; }
@@ -62,9 +56,11 @@
     function waitInPlace() {
                 var S = window.Survival;
                 if (!S || S.isDead() || window.SceneAccess.isStoryMovementLocked()) return false;
-                var cost = getStepStaminaCost();
-                S.advanceTick({ source: 'wait' });
-                S.consumeStamina(cost, { source: 'wait', raw: true });
+                if (S.isComa()) {
+                    S.advanceTick({source: 'coma_wait'});
+                    return true;
+                }
+                S.advanceTick({ source: 'wait', intensity: 'low' });
                 window.PlayerActions.setRestingActionActive(false, { showMsg: false });
                 window.PlayerActions.stopGatheringIdle();
                 return true;
@@ -78,27 +74,18 @@
                     return;
                 }
                 var ac = CookingStation.getActiveCraft();
-                if (ac) {
+                if (ac && !StationCraftCore.advancesUnattended(ac)) {
                     window.SceneFeedback.showMsg(window.SceneFeedback.ui('cooking.move.blocked', { n: ac.remaining_ticks }), 'info');
                     return;
                 }
                 if (window.SceneAccess.guardPlayerActionBlocked(window.SceneAccess.ACTION_TYPES.MOVE)) return;
-                // 移动耗体力（k17 补全，05 5.5.4）：每格 = 配置基础消耗 × (1+鞋moveCostMod) × 超重系数；体力不足无法移动
                 var moveStaminaCost = getStepStaminaCost(true);
-                var survSt = (window.Survival && typeof window.Survival.getState === 'function') ? window.Survival.getState() : null;
-                if (moveStaminaCost > 0 && survSt && Number(survSt.stamina || 0) < moveStaminaCost) {
-                    window.SceneFeedback.showMsg(window.SceneFeedback.ui('log.info.move_no_stamina'), 'warn');
-                    return;
-                }
                 var st = E.getState();
                 var ddx = (dx != null) ? dx : (tx - st.x);
                 var ddy = (dy != null) ? dy : (ty - st.y);
                 var fromX = st.x;
                 var fromY = st.y;
-                if (E.moveTo(tx, ty)) {
-                    if (moveStaminaCost > 0 && window.Survival && typeof window.Survival.consumeStamina === 'function') {
-                        window.Survival.consumeStamina(moveStaminaCost, { source: 'movement', raw: true });
-                    }
+                if (E.moveTo(tx, ty, moveStaminaCost)) {
                     var restStoppedByMove = window.PlayerActions.setRestingActionActive(false, { showMsg: false });
                     if (window.SceneCtx && typeof window.SceneCtx.exitFootworkNieBuMode === 'function') {
                         window.SceneCtx.exitFootworkNieBuMode(fromX, fromY);
@@ -348,7 +335,7 @@
                     });
                 }
                 if (window.Survival && typeof window.Survival.advanceTick === 'function') {
-                    window.Survival.advanceTick({ source: 'movement' });
+                    window.Survival.advanceTick({ source: 'movement', intensity: 'high' });
                 }
                 var tickSnap = window.Survival && typeof window.Survival.getState === 'function' ? window.Survival.getState().tickCount : 0;
                 if (window.BuffSystem && typeof window.BuffSystem.triggerBuffPipeline === 'function') {

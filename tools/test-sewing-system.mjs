@@ -5,7 +5,7 @@ const read=p=>fs.readFileSync(p,'utf8'),copy=x=>JSON.parse(JSON.stringify(x));
 let flags={},saveOK=true,stamina=10000,energy=10000,ticks=0,gender=0,shield=0;
 const c=vm.createContext({console,Math,Date});c.window=c;
 c.NPCSystem={getFlagValue:k=>flags[k],setDemoFlag:(k,v)=>flags[k]=v,isDemoFlagTrue:k=>!!flags[k],getDemoState:()=>copy(flags),setDemoState:s=>flags=copy(s)};
-c.Survival={getState:()=>({gender_value:gender}),getHeightCm:()=>178,getWeightKg:()=>65,getStamina:()=>stamina,getEnergy:()=>energy,consumeStamina:n=>stamina-=n,consumeEnergy:n=>energy-=n,advanceTick:()=>ticks++,setDiqiShieldRemaining:v=>shield=v};
+c.Survival={getIntensityRate:k=>({low:.4,medium:.6,high:1})[k],getActionStaminaCost:n=>n,getState:()=>({gender_value:gender}),getHeightCm:()=>178,getWeightKg:()=>65,getStamina:()=>stamina,getEnergy:()=>energy,consumeStamina:n=>stamina-=n,consumeEnergy:n=>energy-=n,advanceTick:({baseCost=.4}={})=>{stamina-=baseCost;ticks++;},setDiqiShieldRemaining:v=>shield=v};
 c.SaveSystem={saveNow:()=>saveOK};c.SewingStationPanel={isOpen:()=>true,canAccess:()=>true};c.GameEngine={getState:()=>({mapId:'M0_Base_Inside_lv_1',x:6,y:12}),getMap:()=>({})};
 for(const p of ['item-attribute-modules','sewing-system','inventory-equipment','facility-unlock-config','facility-unlock'])vm.runInContext(read('js/'+p+'.js'),c,{filename:p});
 const IE=c.InventoryEquipment,S=c.SewingSystem;

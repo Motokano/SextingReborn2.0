@@ -418,6 +418,7 @@
                         su.cooking_station.active_craft = {
                             remaining_ticks: coerceNumber(ac.remaining_ticks, 0),
                             started_total_ticks: coerceNumber(ac.started_total_ticks, 0),
+                            intensity: ['low','medium','high'].includes(ac.intensity) ? ac.intensity : undefined,
                             method_id: ac.method_id != null ? String(ac.method_id) : '',
                             inputs: Array.isArray(ac.inputs) ? ac.inputs.slice() : [],
                             consumed_items: Array.isArray(ac.consumed_items) ? ac.consumed_items.slice() : []
@@ -468,6 +469,7 @@
                         su.pharmacy_station.active_craft = {
                             remaining_ticks: coerceNumber(pac.remaining_ticks, 0),
                             started_total_ticks: coerceNumber(pac.started_total_ticks, 0),
+                            intensity: ['low','medium','high'].includes(pac.intensity) ? pac.intensity : undefined,
                             method_id: pac.method_id != null ? String(pac.method_id) : '',
                             medical_success: typeof pac.medical_success==='boolean'?pac.medical_success:null,
                             inputs: Array.isArray(pac.inputs) ? pac.inputs.slice() : [],
@@ -699,7 +701,7 @@
 
         // Survival stats.
         if (typeof mods.Survival.setState === 'function') {
-            var savedSurvival = Object.assign({}, snapshot.player.survival);
+            var savedSurvival = Object.assign({fatigueFullTicks: 0, fatigueComaTicksRemaining: 0}, snapshot.player.survival);
             if (!Object.prototype.hasOwnProperty.call(savedSurvival, 'food_metabolism') && global.FoodMetabolism) {
                 savedSurvival.food_metabolism = global.FoodMetabolism.migrateLegacy(snapshot.buffs, function (id) {
                     return mods.InventoryEquipment.getItemTemplate ? mods.InventoryEquipment.getItemTemplate(id) : null;
@@ -790,6 +792,7 @@
                         global.SceneCtx.cooking_station_runtime.active_craft = {
                             remaining_ticks: Math.max(0, Math.floor(coerceNumber(ac2.remaining_ticks, 0))),
                             started_total_ticks: Math.max(0, Math.floor(coerceNumber(ac2.started_total_ticks, 0))),
+                            intensity: ['low','medium','high'].includes(ac2.intensity) ? ac2.intensity : undefined,
                             method_id: ac2.method_id != null ? String(ac2.method_id) : '',
                             inputs: Array.isArray(ac2.inputs) ? ac2.inputs.slice() : [],
                             consumed_items: Array.isArray(ac2.consumed_items) ? ac2.consumed_items.slice() : []
@@ -849,6 +852,7 @@
                         global.SceneCtx.pharmacy_station_runtime.active_craft = {
                             remaining_ticks: Math.max(0, Math.floor(coerceNumber(pac2.remaining_ticks, 0))),
                             started_total_ticks: Math.max(0, Math.floor(coerceNumber(pac2.started_total_ticks, 0))),
+                            intensity: ['low','medium','high'].includes(pac2.intensity) ? pac2.intensity : undefined,
                             method_id: pac2.method_id != null ? String(pac2.method_id) : '',
                             medical_success: typeof pac2.medical_success==='boolean'?pac2.medical_success:null,
                             inputs: Array.isArray(pac2.inputs) ? pac2.inputs.slice() : [],

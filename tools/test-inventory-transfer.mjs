@@ -40,19 +40,19 @@ for(const full of [false,true])test(`${full?'Svelte':'native'} grid entry, equip
 });
 for(const full of [false,true])test(`${full?'Svelte':'native'} opening/closing time, expiry, death and ground save restoration`,async()=>{
  const h=await boot(full),g=h.g;try{await setup(h);const I=g.InventoryEquipment,T=g.InventoryTransfer,B=g.BackpackSystem;
- const start=g.GameTime.getState().totalTicks;g.SceneApp.openBackpackPanel();await h.drain();assert.equal(g.GameTime.getState().totalTicks,start+1);
- g.SceneApp.openBackpackPanel();await h.drain();assert.equal(g.GameTime.getState().totalTicks,start+1);
- g.SceneApp.closePublicModal('modal-backpack');await h.drain();assert.equal(g.GameTime.getState().totalTicks,start+2);
+ const start=g.GameTime.getState().totalTicks;g.SceneApp.openBackpackPanel();await h.drain();assert.equal(g.GameTime.getState().totalTicks,start);
+ g.SceneApp.openBackpackPanel();await h.drain();assert.equal(g.GameTime.getState().totalTicks,start);
+ g.SceneApp.closePublicModal('modal-backpack');await h.drain();assert.equal(g.GameTime.getState().totalTicks,start);
  const id=I.getState().equipment.backpack.instance_id;assert.equal(B.transfer({action:'drop',source:'equipment',index:'backpack',id}).ok,true);
  g.SceneApp.openGroundItems(id);await h.drain();const ctx=g.BackpackPanel.groundContext(),item=T.read(ctx).items[0];
  assert.equal(T.move({from:ctx,to:T.context('pocket'),id:item.instance_id,count:1}).ok,true);
  const snapshot=g.SaveSystem.buildSnapshotForDebug(),saved=clone(T.read(ctx).owner),stamp=saved.ground_drop_tick;
- assert.equal(I.getGroundItemRemainingTicks(ctx.mapId,saved),99);
+ assert.equal(I.getGroundItemRemainingTicks(ctx.mapId,saved),100,'browsing a ground bag preserves its full lifetime');
  assert.equal(I.getGroundItemRemainingTicks('dungeon_test',saved),null);
  g.SceneApp.closeGroundBackpackView();I.setState({...I.getState(),ground_items:{}});assert.equal(g.SaveSystem.applySnapshotForDebug(snapshot),true);assert.deepEqual(clone(T.read(ctx).owner),saved);
  g.SceneApp.openGroundItems(id);await h.drain();const time=g.GameTime.getState().totalTicks;I.pruneExpiredGroundItems(stamp+100);g.SceneHud.refresh('status');await h.drain();assert.equal(g.SceneApp.panelApi.getOpen('backpack'),false);assert.equal(g.GameTime.getState().totalTicks,time);
  assert.equal(T.move({from:ctx,to:T.context('pocket'),id:item.instance_id,count:1}).ok,false);
- reset(g);g.SceneApp.openBackpackPanel();await h.drain();g.Survival.setState({isComa:true});g.SceneHud.refresh('status');await h.drain();assert.equal(g.SceneApp.panelApi.getOpen('backpack'),false);
+ reset(g);g.SceneApp.openBackpackPanel();await h.drain();g.Survival.setState({isDead:true});g.SceneHud.refresh('status');await h.drain();assert.equal(g.SceneApp.panelApi.getOpen('backpack'),false);
  assert.deepEqual(h.errors,[]);
  }finally{await h.close();}
 });

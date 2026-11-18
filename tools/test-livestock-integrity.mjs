@@ -83,9 +83,14 @@ test('real panel processing debits once, and an opposite-side button targets its
     render = function () {}; renderFeedPicker = function () {};
     window.auditFeed = function (mode, slot) { feedTargetArm = 'arm1'; feedTargetSlot = slot; feedPickerMode = mode; doFeedCrop('herb_maize'); };
     window.LivestockPanel = {`);
+  f.ctx.LivestockActions = { livestockPanelOpen: true };
+  f.ctx.AgricultureActions = { canUseOutdoorFacility: () => true };
+  f.ctx.SceneApp = { canWorkFacilityLabor: () => true };
+  const actionTicks = []; f.ctx.Survival = { isComa: () => false, advanceTick: options => actionTicks.push(options) };
   vm.runInContext(source, f.ctx); f.ctx.auditFeed('process', null);
   assert.equal(f.ie.countCarriedItemsByTemplateId('herb_maize'), 1); assert.equal(processor.input_queue[0].count, 1);
   f.ctx.auditFeed('feed', 'ccw_side'); assert.equal(ccw.feed_units, 1); assert.equal(cw.feed_units, 0);
+  assert.equal(actionTicks.length, 2); assert.ok(actionTicks.every(t => t.intensity === 'medium'));
 });
 test('birth debits maternal mass, and insufficiently fed pregnancies pause', () => {
   const f = fixture(); const t = f.mount('arm4', 'cw_side', 'feed_trough'); t.feed_units = 100;

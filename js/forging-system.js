@@ -93,36 +93,36 @@
  function kitMatches(kitId,part){const kit=record(kitId).instance;if(kit.item_id!=='tool_repair_roll')fail('请选择随身工具包。');return Object.values(kit.connections||{}).some(c=>c.part?.item_id===part.repairToolItemId);}
  function quote(a){
   access(a.type!=='repair');if(state().job)fail('请先完成或停止当前工作。');
-  const lv=level();let ticks,baseStamina,xp=0,details={};
+  const lv=level();let ticks,xp=0,details={};
   if(a.type==='process'){
    const r=materialRecord(a.id),ore=C().ores[r.instance.item_id];if(!ore||!state().knowledge.routes[ore.id])fail('先在铸造台检查这份原矿。');
-   ({ticks,baseStamina,xp}=ore.processing);details={rawId:ore.id,feedId:ore.processing.outputItemId,instanceId:a.id};
+   ({ticks,xp}=ore.processing);details={rawId:ore.id,feedId:ore.processing.outputItemId,instanceId:a.id};
   }else if(a.type==='research'){
    const r=loose(a.id),part=C().components[r.instance.item_id];if(!part)fail('请选择部件实物。');
    if(state().knowledge.structures[part.designId])fail('已经掌握这个结构。');
-   ({ticks,baseStamina,xp}=part.costs.research);details={partId:part.itemId,designId:part.designId,instanceId:a.id};
+   ({ticks,xp}=part.costs.research);details={partId:part.itemId,designId:part.designId,instanceId:a.id};
   }else if(a.type==='craft'){
    const part=C().components[a.partId];if(!part||!state().knowledge.structures[part.designId])fail('尚未掌握该部件结构。');
    const recipe=copy(a.recipe),m=R().material(part,recipe);
    for(const [id,n] of Object.entries(recipe)){if(!state().knowledge.routes[C().bindings.feedRoutes[id].rawItemId])fail('尚不清楚这种用料的加工用途。');if(materialCount(id)<n)fail('用料不足。');}
    if(!m.eligible)fail('这份投料不能成形。');
-   ({ticks,baseStamina}=part.costs.craft);details={partId:part.itemId,recipe};
+   ({ticks}=part.costs.craft);details={partId:part.itemId,recipe};
   }else if(a.type==='repair'){
    const item=record(a.id).instance,part=C().components[item.item_id];if(!part||!item.forged_component)fail('这件部件没有可维修的耐久记录。');
    if(!kitMatches(a.kitId,part))fail('工具包里没有适用的工具。');
    const repair=R().repair(item.forged_component,lv);if(repair.delta<=0)fail('当前耐久已达到你的维修能力。');
-   ({ticks,baseStamina,xp}=repair);details={instanceId:a.id,kitId:a.kitId,target:repair.target,before:copy(item.forged_component)};
+   ({ticks,xp}=repair);details={instanceId:a.id,kitId:a.kitId,target:repair.target,before:copy(item.forged_component)};
   }else if(a.type==='attach'){
    const item=loose(a.id).instance,part=C().components[item.item_id];if(!part||!item.forged_component)fail('请选择完整的部件实例。');
    const host=a.hostId?loose(a.hostId).instance:{item_id:'weapon_single_hand_assembly',connections:{}};
    const why=attachmentReason(host,a.anchor,item);if(why)fail(why);
-   ({ticks,baseStamina}=part.costs.attach);details={instanceId:a.id,hostId:a.hostId||null,anchor:a.anchor};
+   ({ticks}=part.costs.attach);details={instanceId:a.id,hostId:a.hostId||null,anchor:a.anchor};
   }else if(a.type==='detach'){
    const host=loose(a.hostId).instance,item=host.connections?.[a.anchor]?.part,part=item&&C().components[item.item_id];
    if(host.item_id!=='weapon_single_hand_assembly'||!part)fail('这个位置没有可卸下的部件。');
-   ({ticks,baseStamina}=part.costs.detach);details={instanceId:item.instance_id,hostId:a.hostId,anchor:a.anchor};
+   ({ticks}=part.costs.detach);details={instanceId:item.instance_id,hostId:a.hostId,anchor:a.anchor};
   }else fail('无法执行这个操作。');
-  return {type:a.type,level:lv,ticks,stamina:cost(baseStamina,lv),xp,...details};
+  return {type:a.type,level:lv,ticks,stamina:cost(g.Survival.getIntensityRate(['craft','process'].includes(a.type)?'high':'medium')*ticks,lv),xp,...details};
  }
  function attachmentReason(host,anchor,item){
   if(host.item_id!=='weapon_single_hand_assembly')return '请选择单手武器。';
@@ -189,10 +189,9 @@
   try{
    if(j.elapsed<j.ticks){
     const due=Math.round(j.stamina*10*(j.elapsed+1)/j.ticks)/10,charge=R().round(due-j.paid);
-    if(g.Survival.getState().stamina+1e-9<charge){j.paused=true;write(state());save();fail('体力不足，工作已暂停。');}
-    g.Survival.consumeStamina(charge,{raw:true});j.paid=due;j.elapsed++;j.paused=false;write(state());
+    j.paid=due;j.elapsed++;j.paused=false;write(state());
     // Elapsed/paid are recorded before world listeners can autosave or enter combat.
-    g.Survival.advanceTick({source:'forging'});
+    g.Survival.advanceTick({source:'forging',actionCost:charge});
    }
    if(state().job!==j)return {interrupted:true};
    if(combat()){interrupt();return {interrupted:true};}

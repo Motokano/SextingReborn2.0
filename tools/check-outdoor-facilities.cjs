@@ -17,13 +17,14 @@ fs.mkdirSync(out,{recursive:true});
    const system=id==='farm'?'agriculture':'livestock';
    const info=await page.evaluate(async system=>{await NPCSystem.openMenu('npc.station.'+system+'_base');return {position:GameEngine.getState(),adjacent:FacilityLabor.nearby(system),art:TileRendererV2.getSpeakerPawn('npc.station.'+system+'_base').url};},system);
    assert.equal(info.adjacent,true);assert.ok(info.art.endsWith(expectedArt[id]));
-   await page.getByRole('button',{name:id==='farm'?'管理农田':'管理牧场',exact:true}).click();
+   if(id==='ranch')await page.getByRole('button',{name:'管理牧场',exact:true}).click();
+   else assert.equal(await page.evaluate(()=>NPCSystem.isMenuOpen()),false,'restored farm opens its management panel directly');
    assert.equal(await page.locator('#modal-'+system).evaluate(el=>el.classList.contains('show')),true);
    await page.screenshot({path:out+'/'+id+'-panel-'+(full?'svelte':'native')+'.png'});
    reports.push({ui:full?'svelte':'native',id,...info});
   }
   assert.deepEqual(errors,[]);await ctx.close();
  }
- fs.writeFileSync(out+'/runtime-checks.json',JSON.stringify({date:'2026-11-04',pageErrors:[],checks:reports},null,2)+'\n');console.log(JSON.stringify(reports,null,2));
+ fs.writeFileSync(out+'/runtime-checks.json',JSON.stringify({date:new Date().toISOString().slice(0,10),pageErrors:[],checks:reports},null,2)+'\n');console.log(JSON.stringify(reports,null,2));
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

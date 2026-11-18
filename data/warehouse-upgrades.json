@@ -3,7 +3,7 @@
   "_comment": "藏身处 hideout_warehouse 升级节点。设计正本 docs/design/29-hideout-warehouse.md",
   "task_defaults": {
     "task_ticks": 10,
-    "stamina_per_tick": 5,
+    "stamina_per_tick": 1,
     "panel_tick_ms": 2000
   },
   "base_capacity": 100,
@@ -46,7 +46,7 @@
       ],
       "capacity_after": 200,
       "task_ticks": 10,
-      "stamina_per_tick": 5,
+      "stamina_per_tick": 1,
       "inputs": [],
       "material_points": {
         "wood": 24,
@@ -65,7 +65,7 @@
         "qol_quick_transfer"
       ],
       "task_ticks": 5,
-      "stamina_per_tick": 5,
+      "stamina_per_tick": 0.6,
       "inputs": [],
       "material_points": {
         "wood": 8,
@@ -84,7 +84,7 @@
         "qol_tidy_one_click"
       ],
       "task_ticks": 10,
-      "stamina_per_tick": 5,
+      "stamina_per_tick": 0.6,
       "inputs": [],
       "material_points": {
         "wood": 16,
@@ -104,7 +104,7 @@
         "qol_slot_preview"
       ],
       "task_ticks": 10,
-      "stamina_per_tick": 5,
+      "stamina_per_tick": 0.6,
       "inputs": [],
       "material_points": {
         "wood": 20,
@@ -122,7 +122,7 @@
         "qol_ledger"
       ],
       "task_ticks": 8,
-      "stamina_per_tick": 5,
+      "stamina_per_tick": 0.6,
       "inputs": [],
       "material_points": {
         "wood": 8,
@@ -141,7 +141,7 @@
       ],
       "capacity_after": 350,
       "task_ticks": 15,
-      "stamina_per_tick": 5,
+      "stamina_per_tick": 1,
       "inputs": [],
       "material_points": {
         "wood": 40,
@@ -162,7 +162,7 @@
         "qol_preset_loadout"
       ],
       "task_ticks": 10,
-      "stamina_per_tick": 5,
+      "stamina_per_tick": 0.6,
       "inputs": [],
       "material_points": {
         "wood": 20,
@@ -180,7 +180,7 @@
         "qol_craft_stash"
       ],
       "task_ticks": 12,
-      "stamina_per_tick": 5,
+      "stamina_per_tick": 0.6,
       "inputs": [],
       "material_points": {
         "wood": 24,
@@ -199,7 +199,7 @@
         "qol_lock_and_pin"
       ],
       "task_ticks": 8,
-      "stamina_per_tick": 5,
+      "stamina_per_tick": 0.6,
       "inputs": [],
       "material_points": {
         "stone": 8,
@@ -219,7 +219,7 @@
       ],
       "capacity_after": 500,
       "task_ticks": 18,
-      "stamina_per_tick": 5,
+      "stamina_per_tick": 1,
       "inputs": [],
       "material_points": {
         "wood": 48,
@@ -240,7 +240,7 @@
       ],
       "capacity_after": 700,
       "task_ticks": 25,
-      "stamina_per_tick": 5,
+      "stamina_per_tick": 1,
       "inputs": [],
       "material_points": {
         "wood": 64,
@@ -261,7 +261,7 @@
         "qol_cold_storage"
       ],
       "task_ticks": 20,
-      "stamina_per_tick": 5,
+      "stamina_per_tick": 1,
       "inputs": [],
       "material_points": {
         "wood": 16,
@@ -281,7 +281,7 @@
         "qol_withdraw_fill"
       ],
       "task_ticks": 8,
-      "stamina_per_tick": 5,
+      "stamina_per_tick": 0.6,
       "inputs": [],
       "material_points": {
         "wood": 12,
@@ -299,7 +299,7 @@
         "qol_preset_x3"
       ],
       "task_ticks": 12,
-      "stamina_per_tick": 5,
+      "stamina_per_tick": 0.6,
       "inputs": [],
       "material_points": {
         "wood": 32,
@@ -318,7 +318,7 @@
         "qol_tab_view"
       ],
       "task_ticks": 10,
-      "stamina_per_tick": 5,
+      "stamina_per_tick": 0.6,
       "inputs": [],
       "material_points": {
         "wood": 24,
@@ -337,7 +337,7 @@
         "qol_dungeon_access"
       ],
       "task_ticks": 15,
-      "stamina_per_tick": 5,
+      "stamina_per_tick": 0.6,
       "inputs": [],
       "material_points": {
         "wood": 32,

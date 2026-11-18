@@ -34,7 +34,7 @@
         if (!isFinite(tc) || tc < 1) tc = 1;
         var t;
         for (t = 0; t < tc; t++) {
-            if (typeof Surv.advanceTick === 'function') Surv.advanceTick();
+            if (typeof Surv.advanceTick === 'function') Surv.advanceTick({ source: 'combat_hub' });
         }
     }
 
@@ -167,6 +167,10 @@
         }
         if (!skillId || !actionId) {
             result.reason_key = 'combat.hub.fail.params';
+            return result;
+        }
+        if (Surv.isComa?.()) {
+            result.reason_key = 'survival.fatigue.coma_blocked';
             return result;
         }
         // 眩晕中（k13，37 §9.2）：本回合无法行动 → 吞掉本次动作

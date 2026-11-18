@@ -81,7 +81,7 @@ for(const full of [false,true])test(`food muscle growth ${full?'Svelte':'classic
   const paid=clone(SS.buildSnapshotForDebug());assert.equal(SS.applySnapshotForDebug(paid),true);await h.drain();
   assert.equal(M.getProgress(first),100);assert.equal(M.getProgress(targets[1]),.003);assert.equal(I.getBackpackArray()[0],null);
   const earned=clone(M.getState());assert.equal(use(),false);assert.equal(use(2),false);assert.deepEqual(clone(M.getState()),earned,'empty and nonfood clicks give nothing');
-  S.setState({isComa:true});const blocked=snapshot();assert.equal(use(1),false);assert.equal(snapshot(),blocked);S.setState({isComa:false});
+  S.setState({isDead:true});const blocked=snapshot();assert.equal(use(1),false);assert.equal(snapshot(),blocked);S.setState({isDead:false});
   const ingest=S.ingestFood;S.ingestFood=()=>false;const failed=snapshot();assert.equal(use(1),false);S.ingestFood=ingest;assert.equal(snapshot(),failed,'rejected ingestion restores its item');
   assert.equal(use(1),true);assert.equal(I.getBackpackArray()[1],null);assert.equal(M.getProgress(targets[1]),.004,'soup and solid foods grant the same amount');
   const finished=clone(M.getState());S.advanceTick();assert.deepEqual(clone(M.getState()),finished);

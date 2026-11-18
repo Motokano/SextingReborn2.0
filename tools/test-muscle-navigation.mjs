@@ -30,7 +30,7 @@ for (const full of [false, true]) test(`muscle HUD ${full ? 'Svelte' : 'classic'
     await click('#combat-modal-close');
     const before = structuredClone(M.getState()), openTick = tick();
     button().focus(); await click('#btn-muscles');
-    assert.equal(g.MusclePanel.isOpen(), true); assert.equal(tick(), openTick + 1);
+    assert.equal(g.MusclePanel.isOpen(), true); assert.equal(tick(), openTick);
     assert.equal(g.SceneAccess.isStoryMovementLocked(), true);
     assert.equal(d.querySelectorAll('#modal-muscles [data-slot]').length, 7);
     assert.equal(d.querySelectorAll('#modal-muscles [data-scenario],#modal-muscles [data-light],#modal-muscles [data-complete],#modal-muscles [data-reset]').length, 0);
@@ -53,7 +53,7 @@ for (const full of [false, true]) test(`muscle HUD ${full ? 'Svelte' : 'classic'
     const search = d.querySelector('#modal-muscles [data-chain-search]'); search.value = '破相'; search.dispatchEvent(new g.Event('input',{bubbles:true}));
     await h.drain(); assert.equal(d.querySelectorAll('#modal-muscles .ma-passive').length,1);
     const closeTick = tick(); g.dispatchEvent(new g.KeyboardEvent('keydown', {key:'Escape', bubbles:true})); await h.drain();
-    assert.equal(g.MusclePanel.isOpen(), false); assert.equal(tick(), closeTick + 1);
+    assert.equal(g.MusclePanel.isOpen(), false); assert.equal(tick(), closeTick);
     assert.equal(d.activeElement, button()); assert.equal(d.querySelector('#modal-muscles .muscle-atlas'),null);
     await click('#btn-muscles'); await click('#modal-muscles [data-view=chain]');
     const stale = d.querySelector('#modal-muscles [data-chain-id=post_no_second_thought]');

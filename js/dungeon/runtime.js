@@ -67,7 +67,7 @@ function threat(){sync();return N.perception(sim).known.some(Boolean)||sim.enemi
 function nearby(){if(!active())return[];sync();return[...sim.doors.filter(d=>d.closed&&N.dist(d.cell,sim.player.cell,sim.map.width)===1&&N.lineOfSight(sim,sim.player.cell,d.cell)).map(d=>({...d,kind:'door',name:config.door.materials[d.material].name})),...pointSets().flat().filter(p=>isAccessible(p)).map(p=>({...p,kind:p.kind||((sim.harvestPoints.includes(p))?'harvest':sim.lootPoints.includes(p)?'container':sim.recoveryPoints.includes(p)?'recovery':'insight')})),...(sim.player.cell===sim.map.exit?[{kind:'exit',name:'通行口'}]:[])];}
 function find(id){return pointSets().flat().find(p=>p.uid===id);}
 function openDoor(cell){if(!active()||pending||disabled('door'))return false;sync();const d=sim.doors.find(d=>d.cell===cell),cost=d&&N.doorCost(sim,d);if(!d?.closed||N.dist(sim.player.cell,cell,sim.map.width)!==1||!N.lineOfSight(sim,sim.player.cell,cell)||S().getStamina()<cost)return false;
- S().consumeStamina(cost,{raw:true});d.closed=false;P.record(sim,'door',cell);advance();persist();refresh();return true;}
+ d.closed=false;P.record(sim,'door',cell);advance(cost);persist();refresh();return true;}
 function begin(kind,id,part){
  if(!active()||pending||disabled(kind))return false;sync();const p=find(id);
  if(!p||!isAccessible(p)||kind==='harvest'&&threat())return false;
@@ -97,16 +97,18 @@ function windowAction(kind,id){if(!active()||disabled('search'))return false;con
 function cancel(){pending=null;}
 function canReceiveHarvest(item){const saved=copy(IE().getState());try{return !!IE().putItemIntoDefaultContainer(item).placed;}finally{IE().setState(saved);}}
 let inActionTick=false;
-function advance(){inActionTick=true;const resting=pending?.kind==='recovery'&&find(pending.id)?.id==='rest';if(resting)S().setResting(true);try{S().advanceTick({source:'dungeon'});}finally{if(resting)S().setResting(false);inActionTick=false;}}
+function advance(actionCost){inActionTick=true;const resting=pending?.kind==='recovery'&&find(pending.id)?.id==='rest';if(resting)S().setResting(true);try{S().advanceTick({source:'dungeon',actionCost});}finally{if(resting)S().setResting(false);inActionTick=false;}}
 function completeTick(){const a=pending;if(!a||!active())return false;sync();const p=find(a.id);
  if(!p||!isAccessible(p)||sim.player.cell!==a.cell||disabled(a.kind)||a.hitSerial!==hitSerial||a.kind==='harvest'&&threat()){cancel();refresh();return false;}
  if(a.kind==='recovery'&&!RuinsRecovery.canUse(sim,p,a.part)){cancel();return false;}
  if(a.kind==='recipe'&&p.used){cancel();return false;}
- setProgress(0);advance();if(!active()||dead()){cancel();return false;}sync();
+ const beforeStamina=S().getStamina(),harvestCost=a.kind==='harvest'?H.cost(sim,p):undefined;
+ if(harvestCost!==undefined && beforeStamina<harvestCost){cancel();return false;}
+ setProgress(0);advance(harvestCost);if(!active()||dead()||S().isComa()){cancel();return false;}sync();
  if(a.hitSerial!==hitSerial||a.kind==='harvest'&&threat()||Object.keys(a.damage).some(k=>CA().getPartDestroy(k)>a.damage[k])){cancel();refresh();return false;}
  if(a.kind==='harvest'){
-  const cost=H.cost(sim,p),item={item_id:H.definitions[p.id].itemId,count:1};if(p.remaining<=0||S().getStamina()<cost||S().getSatiety()<=0||!canReceiveHarvest(item)){cancel();return false;}
-  const before=S().getStamina(),placed=IE().putItemIntoDefaultContainer(item);if(!placed.placed){cancel();return false;}S().consumeStamina(cost,{raw:true});p.remaining--;p.used=p.remaining===0;sim.lastHarvest={uid:p.uid,item:copy(item),before,after:S().getStamina(),cost};
+  const cost=harvestCost,item={item_id:H.definitions[p.id].itemId,count:1};if(p.remaining<=0||S().getSatiety()<=0||!canReceiveHarvest(item)){cancel();return false;}
+  const before=beforeStamina,placed=IE().putItemIntoDefaultContainer(item);if(!placed.placed){cancel();return false;}p.remaining--;p.used=p.remaining===0;sim.lastHarvest={uid:p.uid,item:copy(item),before,after:S().getStamina(),cost};
   P.record(sim,'point','harvest:'+p.uid);globalThis.Gathering?.addDungeonProficiency?.(H.skill(p));pending=null;
  }else if(a.kind==='recipe'){
   if(!RuinsRecipeStudy.grant(sim,p))throw Error('资料台授予失败');pending=null;

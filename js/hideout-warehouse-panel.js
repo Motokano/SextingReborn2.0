@@ -592,15 +592,10 @@
     function buildConstructionTickContext() {
         var Surv = global.Survival;
         return {
-            getStamina: function () {
-                if (!Surv || typeof Surv.getState !== 'function') return 0;
-                return Number((Surv.getState() || {}).stamina) || 0;
-            },
-            setStamina: function (v) {
-                if (!Surv || typeof Surv.setState !== 'function') return;
-                var current = Surv.getStamina();
-                if (v < current && Surv.consumeStamina) Surv.consumeStamina(current - v, {raw:true});
-                else Surv.setState({ stamina: Number(v) || 0 });
+            advanceWorkTick: function (cost) {
+                var before = Surv.getState().tickCount;
+                Surv.advanceTick({source:'warehouse_construction', actionCost:cost});
+                return Surv.getState().tickCount === before+1 && !Surv.isComa() && !Surv.isDead();
             }
         };
     }
@@ -639,8 +634,7 @@
             stopConstructionTimer();projectMessage='当前无法继续施工。';render();return;
         }
         var result = HW.tickConstructionTask(buildConstructionTickContext());
-        // Record paid construction first, then advance every world system once before saving.
-        if (result && result.advanced) global.Survival.advanceTick({ source: 'warehouse_construction' });
+        if (result && result.reason === 'interrupted') {stopConstructionTimer();render();return;}
         if (result && result.advanced && !saveConstruction()) {stopConstructionTimer();render();return;}
         if (result && result.advanced === false && result.reason === 'insufficient_stamina') {
             stopConstructionTimer();

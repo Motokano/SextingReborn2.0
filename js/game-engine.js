@@ -499,7 +499,8 @@
         return true;
     }
 
-    function moveTo(nx, ny) {
+    function moveTo(nx, ny, stepStaminaCost) {
+        if (global.Survival?.isComa?.()) return false;
         var map = getMap();
         if (!map) return false;
         if (nx === state.x && ny === state.y) return false;
@@ -508,6 +509,7 @@
         if (global.DungeonCheckpoint && !global.DungeonCheckpoint.canStep(state, nx, ny)) return false;
         nx = clamp(nx, 0, map.width - 1);
         ny = clamp(ny, 0, map.height - 1);
+        if (nx === state.x && ny === state.y) return false;
         if (!isWalkable(nx, ny)) return false;
         if (crossesSealedRegion(map, nx, ny)) return false;
 
@@ -524,7 +526,7 @@
         // Clear the old map before destination simulation or UI observes this move.
         syncCombatMap();
         if (typeof global !== 'undefined' && global.Survival && typeof global.Survival.advanceTick === 'function') {
-            global.Survival.advanceTick({ source: 'movement' });
+            global.Survival.advanceTick({ source: 'movement', stepStaminaCost: stepStaminaCost });
         }
         onChange();
         return true;

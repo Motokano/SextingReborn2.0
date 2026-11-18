@@ -59,18 +59,18 @@
     }
 
     function isPlayerComaActive() {
-        return !!(window.BuffSystem
-            && typeof window.BuffSystem.hasBuffByBuffId === 'function'
-            && window.BuffSystem.hasBuffByBuffId('player', 'survival_coma'));
+        return !!window.Survival?.isComa?.();
     }
 
     function guardPlayerComaBlocked() {
+        if (isPlayerComaActive()) {
+            window.SceneFeedback.showMsg(window.SceneFeedback.ui('survival.fatigue.coma', {ticks: window.Survival.getState().fatigueComaTicksRemaining}), 'warn');
+            return true;
+        }
         if (window.MedicalActions && window.MedicalActions.isActive()) return true;
         if (window.ManufacturingActions && window.ManufacturingActions.isWorking()) return true;
         if ((window.BedSleep && window.BedSleep.isActive()) || (window.GymSystem && window.GymSystem.isActive())) return true;
-        if (!isPlayerComaActive()) return false;
-        window.SceneFeedback.showMsg(window.SceneFeedback.ui('intro.blocked.action'), 'info');
-        return true;
+        return false;
     }
 
     function normalizeActionType(actionType) {
@@ -81,6 +81,7 @@
     }
 
     function isPlayerActionDisabledByBuff(actionType) {
+        if (isPlayerComaActive()) return true;
         if (window.MedicalActions && window.MedicalActions.isActive()) return true;
         if (window.ManufacturingActions && window.ManufacturingActions.isWorking()) return true;
         if ((window.BedSleep && window.BedSleep.isActive()) || (window.GymSystem && window.GymSystem.isActive())) return true;
@@ -98,6 +99,7 @@
     }
 
     function guardPlayerActionBlocked(actionType, opts) {
+        if (isPlayerComaActive()) return true;
         if (window.MedicalActions && window.MedicalActions.isActive()) return true;
         if (window.ManufacturingActions && window.ManufacturingActions.isWorking()) return true;
         if ((window.BedSleep && window.BedSleep.isActive()) || (window.GymSystem && window.GymSystem.isActive())) return true;
@@ -146,16 +148,16 @@
     }
     function canWorkFacilityLabor() {
         return !isPreCreationGameplayRestricted() && !(window.Survival && window.Survival.isDead())
-            && !isPlayerComaActive() && !(window.CombatEngagement && window.CombatEngagement.isPlayerInCombat())
+            && !(window.CombatEngagement && window.CombatEngagement.isPlayerInCombat())
             && !guardPlayerActionBlocked(ACTION_TYPES.GATHER);
     }
     function medicalActionReason(ownOperation) {
         if (isPreCreationGameplayRestricted()) return '请先完成角色创建';
-        if (window.Survival.isDead() || window.Survival.isComa() || window.DeathSystem?.blocked()) return '当前无法治疗';
+        if (window.Survival.isDead() || isPlayerComaActive() || window.DeathSystem?.blocked()) return '当前无法治疗';
         if (window.BedSleep?.isActive() || window.GymSystem?.isActive() || window.Hunting?.isActive()) return '请先结束当前活动';
         if (window.MedicalActions?.isActive() && !ownOperation) return '手术进行中';
         if (window.ManufacturingActions?.isWorking()) return '制作进行中';
-        if (window.InventoryEquipment.isPlayerStunned() || isPlayerComaActive() || window.BuffSystem.hasActionDisabled('player','item_use')) return '当前无法使用医疗用品';
+        if (window.InventoryEquipment.isPlayerStunned() || window.BuffSystem.hasActionDisabled('player','item_use')) return '当前无法使用医疗用品';
         return '';
     }
 

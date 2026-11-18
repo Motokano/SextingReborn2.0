@@ -129,7 +129,7 @@ test('outdoor construction, farm and ranch waiting share the clock with fermenta
     farm.task = { type: 'till', x: 3, y: 3, progress: 0, paused: false };
     before = times(g);
     const age = g.CompostSystem.getBatch('aerobic').age_ticks;
-    const ranch = g.LivestockState.getState().elapsed_ticks;
+    const ranch = g.LivestockState.ensureState().elapsed_ticks ?? 0;
     g.SceneApp.setAgricultureAutoTickEnabled(true); clock.step();
     expectTicks(g, before, 1); assert.equal(farm.task.progress, 1); assert.equal(farm.tick, before[0] + 1);
     assert.equal(g.CompostSystem.getBatch('aerobic').age_ticks, age + 1);
@@ -144,6 +144,26 @@ test('outdoor construction, farm and ranch waiting share the clock with fermenta
     assert.equal(g.LivestockState.getState().elapsed_ticks, ranch + 4);
     g.SceneApp.setLivestockAutoTickEnabled(false); assert.deepEqual(h.errors, []);
   } finally { clock?.restore(); await h.close(); }
+});
+
+test('ranch maintenance charges each attended tick and stops at collapse', async () => {
+  const h=await boot(false),g=h.g,S=g.Survival;
+  try {
+    await player(h);g.NPCSystem.setDemoFlag('facility_restored:livestock',true);
+    g.GameEngine.setState('M0_Base_Outside_lv_1',10,9);g.SceneApp.openLivestockPanel();
+    const button=g.document.querySelector('[data-clean]');assert.ok(button);
+    const id=button.dataset.clean,zone=()=>g.LivestockState.getState().zones[id];
+    zone().pollution=40;zone().compaction=40;
+    const start=times(g);button.click();expectTicks(g,start,5);assert.equal(S.getStamina(),97);
+    assert.ok(zone().pollution<=30.001);const compacted=zone().compaction;
+    g.document.querySelector('[data-till="'+id+'"]').click();expectTicks(g,start,15);assert.equal(S.getStamina(),87);
+    assert.ok(zone().compaction<=compacted-9.99);
+    S.setState({stamina:0,fatigue:99});zone().pollution=40;
+    assert.equal(g.LivestockActions.maintainZone(id,'clean').ok,true);assert.equal(S.getFatigue(),100);
+    S.setState({fatigue:100,fatigueFullTicks:29});zone().compaction=40;
+    const before=times(g);assert.equal(g.LivestockActions.maintainZone(id,'till').ok,false);
+    expectTicks(g,before,1);assert.equal(S.isComa(),true);assert.ok(zone().compaction>39);
+  } finally {await h.close();}
 });
 
 test('sewing tools, sewing jobs and forging work pay world ticks', async () => {
@@ -185,6 +205,25 @@ test('world consumers do not advance when survival rejects a tick', async () => 
     assert.equal(g.CookingStation.getActiveCraft().remaining_ticks, 3);
     assert.equal(g.PharmacyStation.getActiveCraft().remaining_ticks, 3);
   } finally { await h.close(); }
+});
+
+test('unattended fermentation progresses through other work and coma; manual grinding requires the player', async () => {
+  const h=await boot(false),g=h.g;
+  try {
+    await player(h);
+    const S=g.Survival, cooking=g.CookingStation.getState(), pharmacy=g.PharmacyStation.getState();
+    cooking.active_craft={method_id:'ferment',remaining_ticks:30,intensity:'low'};
+    pharmacy.active_craft={method_id:'life_pharmacy.crushing',remaining_ticks:20,intensity:'medium'};
+    S.advanceTick();
+    assert.equal(cooking.active_craft.remaining_ticks,29);assert.equal(pharmacy.active_craft.remaining_ticks,20);assert.equal(S.getStamina(),100);
+    S.advanceTick({source:'pharmacy_work',intensity:'medium'});
+    assert.equal(cooking.active_craft.remaining_ticks,28);assert.equal(pharmacy.active_craft.remaining_ticks,19);assert.equal(S.getStamina(),99.4);
+    S.setState({fatigue:100,fatigueFullTicks:29,stamina:0});S.advanceTick({source:'combat'});
+    assert.equal(S.isComa(),true);
+    for(let i=0;i<10;i++) S.advanceTick({source:'pharmacy_work',intensity:'medium'});
+    assert.equal(cooking.active_craft.remaining_ticks,17);assert.equal(pharmacy.active_craft.remaining_ticks,19);
+    assert.equal(S.isComa(),false);assert.equal(S.getFatigue(),90);assert.equal(S.getStamina(),0);
+  } finally {await h.close();}
 });
 
 test('gym and sleep locks stop other clocks; their paid ticks advance time across midnight', async () => {

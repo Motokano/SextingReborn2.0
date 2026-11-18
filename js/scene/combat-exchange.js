@@ -199,7 +199,7 @@
                     if (!normalIntent.skip && !Meta.hasAttackOpportunity(normalIntent,{x:ctxMeta.x,y:ctxMeta.y})) return;
                     var metaPlan = Meta.select(normalIntent, {x:ctxMeta.x,y:ctxMeta.y});
                     var intent = metaPlan.main;
-                    if (intent.skip) { if (window.Survival) window.Survival.advanceTick(); window.SceneMapView.render(); return; }
+                    if (intent.skip) { if (window.Survival) window.Survival.advanceTick({source:'combat'}); window.SceneMapView.render(); return; }
                     var approachSkill = window.CombatSkills && window.CombatSkills.getSkill(intent.skillId || intent.skill_id);
                     var approachMove = approachSkill && (approachSkill.moves || []).filter(function(m){return m.id === (intent.moveId || intent.move_id);})[0];
                     if (!CombatWorld.preparePlayerApproach({x:ctxMeta.x,y:ctxMeta.y}, approachMove, intent.weaponId ? intent : null)) { Meta.suspend(metaPlan); return; }
@@ -532,7 +532,7 @@
                         }
                         if (playerBlocked) {
                             Meta.suspend(metaPlan);
-                            if (window.Survival) window.Survival.advanceTick();
+                            if (window.Survival) window.Survival.advanceTick({source:'combat'});
                             window.SceneMapView.render(); return;
                         }
                         commitMain();
@@ -622,7 +622,7 @@
                 }
                 window.SceneMapView.bumpCombatRenderProfile(700);
                 if (window.Survival && typeof window.Survival.advanceTick === 'function') {
-                    window.Survival.advanceTick();
+                    window.Survival.advanceTick({ source: 'combat' });
                 }
                 if (window.GameLog && ctxMeta.source === 'keyboard') {
                     window.GameLog.log(window.SceneFeedback.ui('log.system.attack.intent.keyboard'), 'info');

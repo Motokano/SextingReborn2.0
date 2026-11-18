@@ -74,8 +74,10 @@
   if(!spec.workTicks||!accessible()||!groups.every(function(c){return state()[c.id]>=c.need;}))return {ok:false,message:'请先备齐材料并在装置旁施工。'};
   var S=g.Survival,measurement=g.NPCSystem.getFlagValue('sewing_measurement');
   if(spec.id==='sewing_mannequin'&&(!measurement||!(measurement.weight_kg>0)))return {ok:false,message:'请先使用皮尺和体重秤记录身材。'};
-  if((S.isDead&&S.isDead())||(g.CombatEngagement&&g.CombatEngagement.isPlayerInCombat())||S.getStamina()<(S.getActionStaminaCost?S.getActionStaminaCost(1):1))return {ok:false,message:'当前不能施工，请先恢复体力或结束战斗。'};
-  S.consumeStamina(1);S.advanceTick({source:'sewing_construction'});
+  var intensity = spec.id === 'sewing_tape' ? 'low' : spec.id === 'sewing' ? 'high' : 'medium';
+  var rate = S.getIntensityRate(intensity);
+  if((S.isDead&&S.isDead())||(g.CombatEngagement&&g.CombatEngagement.isPlayerInCombat())||S.getStamina()<(S.getActionStaminaCost?S.getActionStaminaCost(rate):rate))return {ok:false,message:'当前不能施工，请先恢复体力或结束战斗。'};
+  S.advanceTick({source:'sewing_construction', intensity:intensity});
   var n=Math.min(spec.workTicks,workProgress()+1);g.NPCSystem.setDemoFlag(key+':work',n);
   if(n===spec.workTicks){g.NPCSystem.setDemoFlag(unlock,true);if(spec.id==='sewing_mannequin')g.NPCSystem.setDemoFlag('sewing_mannequin_dimensions',JSON.parse(JSON.stringify(measurement)));}
   if(g.SaveSystem&&!g.SaveSystem.saveNow('facility'))return {ok:false,message:'进度已保留在本次游戏，但保存失败，请重试保存。'};

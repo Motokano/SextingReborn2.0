@@ -1007,6 +1007,7 @@
         if (!saved || typeof saved !== 'object') return;
         var instByOwner = saved.instancesByOwner;
         if (!isPlainObject(instByOwner)) instByOwner = null;
+        var removedPlayerComa = false;
 
         // Reset current runtime instances first.
         instancesByOwner = {};
@@ -1027,6 +1028,10 @@
                 for (var j = 0; j < arr.length; j++) {
                     var inst = arr[j];
                     if (!inst || !inst.buff_id) continue;
+                    if (inst.buff_id === 'survival_coma') {
+                        if (oid === PLAYER_OWNER_ID) removedPlayerComa = true;
+                        continue;
+                    }
                     instancesByOwner[oid].push({
                         uid: inst.uid != null ? String(inst.uid) : '',
                         buff_id: String(inst.buff_id),
@@ -1061,6 +1066,11 @@
 
         if (loaded) {
             attachTemplatesAndClamp();
+            // Legacy coma saves omitted the exhaustion status while its timer ran.
+            if (removedPlayerComa && global.Survival && global.Survival.syncStaminaExhaustedBuff) {
+                global.Survival.syncStaminaExhaustedBuff();
+            }
+            if (global.Survival && global.Survival.syncFatigueComaBuff) global.Survival.syncFatigueComaBuff();
             recalcDerived();
             notifyBuffHudRefresh();
             pendingRestore = null;
@@ -1197,7 +1207,7 @@
         if (thi > 0 && typeof Surv.addThirst === 'function') Surv.addThirst(thi);
         if (nut > 0 && typeof Surv.addNutrition === 'function') Surv.addNutrition(nut);
         if (fat !== 0 && typeof Surv.changeFatigue === 'function') Surv.changeFatigue(fat);
-        if (sta < 0 && typeof Surv.consumeStamina === 'function') Surv.consumeStamina(-sta, { raw: true });
+        if (sta < 0 && typeof Surv.consumeStamina === 'function') Surv.consumeStamina(-sta, { raw: true, source: 'status_effect' });
         if (ene > 0 && typeof Surv.addEnergy === 'function') Surv.addEnergy(ene);
         if (ene < 0 && typeof Surv.consumeEnergy === 'function') Surv.consumeEnergy(-ene);
         if (mood !== 0 && typeof Surv.setState === 'function') {

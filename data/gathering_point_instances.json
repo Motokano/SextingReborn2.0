@@ -10,7 +10,7 @@
       "wild_interaction_category": "gathering",
       "display_name": "灌木丛",
       "base_gathering_success_rate": 0.6,
-      "stamina_cost": 2,
+      "stamina_cost": 0.6,
       "tool_required": false,
       "loot_rows": [
         {
@@ -37,7 +37,7 @@
       "wild_interaction_category": "gathering",
       "display_name": "草丛",
       "base_gathering_success_rate": 0.6,
-      "stamina_cost": 2,
+      "stamina_cost": 0.6,
       "tool_required": false,
       "loot_rows": [
         {
@@ -83,7 +83,7 @@
       "wild_interaction_category": "gathering",
       "display_name": "野棉丛",
       "base_gathering_success_rate": 0.6,
-      "stamina_cost": 2,
+      "stamina_cost": 0.6,
       "tool_required": false,
       "max_successes": 3,
       "loot_rows": [
@@ -100,7 +100,7 @@
       "wild_interaction_category": "gathering",
       "display_name": "野麻丛",
       "base_gathering_success_rate": 0.6,
-      "stamina_cost": 2,
+      "stamina_cost": 0.6,
       "tool_required": false,
       "max_successes": 3,
       "loot_rows": [

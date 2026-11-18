@@ -572,6 +572,7 @@
     }
 
     function setRestingActionActive(active, opts) {
+        if (active && window.SceneAccess.isPlayerComaActive()) return false;
         if (active && ((window.BedSleep && window.BedSleep.isActive()) || (window.GymSystem && window.GymSystem.isActive()))) return false;
         var options = opts || {};
         var Surv = window.Survival;

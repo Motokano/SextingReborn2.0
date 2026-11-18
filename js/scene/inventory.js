@@ -738,7 +738,6 @@
             return;
         }
         if (backpackPanelOpen) return;
-        if (!options?.interaction && window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
         backpackPanelOpen = true;
         if (window.SveltePanels) window.SveltePanels.refresh('backpack');
         if (!window.SveltePanels) document.getElementById('modal-backpack').classList.add('show');
@@ -753,7 +752,6 @@
         window.BackpackPanel && window.BackpackPanel.invalidate();
         if (options && options.automatic) { backpackPanelOpen=false; if(window.SveltePanels)window.SveltePanels.refresh('backpack');else document.getElementById('modal-backpack').classList.remove('show');return; }
         backpackPanelOpen = false;
-        if (!wasInteraction && window.Survival && typeof window.Survival.advanceTick === 'function') window.Survival.advanceTick();
         if (window.SveltePanels) window.SveltePanels.refresh('backpack');
         if (!window.SveltePanels) document.getElementById('modal-backpack').classList.remove('show');
         window.SceneMapView.render();

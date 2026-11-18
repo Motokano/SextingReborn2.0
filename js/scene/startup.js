@@ -125,12 +125,8 @@
             var mapsPromise = window.SceneMapView.bootstrapMapsFromJson();
 
             var mapsReady = Promise.resolve(mapsPromise).then(window.SceneSession.afterMaps);
-            window.SceneMapView.setPlayerAvatarSprites({
-                down: 'image/player_down.png',
-                up: 'image/player_up.png',
-                left: 'image/player_left.png',
-                right: 'image/player_right.png'
-            });
+            // The formal pawn is supplied by PlayerPawnRig / SceneCharacter.
+            // Optional directional portraits remain unset until a caller supplies real assets.
             if (window.GameLog) window.GameLog.log(window.SceneFeedback.ui('log.system.enter.scene'), 'system');
             window.SceneCtx.actions = window.SceneCtx.actions || {};
             window.SceneCtx.actions.turnToward = window.SceneMovement.turnToward;

@@ -325,7 +325,22 @@
         return { containerType: ct, index: idx };
     }
 
+    function methodIntensity(methodId) {
+        var method = String(methodId).split('.').pop();
+        return ['stir_fry','deep_fry','grind_mix','crushing','tableting'].includes(method) ? 'medium' : 'low';
+    }
+    function advancesUnattended(craft) {
+        if (!craft) return false;
+        var method = String(craft.method_id).split('.').pop();
+        return ['roast_bake','boil_stew','steam','pickle_salt','ferment','maceration','distillation','crystallization','medical_alcohol'].includes(method);
+    }
+    function methodStamina(methodId, ticks) {
+        return Number((global.Survival.getIntensityRate(methodIntensity(methodId)) * ticks).toFixed(2));
+    }
     global.StationCraftCore = {
+        advancesUnattended: advancesUnattended,
+        methodIntensity: methodIntensity,
+        methodStamina: methodStamina,
         normalizeCookingInputs: normalizeCookingInputs,
         normalizePharmacyInputs: normalizePharmacyInputs,
         toCountMap: toCountMap,

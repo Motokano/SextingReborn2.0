@@ -7,7 +7,7 @@
     'use strict';
 
     var GATHERING_MAX_PROFICIENCY = 5000000;
-    var STAMINA_COST = 2;
+    var STAMINA_COST = 0.6;
     var MAX_INVENTORY_SLOTS = 30;
     function t(key, vars) {
         if (global && global.UIText && typeof global.UIText.t === 'function') return global.UIText.t(key, vars);
@@ -202,7 +202,7 @@
             return { success: false, message: t('gathering.msg.low_stamina_full') };
         }
         var staminaNow = Surv ? Surv.getStamina() : character.stamina;
-        var cost = point.stamina_cost != null ? point.stamina_cost : STAMINA_COST;
+        var cost = Surv ? Surv.getIntensityRate('medium') : STAMINA_COST;
         if (Surv && Surv.getActionStaminaCost) cost = Surv.getActionStaminaCost(cost);
         if (staminaNow < cost) return { success: false, message: t('gathering.msg.no_stamina') };
         if (isInventoryFull()) return { success: false, message: t('gathering.msg.inventory_full') };
@@ -212,7 +212,7 @@
         var successRate = base + base * (proficiencyPct * 0.003);
         successRate = Math.min(1, successRate);
 
-        if (Surv) Surv.consumeStamina(cost, { raw: true }); else { character.stamina -= cost; if (character.stamina < 0) character.stamina = 0; }
+        if (Surv) Surv.advanceTick({source:'gathering', actionCost:cost}); else { character.stamina -= cost; if (character.stamina < 0) character.stamina = 0; }
 
         var roll = Math.random();
         if (roll >= successRate) {
@@ -264,9 +264,6 @@
                         g.InventoryEquipment.addItemToGround(pos.mapId, pos.x, pos.y, itemInstance);
                 }
                 if (cat === 'gathering') addGatheringProficiencyDelta(1);
-                if (typeof global !== 'undefined' && global.Survival && typeof global.Survival.advanceTick === 'function') {
-                    global.Survival.advanceTick();
-                }
                 return { success: true, message: t('gathering.msg.dropped', { item: itemName }), consumedStamina: true };
             }
         } else {
@@ -274,7 +271,6 @@
         }
         if (cat === 'gathering') addGatheringProficiencyDelta(1);
 
-        if (Surv && typeof Surv.advanceTick === 'function') Surv.advanceTick();
         return {
             success: true,
             gathered: {
@@ -295,7 +291,7 @@
         var Surv = useSurvival() ? (typeof window !== 'undefined' ? window : global).Survival : null;
         if (Surv && !Surv.canPerformStaminaOrEnergyAction()) return false;
         var stamina = Surv ? Surv.getStamina() : character.stamina;
-        var cost = point.stamina_cost != null ? point.stamina_cost : STAMINA_COST;
+        var cost = Surv ? Surv.getIntensityRate('medium') : STAMINA_COST;
         if (Surv && Surv.getActionStaminaCost) cost = Surv.getActionStaminaCost(cost);
         if (stamina < cost) return false;
         if (isInventoryFull()) return false;

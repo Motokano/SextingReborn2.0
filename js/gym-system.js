@@ -12,7 +12,7 @@
  const moduleKey=D.moduleKey;
  const level=a=>state.levels[moduleKey(a)]??state.levels[a.station]??0;
  const fatigueRate=()=>S().getFatigue()>=80?0:S().getFatigue()>50?.5:1;
- const cost=a=>S().getActionStaminaCost(a.cost);
+ const cost=a=>Number((a.ticks*S().getActionStaminaCost(S().getIntensityRate(a.intensity))).toFixed(2));
  function blocked(){return S().isDead()||S().getState().isComa||g.DeathSystem&&g.DeathSystem.blocked();}
  function at(id){
   if(!layout||!station(id)||blocked())return false;
@@ -71,8 +71,7 @@
   if(blocked())return '已失能';
   if(!fatigueRate())return '疲劳过高';
   if([...a.main,...a.assist].every(id=>M().isUnlocked(id)))return '已练满';
-  const passive=Number(S().getConfigValue('stamina_passive_drain_per_tick',0))||0;
-  if(S().getStamina()+1e-8<cost(a)+passive*a.ticks)return '体力不足';
+  if(S().getStamina()+1e-8<cost(a))return '体力不足';
   return '';
  }
  function efficiency(a){const IE=g.InventoryEquipment;return D.trainingEfficiency(level(a),IE.getSkillLevel(IE.SPECIAL_ANATOMY_STUDIES_SKILL_ID),g);}
@@ -81,9 +80,9 @@
  function pay(j){
   const a=action(j.actionId),why=trainReason(a);if(why){state.job=null;return false;}
   j.efficiency=efficiency(a);j.totalPct=growthTotal(a,j.efficiency);j.allocationVersion=1;
-  j.rewards=D.distributeGrowth(a,j.totalPct,id=>M().getProgress(id));j.ticks=0;j.paid=cost(a);
+  j.rewards=D.distributeGrowth(a,j.totalPct,id=>M().getProgress(id));j.ticks=0;j.paid=cost(a);j.payPerTick=true;
   S().setResting(false);S().setStaminaRegenActionActive(false);S().setSitMeditationActive(false);
-  S().consumeStamina(j.paid,{raw:true,source:'gym',fatiguePerStamina:D.TRAINING_FATIGUE_PER_STAMINA});return true;
+  return true;
  }
  function startTraining(id,groups=1){
   const a=action(id);if(!a||![1,4,8].includes(groups)||!usable(a.station))return {ok:false,message:'请在对应设施旁操作'};
@@ -99,7 +98,7 @@
   const committed=transact(()=>{
    const j=state.job,a=action(j.actionId);if(blocked()||!samePosition(j)||!at(a.station)){state.job=null;return;}
    const before=S().getState().tickCount;advancing=true;
-   try{S().advanceTick({source:'gym'});}finally{advancing=false;}
+   try{S().advanceTick({source:'gym', actionCost:j.payPerTick ? j.paid/a.ticks : 0, fatiguePerStamina:D.TRAINING_FATIGUE_PER_STAMINA});}finally{advancing=false;}
    if(blocked()||!state.job){state.job=null;return;}
    if(S().getState().tickCount!==before+1)throw Error('Gym tick blocked');
    if(++j.ticks<a.ticks)return;
