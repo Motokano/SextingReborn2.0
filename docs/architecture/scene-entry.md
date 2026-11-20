@@ -73,6 +73,12 @@ flowchart TD
 
 检查不是安全沙箱，也不能自动判断一个正常领域函数是否职责过宽。目录归属、规则唯一性和新增公开接口仍须代码评审。不得用手工启动绕过检查后宣布交付完成。
 
+## 动作轮盘（2026-11-20）
+
+`PlayerActions` 与原菜单共享动作描述及执行入口；`js/action-wheel.js`／`css/action-wheel.css` 只拥有轮盘、长按手势及选格提示，直接加载于两个入口页面，不能计算动作消耗或改变技能规则。`SceneMovement` 继续拥有真实蹑步；`SceneContextState` 统一清除选格提示。`WorldTick` 在其他有效动作刻结算前结束手动休息，休息自身刻使用 `source: rest`，睡眠、捕猎与地牢恢复沿原上下文处理。
+
+`MedicalKitPanel` 浏览保留休息，`MedicalActions` 在有效动作事务内停止休息；`SaveSystem` 回退后调用 `PlayerActions.syncRestIdleTimer` 同步已还原的状态与自动计时器。新增交互、真实动作及原生／Svelte共同回归为 `tools/test-action-wheel.mjs`，已经纳入场景回归入口。
+
 ## 本次迁移边界
 
 本轮从当时工作区的 `scene-app.js` 按职责迁移，保留此前未提交改动；没有重写战斗公式、改存档格式或实现尚未确认的设计。迁移脚本与快照只在 `tmp` 留作审计，后续直接维护正式模块，不把临时脚本当构建步骤。验证记录见 [scene-refactor-verification.md](scene-refactor-verification.md)。

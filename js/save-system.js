@@ -643,6 +643,7 @@
             if (applied && global.MedicalActions) global.MedicalActions.restore(snapshot.medical_operation || null, !!(options && options.rollback));
             if (applied && global.MedicalActions) global.MedicalActions.restoreProgress(snapshot.medical_progress || null);
             if (applied && global.ManufacturingActions) global.ManufacturingActions.restore(snapshot.manufacturing_workshop || null, !!(options && options.rollback));
+            if (applied && options && options.rollback && global.PlayerActions) global.PlayerActions.syncRestIdleTimer();
             return applied;
         } finally { snapshotRestoreDepth--; if (M) M.endRestore(); }
     }

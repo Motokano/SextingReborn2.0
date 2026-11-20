@@ -18,7 +18,8 @@
         "SceneStatusPanel"
       ],
       "verification": [
-        "tools/test-svelte-hud-game.mjs"
+        "tools/test-svelte-hud-game.mjs",
+        "tools/test-action-wheel.mjs"
       ]
     },
     {
@@ -198,6 +199,7 @@
         "stopGatheringIdle",
         "stopGatheringIdleFromScene",
         "stopRestIdleTimer",
+        "syncRestIdleTimer",
         "tiaoXiIdleTimer",
         "trySleepAtBed"
       ],
@@ -222,7 +224,8 @@
       ],
       "verification": [
         "tools/test-sleep-runtime.mjs",
-        "tools/test-facility-world-time.mjs"
+        "tools/test-facility-world-time.mjs",
+        "tools/test-action-wheel.mjs"
       ]
     },
     {
@@ -299,7 +302,8 @@
       "verification": [
         "tools/test-facility-world-time.mjs",
         "tools/test-injuries.mjs",
-        "tools/test-health-vitality-growth.mjs"
+        "tools/test-health-vitality-growth.mjs",
+        "tools/test-action-wheel.mjs"
       ]
     },
     {
@@ -328,7 +332,8 @@
       "verification": [
         "tools/test-scene-entry-runtime.mjs",
         "tools/test-combat-map-transition.mjs",
-        "tools/test-injuries.mjs"
+        "tools/test-injuries.mjs",
+        "tools/test-action-wheel.mjs"
       ]
     },
     {
@@ -865,7 +870,8 @@
         "tools/test-medical-kit-qol.mjs",
         "tools/test-medical-kit-crafting.mjs",
         "tools/test-injuries.mjs",
-        "tools/test-medical-skills.mjs"
+        "tools/test-medical-skills.mjs",
+        "tools/test-action-wheel.mjs"
       ]
     },
     {
@@ -893,7 +899,8 @@
         "tools/test-medical-kit-runtime.mjs",
         "tools/test-medical-kit-loot.mjs",
         "tools/test-medical-kit-qol.mjs",
-        "tools/test-injuries.mjs"
+        "tools/test-injuries.mjs",
+        "tools/test-action-wheel.mjs"
       ]
     },
     {

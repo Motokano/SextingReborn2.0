@@ -139,6 +139,7 @@
                 window.SceneFeedback.showMsg(window.SceneFeedback.ui(rx.reason_key, varsx), 'info');
                 return;
             }
+            setRestingActionActive(false, { showMsg: false });
             if (act === 'diqi_huti') window.SceneFeedback.showMsg(window.SceneFeedback.ui(rx.reason_key, { shield: rx.shield_value != null ? rx.shield_value : 0 }), 'success');
             else {
                 var hubOkVars2 = {};
@@ -214,6 +215,7 @@
         var stNb = E.getState();
         var mapNb = E.getMap();
         window.SceneCtx.footworkNieBuMode = true;
+        if (window.ActionWheel) window.ActionWheel.setTarget(true);
         window.SceneCtx.nieBuLeapRadius = rNb;
         window.SceneFeedback.showMsg(window.SceneFeedback.ui('player.action.niebu.hint'), 'info');
         if (mapNb && typeof window.SceneCtx.pushDirtyNieBuRing === 'function') {
@@ -238,6 +240,9 @@
         var CHA = window.CombatHubActions;
         var sub = { children: [] };
         if (!IE) return sub.children;
+        if (window.ActionWheel) sub.children.push({ kind: 'button', children: [], attrs: { role: 'menuitem' }, type: 'button', className: 'player-action-item',
+            textContent: '打开动作轮盘', title: '也可按住地图 0.5 秒，再转圈 1 秒呼出',
+            onclick: function (ev) { ev.stopPropagation(); window.ActionWheel.open(); } });
         if (window.ForgingSystem && window.ForgingSystem.snapshot().items.some(function(x){return x.item_id === 'tool_repair_roll';})) {
             var repairButton={kind:'button',children:[],attrs:{role:'menuitem'},type:'button',className:'player-action-item',textContent:'维修武器'};
             repairButton.disabled=!!(window.CombatEngagement && window.CombatEngagement.isPlayerInCombat());
@@ -253,7 +258,7 @@
         var footworkId = 'combat_basic_footwork';
         var hubs = IE.getCombatState && IE.getCombatState().hubs ? IE.getCombatState().hubs : {};
         if (window.WaterFlaskUse) {
-            var medicalButton={kind:'button',children:[],attrs:{role:'menuitem'},type:'button',className:'player-action-item',textContent:'急救包'};
+            var medicalButton={kind:'button',children:[],attrs:{role:'menuitem'},type:'button',className:'player-action-item',textContent:'急救包', actionId:'medical_kit'};
             medicalButton.disabled=!window.MedicalKit.equipped();
             medicalButton.onclick=function(ev){ev.stopPropagation();closePlayerActionsSubmenu();window.MedicalKitPanel.openDaily();};
             sub.children.push(medicalButton);
@@ -264,7 +269,7 @@
             if (flaskProfile && !flaskProfile.error) flaskLabel += ' · ' + window.WaterFlaskStorage.format(flaskProfile.water) + '／' + window.WaterFlaskStorage.format(flaskProfile.capacity);
             var flaskRow = { kind: 'div', children: [], attrs: {}, className: 'player-action-item-row' };
             flaskRow.children.push({ kind: 'button', children: [], attrs: { role: 'menuitem' }, type: 'button', className: 'player-action-item',
-                textContent: flaskLabel, title: flaskBlocked || flaskLabel, disabled: !!flaskBlocked,
+                actionId: 'drink_flask', textContent: flaskLabel, title: flaskBlocked || flaskLabel, disabled: !!flaskBlocked,
                 onclick: function (ev) { ev.stopPropagation(); closePlayerActionsSubmenu(); window.ItemUseActions.tryDrinkWaterFlask(flask && flask.instance_id); } });
             flaskRow.children.push({ kind: 'button', children: [], attrs: { 'aria-label': window.SceneFeedback.ui('action.bar.pin.hint') }, type: 'button',
                 className: 'player-action-pin', textContent: '📌', title: window.SceneFeedback.ui('action.bar.pin.hint'),
@@ -275,6 +280,7 @@
             var survState = Surv.getState() || {};
             var isResting = !!survState.isResting;
             var btnRest = { kind: 'button', children: [], attrs: {} };
+            btnRest.actionId = 'rest';
             btnRest.type = 'button';
             btnRest.className = 'player-action-item';
             btnRest.attrs['role'] = 'menuitem';
@@ -318,6 +324,7 @@
                     var ul = ha.unlock_level != null ? ha.unlock_level : 1;
                     if (breathLv < ul) continue;
                     var btnRow = { kind: 'button', children: [], attrs: {} };
+                    btnRow.actionId = ha.id;
                     btnRow.type = 'button';
                     btnRow.className = 'player-action-item';
                     btnRow.attrs['role'] = 'menuitem';
@@ -377,6 +384,7 @@
                                 window.SceneFeedback.showMsg(window.SceneFeedback.ui(r.reason_key, vars), 'info');
                                 return;
                             }
+                            setRestingActionActive(false, { showMsg: false });
                             if (actionId === 'diqi_huti') window.SceneFeedback.showMsg(window.SceneFeedback.ui(r.reason_key, { shield: r.shield_value != null ? r.shield_value : 0 }), 'success');
                             else if (actionId === 'tiao_xi_once') window.SceneFeedback.showMsg(window.SceneFeedback.ui('combat.hub.ok.tiao_xi', { n: r.diqi_gained != null ? r.diqi_gained : 0 }), 'success');
                             else if (actionId === 'jin_shi') window.SceneFeedback.showMsg(window.SceneFeedback.ui('combat.hub.ok.eat', {
@@ -422,6 +430,7 @@
             var hubFw = hubs.footwork === footworkId;
             var inNie = window.SceneCtx && window.SceneCtx.footworkNieBuMode;
             var btnNie = { kind: 'button', children: [], attrs: {} };
+            btnNie.actionId = 'nie_bu';
             btnNie.type = 'button';
             btnNie.className = 'player-action-item';
             btnNie.attrs['role'] = 'menuitem';
@@ -465,6 +474,81 @@
             sub.children.push(nieRow);
         }
         return sub.children;
+    }
+
+    function canOpenActionWheel() {
+        return !window.SceneAccess.isPreCreationGameplayRestricted()
+            && !window.SceneAccess.isStoryMovementLocked()
+            && !window.SceneAccess.isPlayerComaActive()
+            && !(window.Survival && window.Survival.isDead())
+            && !(window.DeathSystem && window.DeathSystem.blocked())
+            && !(window.Hunting && window.Hunting.isActive());
+    }
+
+    function getActionWheelItems() {
+        var entries = {};
+        function visit(items) {
+            items.forEach(function (item) { if (item.actionId) entries[item.actionId] = item; visit(item.children || []); });
+        }
+        // The wheel and the original menu share the same action descriptors and validation.
+        visit(buildPlayerActionsItems());
+        var resting = !!(window.Survival && window.Survival.getState().isResting);
+        var definitions = [
+            ['rest', resting ? '休息中' : '休息', resting ? '执行其他动作后结束休息' : '停下脚步，恢复体力', '暂时无法休息'],
+            ['tiao_xi_once', '调息', tiaoXiIdleTimer ? '正在调息 · 松开停止' : '调整呼吸，恢复底气', '需先学会基本呼吸法'],
+            ['drink_flask', '饮水', '使用随身水壶', '请先装备有水的水壶'],
+            ['medical_kit', '急救包', '打开急救包，选择治疗', '请先装备急救包'],
+            ['diqi_huti', '护体', '消耗底气，激活防具', '需先学会基本呼吸法'],
+            ['cui_qi', '催气', '消耗战斗积蓄，激发气力', '需学会并挂载呼吸法'],
+            ['nie_bu', '蹑步', '选择高亮格作为落脚位置', '需先学会基本步法']
+        ];
+        return definitions.map(function (definition) {
+            var item = entries[definition[0]];
+            var blocked = !item || !!item.disabled;
+            var reason = blocked ? (item && item.title || definition[3]) : definition[2];
+            if (!item && (definition[0] === 'diqi_huti' || definition[0] === 'tiao_xi_once')) {
+                var template = window.CombatHubActions.findHubActionTemplate('combat_basic_breath', definition[0]);
+                if (template) reason = '基本呼吸法需达到 ' + (template.unlock_level || 1) + ' 级';
+            }
+            if (definition[0] === 'diqi_huti' && item && !blocked && !hubAdjacentForBreathActions()) {
+                blocked = true; reason = window.SceneFeedback.ui('combat.hub.fail.battle_only');
+            }
+            if (definition[0] === 'nie_bu' && window.SceneAccess.isPlayerActionDisabledByBuff(window.SceneAccess.ACTION_TYPES.MOVE)) {
+                blocked = true; reason = '当前状态无法移动';
+            }
+            return { id: definition[0], name: definition[1], desc: reason, disabled: blocked, command: item };
+        });
+    }
+
+    function executeActionWheelItem(id) {
+        if (!canOpenActionWheel()) return;
+        var item = getActionWheelItems().find(function (entry) { return entry.id === id; });
+        if (!item) return;
+        if (item.disabled) { window.SceneFeedback.showMsg(item.desc, 'info'); return; }
+        if (id === 'rest') {
+            setRestingActionActive(true, { showMsg: true });
+            if (window.SceneRenderer) window.SceneRenderer.render();
+            SceneHud.refresh('status');
+            return;
+        }
+        if (id === 'nie_bu' && window.SceneCtx.footworkNieBuMode) return;
+        item.command.onclick({ stopPropagation: function () {} });
+    }
+
+    function bindActionWheel() {
+        if (!window.ActionWheel) return;
+        window.ActionWheel.configure({
+            canOpen: canOpenActionWheel,
+            getActions: getActionWheelItems,
+            execute: executeActionWheelItem,
+            onOpen: closePlayerActionsSubmenu,
+            cancelTarget: function () {
+                window.SceneCtx.exitFootworkNieBuMode();
+                if (window.SceneRenderer) window.SceneRenderer.render();
+            }
+        });
+        var button = document.getElementById('btn-player-actions');
+        if (button) button.title = '动作菜单 · 也可按住地图 0.5 秒，再转圈 1 秒呼出轮盘';
     }
 
     function publishActions() { if (actionsView) actionsView({ open: playerActionsSubmenuOpen, items: playerActionsSubmenuOpen ? buildPlayerActionsItems() : [], label: window.SceneFeedback.ui('btn.player.actions.title') }); }
@@ -565,10 +649,16 @@
                 stopRestIdleTimer();
                 return;
             }
-            Surv.advanceTick();
+            Surv.advanceTick({ source: 'rest' });
+            if (window.MedicalKitPanel && window.MedicalKitPanel.isOpen()) window.MedicalKitPanel.refresh();
             if (window.SceneRenderer) window.SceneRenderer.render();
             SceneHud.refresh('status');
         }, getRestAutoTickMs());
+    }
+
+    function syncRestIdleTimer() {
+        if (window.Survival && window.Survival.getState().isResting) startRestIdleTimer();
+        else stopRestIdleTimer();
     }
 
     function setRestingActionActive(active, opts) {
@@ -580,7 +670,7 @@
         var before = !!((Surv.getState() || {}).isResting);
         var next = !!active;
         Surv.setResting(next);
-        if (next) startRestIdleTimer();
+        if (next) { stopGatheringIdle(); startRestIdleTimer(); }
         else stopRestIdleTimer();
         if (before !== next && options.showMsg !== false) {
             window.SceneFeedback.showMsg(window.SceneFeedback.ui(next ? 'player.action.rest.enabled' : 'player.action.rest.disabled'), 'info');
@@ -802,9 +892,10 @@
         return true;
     }
 
-    function prepareFacilityAction() {
+    function prepareFacilityAction(options) {
         if (window.BookReading) window.BookReading.pause();
-        stopGatheringIdle(); stopTiaoXiIdle(false); setRestingActionActive(false, {showMsg:false});
+        stopGatheringIdle(); stopTiaoXiIdle(false);
+        if (!options || !options.preserveRest) setRestingActionActive(false, {showMsg:false});
         window.StationActions.stopCookingCraftIdle(); window.StationActions.stopPharmacyCraftIdle(); window.AgricultureActions.stopAgricultureAutoTick(); window.LivestockActions.stopLivestockAutoTick();
         if (window.Survival) {window.Survival.setStaminaRegenActionActive(false);window.Survival.setSitMeditationActive(false);}
     }
@@ -825,6 +916,7 @@
     }
 
     function bindReadyControls() {
+            bindActionWheel();
 
             function hubAdjacentBattleContext() {
                 return !!(window.CombatEngagement && typeof window.CombatEngagement.isPlayerInCombat === 'function' && window.CombatEngagement.isPlayerInCombat());
@@ -978,6 +1070,7 @@
         runContextAction: runContextAction,
         setRestingActionActive: setRestingActionActive,
         startRestIdleTimer: startRestIdleTimer,
+        syncRestIdleTimer: syncRestIdleTimer,
         stopGatheringIdle: stopGatheringIdle,
         stopGatheringIdleFromScene: stopGatheringIdleFromScene,
         stopRestIdleTimer: stopRestIdleTimer,

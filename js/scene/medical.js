@@ -104,9 +104,9 @@
     }
     function craftBasic(){
         const plan=basicCraftPlan();if(plan.reason)return {ok:false,message:plan.reason};
-        g.PlayerActions.prepareFacilityAction();
         return transaction(function(){
             const p=basicCraftPlan();if(p.reason)throw Error(p.reason);
+            g.PlayerActions.prepareFacilityAction();
             const IE=g.InventoryEquipment;
             for(const x of p.inputs)if(!IE.removeCarriedItemsByTemplateId(x.item_id,x.count).ok)throw Error('随身材料不足');
             for(let i=0;i<p.ticks;i++){
@@ -126,9 +126,9 @@
     }
     function refill(id,key){
         const plan=refillPlan(id,key);if(plan.reason)return {ok:false,message:plan.reason};
-        g.PlayerActions.prepareFacilityAction();
         return transaction(function(){
             const current=refillPlan(id,key);if(current.reason)throw Error(current.reason);
+            g.PlayerActions.prepareFacilityAction();
             const item=D.reserves[key].item_id;
             const paid=refillStock(key).warehouse>0?g.HideoutWarehouse.consumeAvailableItem(item,1):g.InventoryEquipment.removeCarriedItemsByTemplateId(item,1);
             if(!paid.ok)throw Error('用品不足');
@@ -153,9 +153,9 @@
     }
     function treat(id,part,key,mode){
         const plan=therapyPlan(id,part,key,mode);if(plan.reason)return {ok:false,message:plan.reason};
-        g.PlayerActions.prepareFacilityAction();
         const result=transaction(function(){
             const p=therapyPlan(id,part,key,mode);if(p.reason)throw Error(p.reason);
+            g.PlayerActions.prepareFacilityAction();
             const instance=K.find(id);
             if(p.surgery){
                 K.spend(instance,{surgical_staples:p.costs.surgical_staples});
@@ -208,9 +208,9 @@
     }
     function modify(id,kind){
         const plan=modificationPlan(id,kind);if(plan.reason)return {ok:false,message:plan.reason};
-        g.PlayerActions.prepareFacilityAction();
         return transaction(function(){
             const p=modificationPlan(id,kind);if(p.reason)throw Error(p.reason);
+            g.PlayerActions.prepareFacilityAction();
             for(const [item,n] of Object.entries(p.cost))if(!g.InventoryEquipment.removeCarriedItemsByTemplateId(item,n).ok)throw Error('改造材料不足');
             for(let i=0;i<p.ticks;i++){
                 tick();
@@ -237,9 +237,9 @@
             return heal?{heal}:{reason:'已至治疗下限'};
         }
         const initial=plan();if(initial.reason)return {ok:false,message:initial.reason};
-        g.PlayerActions.prepareFacilityAction();
         return transaction(function(){
             const p=plan();if(p.reason)throw Error(p.reason);
+            g.PlayerActions.prepareFacilityAction();
             if(!IE.takeItemFromContainer(container,index).success)throw Error('用品已不在原位置');
             if(p.clear)g.BuffSystem.clearPartInjury('player',part,p.clear);
             if(p.heal && g.CharacterAttributes.applyMedicalRecovery(part,p.heal)!==p.heal)throw Error('伤情已改变');
@@ -254,8 +254,8 @@
         const unequip=request.action==='unequip';
         if(unequip && K.equipped()?.instance_id!==request.id)return {ok:false,message:'这只包未装备'};
         if(!unequip && !['pocket','vest','backpack','ground'].includes(request.source))return {ok:false,message:'来源无效'};
-        g.PlayerActions.prepareFacilityAction();
         return transaction(function(){
+            g.PlayerActions.prepareFacilityAction();
             const pos=g.GameEngine.getState();
             function put(item){if(item&&!IE.putItemIntoDefaultContainer(item).placed)throw Error('背包没有空位');}
             if(unequip)put(IE.unequip('medical_kit',pos));

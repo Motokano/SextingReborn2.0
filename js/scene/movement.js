@@ -45,6 +45,7 @@
                 var ddx = Math.sign(Number(dx) || 0);
                 var ddy = Math.sign(Number(dy) || 0);
                 if (!ddx && !ddy) return false;
+                window.PlayerActions.setRestingActionActive(false, { showMsg: false });
                 window.SceneMapView.setFacingFromMove(ddx, ddy);
                 window.PlayerActions.stopGatheringIdle();
                 // The current formal rules do not charge time for an in-place facing change.

@@ -76,6 +76,10 @@
             if (window.GymSystem && !window.GymSystem.allowsTick(arguments[0])) return { training: true };
             if (window.MedicalActions && !window.MedicalActions.allowsTick(arguments[0])) return { medical: true };
             if (window.ManufacturingActions && !window.ManufacturingActions.allowsTick(arguments[0])) return { manufacturing: true };
+            var tickSource = arguments[0] && arguments[0].source;
+            if (window.PlayerActions.restIdleTimer && tickSource && ['rest', 'sleep', 'hunting', 'dungeon'].indexOf(tickSource) < 0) {
+                window.PlayerActions.setRestingActionActive(false, { showMsg: false });
+            }
             var before = window.Survival.getState();
             if (before.isResting && arguments[0]?.source !== 'sleep' && !window.SaveSystem.isAtomic()) {
                 var restOptions=arguments[0],restResult=window.SaveSystem.runAtomicFor('rest',function(){return window.Survival.advanceTick(restOptions);});

@@ -1,0 +1,42 @@
+#player-action-wheel{--aw-gold:#cbb88c;--aw-text:#e9e7dc;--aw-muted:#b2b8a7;--aw-grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.7' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' opacity='.065' filter='url(%23g)'/%3E%3C/svg%3E");width:100%;color:var(--aw-text);font-family:'Microsoft YaHei','PingFang SC',sans-serif;font-size:14px;line-height:1.5;color-scheme:dark}
+#player-action-wheel *{box-sizing:border-box}
+#player-action-wheel .aw-wheel{position:absolute;width:min(420px,calc(100% - 24px));aspect-ratio:1;filter:drop-shadow(0 18px 24px #000a);isolation:isolate}
+#player-action-wheel [hidden]{display:none!important}
+#player-action-wheel .aw-rim{position:absolute;inset:0;border-radius:50%;background:var(--aw-grain),linear-gradient(130deg,#b4a17a 0%,#756c51 18%,#343b2e 43%,#3b4031 65%,#897d5d 100%);border:1px solid #121910;box-shadow:inset 0 2px 1px #d9c8a57a,inset 0 -2px 3px #0b100be0,0 0 0 1px #9a89653b}
+#player-action-wheel .aw-rim::after{content:'';position:absolute;inset:5px;border:1px solid #bba8787a;border-radius:50%;box-shadow:inset 0 0 0 3px #182018,0 0 0 1px #151c15}
+#player-action-wheel .aw-geometry{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+#player-action-wheel .aw-sector{fill:url(#game-aw-moss);stroke:#8e82656b;stroke-width:1;transition:fill .12s,stroke .12s}
+#player-action-wheel .aw-sector.is-selected{fill:url(#game-aw-selected);stroke:#e0c99a;stroke-width:1.5}
+#player-action-wheel .aw-sector.is-disabled{fill:#1b241e;stroke:#636b514d}
+#player-action-wheel .aw-sector.is-selected.is-disabled{fill:#323a2c;stroke:#999b7e}
+#player-action-wheel .aw-texture{position:absolute;inset:9px;border-radius:50%;background-image:var(--aw-grain);pointer-events:none;opacity:.8}
+#player-action-wheel .aw-choice{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;border:0;border-radius:0;background:transparent;color:#cdbf9d;font-family:inherit;appearance:none;-webkit-tap-highlight-color:transparent}
+#player-action-wheel .aw-choice-content{position:absolute;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;min-width:64px;min-height:60px;transform:translate(-50%,-50%);pointer-events:none}
+#player-action-wheel .aw-icon{width:40px;height:40px;display:block;flex-shrink:0;background-image:url('../assets/ui/action-wheel-icons-copper.png');background-repeat:no-repeat;background-size:400% 200%;background-position:var(--aw-icon-x,0%) var(--aw-icon-y,0%);filter:brightness(.94) saturate(.65)}
+#player-action-wheel .aw-choice.is-selected .aw-icon{filter:brightness(1.13) saturate(.7)}
+#player-action-wheel .aw-choice[aria-disabled=true] .aw-icon{opacity:.45;filter:saturate(.25)}
+#player-action-wheel .aw-label{font:600 17px 'Noto Serif CJK SC','SimSun',serif;letter-spacing:2px;white-space:nowrap;text-shadow:0 1px 2px #000c}
+#player-action-wheel .aw-choice[aria-disabled=true]{color:#929b86}
+#player-action-wheel .aw-choice.is-selected{color:#f1dfb5}
+#player-action-wheel .aw-choice:focus-visible .aw-label{outline:2px solid #e0c99a;outline-offset:5px}
+#player-action-wheel .aw-choice[data-rest=true] .aw-label::after{content:' ·';color:#b9caa3}
+#player-action-wheel .aw-hub{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:40%;aspect-ratio:1;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;padding:13px;background:var(--aw-grain),radial-gradient(circle at 45% 25%,#344034,#19231c 85%);color:#e6d8b5;border:1px solid #baa579b0;box-shadow:0 0 0 4px #172019,inset 0 0 0 4px #b3a47712,inset 0 2px 5px #0005,0 4px 9px #0006;pointer-events:none;text-align:center}
+#player-action-wheel .aw-hub-name{font:600 25px 'Noto Serif CJK SC','SimSun',serif;letter-spacing:3px;white-space:nowrap}
+#player-action-wheel .aw-hub-desc{color:#c0c6b4;font-size:12px;line-height:1.5;min-height:18px}
+#player-action-wheel .aw-hub-rule{width:31px;height:1px;background:#c3ac755c}
+#player-action-wheel .aw-hub-hint{font-size:11px;color:#c6b791;letter-spacing:1px}
+#player-action-wheel .aw-notch{position:absolute;left:50%;top:50%;height:6px;width:6px;border-radius:50%;background:#59543d;border:1px solid #b5a17a8c;box-shadow:inset 0 -1px 2px #000b;pointer-events:none}
+#player-action-wheel .aw-hold{position:absolute;width:44px;height:44px;transform:translate(-50%,-50%);border-radius:50%;background:conic-gradient(#d7c494 var(--aw-progress,0deg),#b6bc9f20 0deg);box-shadow:0 2px 8px #0008;pointer-events:none}
+#player-action-wheel .aw-hold::after{content:'';position:absolute;inset:3px;border-radius:50%;background:#1b261eea}
+@media(prefers-reduced-motion:reduce){#player-action-wheel *{transition:none!important}}
+
+#player-action-wheel{position:fixed;inset:0;z-index:6500;pointer-events:none;user-select:none;-webkit-user-select:none}
+#player-action-wheel[data-open=true]{pointer-events:auto;background:#09110b35;touch-action:none}
+#player-action-wheel .aw-wheel{position:fixed;outline:none;touch-action:none}
+#player-action-wheel .aw-hold{position:fixed}
+#player-action-wheel .aw-choice{cursor:pointer}
+#player-action-wheel .aw-target{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);max-width:calc(100vw - 24px);display:flex;align-items:center;gap:16px;padding:10px 14px;background:#202c23f2;border:1px solid #9f9169a0;border-radius:4px;color:#e4d6b4;white-space:nowrap;box-shadow:0 4px 16px #0006}
+#player-action-wheel .aw-target button{pointer-events:auto;border:1px solid #9f9169a0;border-radius:3px;padding:5px 10px;background:#414934;color:#dac9a1;font:inherit;cursor:pointer}
+#player-action-wheel[data-open=true] .aw-target{visibility:hidden}
+#map-wrap.aw-gesture-surface #map-container{touch-action:none;-webkit-touch-callout:none;user-select:none;-webkit-user-select:none}
+@media(max-width:600px),(max-height:480px){#player-action-wheel .aw-label{font-size:15px;letter-spacing:1px}#player-action-wheel .aw-choice-content{gap:4px;min-width:48px;min-height:48px}#player-action-wheel .aw-icon{width:34px;height:34px}#player-action-wheel .aw-hub-name{font-size:21px;letter-spacing:2px}#player-action-wheel .aw-hub{gap:4px;padding:8px}#player-action-wheel .aw-target{gap:8px;font-size:12px;bottom:76px}}

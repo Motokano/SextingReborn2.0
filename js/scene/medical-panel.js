@@ -43,7 +43,7 @@
         if(atWorkbench && (!A.nearbyWorkbench() || A.isActive() || g.CombatEngagement.isPlayerInCombat()))return false;
         if(!atWorkbench && !K.equipped())return false;
         if(root){workbench=atWorkbench;refresh();return true;}
-        returnFocus=document.activeElement;workbench=atWorkbench;g.PlayerActions.prepareFacilityAction();
+        returnFocus=document.activeElement;workbench=atWorkbench;g.PlayerActions.prepareFacilityAction({preserveRest:!atWorkbench});
         root=document.createElement('div');root.id='medical-kit-panel';root.className='medical-kit-overlay medical-kit-surface';
         root.setAttribute('role','dialog');root.setAttribute('aria-modal','true');root.setAttribute('aria-label',workbench?'制造台 · 急救包':'急救包');
         root.addEventListener('click',click);

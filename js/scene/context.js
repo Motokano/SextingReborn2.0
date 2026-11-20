@@ -63,6 +63,7 @@
         exitFootworkNieBuMode: function (ringCX, ringCY, radiusOpt) {
             if (!this.footworkNieBuMode) return;
             this.footworkNieBuMode = false;
+            if (window.ActionWheel) window.ActionWheel.setTarget(false);
             var E0 = this.E || window.GameEngine;
             if (!E0 || typeof this.pushDirtyNieBuRing !== 'function') return;
             var map = typeof E0.getMap === 'function' ? E0.getMap() : null;
